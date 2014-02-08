@@ -71,7 +71,9 @@ public:
 // The plugin is a static singleton that is exported as an interface
 //
 CEmptyServerPlugin g_EmtpyServerPlugin;
-EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, g_EmtpyServerPlugin );
+EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, g_EmtpyServerPlugin);
+
+ConVar y_spt_pause{ "y_spt_pause", "1", FCVAR_ARCHIVE };
 
 HMODULE hEngineDll;
 size_t dwEngineDllStart, dwEngineDllSize;
@@ -79,10 +81,13 @@ DWORD_PTR dwGameServerPtr;
 bool *pM_bLoadgame;
 bool bShouldPreventNextUnpause = false;
 
-typedef void (__fastcall *SetPause_t) (void *thisptr, int edx, byte paused);
+typedef void(__fastcall *SetPause_t) (void *thisptr, int edx, byte paused);
 SetPause_t ORIG_SetPause;
 
-typedef bool(*SV_ActivateServer_t) ();
+typedef void(__fastcall *FinishRestore_t) (void *thisptr, int edx);
+FinishRestore_t ORIG_FinishRestore;
+
+typedef bool(__cdecl *SV_ActivateServer_t) ();
 SV_ActivateServer_t ORIG_SV_ActivateServer;
 
 void __fastcall HOOKED_SetPause(void *thisptr, int edx, byte paused)
@@ -103,12 +108,13 @@ void __fastcall HOOKED_SetPause(void *thisptr, int edx, byte paused)
 	return ORIG_SetPause(thisptr, edx, paused);
 }
 
-bool HOOKED_SV_ActivateServer()
+bool __cdecl HOOKED_SV_ActivateServer()
 {
 	bool result = ORIG_SV_ActivateServer();
 
 	Log("SPT: Engine call: SV_ActivateServer() => %d;\n", result);
-	if (*pM_bLoadgame)
+
+	if ((y_spt_pause.GetInt() == 2) && *pM_bLoadgame)
 	{
 		ORIG_SetPause((void *)dwGameServerPtr, 0, true);
 		Log("SPT: Pausing...\n");
@@ -117,6 +123,21 @@ bool HOOKED_SV_ActivateServer()
 	}
 
 	return result;
+}
+
+void __fastcall HOOKED_FinishRestore(void *thisptr, int edx)
+{
+	Log("SPT: Engine call: FinishRestore();\n");
+
+	if (y_spt_pause.GetInt() == 1)
+	{
+		ORIG_SetPause(thisptr, 0, true);
+		Log("SPT: Pausing...\n");
+
+		bShouldPreventNextUnpause = true;
+	}
+
+	return ORIG_FinishRestore(thisptr, edx);
 }
 
 //---------------------------------------------------------------------------------
@@ -131,7 +152,8 @@ CEmptyServerPlugin::~CEmptyServerPlugin() {};
 //---------------------------------------------------------------------------------
 bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory )
 {
-	ConnectTier1Libraries( &interfaceFactory, 1 );
+	ConnectTier1Libraries(&interfaceFactory, 1);
+	ConVar_Register(0);
 
 	hEngineDll = GetModuleHandleA("engine.dll");
 	if (!MemUtils::GetModuleInfo(hEngineDll, dwEngineDllStart, dwEngineDllSize))
@@ -173,6 +195,20 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	ORIG_SV_ActivateServer = (SV_ActivateServer_t)dwSV_ActivateServer;
 
 	Log("SPT: Found SV_ActivateServer at %p.\n", dwSV_ActivateServer);
+	
+	// FinishRestore
+	Log("SPT: Searching for FinishRestore (first pattern - 5135)...\n");
+
+	DWORD_PTR dwFinishRestore = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, (PBYTE) "\x81\xEC\xA4\x06\x00\x00\x33\xC0\x55\x8B\xE9\x8D\x8C\x24\x00\x00\x00\x00\x89\x84\x24", "xxxxxxxxxxxxxx????xxx");
+	if (!dwFinishRestore)
+	{
+		Warning("SPT: Could not find FinishRestore!\n");
+		return false;
+	}
+
+	ORIG_FinishRestore = (FinishRestore_t)dwFinishRestore;
+
+	Log("SPT: Found FinishRestore at %p.\n", dwFinishRestore);
 
 	// SetPause
 	Log("SPT: Searching for SetPause (first pattern - 5135)...\n");
@@ -189,26 +225,26 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	Log("SPT: Found SetPause at %p.\n", dwSetPause);
 
 	// Detours
-	Log("SPT: Detouring SV_ActivateServer and SetPause...\n");
+	Log("SPT: Detouring SV_ActivateServer, FinishRestore and SetPause...\n");
 
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
+	DetourAttach(&(PVOID &)ORIG_FinishRestore, HOOKED_FinishRestore);
 	DetourAttach(&(PVOID &)ORIG_SV_ActivateServer, HOOKED_SV_ActivateServer);
 	DetourAttach(&(PVOID &)ORIG_SetPause, HOOKED_SetPause);
 	LONG error = DetourTransactionCommit();
 	if (error == NO_ERROR)
 	{
-		Log("SPT: Detoured SV_ActivateServer and SetPause.\n");
+		Log("SPT: Detoured SV_ActivateServer, FinishRestore and SetPause.\n");
 	}
 	else
 	{
-		Warning("SPT: Error detouring SV_ActivateServer and SetPause: %d.\n", error);
+		Warning("SPT: Error detouring SV_ActivateServer, FinishRestore and SetPause: %d.\n", error);
 		return false;
 	}
 
 	Msg("SourcePauseTool v0.1 was loaded successfully.\n");
 
-	ConVar_Register( 0 );
 	return true;
 }
 
@@ -217,24 +253,24 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::Unload( void )
 {
-	ConVar_Unregister( );
-
-	Log("SPT: Removing the SV_ActivateServer detour and the SetPause detour...\n");
+	Log("SPT: Removing the SV_ActivateServer detour, the FinishRestore detour and the SetPause detour...\n");
 
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
-	DetourAttach(&(PVOID &)ORIG_SV_ActivateServer, HOOKED_SV_ActivateServer);
+	DetourDetach(&(PVOID &)ORIG_FinishRestore, HOOKED_FinishRestore);
+	DetourDetach(&(PVOID &)ORIG_SV_ActivateServer, HOOKED_SV_ActivateServer);
 	DetourDetach(&(PVOID &)ORIG_SetPause, HOOKED_SetPause);
 	LONG error = DetourTransactionCommit();
 	if (error == NO_ERROR)
 	{
-		Log("SPT: Removed the SV_ActivateServer detour and the SetPause detour successfully.\n");
+		Log("SPT: Removed the SV_ActivateServer detour, the FinishRestore detour and the SetPause detour successfully.\n");
 	}
 	else
 	{
-		Warning("SPT: Error removing the SV_ActivateServer detour and the SetPause detour: %d.\n", error);
+		Warning("SPT: Error removing the SV_ActivateServer detour, the FinishRestore detour and the SetPause detour: %d.\n", error);
 	}
 
+	ConVar_Unregister();
 	DisconnectTier1Libraries( );
 }
 
