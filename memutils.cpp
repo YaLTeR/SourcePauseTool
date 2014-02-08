@@ -6,80 +6,80 @@
 
 namespace MemUtils
 {
-    bool GetModuleInfo(const WCHAR *szModuleName, size_t &moduleBase, size_t &moduleSize)
-    {
-        HANDLE hProcess = GetCurrentProcess();
-        HMODULE hModule = GetModuleHandleW(szModuleName);
+	bool GetModuleInfo(const WCHAR *szModuleName, size_t &moduleBase, size_t &moduleSize)
+	{
+		HANDLE hProcess = GetCurrentProcess();
+		HMODULE hModule = GetModuleHandleW(szModuleName);
 
-        if (!hProcess || !hModule)
-        {
-            return false;
-        }
+		if (!hProcess || !hModule)
+		{
+			return false;
+		}
 
-        MODULEINFO moduleInfo;
-        GetModuleInformation(hProcess, hModule, &moduleInfo, sizeof(moduleInfo));
+		MODULEINFO moduleInfo;
+		GetModuleInformation(hProcess, hModule, &moduleInfo, sizeof(moduleInfo));
 
-        moduleBase = (size_t) moduleInfo.lpBaseOfDll;
-        moduleSize = (size_t) moduleInfo.SizeOfImage;
+		moduleBase = (size_t)moduleInfo.lpBaseOfDll;
+		moduleSize = (size_t)moduleInfo.SizeOfImage;
 
-        return true;
-    }
+		return true;
+	}
 
-    bool GetModuleInfo(HMODULE hModule, size_t &moduleBase, size_t &moduleSize)
-    {
-        HANDLE hProcess = GetCurrentProcess();
+	bool GetModuleInfo(HMODULE hModule, size_t &moduleBase, size_t &moduleSize)
+	{
+		HANDLE hProcess = GetCurrentProcess();
 
-        if (!hProcess || !hModule)
-        {
-            return false;
-        }
+		if (!hProcess || !hModule)
+		{
+			return false;
+		}
 
-        MODULEINFO moduleInfo;
-        GetModuleInformation(hProcess, hModule, &moduleInfo, sizeof(moduleInfo));
+		MODULEINFO moduleInfo;
+		GetModuleInformation(hProcess, hModule, &moduleInfo, sizeof(moduleInfo));
 
-        moduleBase = (size_t) moduleInfo.lpBaseOfDll;
-        moduleSize = (size_t) moduleInfo.SizeOfImage;
+		moduleBase = (size_t)moduleInfo.lpBaseOfDll;
+		moduleSize = (size_t)moduleInfo.SizeOfImage;
 
-        return true;
-    }
+		return true;
+	}
 
-    inline bool DataCompare(const BYTE *pData, const BYTE *pSig, const char *szPattern)
-    {
-        for ( ; *szPattern != NULL; ++pData, ++pSig, ++szPattern)
-        {
-            if (*szPattern == 'x' && *pData != *pSig)
-            {
-                return false;
-            }
-        }
+	inline bool DataCompare(const BYTE *pData, const BYTE *pSig, const char *szPattern)
+	{
+		for (; *szPattern != NULL; ++pData, ++pSig, ++szPattern)
+		{
+			if (*szPattern == 'x' && *pData != *pSig)
+			{
+				return false;
+			}
+		}
 
-        return (*szPattern == NULL);
-    }
+		return (*szPattern == NULL);
+	}
 
-    DWORD FindPattern(DWORD dwStart, DWORD dwLength, BYTE *pSig, const char *szMask)
-    {
-        for (DWORD i = NULL; i < dwLength; i++)
-        {
-            if ( DataCompare( (BYTE *) (dwStart + i), pSig, szMask) )
-            {
-                return (DWORD) (dwStart + i);
-            }
-        }
+	DWORD_PTR FindPattern(size_t dwStart, size_t dwLength, BYTE *pSig, const char *szMask)
+	{
+		for (DWORD i = NULL; i < dwLength; i++)
+		{
+			if (DataCompare((BYTE *)(dwStart + i), pSig, szMask))
+			{
+				return (DWORD)(dwStart + i);
+			}
+		}
 
-        return NULL;
-    }
+		return NULL;
+	}
 
-    void ReplaceBytes(const DWORD dwAddr, const DWORD dwLength, const BYTE *pNewBytes)
-    {
-        DWORD dwOldProtect;
+	void ReplaceBytes(const DWORD_PTR dwAddr, const size_t dwLength, const BYTE *pNewBytes)
+	{
+		DWORD dwOldProtect;
 
-        VirtualProtect((void *) dwAddr, dwLength, PAGE_EXECUTE_READWRITE,&dwOldProtect);
+		VirtualProtect((void *)dwAddr, dwLength, PAGE_EXECUTE_READWRITE, &dwOldProtect);
 
-        for (DWORD i = NULL; i < dwLength; i++)
-        {
-            *(BYTE *) (dwAddr + i) = pNewBytes[i];
-        }
+		for (DWORD i = NULL; i < dwLength; i++)
+		{
+			*(BYTE *)(dwAddr + i) = pNewBytes[i];
+		}
 
-        VirtualProtect((void *) dwAddr, dwLength, dwOldProtect, NULL);
-    }
+		VirtualProtect((void *)dwAddr, dwLength, dwOldProtect, NULL);
+	}
 }

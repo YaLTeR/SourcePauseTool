@@ -15,6 +15,9 @@
 #include "tier2/tier2.h"
 
 #include "memutils.h"
+#include <detours.h>
+
+#pragma comment( lib, "detours.lib" )
 
 // Uncomment this to compile the sample TF2 plugin code, note: most of this is duplicated in serverplugin_tony, but kept here for reference!
 //#define SAMPLE_TF2_PLUGIN
@@ -72,7 +75,49 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, IN
 
 HMODULE hEngineDll;
 size_t dwEngineDllStart, dwEngineDllSize;
-size_t dwSetPause;
+DWORD_PTR dwGameServerPtr;
+bool *pM_bLoadgame;
+bool bShouldPreventNextUnpause = false;
+
+typedef void (__fastcall *SetPause_t) (void *thisptr, int edx, byte paused);
+SetPause_t ORIG_SetPause;
+
+typedef bool(*SV_ActivateServer_t) ();
+SV_ActivateServer_t ORIG_SV_ActivateServer;
+
+void __fastcall HOOKED_SetPause(void *thisptr, int edx, byte paused)
+{
+	Log("SPT: Engine call: SetPause(%d); m_bLoadgame = %d\n", paused, *pM_bLoadgame);
+
+	if (paused == false)
+	{
+		if (bShouldPreventNextUnpause)
+		{
+			Log("SPT: Unpause prevented.\n");
+			bShouldPreventNextUnpause = false;
+			return;
+		}
+	}
+
+	bShouldPreventNextUnpause = false;
+	return ORIG_SetPause(thisptr, edx, paused);
+}
+
+bool HOOKED_SV_ActivateServer()
+{
+	bool result = ORIG_SV_ActivateServer();
+
+	Log("SPT: Engine call: SV_ActivateServer() => %d;\n", result);
+	if (*pM_bLoadgame)
+	{
+		ORIG_SetPause((void *)dwGameServerPtr, 0, true);
+		Log("SPT: Pausing...\n");
+
+		bShouldPreventNextUnpause = true;
+	}
+
+	return result;
+}
 
 //---------------------------------------------------------------------------------
 // Purpose: constructor/destructor
@@ -91,21 +136,75 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	hEngineDll = GetModuleHandleA("engine.dll");
 	if (!MemUtils::GetModuleInfo(hEngineDll, dwEngineDllStart, dwEngineDllSize))
 	{
-		Error("SPT: Could not obtain the engine.dll module info!\n");
+		Warning("SPT: Could not obtain the engine.dll module info!\n");
 		return false;
 	}
 
-	Log("SPT: Obtained the engine.dll module info. Start: %x; Size: %x;\n", dwEngineDllStart, dwEngineDllSize);
+	Log("SPT: Obtained the engine.dll module info. Start: %p; Size: %x;\n", dwEngineDllStart, dwEngineDllSize);
+
+	// m_bLoadgame and dwGameServerPtr (&sv)
+	Log("SPT: Searching for SpawnPlayer (first pattern - 5135)...\n");
+
+	DWORD_PTR dwSpawnPlayer = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, (PBYTE) "\x83\xEC\x14\x80\x3D\x00\x00\x00\x00\x00\x56\x8B\xF1\x74\x00\x6A\x00\xB9\x00\x00\x00\x00\xE8", "xxxxx????xxxxx?xxx????x");
+	if (!dwSpawnPlayer)
+	{
+		Warning("SPT: Could not find SpawnPlayer!\n");
+		return false;
+	}
+
+	Log("SPT: Found SpawnPlayer at %p.\n", dwSpawnPlayer);
+
+	pM_bLoadgame = (bool *)(*(DWORD *)(dwSpawnPlayer + 5));
+	Log("SPT: m_bLoadGame is situated at %p.\n", pM_bLoadgame);
+
+	dwGameServerPtr = (DWORD_PTR)(*(DWORD *)(dwSpawnPlayer + 18));
+	Log("SPT: dwGameServerPtr is %p.\n", dwGameServerPtr);
+
+	// SV_ActivateServer
+	Log("SPT: Searching for SV_ActivateServer (first pattern - 5135)...\n");
+
+	DWORD_PTR dwSV_ActivateServer = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, (PBYTE) "\x83\xEC\x08\x57\x8B\x00\x00\x00\x00\x00\x68\x00\x00\x00\x00\xFF\xD7\x83\xC4\x04\xE8\x00\x00\x00\x00\x8B\x10", "xxxxx?????x????xxxxxx????xx");
+	if (!dwSV_ActivateServer)
+	{
+		Warning("SPT: Could not find SV_ActivateServer!\n");
+		return false;
+	}
+
+	ORIG_SV_ActivateServer = (SV_ActivateServer_t)dwSV_ActivateServer;
+
+	Log("SPT: Found SV_ActivateServer at %p.\n", dwSV_ActivateServer);
+
+	// SetPause
 	Log("SPT: Searching for SetPause (first pattern - 5135)...\n");
 
-	dwSetPause = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, (PBYTE) "\x83\xEC\x14\x56\x8B\xF1\x8B\x06\x8B\x50\x00\xFF\xD2\x84\xC0\x74\x00\x8B\x06\x8B\x50\x00\x8B\xCE\xFF\xD2\x84\xC0\x74", "xxxxxxxxxx?xxxxx?xxxx?xxxxxxx");
+	DWORD_PTR dwSetPause = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, (PBYTE) "\x83\xEC\x14\x56\x8B\xF1\x8B\x06\x8B\x50\x00\xFF\xD2\x84\xC0\x74\x00\x8B\x06\x8B\x50\x00\x8B\xCE\xFF\xD2\x84\xC0\x74", "xxxxxxxxxx?xxxxx?xxxx?xxxxxxx");
 	if (!dwSetPause)
 	{
-		Error("SPT: Could not find SetPause!\n");
+		Warning("SPT: Could not find SetPause!\n");
 		return false;
 	}
 
-	Log("SPT: Found SetPause at %x.\n", dwSetPause);
+	ORIG_SetPause = (SetPause_t)dwSetPause;
+
+	Log("SPT: Found SetPause at %p.\n", dwSetPause);
+
+	// Detours
+	Log("SPT: Detouring SV_ActivateServer and SetPause...\n");
+
+	DetourTransactionBegin();
+	DetourUpdateThread(GetCurrentThread());
+	DetourAttach(&(PVOID &)ORIG_SV_ActivateServer, HOOKED_SV_ActivateServer);
+	DetourAttach(&(PVOID &)ORIG_SetPause, HOOKED_SetPause);
+	LONG error = DetourTransactionCommit();
+	if (error == NO_ERROR)
+	{
+		Log("SPT: Detoured SV_ActivateServer and SetPause.\n");
+	}
+	else
+	{
+		Warning("SPT: Error detouring SV_ActivateServer and SetPause: %d.\n", error);
+		return false;
+	}
 
 	Msg("SourcePauseTool v0.1 was loaded successfully.\n");
 
@@ -119,6 +218,23 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 void CEmptyServerPlugin::Unload( void )
 {
 	ConVar_Unregister( );
+
+	Log("SPT: Removing the SV_ActivateServer detour and the SetPause detour...\n");
+
+	DetourTransactionBegin();
+	DetourUpdateThread(GetCurrentThread());
+	DetourAttach(&(PVOID &)ORIG_SV_ActivateServer, HOOKED_SV_ActivateServer);
+	DetourDetach(&(PVOID &)ORIG_SetPause, HOOKED_SetPause);
+	LONG error = DetourTransactionCommit();
+	if (error == NO_ERROR)
+	{
+		Log("SPT: Removed the SV_ActivateServer detour and the SetPause detour successfully.\n");
+	}
+	else
+	{
+		Warning("SPT: Error removing the SV_ActivateServer detour and the SetPause detour: %d.\n", error);
+	}
+
 	DisconnectTier1Libraries( );
 }
 

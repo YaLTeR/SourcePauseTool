@@ -12,13 +12,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\public\tier0\memoverride.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="spt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Users\YaLTeR\Documents\Visual Studio 2010\Projects\BunnymodXT\DemoPlayerProxy\memutils.cpp">
+    <ClCompile Include="memutils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -99,6 +96,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\Users\YaLTeR\Documents\Visual Studio 2010\Projects\BunnymodXT\DemoPlayerProxy\memutils.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="memutils.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
