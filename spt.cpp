@@ -92,13 +92,13 @@ SV_ActivateServer_t ORIG_SV_ActivateServer;
 
 void __fastcall HOOKED_SetPause(void *thisptr, int edx, byte paused)
 {
-	Log("SPT: Engine call: SetPause(%d); m_bLoadgame = %d\n", paused, *pM_bLoadgame);
+	DevLog("SPT: Engine call: SetPause(%d); m_bLoadgame = %d\n", paused, *pM_bLoadgame);
 
 	if (paused == false)
 	{
 		if (bShouldPreventNextUnpause)
 		{
-			Log("SPT: Unpause prevented.\n");
+			DevLog("SPT: Unpause prevented.\n");
 			bShouldPreventNextUnpause = false;
 			return;
 		}
@@ -112,12 +112,12 @@ bool __cdecl HOOKED_SV_ActivateServer()
 {
 	bool result = ORIG_SV_ActivateServer();
 
-	Log("SPT: Engine call: SV_ActivateServer() => %d;\n", result);
+	DevLog("SPT: Engine call: SV_ActivateServer() => %d;\n", result);
 
 	if ((y_spt_pause.GetInt() == 2) && *pM_bLoadgame)
 	{
 		ORIG_SetPause((void *)dwGameServerPtr, 0, true);
-		Log("SPT: Pausing...\n");
+		DevLog("SPT: Pausing...\n");
 
 		bShouldPreventNextUnpause = true;
 	}
@@ -127,12 +127,12 @@ bool __cdecl HOOKED_SV_ActivateServer()
 
 void __fastcall HOOKED_FinishRestore(void *thisptr, int edx)
 {
-	Log("SPT: Engine call: FinishRestore();\n");
+	DevLog("SPT: Engine call: FinishRestore();\n");
 
 	if (y_spt_pause.GetInt() == 1)
 	{
 		ORIG_SetPause(thisptr, 0, true);
-		Log("SPT: Pausing...\n");
+		DevLog("SPT: Pausing...\n");
 
 		bShouldPreventNextUnpause = true;
 	}
