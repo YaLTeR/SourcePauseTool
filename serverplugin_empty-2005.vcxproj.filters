@@ -18,6 +18,9 @@
     <ClCompile Include="spt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\Users\YaLTeR\Documents\Visual Studio 2010\Projects\BunnymodXT\DemoPlayerProxy\memutils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">
@@ -92,6 +95,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\public\vstdlib\vstdlib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\YaLTeR\Documents\Visual Studio 2010\Projects\BunnymodXT\DemoPlayerProxy\memutils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

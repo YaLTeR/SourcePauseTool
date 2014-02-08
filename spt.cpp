@@ -14,6 +14,8 @@
 #include "convar.h"
 #include "tier2/tier2.h"
 
+#include "memutils.h"
+
 // Uncomment this to compile the sample TF2 plugin code, note: most of this is duplicated in serverplugin_tony, but kept here for reference!
 //#define SAMPLE_TF2_PLUGIN
 // memdbgon must be the last include file in a .cpp file!!!
@@ -68,6 +70,10 @@ public:
 CEmptyServerPlugin g_EmtpyServerPlugin;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, g_EmtpyServerPlugin );
 
+HMODULE hEngineDll;
+size_t dwEngineDllStart, dwEngineDllSize;
+size_t dwSetPause;
+
 //---------------------------------------------------------------------------------
 // Purpose: constructor/destructor
 //---------------------------------------------------------------------------------
@@ -82,13 +88,24 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 {
 	ConnectTier1Libraries( &interfaceFactory, 1 );
 
-	engine = (IVEngineServer*)interfaceFactory(INTERFACEVERSION_VENGINESERVER, NULL);
-
-	// get the interfaces we want to use
-	if( !engine )
+	hEngineDll = GetModuleHandleA("engine.dll");
+	if (!MemUtils::GetModuleInfo(hEngineDll, dwEngineDllStart, dwEngineDllSize))
 	{
-		return false; // we require all these interface to function
+		Error("SPT: Could not obtain the engine.dll module info!\n");
+		return false;
 	}
+
+	Log("SPT: Obtained the engine.dll module info. Start: %x; Size: %x;\n", dwEngineDllStart, dwEngineDllSize);
+	Log("SPT: Searching for SetPause (first pattern - 5135)...\n");
+
+	dwSetPause = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, (PBYTE) "\x83\xEC\x14\x56\x8B\xF1\x8B\x06\x8B\x50\x00\xFF\xD2\x84\xC0\x74\x00\x8B\x06\x8B\x50\x00\x8B\xCE\xFF\xD2\x84\xC0\x74", "xxxxxxxxxx?xxxxx?xxxx?xxxxxxx");
+	if (!dwSetPause)
+	{
+		Error("SPT: Could not find SetPause!\n");
+		return false;
+	}
+
+	Log("SPT: Found SetPause at %x.\n", dwSetPause);
 
 	Msg("SourcePauseTool v0.1 was loaded successfully.\n");
 
