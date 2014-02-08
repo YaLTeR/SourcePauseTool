@@ -15,7 +15,7 @@
     <ClCompile Include="..\..\public\tier0\memoverride.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="serverplugin_empty.cpp">
+    <ClCompile Include="spt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
