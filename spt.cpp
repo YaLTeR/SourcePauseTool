@@ -1,11 +1,3 @@
-//===== Copyright © 1996-2008, Valve Corporation, All rights reserved. ======//
-//
-// Purpose: 
-//
-// $NoKeywords: $
-//
-//===========================================================================//
-
 #include <stdio.h>
 
 #include "interface.h"
