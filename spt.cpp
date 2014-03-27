@@ -65,7 +65,7 @@ public:
 CEmptyServerPlugin g_EmtpyServerPlugin;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, g_EmtpyServerPlugin);
 
-ConVar y_spt_pause{ "y_spt_pause", "1", FCVAR_ARCHIVE };
+ConVar y_spt_pause( "y_spt_pause", "1", FCVAR_ARCHIVE );
 
 HMODULE hEngineDll;
 size_t dwEngineDllStart, dwEngineDllSize;
