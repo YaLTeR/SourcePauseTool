@@ -1,8 +1,4 @@
-#include <stdio.h>
-
-#include "interface.h"
 #include "engine/iserverplugin.h"
-#include "eiface.h"
 #include "convar.h"
 #include "tier2/tier2.h"
 
@@ -14,10 +10,7 @@
 // Uncomment this to compile the sample TF2 plugin code, note: most of this is duplicated in serverplugin_tony, but kept here for reference!
 //#define SAMPLE_TF2_PLUGIN
 // memdbgon must be the last include file in a .cpp file!!!
-#include "tier0/memdbgon.h"
-
-// Interfaces from the engine
-IVEngineServer	*engine = NULL; // helper functions (messaging clients, loading content, making entities, running commands, etc)
+#include "tier0/memdbgoff.h" // YaLTeR - switch off the memory debugging.
 
 // useful helper func
 inline bool FStrEq(const char *sz1, const char *sz2)
