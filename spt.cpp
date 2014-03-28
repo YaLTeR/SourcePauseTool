@@ -84,8 +84,10 @@ const BYTE pbSV_ActivateServerPattern1[] = { 0x83, 0xEC, 0x08, 0x57, 0x8B, '?', 
 const char szSV_ActivateServerPattern1Mask[] = "xxxxx?????x????xxxxxx????xx";
 const BYTE pbFinishRestorePattern1[] = { 0x81, 0xEC, 0xA4, 0x06, 0x00, 0x00, 0x33, 0xC0, 0x55, 0x8B, 0xE9, 0x8D, 0x8C, 0x24, '?', '?', '?', '?', 0x89, 0x84, 0x24 };
 const char szFinishRestorePattern1Mask[] = "xxxxxxxxxxxxxx????xxx";
-const BYTE pbSetPausedPattern1[] = { 0x83, 0xEC, 0x14, 0x56, 0x8B, 0xF1, 0x8B, 0x06, 0x8B, 0x50, '?', 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8B, 0x06, 0x8B, 0x50, '?', 0x8B, 0xCE, 0xFF, 0xD2, 0x84, 0xC0, 0x74 };
-const char szSetPausedPattern1Mask[] = "xxxxxxxxxx?xxxxx?xxxx?xxxxxxx";
+const BYTE pbSetPausedPattern1[] = { 0x83, 0xEC, 0x14, 0x56, 0x8B, 0xF1, 0x8B, 0x06, 0x8B, 0x50, '?', 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8B, 0x06, 0x8B, 0x50, '?', 0x8B, 0xCE, 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8A, 0x44, 0x24, 0x1C, 0x8B, 0x16, 0x8B, 0x92, 0x80, 0x00, 0x00, 0x00 };
+const char szSetPausedPattern1Mask[] = "xxxxxxxxxx?xxxxx?xxxx?xxxxxxx?xxxxxxxxxxxx";
+const BYTE pbSetPausedPattern2[] = { 0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x14, 0x56, 0x8B, 0xF1, 0x8B, 0x06, 0x8B, 0x50, '?', 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8B, 0x06, 0x8B, 0x50, '?', 0x8B, 0xCE, 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8A, 0x45, 0x08, 0x8B, 0x16, 0x8B, 0x92, 0x80, 0x00, 0x00, 0x00 };
+const char szSetPausedPattern2Mask[] = "xxxxxxxxxxxxx?xxxxx?xxxx?xxxxxxx?xxxxxxxxxxx";
 
 typedef bool(__cdecl *SV_ActivateServer_t) ();
 SV_ActivateServer_t ORIG_SV_ActivateServer;
@@ -308,10 +310,32 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		}
 		else
 		{
-			Warning("SPT: Could not find SetPaused!\n");
-			Warning("SPT: y_spt_pause has no effect.\n");
+			Log("SPT: Searching for SetPaused (second pattern - 5339)...\n");
 
-			hookState.bFoundSetPaused = false;
+			pSetPaused = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, pbSetPausedPattern2, szSetPausedPattern2Mask);
+			if (pSetPaused)
+			{
+				size_t newSize = dwEngineDllSize - (pSetPaused - dwEngineDllStart + 1);
+				if (NULL == MemUtils::FindPattern(pSetPaused + 1, newSize, pbSetPausedPattern2, szSetPausedPattern2Mask))
+				{
+					ORIG_SetPaused = (SetPaused_t)pSetPaused;
+					Log("SPT: Found SetPaused at %p.\n", pSetPaused);
+				}
+				else
+				{
+					Warning("SPT: Bogus SetPaused place. Aborting the search.\n");
+					Warning("SPT: y_spt_pause has no effect.\n");
+
+					hookState.bFoundSetPaused = false;
+				}
+			}
+			else
+			{
+				Warning("SPT: Could not find SetPaused!\n");
+				Warning("SPT: y_spt_pause has no effect.\n");
+
+				hookState.bFoundSetPaused = false;
+			}
 		}
 	}
 	
