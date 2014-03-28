@@ -78,12 +78,21 @@ DWORD_PTR dwGameServerPtr;
 bool *pM_bLoadgame;
 bool bShouldPreventNextUnpause = false;
 
-const BYTE pbSpawnPlayerPattern1[] = { 0x83, 0xEC, 0x14, 0x80, 0x3D, '?', '?', '?', '?', 0x00, 0x56, 0x8B, 0xF1, 0x74, '?', 0x6A, 0x00, 0xB9, '?', '?', '?', '?', 0xE8 };
-const char szSpawnPlayerPattern1Mask[] = "xxxxx????xxxxx?xxx????x";
+// This pattern works well with 5339... until we actually try to hook SpawnPlayer at some point.
+// So I'll extend it as well to only match the 5135-compatible dlls and add another one for 5339 ones.
+const BYTE pbSpawnPlayerPattern1[] = { 0x83, 0xEC, 0x14, 0x80, 0x3D, '?', '?', '?', '?', 0x00, 0x56, 0x8B, 0xF1, 0x74, '?', 0x6A, 0x00, 0xB9, '?', '?', '?', '?', 0xE8, '?', '?', '?', '?', 0xEB, 0x23, 0x8B, 0x0D, '?', '?', '?', '?', 0x8B, 0x01, 0x8B, 0x96, '?', '?', '?', '?', 0x8B, 0x40, 0x0C, 0x52, 0xFF, 0xD0, 0x8B, 0x8E, '?', '?', '?', '?', 0x51, 0xE8, '?', '?', '?', '?', 0x83, 0xC4, 0x04, 0x8B, 0x46, 0x0C, 0x8B, 0x56, 0x04, 0x8B, 0x52, 0x74, 0x83, 0xC0, 0x01 };
+const char szSpawnPlayerPattern1Mask[] = "xxxxx????xxxxx?xxx????x????xxxx????xxxx????xxxxxxxx????xx????xxxxxxxxxxxxxxx";
+const BYTE pbSpawnPlayerPattern2[] = { 0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x14, 0x80, 0x3D, '?', '?', '?', '?', 0x00, 0x56, 0x8B, 0xF1, 0x74, '?', 0x6A, 0x00, 0xB9, '?', '?', '?', '?', 0xE8, '?', '?', '?', '?', 0xEB, 0x23, 0x8B, 0x0D, '?', '?', '?', '?', 0x8B, 0x01, 0x8B, 0x96, '?', '?', '?', '?', 0x8B, 0x40, 0x0C, 0x52, 0xFF, 0xD0, 0x8B, 0x8E, '?', '?', '?', '?', 0x51, 0xE8, '?', '?', '?', '?', 0x83, 0xC4, 0x04, 0x8B, 0x46, 0x0C, 0x8B, 0x56, 0x04, 0x8B, 0x52, 0x74, 0x40 };
+const char szSpawnPlayerPattern2Mask[] = "xxxxxxxx????xxxxx?xxx????x????xxxx????xxxx????xxxxxxxx????xx????xxxxxxxxxxxxx";
+
 const BYTE pbSV_ActivateServerPattern1[] = { 0x83, 0xEC, 0x08, 0x57, 0x8B, '?', '?', '?', '?', '?', 0x68, '?', '?', '?', '?', 0xFF, 0xD7, 0x83, 0xC4, 0x04, 0xE8, '?', '?', '?', '?', 0x8B, 0x10 };
 const char szSV_ActivateServerPattern1Mask[] = "xxxxx?????x????xxxxxx????xx";
-const BYTE pbFinishRestorePattern1[] = { 0x81, 0xEC, 0xA4, 0x06, 0x00, 0x00, 0x33, 0xC0, 0x55, 0x8B, 0xE9, 0x8D, 0x8C, 0x24, '?', '?', '?', '?', 0x89, 0x84, 0x24 };
-const char szFinishRestorePattern1Mask[] = "xxxxxxxxxxxxxx????xxx";
+
+const BYTE pbFinishRestorePattern1[] = { 0x81, 0xEC, 0xA4, 0x06, 0x00, 0x00, 0x33, 0xC0, 0x55, 0x8B, 0xE9, 0x8D, 0x8C, 0x24, 0x20, 0x01, 0x00, 0x00, 0x89, 0x84, 0x24, 0x08, 0x01, 0x00, 0x00 };
+const char szFinishRestorePattern1Mask[] = "xxxxxxxxxxxxxxxxxxxxxxxxx";
+const BYTE pbFinishRestorePattern2[] = { 0x55, 0x8B, 0xEC, 0x81, 0xEC, 0xA4, 0x06, 0x00, 0x00, 0x33, 0xC0, 0x53, 0x8B, 0xD9, 0x8D, 0x8D, 0x74, 0xF9, 0xFF, 0xFF, 0x89, 0x85, 0x5C, 0xF9, 0xFF, 0xFF };
+const char szFinishRestorePattern2Mask[] = "xxxxxxxxxxxxxxxxxxxxxxxxxx";
+
 const BYTE pbSetPausedPattern1[] = { 0x83, 0xEC, 0x14, 0x56, 0x8B, 0xF1, 0x8B, 0x06, 0x8B, 0x50, '?', 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8B, 0x06, 0x8B, 0x50, '?', 0x8B, 0xCE, 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8A, 0x44, 0x24, 0x1C, 0x8B, 0x16, 0x8B, 0x92, 0x80, 0x00, 0x00, 0x00 };
 const char szSetPausedPattern1Mask[] = "xxxxxxxxxx?xxxxx?xxxx?xxxxxxx?xxxxxxxxxxxx";
 const BYTE pbSetPausedPattern2[] = { 0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x14, 0x56, 0x8B, 0xF1, 0x8B, 0x06, 0x8B, 0x50, '?', 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8B, 0x06, 0x8B, 0x50, '?', 0x8B, 0xCE, 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8A, 0x45, 0x08, 0x8B, 0x16, 0x8B, 0x92, 0x80, 0x00, 0x00, 0x00 };
@@ -225,11 +234,39 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		}
 		else
 		{
-			Warning("SPT: Could not find SpawnPlayer!\n");
-			Warning("SPT: y_spt_pause 2 has no effect.\n");
+			Log("SPT: Searching for SpawnPlayer (second pattern - 5339)...\n");
 
-			hookState.bFoundm_bLoadgame = false;
-			hookState.bFoundGameServerPtr = false;
+			pSpawnPlayer = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, pbSpawnPlayerPattern2, szSpawnPlayerPattern2Mask);
+			if (pSpawnPlayer)
+			{
+				size_t newSize = dwEngineDllSize - (pSpawnPlayer - dwEngineDllStart + 1);
+				if (NULL == MemUtils::FindPattern(pSpawnPlayer + 1, newSize, pbSpawnPlayerPattern2, szSpawnPlayerPattern2Mask))
+				{
+					Log("SPT: Found SpawnPlayer at %p.\n", pSpawnPlayer);
+
+					pM_bLoadgame = (bool *)(*(DWORD *)(pSpawnPlayer + 8));
+					Log("SPT: m_bLoadGame is situated at %p.\n", pM_bLoadgame);
+
+					dwGameServerPtr = (DWORD_PTR)(*(DWORD *)(pSpawnPlayer + 21));
+					Log("SPT: dwGameServerPtr is %p.\n", dwGameServerPtr);
+				}
+				else
+				{
+					Warning("SPT: Bogus SpawnPlayer place. Aborting the search.\n");
+					Warning("SPT: y_spt_pause 2 has no effect.\n");
+
+					hookState.bFoundm_bLoadgame = false;
+					hookState.bFoundGameServerPtr = false;
+				}
+			}
+			else
+			{
+				Warning("SPT: Could not find SpawnPlayer!\n");
+				Warning("SPT: y_spt_pause 2 has no effect.\n");
+
+				hookState.bFoundm_bLoadgame = false;
+				hookState.bFoundGameServerPtr = false;
+			}
 		}
 
 		// SV_ActivateServer
@@ -282,10 +319,32 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		}
 		else
 		{
-			Warning("SPT: Could not find FinishRestore!\n");
-			Warning("SPT: y_spt_pause 1 has no effect.\n");
+			Log("SPT: Searching for FinishRestore (second pattern - 5339)...\n");
 
-			hookState.bFoundFinishRestore = false;
+			pFinishRestore = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, pbFinishRestorePattern2, szFinishRestorePattern2Mask);
+			if (pFinishRestore)
+			{
+				size_t newSize = dwEngineDllSize - (pFinishRestore - dwEngineDllStart + 1);
+				if (NULL == MemUtils::FindPattern(pFinishRestore + 1, newSize, pbFinishRestorePattern2, szFinishRestorePattern2Mask))
+				{
+					ORIG_FinishRestore = (FinishRestore_t)pFinishRestore;
+					Log("SPT: Found FinishRestore at %p.\n", pFinishRestore);
+				}
+				else
+				{
+					Warning("SPT: Bogus FinishRestore place. Aborting the search.\n");
+					Warning("SPT: y_spt_pause 1 has no effect.\n");
+
+					hookState.bFoundFinishRestore = false;
+				}
+			}
+			else
+			{
+				Warning("SPT: Could not find FinishRestore!\n");
+				Warning("SPT: y_spt_pause 1 has no effect.\n");
+
+				hookState.bFoundFinishRestore = false;
+			}
 		}
 
 		// SetPaused
