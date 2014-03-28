@@ -14,7 +14,7 @@
 #include "tier0/memdbgoff.h" // YaLTeR - switch off the memory debugging.
 
 #undef max // This thing is defined somewhere in tier0 includes and I don't need it at all.
-#define SPT_VERSION "0.2"
+#define SPT_VERSION "0.3-beta"
 
 const unsigned int uiMax = std::numeric_limits<unsigned int>::max();
 
@@ -65,15 +65,20 @@ CSourcePauseTool g_SourcePauseTool;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CSourcePauseTool, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, g_SourcePauseTool);
 
 ConVar y_spt_pause( "y_spt_pause", "1", FCVAR_ARCHIVE );
+ConVar y_spt_motion_blur_fix( "y_spt_motion_blur_fix", "0" );
 
 struct
 {
+	// engine.dll
 	bool bFoundSV_ActivateServer;
 	bool bFoundFinishRestore;
 	bool bFoundSetPaused;
-
 	bool bFoundm_bLoadgame;
 	bool bFoundGameServerPtr;
+
+	// client.dll
+	bool bFoundDoImageSpaceMotionBlur;
+	bool bFoundgpGlobals;
 } hookState;
 
 HMODULE hEngineDll;
@@ -82,6 +87,11 @@ DWORD_PTR dwGameServerPtr;
 bool *pM_bLoadgame;
 bool bShouldPreventNextUnpause = false;
 
+HMODULE hClientDll;
+size_t dwClientDllStart, dwClientDllSize;
+DWORD_PTR *pgpGlobals;
+
+// engine.dll patterns
 MemUtils::ptnvec ptnsSpawnPlayer =
 {
 	{
@@ -154,15 +164,29 @@ MemUtils::ptnvec ptnsSetPaused =
 	}
 };
 
+// client.dll patterns
+MemUtils::ptnvec ptnsDoImageSpaceMotionBlur =
+{
+	{
+		5135,
+		{ 0xA1, '?', '?', '?', '?', 0x81, 0xEC, 0x8C, 0x00, 0x00, 0x00, 0x83, 0x78, 0x30, 0x00, 0x0F, 0x84, 0xF3, 0x06, 0x00, 0x00, 0x8B, 0x0D, '?', '?', '?', '?', 0x8B, 0x11, 0x8B, 0x82, 0x80, 0x00, 0x00, 0x00, 0xFF, 0xD0 },
+		"x????xxxxxxxxxxxxxxxxxx????xxxxxxxxxx"
+	}
+};
+
+// engine.dll fucntion declarations
 typedef bool(__cdecl *SV_ActivateServer_t) ();
 SV_ActivateServer_t ORIG_SV_ActivateServer;
-
 typedef void(__fastcall *FinishRestore_t) (void *thisptr, int edx);
 FinishRestore_t ORIG_FinishRestore;
-
 typedef void(__fastcall *SetPaused_t) (void *thisptr, int edx, byte paused);
 SetPaused_t ORIG_SetPaused;
 
+// client.dll function declarations
+typedef void( __cdecl *DoImageSpaceMotionBlur_t ) (void *view, int x, int y, int w, int h);
+DoImageSpaceMotionBlur_t ORIG_DoImageSpaceMorionBlur;
+
+// engine.dll functions
 bool __cdecl HOOKED_SV_ActivateServer()
 {
 	bool result = ORIG_SV_ActivateServer();
@@ -223,6 +247,37 @@ void __fastcall HOOKED_SetPaused(void *thisptr, int edx, byte paused)
 	return ORIG_SetPaused(thisptr, edx, paused);
 }
 
+// client.dll functions
+void __cdecl HOOKED_DoImageSpaceMotionBlur( void *view, int x, int y, int w, int h )
+{
+	DWORD_PTR origgpGlobals = *pgpGlobals;
+
+	/*
+		Replace gpGlobals with (gpGlobals + 12). gpGlobals->realtime is the first variable,
+		so it is located at gpGlobals. (gpGlobals + 12) is gpGlobals->curtime. This
+		function does not use anything apart from gpGlobals->realtime from gpGlobals,
+		so we can do such a replace to make it use gpGlobals->curtime instead without
+		breaking anything else.
+	*/
+	if (hookState.bFoundgpGlobals)
+	{
+		if (y_spt_motion_blur_fix.GetBool())
+		{
+			*pgpGlobals = *pgpGlobals + 12;
+		}
+	}
+	
+	ORIG_DoImageSpaceMorionBlur( view, x, y, w, h );
+
+	if (hookState.bFoundgpGlobals)
+	{
+		if (y_spt_motion_blur_fix.GetBool())
+		{
+			*pgpGlobals = origgpGlobals;
+		}
+	}
+}
+
 //---------------------------------------------------------------------------------
 // Purpose: constructor/destructor
 //---------------------------------------------------------------------------------
@@ -234,6 +289,9 @@ CSourcePauseTool::CSourcePauseTool()
 	hookState.bFoundSetPaused = true;
 	hookState.bFoundm_bLoadgame = true;
 	hookState.bFoundGameServerPtr = true;
+
+	hookState.bFoundDoImageSpaceMotionBlur = true;
+	hookState.bFoundgpGlobals = true;
 }
 
 CSourcePauseTool::~CSourcePauseTool() {};
@@ -245,6 +303,8 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 {
 	ConnectTier1Libraries(&interfaceFactory, 1);
 	ConVar_Register(0);
+
+	unsigned int ptnNumber;
 
 	hEngineDll = GetModuleHandleA("engine.dll");
 	if (!MemUtils::GetModuleInfo(hEngineDll, dwEngineDllStart, dwEngineDllSize))
@@ -266,7 +326,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		Log("SPT: Searching for SpawnPlayer...\n");
 
 		DWORD_PTR pSpawnPlayer = NULL;
-		unsigned int ptnNumber = MemUtils::FindUniqueSequence( dwEngineDllStart, dwEngineDllSize, ptnsSpawnPlayer, &pSpawnPlayer );
+		ptnNumber = MemUtils::FindUniqueSequence( dwEngineDllStart, dwEngineDllSize, ptnsSpawnPlayer, &pSpawnPlayer );
 		if (ptnNumber != uiMax)
 		{
 			Log( "SPT: Found SpawnPlayer at %p (using the build %u pattern).\n", pSpawnPlayer, ptnsSpawnPlayer[ptnNumber].build );
@@ -355,11 +415,45 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 			hookState.bFoundSetPaused = false;
 		}
 	}
+
+	hClientDll = GetModuleHandleA( "client.dll" );
+	if (!MemUtils::GetModuleInfo( hClientDll, dwClientDllStart, dwClientDllSize ))
+	{
+		Warning( "SPT: Could not obtain the client.dll module info!\n" );
+		Warning( "SPT: y_spt_motion_blur_fix has no effect.\n" );
+
+		hookState.bFoundDoImageSpaceMotionBlur = false;
+		hookState.bFoundgpGlobals = false;
+	}
+	else
+	{
+		Log( "SPT: Obtained the client.dll module info. Start: %p; Size: %x;\n", dwClientDllStart, dwClientDllSize );
+
+		DWORD_PTR pDoImageSpaceMotionBlur = NULL;
+		ptnNumber = MemUtils::FindUniqueSequence( dwClientDllStart, dwClientDllSize, ptnsDoImageSpaceMotionBlur, &pDoImageSpaceMotionBlur );
+		if (ptnNumber != uiMax)
+		{
+			ORIG_DoImageSpaceMorionBlur = (DoImageSpaceMotionBlur_t)pDoImageSpaceMotionBlur;
+			Log( "SPT: Found DoImageSpaceMotionBlur at %p (using the build %u pattern).\n", pDoImageSpaceMotionBlur, ptnsDoImageSpaceMotionBlur[ptnNumber].build );
+
+			pgpGlobals = *(DWORD_PTR **)(pDoImageSpaceMotionBlur + 132);
+			Log( "SPT: gpGlobals is %p.\n", pgpGlobals );
+		}
+		else
+		{
+			Warning( "SPT: Could not find DoImageSpaceMotionBlur!\n" );
+			Warning( "SPT: y_spt_motion_blur_fix has no effect.\n" );
+
+			hookState.bFoundDoImageSpaceMotionBlur = false;
+			hookState.bFoundgpGlobals = false;
+		}
+	}
 	
 	// Detours
 	if (hookState.bFoundSV_ActivateServer
 		|| hookState.bFoundFinishRestore
-		|| hookState.bFoundSetPaused)
+		|| hookState.bFoundSetPaused
+		|| hookState.bFoundDoImageSpaceMotionBlur)
 	{
 		DetourTransactionBegin();
 		DetourUpdateThread(GetCurrentThread());
@@ -372,6 +466,9 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 
 		if (hookState.bFoundSetPaused)
 			DetourAttach(&(PVOID &)ORIG_SetPaused, HOOKED_SetPaused);
+
+		if (hookState.bFoundDoImageSpaceMotionBlur)
+			DetourAttach( &(PVOID &)ORIG_DoImageSpaceMorionBlur, HOOKED_DoImageSpaceMotionBlur );
 
 		LONG error = DetourTransactionCommit();
 		if (error == NO_ERROR)
@@ -397,7 +494,8 @@ void CSourcePauseTool::Unload( void )
 {
 	if (hookState.bFoundSV_ActivateServer
 		|| hookState.bFoundFinishRestore
-		|| hookState.bFoundSetPaused)
+		|| hookState.bFoundSetPaused
+		|| hookState.bFoundDoImageSpaceMotionBlur)
 	{
 		DetourTransactionBegin();
 		DetourUpdateThread(GetCurrentThread());
@@ -410,6 +508,9 @@ void CSourcePauseTool::Unload( void )
 
 		if (hookState.bFoundSetPaused)
 			DetourDetach(&(PVOID &)ORIG_SetPaused, HOOKED_SetPaused);
+
+		if (hookState.bFoundDoImageSpaceMotionBlur)
+			DetourDetach( &(PVOID &)ORIG_DoImageSpaceMorionBlur, HOOKED_DoImageSpaceMotionBlur );
 
 		LONG error = DetourTransactionCommit();
 		if (error == NO_ERROR)
