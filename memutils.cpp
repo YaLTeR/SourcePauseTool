@@ -56,7 +56,7 @@ namespace MemUtils
 		return (*szPattern == NULL);
 	}
 
-	DWORD_PTR FindPattern(size_t dwStart, size_t dwLength, BYTE *pSig, const char *szMask)
+	DWORD_PTR FindPattern(size_t dwStart, size_t dwLength, const BYTE *pSig, const char *szMask)
 	{
 		for (DWORD i = NULL; i < dwLength; i++)
 		{

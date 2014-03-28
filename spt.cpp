@@ -64,9 +64,9 @@ ConVar y_spt_pause( "y_spt_pause", "1", FCVAR_ARCHIVE );
 
 struct
 {
-	bool bHookedSV_ActivateServer;
-	bool bHookedFinishRestore;
-	bool bHookedSetPause;
+	bool bFoundSV_ActivateServer;
+	bool bFoundFinishRestore;
+	bool bFoundSetPause;
 
 	bool bFoundm_bLoadgame;
 	bool bFoundGameServerPtr;
@@ -77,6 +77,15 @@ size_t dwEngineDllStart, dwEngineDllSize;
 DWORD_PTR dwGameServerPtr;
 bool *pM_bLoadgame;
 bool bShouldPreventNextUnpause = false;
+
+const BYTE pbSpawnPlayerPattern1[] = { 0x83, 0xEC, 0x14, 0x80, 0x3D, '?', '?', '?', '?', 0x00, 0x56, 0x8B, 0xF1, 0x74, '?', 0x6A, 0x00, 0xB9, '?', '?', '?', '?', 0xE8 };
+const char szSpawnPlayerPattern1Mask[] = "xxxxx????xxxxx?xxx????x";
+const BYTE pbSV_ActivateServerPattern1[] = { 0x83, 0xEC, 0x08, 0x57, 0x8B, '?', '?', '?', '?', '?', 0x68, '?', '?', '?', '?', 0xFF, 0xD7, 0x83, 0xC4, 0x04, 0xE8, '?', '?', '?', '?', 0x8B, 0x10 };
+const char szSV_ActivateServerPattern1Mask[] = "xxxxx?????x????xxxxxx????xx";
+const BYTE pbFinishRestorePattern1[] = { 0x81, 0xEC, 0xA4, 0x06, 0x00, 0x00, 0x33, 0xC0, 0x55, 0x8B, 0xE9, 0x8D, 0x8C, 0x24, '?', '?', '?', '?', 0x89, 0x84, 0x24 };
+const char szFinishRestorePattern1Mask[] = "xxxxxxxxxxxxxx????xxx";
+const BYTE pbSetPausePattern1[] = { 0x83, 0xEC, 0x14, 0x56, 0x8B, 0xF1, 0x8B, 0x06, 0x8B, 0x50, '?', 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8B, 0x06, 0x8B, 0x50, '?', 0x8B, 0xCE, 0xFF, 0xD2, 0x84, 0xC0, 0x74 };
+const char szSetPausePattern1Mask[] = "xxxxxxxxxx?xxxxx?xxxx?xxxxxxx";
 
 typedef bool(__cdecl *SV_ActivateServer_t) ();
 SV_ActivateServer_t ORIG_SV_ActivateServer;
@@ -93,7 +102,7 @@ bool __cdecl HOOKED_SV_ActivateServer()
 
 	DevLog("SPT: Engine call: SV_ActivateServer() => %d;\n", result);
 
-	if (hookState.bHookedSetPause && hookState.bFoundm_bLoadgame && hookState.bFoundGameServerPtr)
+	if (hookState.bFoundSetPause && hookState.bFoundm_bLoadgame && hookState.bFoundGameServerPtr)
 	{
 		if ((y_spt_pause.GetInt() == 2) && *pM_bLoadgame)
 		{
@@ -111,7 +120,7 @@ void __fastcall HOOKED_FinishRestore(void *thisptr, int edx)
 {
 	DevLog("SPT: Engine call: FinishRestore();\n");
 
-	if (hookState.bHookedSetPause && (y_spt_pause.GetInt() == 1))
+	if (hookState.bFoundSetPause && (y_spt_pause.GetInt() == 1))
 	{
 		ORIG_SetPause(thisptr, 0, true);
 		DevLog("SPT: Pausing...\n");
@@ -146,9 +155,9 @@ void __fastcall HOOKED_SetPause(void *thisptr, int edx, byte paused)
 CSourcePauseTool::CSourcePauseTool()
 {
 	// Everything is true by default, set to false on fail.
-	hookState.bHookedSV_ActivateServer = true;
-	hookState.bHookedFinishRestore = true;
-	hookState.bHookedSetPause = true;
+	hookState.bFoundSV_ActivateServer = true;
+	hookState.bFoundFinishRestore = true;
+	hookState.bFoundSetPause = true;
 	hookState.bFoundm_bLoadgame = true;
 	hookState.bFoundGameServerPtr = true;
 }
@@ -175,16 +184,26 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	// m_bLoadgame and dwGameServerPtr (&sv)
 	Log("SPT: Searching for SpawnPlayer (first pattern - 5135)...\n");
 
-	DWORD_PTR pSpawnPlayer = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, (PBYTE) "\x83\xEC\x14\x80\x3D\x00\x00\x00\x00\x00\x56\x8B\xF1\x74\x00\x6A\x00\xB9\x00\x00\x00\x00\xE8", "xxxxx????xxxxx?xxx????x");
+	DWORD_PTR pSpawnPlayer = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, pbSpawnPlayerPattern1, szSpawnPlayerPattern1Mask);
 	if (pSpawnPlayer)
 	{
-		Log("SPT: Found SpawnPlayer at %p.\n", pSpawnPlayer);
+		size_t newSize = dwEngineDllSize - (pSpawnPlayer - dwEngineDllStart + 1);
+		if (NULL == MemUtils::FindPattern(pSpawnPlayer + 1, newSize, pbSpawnPlayerPattern1, szSpawnPlayerPattern1Mask))
+		{
+			Log("SPT: Found SpawnPlayer at %p.\n", pSpawnPlayer);
 
-		pM_bLoadgame = (bool *)(*(DWORD *)(pSpawnPlayer + 5));
-		Log("SPT: m_bLoadGame is situated at %p.\n", pM_bLoadgame);
+			pM_bLoadgame = (bool *)(*(DWORD *)(pSpawnPlayer + 5));
+			Log("SPT: m_bLoadGame is situated at %p.\n", pM_bLoadgame);
 
-		dwGameServerPtr = (DWORD_PTR)(*(DWORD *)(pSpawnPlayer + 18));
-		Log("SPT: dwGameServerPtr is %p.\n", dwGameServerPtr);
+			dwGameServerPtr = (DWORD_PTR)(*(DWORD *)(pSpawnPlayer + 18));
+			Log("SPT: dwGameServerPtr is %p.\n", dwGameServerPtr);
+		}
+		else
+		{
+			Warning("SPT: Bogus SpawnPlayer place. Aborting the search.\n");
+			hookState.bFoundm_bLoadgame = false;
+			hookState.bFoundGameServerPtr = false;
+		}
 	}
 	else
 	{
@@ -196,59 +215,86 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	// SV_ActivateServer
 	Log("SPT: Searching for SV_ActivateServer (first pattern - 5135)...\n");
 
-	DWORD_PTR pSV_ActivateServer = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, (PBYTE) "\x83\xEC\x08\x57\x8B\x00\x00\x00\x00\x00\x68\x00\x00\x00\x00\xFF\xD7\x83\xC4\x04\xE8\x00\x00\x00\x00\x8B\x10", "xxxxx?????x????xxxxxx????xx");
+	DWORD_PTR pSV_ActivateServer = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, pbSV_ActivateServerPattern1, szSV_ActivateServerPattern1Mask);
 	if (pSV_ActivateServer)
 	{
-		ORIG_SV_ActivateServer = (SV_ActivateServer_t)pSV_ActivateServer;
-		Log("SPT: Found SV_ActivateServer at %p.\n", pSV_ActivateServer);
+		size_t newSize = dwEngineDllSize - (pSV_ActivateServer - dwEngineDllStart + 1);
+		if (NULL == MemUtils::FindPattern(pSV_ActivateServer + 1, newSize, pbSV_ActivateServerPattern1, szSV_ActivateServerPattern1Mask))
+		{
+			ORIG_SV_ActivateServer = (SV_ActivateServer_t)pSV_ActivateServer;
+			Log("SPT: Found SV_ActivateServer at %p.\n", pSV_ActivateServer);
+		}
+		else
+		{
+			Warning("SPT: Bogus SV_ActivateServer place. Aborting the search.\n");
+			hookState.bFoundSV_ActivateServer = false;
+		}
 	}
 	else
 	{
 		Warning("SPT: Could not find SV_ActivateServer!\n");
-		hookState.bHookedSV_ActivateServer = false;
+		hookState.bFoundSV_ActivateServer = false;
 	}
 	
 	// FinishRestore
 	Log("SPT: Searching for FinishRestore (first pattern - 5135)...\n");
 
-	DWORD_PTR pFinishRestore = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, (PBYTE) "\x81\xEC\xA4\x06\x00\x00\x33\xC0\x55\x8B\xE9\x8D\x8C\x24\x00\x00\x00\x00\x89\x84\x24", "xxxxxxxxxxxxxx????xxx");
+	DWORD_PTR pFinishRestore = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, pbFinishRestorePattern1, szFinishRestorePattern1Mask);
 	if (pFinishRestore)
 	{
-		ORIG_FinishRestore = (FinishRestore_t)pFinishRestore;
-		Log("SPT: Found FinishRestore at %p.\n", pFinishRestore);
+		size_t newSize = dwEngineDllSize - (pFinishRestore - dwEngineDllStart + 1);
+		if (NULL == MemUtils::FindPattern(pFinishRestore + 1, newSize, pbFinishRestorePattern1, szFinishRestorePattern1Mask))
+		{
+			ORIG_FinishRestore = (FinishRestore_t)pFinishRestore;
+			Log("SPT: Found FinishRestore at %p.\n", pFinishRestore);
+		}
+		else
+		{
+			Warning("SPT: Bogus FinishRestore place. Aborting the search.\n");
+			hookState.bFoundFinishRestore = false;
+		}
 	}
 	else
 	{
 		Warning("SPT: Could not find FinishRestore!\n");
-		hookState.bHookedFinishRestore = false;
+		hookState.bFoundFinishRestore = false;
 	}
 
 	// SetPause
 	Log("SPT: Searching for SetPause (first pattern - 5135)...\n");
 
-	DWORD_PTR pSetPause = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, (PBYTE) "\x83\xEC\x14\x56\x8B\xF1\x8B\x06\x8B\x50\x00\xFF\xD2\x84\xC0\x74\x00\x8B\x06\x8B\x50\x00\x8B\xCE\xFF\xD2\x84\xC0\x74", "xxxxxxxxxx?xxxxx?xxxx?xxxxxxx");
+	DWORD_PTR pSetPause = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, pbSetPausePattern1, szSetPausePattern1Mask);
 	if (pSetPause)
 	{
-		ORIG_SetPause = (SetPause_t)pSetPause;
-		Log("SPT: Found SetPause at %p.\n", pSetPause);
+		size_t newSize = dwEngineDllSize - (pSetPause - dwEngineDllStart + 1);
+		if (NULL == MemUtils::FindPattern(pSetPause + 1, newSize, pbSetPausePattern1, szSetPausePattern1Mask))
+		{
+			ORIG_SetPause = (SetPause_t)pSetPause;
+			Log("SPT: Found SetPause at %p.\n", pSetPause);
+		}
+		else
+		{
+			Warning("SPT: Bogus SetPause place. Aborting the search.\n");
+			hookState.bFoundSetPause = false;
+		}
 	}
 	else
 	{
 		Warning("SPT: Could not find SetPause!\n");
-		hookState.bHookedSetPause = false;
+		hookState.bFoundSetPause = false;
 	}
 	
 	// Detours
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
 
-	if (hookState.bHookedSV_ActivateServer)
+	if (hookState.bFoundSV_ActivateServer)
 		DetourAttach(&(PVOID &)ORIG_SV_ActivateServer, HOOKED_SV_ActivateServer);
 
-	if (hookState.bHookedFinishRestore)
+	if (hookState.bFoundFinishRestore)
 		DetourAttach(&(PVOID &)ORIG_FinishRestore, HOOKED_FinishRestore);
 
-	if (hookState.bHookedSetPause)
+	if (hookState.bFoundSetPause)
 		DetourAttach(&(PVOID &)ORIG_SetPause, HOOKED_SetPause);
 
 	LONG error = DetourTransactionCommit();
@@ -277,13 +323,13 @@ void CSourcePauseTool::Unload( void )
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
 
-	if (hookState.bHookedSV_ActivateServer)
+	if (hookState.bFoundSV_ActivateServer)
 		DetourDetach(&(PVOID &)ORIG_SV_ActivateServer, HOOKED_SV_ActivateServer);
 
-	if (hookState.bHookedFinishRestore)
+	if (hookState.bFoundFinishRestore)
 		DetourDetach(&(PVOID &)ORIG_FinishRestore, HOOKED_FinishRestore);
 
-	if (hookState.bHookedSetPause)
+	if (hookState.bFoundSetPause)
 		DetourDetach(&(PVOID &)ORIG_SetPause, HOOKED_SetPause);
 
 	LONG error = DetourTransactionCommit();
