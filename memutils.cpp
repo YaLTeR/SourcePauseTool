@@ -1,6 +1,6 @@
-#include <Windows.h>
-#include <Psapi.h>
 #include "memutils.h"
+#include <limits>
+#include <Psapi.h>
 
 #pragma comment( lib, "psapi.lib" )
 
@@ -67,6 +67,43 @@ namespace MemUtils
 		}
 
 		return NULL;
+	}
+
+	unsigned int FindUniqueSequence( size_t dwStart, size_t dwLength, ptnvec patterns, DWORD_PTR *pdwAddress )
+	{
+		for (unsigned int i = 0; i < patterns.size(); i++)
+		{
+			DWORD_PTR address = FindPattern( dwStart, dwLength, patterns[i].pattern.data(), patterns[i].mask.c_str() );
+			if (address)
+			{
+				size_t newSize = dwLength - (address - dwStart + 1);
+				if (NULL == FindPattern( address + 1, newSize, patterns[i].pattern.data(), patterns[i].mask.c_str() ))
+				{
+					if (pdwAddress)
+					{
+						*pdwAddress = address;
+					}
+
+					return i; // Return the number of the pattern.
+				}
+				else
+				{
+					if (pdwAddress)
+					{
+						*pdwAddress = NULL;
+					}
+
+					return std::numeric_limits<unsigned int>::max(); // Bogus sequence.
+				}
+			}
+		}
+
+		if (pdwAddress)
+		{
+			*pdwAddress = NULL;
+		}
+
+		return std::numeric_limits<unsigned int>::max(); // Didn't find anything.
 	}
 
 	void ReplaceBytes(const DWORD_PTR dwAddr, const size_t dwLength, const BYTE *pNewBytes)

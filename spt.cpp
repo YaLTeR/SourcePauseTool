@@ -1,18 +1,22 @@
-#include "engine/iserverplugin.h"
-#include "convar.h"
-#include "tier2/tier2.h"
+#include <limits>
+#include <string>
+#include <vector>
 
 #include "memutils.h"
 #include <detours.h>
 
+#include "engine/iserverplugin.h"
+#include "convar.h"
+#include "tier2/tier2.h"
+
 #pragma comment( lib, "detours.lib" )
 
-// Uncomment this to compile the sample TF2 plugin code, note: most of this is duplicated in serverplugin_tony, but kept here for reference!
-//#define SAMPLE_TF2_PLUGIN
-// memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgoff.h" // YaLTeR - switch off the memory debugging.
 
+#undef max // This thing is defined somewhere in tier0 includes and I don't need it at all.
 #define SPT_VERSION "0.2"
+
+const unsigned int uiMax = std::numeric_limits<unsigned int>::max();
 
 // useful helper func
 inline bool FStrEq(const char *sz1, const char *sz2)
@@ -78,27 +82,65 @@ DWORD_PTR dwGameServerPtr;
 bool *pM_bLoadgame;
 bool bShouldPreventNextUnpause = false;
 
-// This pattern works well with 5339... until we actually try to hook SpawnPlayer at some point.
-// So I'll extend it as well to only match the 5135-compatible dlls and add another one for 5339 ones.
-const BYTE pbSpawnPlayerPattern1[] = { 0x83, 0xEC, 0x14, 0x80, 0x3D, '?', '?', '?', '?', 0x00, 0x56, 0x8B, 0xF1, 0x74, '?', 0x6A, 0x00, 0xB9, '?', '?', '?', '?', 0xE8, '?', '?', '?', '?', 0xEB, 0x23, 0x8B, 0x0D, '?', '?', '?', '?', 0x8B, 0x01, 0x8B, 0x96, '?', '?', '?', '?', 0x8B, 0x40, 0x0C, 0x52, 0xFF, 0xD0, 0x8B, 0x8E, '?', '?', '?', '?', 0x51, 0xE8, '?', '?', '?', '?', 0x83, 0xC4, 0x04, 0x8B, 0x46, 0x0C, 0x8B, 0x56, 0x04, 0x8B, 0x52, 0x74, 0x83, 0xC0, 0x01 };
-const char szSpawnPlayerPattern1Mask[] = "xxxxx????xxxxx?xxx????x????xxxx????xxxx????xxxxxxxx????xx????xxxxxxxxxxxxxxx";
-const BYTE pbSpawnPlayerPattern2[] = { 0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x14, 0x80, 0x3D, '?', '?', '?', '?', 0x00, 0x56, 0x8B, 0xF1, 0x74, '?', 0x6A, 0x00, 0xB9, '?', '?', '?', '?', 0xE8, '?', '?', '?', '?', 0xEB, 0x23, 0x8B, 0x0D, '?', '?', '?', '?', 0x8B, 0x01, 0x8B, 0x96, '?', '?', '?', '?', 0x8B, 0x40, 0x0C, 0x52, 0xFF, 0xD0, 0x8B, 0x8E, '?', '?', '?', '?', 0x51, 0xE8, '?', '?', '?', '?', 0x83, 0xC4, 0x04, 0x8B, 0x46, 0x0C, 0x8B, 0x56, 0x04, 0x8B, 0x52, 0x74, 0x40 };
-const char szSpawnPlayerPattern2Mask[] = "xxxxxxxx????xxxxx?xxx????x????xxxx????xxxx????xxxxxxxx????xx????xxxxxxxxxxxxx";
+MemUtils::ptnvec ptnsSpawnPlayer =
+{
+	{
+		5135,
+		{ 0x83, 0xEC, 0x14, 0x80, 0x3D, '?', '?', '?', '?', 0x00, 0x56, 0x8B, 0xF1, 0x74, '?', 0x6A, 0x00, 0xB9, '?', '?', '?', '?', 0xE8, '?', '?', '?', '?', 0xEB, 0x23, 0x8B, 0x0D, '?', '?', '?', '?', 0x8B, 0x01, 0x8B, 0x96, '?', '?', '?', '?', 0x8B, 0x40, 0x0C, 0x52, 0xFF, 0xD0, 0x8B, 0x8E, '?', '?', '?', '?', 0x51, 0xE8, '?', '?', '?', '?', 0x83, 0xC4, 0x04, 0x8B, 0x46, 0x0C, 0x8B, 0x56, 0x04, 0x8B, 0x52, 0x74, 0x83, 0xC0, 0x01 },
+		"xxxxx????xxxxx?xxx????x????xxxx????xxxx????xxxxxxxx????xx????xxxxxxxxxxxxxxx"
+	},
 
-const BYTE pbSV_ActivateServerPattern1[] = { 0x83, 0xEC, 0x08, 0x57, 0x8B, 0x3D, '?', '?', '?', '?', 0x68, '?', '?', '?', '?', 0xFF, 0xD7, 0x83, 0xC4, 0x04, 0xE8, '?', '?', '?', '?', 0x8B, 0x10 };
-const char szSV_ActivateServerPattern1Mask[] = "xxxxxx????x????xxxxxx????xx";
-const BYTE pbSV_ActivateServerPattern2[] = { 0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x0C, 0x57, 0x8B, 0x3D, '?', '?', '?', '?', 0x68, '?', '?', '?', '?', 0xFF, 0xD7, 0x83, 0xC4, 0x04, 0xE8, '?', '?', '?', '?', 0x8B, 0x10 };
-const char szSV_ActivateServerPattern2Mask[] = "xxxxxxxxx????x????xxxxxx????xx";
+	{
+		5339,
+		{ 0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x14, 0x80, 0x3D, '?', '?', '?', '?', 0x00, 0x56, 0x8B, 0xF1, 0x74, '?', 0x6A, 0x00, 0xB9, '?', '?', '?', '?', 0xE8, '?', '?', '?', '?', 0xEB, 0x23, 0x8B, 0x0D, '?', '?', '?', '?', 0x8B, 0x01, 0x8B, 0x96, '?', '?', '?', '?', 0x8B, 0x40, 0x0C, 0x52, 0xFF, 0xD0, 0x8B, 0x8E, '?', '?', '?', '?', 0x51, 0xE8, '?', '?', '?', '?', 0x83, 0xC4, 0x04, 0x8B, 0x46, 0x0C, 0x8B, 0x56, 0x04, 0x8B, 0x52, 0x74, 0x40 },
+		"xxxxxxxx????xxxxx?xxx????x????xxxx????xxxx????xxxxxxxx????xx????xxxxxxxxxxxxx"
+	}
+};
 
-const BYTE pbFinishRestorePattern1[] = { 0x81, 0xEC, 0xA4, 0x06, 0x00, 0x00, 0x33, 0xC0, 0x55, 0x8B, 0xE9, 0x8D, 0x8C, 0x24, 0x20, 0x01, 0x00, 0x00, 0x89, 0x84, 0x24, 0x08, 0x01, 0x00, 0x00 };
-const char szFinishRestorePattern1Mask[] = "xxxxxxxxxxxxxxxxxxxxxxxxx";
-const BYTE pbFinishRestorePattern2[] = { 0x55, 0x8B, 0xEC, 0x81, 0xEC, 0xA4, 0x06, 0x00, 0x00, 0x33, 0xC0, 0x53, 0x8B, 0xD9, 0x8D, 0x8D, 0x74, 0xF9, 0xFF, 0xFF, 0x89, 0x85, 0x5C, 0xF9, 0xFF, 0xFF };
-const char szFinishRestorePattern2Mask[] = "xxxxxxxxxxxxxxxxxxxxxxxxxx";
+MemUtils::ptnvec ptnsSV_ActivateServer =
+{
+	{
+		5135,
+		{ 0x83, 0xEC, 0x08, 0x57, 0x8B, 0x3D, '?', '?', '?', '?', 0x68, '?', '?', '?', '?', 0xFF, 0xD7, 0x83, 0xC4, 0x04, 0xE8, '?', '?', '?', '?', 0x8B, 0x10 },
+		"xxxxxx????x????xxxxxx????xx"
+	},
 
-const BYTE pbSetPausedPattern1[] = { 0x83, 0xEC, 0x14, 0x56, 0x8B, 0xF1, 0x8B, 0x06, 0x8B, 0x50, '?', 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8B, 0x06, 0x8B, 0x50, '?', 0x8B, 0xCE, 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8A, 0x44, 0x24, 0x1C, 0x8B, 0x16, 0x8B, 0x92, 0x80, 0x00, 0x00, 0x00 };
-const char szSetPausedPattern1Mask[] = "xxxxxxxxxx?xxxxx?xxxx?xxxxxxx?xxxxxxxxxxxx";
-const BYTE pbSetPausedPattern2[] = { 0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x14, 0x56, 0x8B, 0xF1, 0x8B, 0x06, 0x8B, 0x50, '?', 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8B, 0x06, 0x8B, 0x50, '?', 0x8B, 0xCE, 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8A, 0x45, 0x08, 0x8B, 0x16, 0x8B, 0x92, 0x80, 0x00, 0x00, 0x00 };
-const char szSetPausedPattern2Mask[] = "xxxxxxxxxxxxx?xxxxx?xxxx?xxxxxxx?xxxxxxxxxxx";
+	{
+		5339,
+		{ 0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x0C, 0x57, 0x8B, 0x3D, '?', '?', '?', '?', 0x68, '?', '?', '?', '?', 0xFF, 0xD7, 0x83, 0xC4, 0x04, 0xE8, '?', '?', '?', '?', 0x8B, 0x10 },
+		"xxxxxxxxx????x????xxxxxx????xx"
+	}
+};
+
+MemUtils::ptnvec ptnsFinishRestore =
+{
+	{
+		5135,
+		{ 0x81, 0xEC, 0xA4, 0x06, 0x00, 0x00, 0x33, 0xC0, 0x55, 0x8B, 0xE9, 0x8D, 0x8C, 0x24, 0x20, 0x01, 0x00, 0x00, 0x89, 0x84, 0x24, 0x08, 0x01, 0x00, 0x00 },
+		"xxxxxxxxxxxxxxxxxxxxxxxxx"
+	},
+
+	{
+		5339,
+		{ 0x55, 0x8B, 0xEC, 0x81, 0xEC, 0xA4, 0x06, 0x00, 0x00, 0x33, 0xC0, 0x53, 0x8B, 0xD9, 0x8D, 0x8D, 0x74, 0xF9, 0xFF, 0xFF, 0x89, 0x85, 0x5C, 0xF9, 0xFF, 0xFF },
+		"xxxxxxxxxxxxxxxxxxxxxxxxxx"
+	}
+};
+
+MemUtils::ptnvec ptnsSetPaused =
+{
+	{
+		5135,
+		{ 0x83, 0xEC, 0x14, 0x56, 0x8B, 0xF1, 0x8B, 0x06, 0x8B, 0x50, '?', 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8B, 0x06, 0x8B, 0x50, '?', 0x8B, 0xCE, 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8A, 0x44, 0x24, 0x1C, 0x8B, 0x16, 0x8B, 0x92, 0x80, 0x00, 0x00, 0x00 },
+		"xxxxxxxxxx?xxxxx?xxxx?xxxxxxx?xxxxxxxxxxxx"
+	},
+
+	{
+		5339,
+		{ 0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x14, 0x56, 0x8B, 0xF1, 0x8B, 0x06, 0x8B, 0x50, '?', 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8B, 0x06, 0x8B, 0x50, '?', 0x8B, 0xCE, 0xFF, 0xD2, 0x84, 0xC0, 0x74, '?', 0x8A, 0x45, 0x08, 0x8B, 0x16, 0x8B, 0x92, 0x80, 0x00, 0x00, 0x00 },
+		"xxxxxxxxxxxxx?xxxxx?xxxx?xxxxxxx?xxxxxxxxxxx"
+	}
+};
 
 typedef bool(__cdecl *SV_ActivateServer_t) ();
 SV_ActivateServer_t ORIG_SV_ActivateServer;
@@ -209,216 +251,91 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		Log("SPT: Obtained the engine.dll module info. Start: %p; Size: %x;\n", dwEngineDllStart, dwEngineDllSize);
 
 		// m_bLoadgame and dwGameServerPtr (&sv)
-		Log("SPT: Searching for SpawnPlayer (first pattern - 5135)...\n");
+		Log("SPT: Searching for SpawnPlayer...\n");
 
-		DWORD_PTR pSpawnPlayer = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, pbSpawnPlayerPattern1, szSpawnPlayerPattern1Mask);
-		if (pSpawnPlayer)
+		DWORD_PTR pSpawnPlayer = NULL;
+		unsigned int ptnNumber = MemUtils::FindUniqueSequence( dwEngineDllStart, dwEngineDllSize, ptnsSpawnPlayer, &pSpawnPlayer );
+		if (ptnNumber != uiMax)
 		{
-			size_t newSize = dwEngineDllSize - (pSpawnPlayer - dwEngineDllStart + 1);
-			if (NULL == MemUtils::FindPattern(pSpawnPlayer + 1, newSize, pbSpawnPlayerPattern1, szSpawnPlayerPattern1Mask))
-			{
-				Log("SPT: Found SpawnPlayer at %p.\n", pSpawnPlayer);
+			Log( "SPT: Found SpawnPlayer at %p (using the build %u pattern).\n", pSpawnPlayer, ptnsSpawnPlayer[ptnNumber].build );
 
+			switch (ptnNumber)
+			{
+			case 0:
 				pM_bLoadgame = (bool *)(*(DWORD *)(pSpawnPlayer + 5));
-				Log("SPT: m_bLoadGame is situated at %p.\n", pM_bLoadgame);
-
 				dwGameServerPtr = (DWORD_PTR)(*(DWORD *)(pSpawnPlayer + 18));
-				Log("SPT: dwGameServerPtr is %p.\n", dwGameServerPtr);
-			}
-			else
-			{
-				Warning("SPT: Bogus SpawnPlayer place. Aborting the search.\n");
-				Warning("SPT: y_spt_pause 2 has no effect.\n");
+				break;
 
-				hookState.bFoundm_bLoadgame = false;
-				hookState.bFoundGameServerPtr = false;
+			case 1:
+				pM_bLoadgame = (bool *)(*(DWORD *)(pSpawnPlayer + 8));
+				dwGameServerPtr = (DWORD_PTR)(*(DWORD *)(pSpawnPlayer + 21));
+				break;
 			}
+
+			Log("SPT: m_bLoadGame is situated at %p.\n", pM_bLoadgame);
+			Log("SPT: dwGameServerPtr is %p.\n", dwGameServerPtr);
 		}
 		else
 		{
-			Log("SPT: Searching for SpawnPlayer (second pattern - 5339)...\n");
+			Warning("SPT: Could not find SpawnPlayer!\n");
+			Warning("SPT: y_spt_pause 2 has no effect.\n");
 
-			pSpawnPlayer = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, pbSpawnPlayerPattern2, szSpawnPlayerPattern2Mask);
-			if (pSpawnPlayer)
-			{
-				size_t newSize = dwEngineDllSize - (pSpawnPlayer - dwEngineDllStart + 1);
-				if (NULL == MemUtils::FindPattern(pSpawnPlayer + 1, newSize, pbSpawnPlayerPattern2, szSpawnPlayerPattern2Mask))
-				{
-					Log("SPT: Found SpawnPlayer at %p.\n", pSpawnPlayer);
-
-					pM_bLoadgame = (bool *)(*(DWORD *)(pSpawnPlayer + 8));
-					Log("SPT: m_bLoadGame is situated at %p.\n", pM_bLoadgame);
-
-					dwGameServerPtr = (DWORD_PTR)(*(DWORD *)(pSpawnPlayer + 21));
-					Log("SPT: dwGameServerPtr is %p.\n", dwGameServerPtr);
-				}
-				else
-				{
-					Warning("SPT: Bogus SpawnPlayer place. Aborting the search.\n");
-					Warning("SPT: y_spt_pause 2 has no effect.\n");
-
-					hookState.bFoundm_bLoadgame = false;
-					hookState.bFoundGameServerPtr = false;
-				}
-			}
-			else
-			{
-				Warning("SPT: Could not find SpawnPlayer!\n");
-				Warning("SPT: y_spt_pause 2 has no effect.\n");
-
-				hookState.bFoundm_bLoadgame = false;
-				hookState.bFoundGameServerPtr = false;
-			}
+			hookState.bFoundm_bLoadgame = false;
+			hookState.bFoundGameServerPtr = false;
 		}
 
 		// SV_ActivateServer
-		Log("SPT: Searching for SV_ActivateServer (first pattern - 5135)...\n");
+		Log("SPT: Searching for SV_ActivateServer...\n");
 
-		DWORD_PTR pSV_ActivateServer = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, pbSV_ActivateServerPattern1, szSV_ActivateServerPattern1Mask);
-		if (pSV_ActivateServer)
+		DWORD_PTR pSV_ActivateServer = NULL;
+		ptnNumber = MemUtils::FindUniqueSequence( dwEngineDllStart, dwEngineDllSize, ptnsSV_ActivateServer, &pSV_ActivateServer );
+		if (ptnNumber != uiMax)
 		{
-			size_t newSize = dwEngineDllSize - (pSV_ActivateServer - dwEngineDllStart + 1);
-			if (NULL == MemUtils::FindPattern(pSV_ActivateServer + 1, newSize, pbSV_ActivateServerPattern1, szSV_ActivateServerPattern1Mask))
-			{
-				ORIG_SV_ActivateServer = (SV_ActivateServer_t)pSV_ActivateServer;
-				Log("SPT: Found SV_ActivateServer at %p.\n", pSV_ActivateServer);
-			}
-			else
-			{
-				Warning("SPT: Bogus SV_ActivateServer place. Aborting the search.\n");
-				Warning("SPT: y_spt_pause 2 has no effect.\n");
-
-				hookState.bFoundSV_ActivateServer = false;
-			}
+			ORIG_SV_ActivateServer = (SV_ActivateServer_t)pSV_ActivateServer;
+			Log("SPT: Found SV_ActivateServer at %p (using the build %u pattern).\n", pSV_ActivateServer, ptnsSV_ActivateServer[ptnNumber].build);
 		}
 		else
 		{
-			Log("SPT: Searching for SV_ActivateServer (second pattern - 5339)...\n");
+			Warning("SPT: Could not find SV_ActivateServer!\n");
+			Warning("SPT: y_spt_pause 2 has no effect.\n");
 
-			pSV_ActivateServer = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, pbSV_ActivateServerPattern2, szSV_ActivateServerPattern2Mask);
-			if (pSV_ActivateServer)
-			{
-				size_t newSize = dwEngineDllSize - (pSV_ActivateServer - dwEngineDllStart + 1);
-				if (NULL == MemUtils::FindPattern(pSV_ActivateServer + 1, newSize, pbSV_ActivateServerPattern2, szSV_ActivateServerPattern2Mask))
-				{
-					ORIG_SV_ActivateServer = (SV_ActivateServer_t)pSV_ActivateServer;
-					Log("SPT: Found SV_ActivateServer at %p.\n", pSV_ActivateServer);
-				}
-				else
-				{
-					Warning("SPT: Bogus SV_ActivateServer place. Aborting the search.\n");
-					Warning("SPT: y_spt_pause 2 has no effect.\n");
-
-					hookState.bFoundSV_ActivateServer = false;
-				}
-			}
-			else
-			{
-				Warning("SPT: Could not find SV_ActivateServer!\n");
-				Warning("SPT: y_spt_pause 2 has no effect.\n");
-
-				hookState.bFoundSV_ActivateServer = false;
-			}
+			hookState.bFoundSV_ActivateServer = false;
 		}
 	
 		// FinishRestore
-		Log("SPT: Searching for FinishRestore (first pattern - 5135)...\n");
+		Log("SPT: Searching for FinishRestore...\n");
 
-		DWORD_PTR pFinishRestore = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, pbFinishRestorePattern1, szFinishRestorePattern1Mask);
-		if (pFinishRestore)
+		DWORD_PTR pFinishRestore = NULL;
+		ptnNumber = MemUtils::FindUniqueSequence( dwEngineDllStart, dwEngineDllSize, ptnsFinishRestore, &pFinishRestore );
+		if (ptnNumber != uiMax)
 		{
-			size_t newSize = dwEngineDllSize - (pFinishRestore - dwEngineDllStart + 1);
-			if (NULL == MemUtils::FindPattern(pFinishRestore + 1, newSize, pbFinishRestorePattern1, szFinishRestorePattern1Mask))
-			{
-				ORIG_FinishRestore = (FinishRestore_t)pFinishRestore;
-				Log("SPT: Found FinishRestore at %p.\n", pFinishRestore);
-			}
-			else
-			{
-				Warning("SPT: Bogus FinishRestore place. Aborting the search.\n");
-				Warning("SPT: y_spt_pause 1 has no effect.\n");
-
-				hookState.bFoundFinishRestore = false;
-			}
+			ORIG_FinishRestore = (FinishRestore_t)pFinishRestore;
+			Log("SPT: Found FinishRestore at %p (using the build %u pattern).\n", pFinishRestore, ptnsFinishRestore[ptnNumber].build);
 		}
 		else
 		{
-			Log("SPT: Searching for FinishRestore (second pattern - 5339)...\n");
+			Warning("SPT: Could not find FinishRestore!\n");
+			Warning("SPT: y_spt_pause 1 has no effect.\n");
 
-			pFinishRestore = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, pbFinishRestorePattern2, szFinishRestorePattern2Mask);
-			if (pFinishRestore)
-			{
-				size_t newSize = dwEngineDllSize - (pFinishRestore - dwEngineDllStart + 1);
-				if (NULL == MemUtils::FindPattern(pFinishRestore + 1, newSize, pbFinishRestorePattern2, szFinishRestorePattern2Mask))
-				{
-					ORIG_FinishRestore = (FinishRestore_t)pFinishRestore;
-					Log("SPT: Found FinishRestore at %p.\n", pFinishRestore);
-				}
-				else
-				{
-					Warning("SPT: Bogus FinishRestore place. Aborting the search.\n");
-					Warning("SPT: y_spt_pause 1 has no effect.\n");
-
-					hookState.bFoundFinishRestore = false;
-				}
-			}
-			else
-			{
-				Warning("SPT: Could not find FinishRestore!\n");
-				Warning("SPT: y_spt_pause 1 has no effect.\n");
-
-				hookState.bFoundFinishRestore = false;
-			}
+			hookState.bFoundFinishRestore = false;
 		}
 
 		// SetPaused
-		Log("SPT: Searching for SetPaused (first pattern - 5135)...\n");
+		Log("SPT: Searching for SetPaused...\n");
 
-		DWORD_PTR pSetPaused = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, pbSetPausedPattern1, szSetPausedPattern1Mask);
+		DWORD_PTR pSetPaused = NULL;
+		ptnNumber = MemUtils::FindUniqueSequence( dwEngineDllStart, dwEngineDllSize, ptnsSetPaused, &pSetPaused );
 		if (pSetPaused)
 		{
-			size_t newSize = dwEngineDllSize - (pSetPaused - dwEngineDllStart + 1);
-			if (NULL == MemUtils::FindPattern(pSetPaused + 1, newSize, pbSetPausedPattern1, szSetPausedPattern1Mask))
-			{
-				ORIG_SetPaused = (SetPaused_t)pSetPaused;
-				Log("SPT: Found SetPaused at %p.\n", pSetPaused);
-			}
-			else
-			{
-				Warning("SPT: Bogus SetPaused place. Aborting the search.\n");
-				Warning("SPT: y_spt_pause has no effect.\n");
-
-				hookState.bFoundSetPaused = false;
-			}
+			ORIG_SetPaused = (SetPaused_t)pSetPaused;
+			Log("SPT: Found SetPaused at %p (using the build %u pattern).\n", pSetPaused, ptnsSetPaused[ptnNumber].build);
 		}
 		else
 		{
-			Log("SPT: Searching for SetPaused (second pattern - 5339)...\n");
+			Warning("SPT: Could not find SetPaused!\n");
+			Warning("SPT: y_spt_pause has no effect.\n");
 
-			pSetPaused = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, pbSetPausedPattern2, szSetPausedPattern2Mask);
-			if (pSetPaused)
-			{
-				size_t newSize = dwEngineDllSize - (pSetPaused - dwEngineDllStart + 1);
-				if (NULL == MemUtils::FindPattern(pSetPaused + 1, newSize, pbSetPausedPattern2, szSetPausedPattern2Mask))
-				{
-					ORIG_SetPaused = (SetPaused_t)pSetPaused;
-					Log("SPT: Found SetPaused at %p.\n", pSetPaused);
-				}
-				else
-				{
-					Warning("SPT: Bogus SetPaused place. Aborting the search.\n");
-					Warning("SPT: y_spt_pause has no effect.\n");
-
-					hookState.bFoundSetPaused = false;
-				}
-			}
-			else
-			{
-				Warning("SPT: Could not find SetPaused!\n");
-				Warning("SPT: y_spt_pause has no effect.\n");
-
-				hookState.bFoundSetPaused = false;
-			}
+			hookState.bFoundSetPaused = false;
 		}
 	}
 	
