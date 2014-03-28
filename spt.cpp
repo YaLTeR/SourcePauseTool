@@ -85,8 +85,10 @@ const char szSpawnPlayerPattern1Mask[] = "xxxxx????xxxxx?xxx????x????xxxx????xxx
 const BYTE pbSpawnPlayerPattern2[] = { 0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x14, 0x80, 0x3D, '?', '?', '?', '?', 0x00, 0x56, 0x8B, 0xF1, 0x74, '?', 0x6A, 0x00, 0xB9, '?', '?', '?', '?', 0xE8, '?', '?', '?', '?', 0xEB, 0x23, 0x8B, 0x0D, '?', '?', '?', '?', 0x8B, 0x01, 0x8B, 0x96, '?', '?', '?', '?', 0x8B, 0x40, 0x0C, 0x52, 0xFF, 0xD0, 0x8B, 0x8E, '?', '?', '?', '?', 0x51, 0xE8, '?', '?', '?', '?', 0x83, 0xC4, 0x04, 0x8B, 0x46, 0x0C, 0x8B, 0x56, 0x04, 0x8B, 0x52, 0x74, 0x40 };
 const char szSpawnPlayerPattern2Mask[] = "xxxxxxxx????xxxxx?xxx????x????xxxx????xxxx????xxxxxxxx????xx????xxxxxxxxxxxxx";
 
-const BYTE pbSV_ActivateServerPattern1[] = { 0x83, 0xEC, 0x08, 0x57, 0x8B, '?', '?', '?', '?', '?', 0x68, '?', '?', '?', '?', 0xFF, 0xD7, 0x83, 0xC4, 0x04, 0xE8, '?', '?', '?', '?', 0x8B, 0x10 };
-const char szSV_ActivateServerPattern1Mask[] = "xxxxx?????x????xxxxxx????xx";
+const BYTE pbSV_ActivateServerPattern1[] = { 0x83, 0xEC, 0x08, 0x57, 0x8B, 0x3D, '?', '?', '?', '?', 0x68, '?', '?', '?', '?', 0xFF, 0xD7, 0x83, 0xC4, 0x04, 0xE8, '?', '?', '?', '?', 0x8B, 0x10 };
+const char szSV_ActivateServerPattern1Mask[] = "xxxxxx????x????xxxxxx????xx";
+const BYTE pbSV_ActivateServerPattern2[] = { 0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x0C, 0x57, 0x8B, 0x3D, '?', '?', '?', '?', 0x68, '?', '?', '?', '?', 0xFF, 0xD7, 0x83, 0xC4, 0x04, 0xE8, '?', '?', '?', '?', 0x8B, 0x10 };
+const char szSV_ActivateServerPattern2Mask[] = "xxxxxxxxx????x????xxxxxx????xx";
 
 const BYTE pbFinishRestorePattern1[] = { 0x81, 0xEC, 0xA4, 0x06, 0x00, 0x00, 0x33, 0xC0, 0x55, 0x8B, 0xE9, 0x8D, 0x8C, 0x24, 0x20, 0x01, 0x00, 0x00, 0x89, 0x84, 0x24, 0x08, 0x01, 0x00, 0x00 };
 const char szFinishRestorePattern1Mask[] = "xxxxxxxxxxxxxxxxxxxxxxxxx";
@@ -291,10 +293,32 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		}
 		else
 		{
-			Warning("SPT: Could not find SV_ActivateServer!\n");
-			Warning("SPT: y_spt_pause 2 has no effect.\n");
+			Log("SPT: Searching for SV_ActivateServer (second pattern - 5339)...\n");
 
-			hookState.bFoundSV_ActivateServer = false;
+			pSV_ActivateServer = MemUtils::FindPattern(dwEngineDllStart, dwEngineDllSize, pbSV_ActivateServerPattern2, szSV_ActivateServerPattern2Mask);
+			if (pSV_ActivateServer)
+			{
+				size_t newSize = dwEngineDllSize - (pSV_ActivateServer - dwEngineDllStart + 1);
+				if (NULL == MemUtils::FindPattern(pSV_ActivateServer + 1, newSize, pbSV_ActivateServerPattern2, szSV_ActivateServerPattern2Mask))
+				{
+					ORIG_SV_ActivateServer = (SV_ActivateServer_t)pSV_ActivateServer;
+					Log("SPT: Found SV_ActivateServer at %p.\n", pSV_ActivateServer);
+				}
+				else
+				{
+					Warning("SPT: Bogus SV_ActivateServer place. Aborting the search.\n");
+					Warning("SPT: y_spt_pause 2 has no effect.\n");
+
+					hookState.bFoundSV_ActivateServer = false;
+				}
+			}
+			else
+			{
+				Warning("SPT: Could not find SV_ActivateServer!\n");
+				Warning("SPT: y_spt_pause 2 has no effect.\n");
+
+				hookState.bFoundSV_ActivateServer = false;
+			}
 		}
 	
 		// FinishRestore
