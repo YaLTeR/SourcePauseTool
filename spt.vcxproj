@@ -206,7 +206,6 @@
     <Library Include="..\..\lib\public\vstdlib.lib" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Users\YaLTeR\Documents\Visual Studio 2010\Projects\BunnymodXT\DemoPlayerProxy\memutils.h" />
     <ClInclude Include="..\..\public\tier0\basetypes.h" />
     <ClInclude Include="..\..\public\Color.h" />
     <ClInclude Include="..\..\public\tier0\dbg.h" />
