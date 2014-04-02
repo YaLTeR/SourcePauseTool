@@ -1,0 +1,26 @@
+{
+    "folders":
+    [
+        {
+            "follow_symlinks": true,
+            "path": ".",
+            "folder_exclude_patterns": ["Debug", "Release"],
+            "file_exclude_patterns": [".git*", "*.bat", "*.sublime*", "*.vcxproj*"]
+        }
+    ],
+    "settings":
+    [
+        {
+            "tab_size": 4,
+            "trim_trailing_white_space_on_save": true,
+            "translate_tabs_to_spaces" : true
+        }
+    ],
+    "build_systems":
+    [
+        {
+            "name": "SPT - Release",
+            "cmd": ["build-release.bat"]
+        }
+    ]
+}

@@ -171,6 +171,18 @@ MemUtils::ptnvec ptnsDoImageSpaceMotionBlur =
         5135,
         { 0xA1, '?', '?', '?', '?', 0x81, 0xEC, 0x8C, 0x00, 0x00, 0x00, 0x83, 0x78, 0x30, 0x00, 0x0F, 0x84, 0xF3, 0x06, 0x00, 0x00, 0x8B, 0x0D, '?', '?', '?', '?', 0x8B, 0x11, 0x8B, 0x82, 0x80, 0x00, 0x00, 0x00, 0xFF, 0xD0 },
         "x????xxxxxxxxxxxxxxxxxx????xxxxxxxxxx"
+    },
+
+    {
+        5339,
+        { 0x55, 0x8B, 0xEC, 0xA1, '?', '?', '?', '?', 0x83, 0xEC, 0x7C, 0x83, 0x78, 0x30, 0x00, 0x0F, 0x84, 0x4A, 0x08, 0x00, 0x00, 0x8B, 0x0D, '?', '?', '?', '?', 0x8B, 0x11, 0x8B, 0x82, 0x80, 0x00, 0x00, 0x00, 0xFF, 0xD0 },
+        "xxxx????xxxxxxxxxxxxxxx????xxxxxxxxxx"
+    },
+
+    {
+        4104,
+        { 0xA1, '?', '?', '?', '?', 0x81, 0xEC, 0x8C, 0x00, 0x00, 0x00, 0x83, 0x78, 0x30, 0x00, 0x0F, 0x84, 0xEE, 0x06, 0x00, 0x00, 0x8B, 0x0D, '?', '?', '?', '?', 0x8B, 0x11, 0x8B, 0x42, 0x7C, 0xFF, 0xD0 },
+        "x????xxxxxxxxxxxxxxxxxx????xxxxxxx"
     }
 };
 
@@ -436,8 +448,22 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
             ORIG_DoImageSpaceMorionBlur = (DoImageSpaceMotionBlur_t)pDoImageSpaceMotionBlur;
             Log( "SPT: Found DoImageSpaceMotionBlur at %p (using the build %u pattern).\n", pDoImageSpaceMotionBlur, ptnsDoImageSpaceMotionBlur[ptnNumber].build );
 
-            pgpGlobals = *(DWORD_PTR **)(pDoImageSpaceMotionBlur + 132);
-            Log( "SPT: gpGlobals is %p.\n", pgpGlobals );
+            switch (ptnNumber)
+            {
+            case 0:
+                pgpGlobals = *(DWORD_PTR **)(pDoImageSpaceMotionBlur + 132);
+                break;
+
+            case 1:
+                pgpGlobals = *(DWORD_PTR **)(pDoImageSpaceMotionBlur + 153);
+                break;
+
+            case 2:
+                pgpGlobals = *(DWORD_PTR **)(pDoImageSpaceMotionBlur + 129);
+                break;
+            }
+
+            Log( "SPT: pgpGlobals is %p.\n", pgpGlobals );
         }
         else
         {
