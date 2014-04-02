@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="memutils.cpp" />
+    <ClCompile Include="spt.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="memutils.h" />
+    <ClInclude Include="..\..\public\tier0\basetypes.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\Color.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier0\dbg.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\eiface.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\filesystem.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\vstdlib\ICommandLine.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\igameevents.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier1\interface.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\game\server\iplayerinfo.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\engine\iserverplugin.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier1\KeyValues.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier0\mem.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier0\memalloc.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier0\memdbgon.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\vstdlib\strtools.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier1\utlbuffer.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier1\utlmemory.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier1\utlvector.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\vstdlib\vstdlib.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\..\lib\public\mathlib.lib">
+      <Filter>SDK includes &amp; libs</Filter>
+    </Library>
+    <Library Include="..\..\lib\public\tier0.lib">
+      <Filter>SDK includes &amp; libs</Filter>
+    </Library>
+    <Library Include="..\..\lib\public\tier1.lib">
+      <Filter>SDK includes &amp; libs</Filter>
+    </Library>
+    <Library Include="..\..\lib\public\tier2.lib">
+      <Filter>SDK includes &amp; libs</Filter>
+    </Library>
+    <Library Include="..\..\lib\public\vstdlib.lib">
+      <Filter>SDK includes &amp; libs</Filter>
+    </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="SDK includes &amp; libs">
+      <UniqueIdentifier>{eade2e26-4b70-429d-ac6b-01135e887da7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
