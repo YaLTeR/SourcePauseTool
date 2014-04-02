@@ -15,7 +15,7 @@ namespace MemUtils
 {
     typedef struct
     {
-        unsigned int build;
+        std::string build;
         std::vector<BYTE> pattern;
         std::string mask;
     } pattern_def_t;

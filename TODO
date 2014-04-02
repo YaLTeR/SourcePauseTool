@@ -1,0 +1,11 @@
+ ☐ Hook demo cvar setting so that I can disable demos setting sensitivity. @feature
+ ☐ Add autojump support. @feature
+ ☐ Add an _y_afterframes analogue. @feature
+   --- ✄ -----------------------
+   Stuff that I'll do when I get around to it
+ ☐ Rearrange sources to folders
+ ☐ Add old engine support
+ ☐ Add multiplayer engine support (for the motion blur fix and autojump and whatnot)
+ ✔ Change build to be a string @done (14-04-02 23:02)
+ ☐ Support custom builds of the Source 2007 leak
+ ☐ Implement plugin pause and unpause (maybe there are people who wish to use that)
