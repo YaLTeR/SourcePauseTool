@@ -16,8 +16,6 @@
 #undef max // This thing is defined somewhere in tier0 includes and I don't need it at all.
 #define SPT_VERSION "0.3-beta"
 
-const unsigned int uiMax = std::numeric_limits<unsigned int>::max();
-
 // useful helper func
 inline bool FStrEq(const char *sz1, const char *sz2)
 {
@@ -33,7 +31,7 @@ public:
     ~CSourcePauseTool();
 
     // IServerPluginCallbacks methods
-    virtual bool            Load(   CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory );
+    virtual bool            Load( CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory );
     virtual void            Unload( void );
     virtual void            Pause( void );
     virtual void            UnPause( void );
@@ -191,7 +189,7 @@ typedef bool(__cdecl *SV_ActivateServer_t) ();
 SV_ActivateServer_t ORIG_SV_ActivateServer;
 typedef void(__fastcall *FinishRestore_t) (void *thisptr, int edx);
 FinishRestore_t ORIG_FinishRestore;
-typedef void(__fastcall *SetPaused_t) (void *thisptr, int edx, byte paused);
+typedef void(__fastcall *SetPaused_t) (void *thisptr, int edx, bool paused);
 SetPaused_t ORIG_SetPaused;
 
 // client.dll function declarations
@@ -234,7 +232,7 @@ void __fastcall HOOKED_FinishRestore(void *thisptr, int edx)
     return ORIG_FinishRestore(thisptr, edx);
 }
 
-void __fastcall HOOKED_SetPaused(void *thisptr, int edx, byte paused)
+void __fastcall HOOKED_SetPaused(void *thisptr, int edx, bool paused)
 {
     if (hookState.bFoundm_bLoadgame)
     {
@@ -316,7 +314,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
     ConnectTier1Libraries(&interfaceFactory, 1);
     ConVar_Register(0);
 
-    unsigned int ptnNumber;
+    MemUtils::ptnvec_size ptnNumber;
 
     hEngineDll = GetModuleHandleA("engine.dll");
     if (!MemUtils::GetModuleInfo(hEngineDll, dwEngineDllStart, dwEngineDllSize))
@@ -338,26 +336,26 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
         Log("SPT: Searching for SpawnPlayer...\n");
 
         DWORD_PTR pSpawnPlayer = NULL;
-        ptnNumber = MemUtils::FindUniqueSequence( dwEngineDllStart, dwEngineDllSize, ptnsSpawnPlayer, &pSpawnPlayer );
-        if (ptnNumber != uiMax)
+        ptnNumber = MemUtils::FindUniqueSequence(dwEngineDllStart, dwEngineDllSize, ptnsSpawnPlayer, &pSpawnPlayer);
+        if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
         {
-            Log( "SPT: Found SpawnPlayer at %p (using the build %s pattern).\n", pSpawnPlayer, ptnsSpawnPlayer[ptnNumber].build.c_str() );
+            Log("SPT: Found SpawnPlayer at %p (using the build %s pattern).\n", pSpawnPlayer, ptnsSpawnPlayer[ptnNumber].build.c_str());
 
             switch (ptnNumber)
             {
             case 0:
-                pM_bLoadgame = (bool *)(*(DWORD *)(pSpawnPlayer + 5));
-                dwGameServerPtr = (DWORD_PTR)(*(DWORD *)(pSpawnPlayer + 18));
+                pM_bLoadgame = (bool *)(*(DWORD_PTR *)(pSpawnPlayer + 5));
+                dwGameServerPtr = (*(DWORD_PTR *)(pSpawnPlayer + 18));
                 break;
 
             case 1:
-                pM_bLoadgame = (bool *)(*(DWORD *)(pSpawnPlayer + 8));
-                dwGameServerPtr = (DWORD_PTR)(*(DWORD *)(pSpawnPlayer + 21));
+                pM_bLoadgame = (bool *)(*(DWORD_PTR *)(pSpawnPlayer + 8));
+                dwGameServerPtr = (*(DWORD_PTR *)(pSpawnPlayer + 21));
                 break;
 
             case 2: // 4104 is the same as 5135 here.
-                pM_bLoadgame = (bool *)(*(DWORD *)(pSpawnPlayer + 5));
-                dwGameServerPtr = (DWORD_PTR)(*(DWORD *)(pSpawnPlayer + 18));
+                pM_bLoadgame = (bool *)(*(DWORD_PTR *)(pSpawnPlayer + 5));
+                dwGameServerPtr = (*(DWORD_PTR *)(pSpawnPlayer + 18));
                 break;
             }
 
@@ -377,8 +375,8 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
         Log("SPT: Searching for SV_ActivateServer...\n");
 
         DWORD_PTR pSV_ActivateServer = NULL;
-        ptnNumber = MemUtils::FindUniqueSequence( dwEngineDllStart, dwEngineDllSize, ptnsSV_ActivateServer, &pSV_ActivateServer );
-        if (ptnNumber != uiMax)
+        ptnNumber = MemUtils::FindUniqueSequence(dwEngineDllStart, dwEngineDllSize, ptnsSV_ActivateServer, &pSV_ActivateServer);
+        if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
         {
             ORIG_SV_ActivateServer = (SV_ActivateServer_t)pSV_ActivateServer;
             Log("SPT: Found SV_ActivateServer at %p (using the build %s pattern).\n", pSV_ActivateServer, ptnsSV_ActivateServer[ptnNumber].build.c_str());
@@ -395,8 +393,8 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
         Log("SPT: Searching for FinishRestore...\n");
 
         DWORD_PTR pFinishRestore = NULL;
-        ptnNumber = MemUtils::FindUniqueSequence( dwEngineDllStart, dwEngineDllSize, ptnsFinishRestore, &pFinishRestore );
-        if (ptnNumber != uiMax)
+        ptnNumber = MemUtils::FindUniqueSequence(dwEngineDllStart, dwEngineDllSize, ptnsFinishRestore, &pFinishRestore);
+        if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
         {
             ORIG_FinishRestore = (FinishRestore_t)pFinishRestore;
             Log("SPT: Found FinishRestore at %p (using the build %s pattern).\n", pFinishRestore, ptnsFinishRestore[ptnNumber].build.c_str());
@@ -413,7 +411,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
         Log("SPT: Searching for SetPaused...\n");
 
         DWORD_PTR pSetPaused = NULL;
-        ptnNumber = MemUtils::FindUniqueSequence( dwEngineDllStart, dwEngineDllSize, ptnsSetPaused, &pSetPaused );
+        ptnNumber = MemUtils::FindUniqueSequence(dwEngineDllStart, dwEngineDllSize, ptnsSetPaused, &pSetPaused);
         if (pSetPaused)
         {
             ORIG_SetPaused = (SetPaused_t)pSetPaused;
@@ -431,22 +429,22 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
     hClientDll = GetModuleHandleA( "client.dll" );
     if (!MemUtils::GetModuleInfo( hClientDll, dwClientDllStart, dwClientDllSize ))
     {
-        Warning( "SPT: Could not obtain the client.dll module info!\n" );
-        Warning( "SPT: y_spt_motion_blur_fix has no effect.\n" );
+        Warning("SPT: Could not obtain the client.dll module info!\n");
+        Warning("SPT: y_spt_motion_blur_fix has no effect.\n");
 
         hookState.bFoundDoImageSpaceMotionBlur = false;
         hookState.bFoundgpGlobals = false;
     }
     else
     {
-        Log( "SPT: Obtained the client.dll module info. Start: %p; Size: %x;\n", dwClientDllStart, dwClientDllSize );
+        Log("SPT: Obtained the client.dll module info. Start: %p; Size: %x;\n", dwClientDllStart, dwClientDllSize);
 
         DWORD_PTR pDoImageSpaceMotionBlur = NULL;
-        ptnNumber = MemUtils::FindUniqueSequence( dwClientDllStart, dwClientDllSize, ptnsDoImageSpaceMotionBlur, &pDoImageSpaceMotionBlur );
-        if (ptnNumber != uiMax)
+        ptnNumber = MemUtils::FindUniqueSequence(dwClientDllStart, dwClientDllSize, ptnsDoImageSpaceMotionBlur, &pDoImageSpaceMotionBlur);
+        if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
         {
             ORIG_DoImageSpaceMorionBlur = (DoImageSpaceMotionBlur_t)pDoImageSpaceMotionBlur;
-            Log( "SPT: Found DoImageSpaceMotionBlur at %p (using the build %s pattern).\n", pDoImageSpaceMotionBlur, ptnsDoImageSpaceMotionBlur[ptnNumber].build.c_str() );
+            Log("SPT: Found DoImageSpaceMotionBlur at %p (using the build %s pattern).\n", pDoImageSpaceMotionBlur, ptnsDoImageSpaceMotionBlur[ptnNumber].build.c_str());
 
             switch (ptnNumber)
             {
@@ -463,12 +461,12 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
                 break;
             }
 
-            Log( "SPT: pgpGlobals is %p.\n", pgpGlobals );
+            Log("SPT: pgpGlobals is %p.\n", pgpGlobals);
         }
         else
         {
-            Warning( "SPT: Could not find DoImageSpaceMotionBlur!\n" );
-            Warning( "SPT: y_spt_motion_blur_fix has no effect.\n" );
+            Warning("SPT: Could not find DoImageSpaceMotionBlur!\n");
+            Warning("SPT: y_spt_motion_blur_fix has no effect.\n");
 
             hookState.bFoundDoImageSpaceMotionBlur = false;
             hookState.bFoundgpGlobals = false;

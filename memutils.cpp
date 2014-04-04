@@ -58,26 +58,26 @@ namespace MemUtils
 
     DWORD_PTR FindPattern(size_t dwStart, size_t dwLength, const BYTE *pSig, const char *szMask)
     {
-        for (DWORD i = NULL; i < dwLength; i++)
+        for (DWORD_PTR i = NULL; i < dwLength; i++)
         {
             if (DataCompare((BYTE *)(dwStart + i), pSig, szMask))
             {
-                return (DWORD)(dwStart + i);
+                return (DWORD_PTR)(dwStart + i);
             }
         }
 
         return NULL;
     }
 
-    unsigned int FindUniqueSequence( size_t dwStart, size_t dwLength, ptnvec patterns, DWORD_PTR *pdwAddress )
+    ptnvec::size_type FindUniqueSequence(size_t dwStart, size_t dwLength, const ptnvec &patterns, DWORD_PTR *pdwAddress)
     {
-        for (unsigned int i = 0; i < patterns.size(); i++)
+        for (ptnvec::size_type i = 0; i < patterns.size(); i++)
         {
-            DWORD_PTR address = FindPattern( dwStart, dwLength, patterns[i].pattern.data(), patterns[i].mask.c_str() );
+            DWORD_PTR address = FindPattern(dwStart, dwLength, patterns[i].pattern.data(), patterns[i].mask.c_str());
             if (address)
             {
                 size_t newSize = dwLength - (address - dwStart + 1);
-                if (NULL == FindPattern( address + 1, newSize, patterns[i].pattern.data(), patterns[i].mask.c_str() ))
+                if ( NULL == FindPattern(address + 1, newSize, patterns[i].pattern.data(), patterns[i].mask.c_str()) )
                 {
                     if (pdwAddress)
                     {
@@ -93,7 +93,7 @@ namespace MemUtils
                         *pdwAddress = NULL;
                     }
 
-                    return std::numeric_limits<unsigned int>::max(); // Bogus sequence.
+                    return INVALID_SEQUENCE_INDEX; // Bogus sequence.
                 }
             }
         }
@@ -103,7 +103,7 @@ namespace MemUtils
             *pdwAddress = NULL;
         }
 
-        return std::numeric_limits<unsigned int>::max(); // Didn't find anything.
+        return INVALID_SEQUENCE_INDEX; // Didn't find anything.
     }
 
     void ReplaceBytes(const DWORD_PTR dwAddr, const size_t dwLength, const BYTE *pNewBytes)
@@ -112,7 +112,7 @@ namespace MemUtils
 
         VirtualProtect((void *)dwAddr, dwLength, PAGE_EXECUTE_READWRITE, &dwOldProtect);
 
-        for (DWORD i = NULL; i < dwLength; i++)
+        for (DWORD_PTR i = NULL; i < dwLength; i++)
         {
             *(BYTE *)(dwAddr + i) = pNewBytes[i];
         }
