@@ -30,7 +30,7 @@ namespace MemUtils
     inline bool DataCompare(const BYTE *pData, const BYTE *pSig, const char *szPattern);
     DWORD_PTR FindPattern(size_t dwStart, size_t dwLength, const BYTE *pSig, const char *szMask);
 
-    unsigned int FindUniqueSequence(size_t dwStart, size_t dwLength, const ptnvec &patterns, DWORD_PTR *pdwAddress = NULL);
+    ptnvec_size FindUniqueSequence(size_t dwStart, size_t dwLength, const ptnvec &patterns, DWORD_PTR *pdwAddress = NULL);
 
     void ReplaceBytes(const DWORD_PTR dwAddr, const size_t length, const BYTE *pNewBytes);
 }

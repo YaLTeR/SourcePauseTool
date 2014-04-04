@@ -69,9 +69,9 @@ namespace MemUtils
         return NULL;
     }
 
-    ptnvec::size_type FindUniqueSequence(size_t dwStart, size_t dwLength, const ptnvec &patterns, DWORD_PTR *pdwAddress)
+    ptnvec_size FindUniqueSequence(size_t dwStart, size_t dwLength, const ptnvec &patterns, DWORD_PTR *pdwAddress)
     {
-        for (ptnvec::size_type i = 0; i < patterns.size(); i++)
+        for (ptnvec_size i = 0; i < patterns.size(); i++)
         {
             DWORD_PTR address = FindPattern(dwStart, dwLength, patterns[i].pattern.data(), patterns[i].mask.c_str());
             if (address)
