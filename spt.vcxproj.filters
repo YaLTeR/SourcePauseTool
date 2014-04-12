@@ -3,6 +3,7 @@
   <ItemGroup>
     <ClCompile Include="memutils.cpp" />
     <ClCompile Include="spt.cpp" />
+    <ClCompile Include="hooks.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="memutils.h" />
@@ -63,6 +64,9 @@
     <ClInclude Include="..\..\public\vstdlib\vstdlib.h">
       <Filter>SDK includes &amp; libs</Filter>
     </ClInclude>
+    <ClInclude Include="patterns.h" />
+    <ClInclude Include="hooks.h" />
+    <ClInclude Include="spt.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">

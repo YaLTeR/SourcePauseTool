@@ -1,5 +1,5 @@
-#ifndef __MEMUTILS_H_
-#define __MEMUTILS_H_
+#ifndef __MEMUTILS_H__
+#define __MEMUTILS_H__
 
 #ifdef _WIN32
 #pragma once
@@ -22,6 +22,8 @@ namespace MemUtils
 
     typedef std::vector<pattern_def_t> ptnvec;
     typedef std::vector<pattern_def_t>::size_type ptnvec_size;
+
+#undef max // Just in case
     const ptnvec_size INVALID_SEQUENCE_INDEX = std::numeric_limits<ptnvec_size>::max();
 
     bool GetModuleInfo(const WCHAR *szModuleName, size_t &moduleBase, size_t &moduleSize);
@@ -35,4 +37,4 @@ namespace MemUtils
     void ReplaceBytes(const DWORD_PTR dwAddr, const size_t length, const BYTE *pNewBytes);
 }
 
-#endif
+#endif // __MEMUTILS_H__
