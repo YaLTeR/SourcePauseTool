@@ -25,6 +25,25 @@ namespace MemUtils
         return true;
     }
 
+    bool GetModuleInfo( const WCHAR *szModuleName, HMODULE &moduleHandle, size_t &moduleBase, size_t &moduleSize )
+    {
+        HANDLE hProcess = GetCurrentProcess( );
+        moduleHandle = GetModuleHandleW( szModuleName );
+
+        if (!hProcess || !moduleHandle)
+        {
+            return false;
+        }
+
+        MODULEINFO moduleInfo;
+        GetModuleInformation( hProcess, moduleHandle, &moduleInfo, sizeof(moduleInfo) );
+
+        moduleBase = (size_t)moduleInfo.lpBaseOfDll;
+        moduleSize = (size_t)moduleInfo.SizeOfImage;
+
+        return true;
+    }
+
     bool GetModuleInfo(HMODULE hModule, size_t &moduleBase, size_t &moduleSize)
     {
         HANDLE hProcess = GetCurrentProcess();

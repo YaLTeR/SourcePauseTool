@@ -27,6 +27,7 @@ namespace MemUtils
     const ptnvec_size INVALID_SEQUENCE_INDEX = std::numeric_limits<ptnvec_size>::max();
 
     bool GetModuleInfo(const WCHAR *szModuleName, size_t &moduleBase, size_t &moduleSize);
+    bool GetModuleInfo(const WCHAR *szModuleName, HMODULE &moduleHandle, size_t &moduleBase, size_t &moduleSize);
     bool GetModuleInfo(HMODULE hModule, size_t &moduleBase, size_t &moduleSize);
 
     inline bool DataCompare(const BYTE *pData, const BYTE *pSig, const char *szPattern);

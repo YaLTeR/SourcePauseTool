@@ -43,22 +43,24 @@ public:
     virtual void            OnEdictFreed( const edict_t *edict );
 };
 
+std::string WStringToString( std::wstring wstr );
+
 template <typename... Args>
 void EngineLog( std::string format, Args... args )
 {
-    Log( format.c_str(), args... );
+    Log( ("SPT: " + format).c_str(), args... );
 }
 
 template <typename... Args>
 void EngineDevLog( std::string format, Args... args )
 {
-    DevLog( format.c_str(), args... );
+    DevLog( ("SPT: " + format).c_str( ), args... );
 }
 
 template <typename... Args>
 void EngineWarning( std::string format, Args... args )
 {
-    Warning( format.c_str(), args... );
+    Warning( ("SPT: " + format).c_str( ), args... );
 }
 
 #endif // __SPT_H__

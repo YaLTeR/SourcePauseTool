@@ -12,20 +12,21 @@
 
 namespace Hooks
 {
-    typedef void( *_HookFunc ) ();
+    typedef void( *_HookFunc ) ( std::wstring moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength );
+    typedef void( *_UnHookFunc ) ( std::wstring moduleName );
 
     typedef struct
     {
         _HookFunc Hook;
-        _HookFunc Unhook;
+        _UnHookFunc Unhook;
     } hookFuncList_t;
 
     typedef struct
     {
-        HANDLE hDll;
-        size_t dllStart;
-        size_t dllLength;
-    } dll_info_t;
+        HMODULE hModule;
+        size_t moduleStart;
+        size_t moduleLength;
+    } module_info_t;
 
     // Hooked functions
     namespace Internal
@@ -48,8 +49,9 @@ namespace Hooks
         typedef void( __fastcall *_FinishRestore ) (void *thisptr, int edx);
         typedef void( __fastcall *_SetPaused ) (void *thisptr, int edx, bool paused);
 
-        void Hook();
-        void Unhook();
+        void Hook( std::wstring moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength );
+        void Unhook( std::wstring moduleName );
+        void Clear();
     }
 
     namespace ClientDll
@@ -61,14 +63,15 @@ namespace Hooks
 
         typedef void( __cdecl *_DoImageSpaceMotionBlur ) (void *view, int x, int y, int w, int h);
         
-        void Hook();
-        void Unhook();
+        void Hook( std::wstring moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength );
+        void Unhook( std::wstring moduleName );
+        void Clear();
     }
 
     void Init();
     void Free();
-    void HookModule( std::string moduleName );
-    void UnhookModule( std::string moduleName );
+    void HookModule( std::wstring moduleName );
+    void UnhookModule( std::wstring moduleName );
 }
 
 #endif // __HOOKS_H__
