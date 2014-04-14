@@ -3,10 +3,8 @@
 #include <string>
 #include <vector>
 
-#include "spt.h"
-#include "memutils.h"
-#include "patterns.h"
-#include "hooks.h"
+#include "spt.hpp"
+#include "hooks.hpp"
 
 #include <detours.h>
 

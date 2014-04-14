@@ -72,26 +72,26 @@
     <ClInclude Include="..\..\public\vstdlib\vstdlib.h">
       <Filter>SDK includes &amp; libs</Filter>
     </ClInclude>
-    <ClInclude Include="utf8conv\utf8conv.h">
+    <ClInclude Include="spt\detoursutils.hpp">
+      <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\hooks.hpp">
+      <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\memutils.hpp">
+      <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\patterns.hpp">
+      <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\spt.hpp">
+      <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="utf8conv\utf8conv.hpp">
       <Filter>utf8conv</Filter>
     </ClInclude>
-    <ClInclude Include="utf8conv\utf8conv_inl.h">
+    <ClInclude Include="utf8conv\utf8conv_inl.hpp">
       <Filter>utf8conv</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\detoursutils.h">
-      <Filter>spt</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\hooks.h">
-      <Filter>spt</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\memutils.h">
-      <Filter>spt</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\patterns.h">
-      <Filter>spt</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\spt.h">
-      <Filter>spt</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

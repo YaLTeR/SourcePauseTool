@@ -228,13 +228,13 @@
     <ClInclude Include="..\..\public\tier1\utlmemory.h" />
     <ClInclude Include="..\..\public\tier1\utlvector.h" />
     <ClInclude Include="..\..\public\vstdlib\vstdlib.h" />
-    <ClInclude Include="spt\detoursutils.h" />
-    <ClInclude Include="spt\hooks.h" />
-    <ClInclude Include="spt\patterns.h" />
-    <ClInclude Include="spt\memutils.h" />
-    <ClInclude Include="spt\spt.h" />
-    <ClInclude Include="utf8conv\utf8conv.h" />
-    <ClInclude Include="utf8conv\utf8conv_inl.h" />
+    <ClInclude Include="spt\detoursutils.hpp" />
+    <ClInclude Include="spt\hooks.hpp" />
+    <ClInclude Include="spt\memutils.hpp" />
+    <ClInclude Include="spt\patterns.hpp" />
+    <ClInclude Include="spt\spt.hpp" />
+    <ClInclude Include="utf8conv\utf8conv.hpp" />
+    <ClInclude Include="utf8conv\utf8conv_inl.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

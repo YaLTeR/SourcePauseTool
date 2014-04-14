@@ -8,12 +8,12 @@
 #include <string>
 #include <vector>
 
-#include "memutils.h"
+#include "memutils.hpp"
 
 namespace Hooks
 {
-    typedef void( *_HookFunc ) ( std::wstring moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength );
-    typedef void( *_UnHookFunc ) ( std::wstring moduleName );
+    typedef void( *_HookFunc ) ( std::wstring &moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength );
+    typedef void( *_UnHookFunc ) ( std::wstring &moduleName );
 
     typedef struct
     {
@@ -42,8 +42,8 @@ namespace Hooks
         typedef void( __fastcall *_FinishRestore ) ( void *thisptr, int edx );
         typedef void( __fastcall *_SetPaused ) ( void *thisptr, int edx, bool paused );
 
-        void Hook( std::wstring moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength );
-        void Unhook( std::wstring moduleName );
+        void Hook( std::wstring &moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength );
+        void Unhook( std::wstring &moduleName );
         void Clear();
     }
 
@@ -56,8 +56,8 @@ namespace Hooks
 
         typedef void( __cdecl *_DoImageSpaceMotionBlur ) ( void *view, int x, int y, int w, int h );
         
-        void Hook( std::wstring moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength );
-        void Unhook( std::wstring moduleName );
+        void Hook( std::wstring &moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength );
+        void Unhook( std::wstring &moduleName );
         void Clear();
     }
 

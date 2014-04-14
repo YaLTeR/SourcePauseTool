@@ -155,7 +155,7 @@ std::string UTF8FromUTF16(const wchar_t * utf16);
 
 
 
-#include "utf8conv_inl.h"     // inline implementations
+#include "utf8conv_inl.hpp"     // inline implementations
 
 
 //////////////////////////////////////////////////////////////////////////

@@ -5,12 +5,12 @@
 #include <Windows.h>
 #include <detours.h>
 
-#include "../utf8conv/utf8conv.h"
+#include "../utf8conv/utf8conv.hpp"
 
-#include "detoursutils.h"
-#include "hooks.h"
-#include "patterns.h"
-#include "spt.h"
+#include "detoursutils.hpp"
+#include "hooks.hpp"
+#include "patterns.hpp"
+#include "spt.hpp"
 
 #include "convar.h"
 
@@ -116,7 +116,7 @@ namespace Hooks
             }
         }
 
-        void Hook( std::wstring moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength )
+        void Hook( std::wstring &moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength )
         {
             Clear(); // Just in case.
 
@@ -216,7 +216,7 @@ namespace Hooks
                 &hookState.ORIG_SetPaused, Internal::HOOKED_SetPaused );
         }
 
-        void Unhook( std::wstring moduleName )
+        void Unhook( std::wstring &moduleName )
         {
             DetachDetours( moduleName, 6,
                 &hookState.ORIG_SV_ActivateServer, Internal::HOOKED_SV_ActivateServer,
@@ -285,7 +285,7 @@ namespace Hooks
             }
         }
 
-        void Hook( std::wstring moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength )
+        void Hook( std::wstring &moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength )
         {
             Clear(); // Just in case.
 
@@ -332,7 +332,7 @@ namespace Hooks
                 &hookState.ORIG_DoImageSpaceMorionBlur, Internal::HOOKED_DoImageSpaceMotionBlur );
         }
 
-        void Unhook( std::wstring moduleName )
+        void Unhook( std::wstring &moduleName )
         {
             DetachDetours( moduleName, 2,
                 &hookState.ORIG_DoImageSpaceMorionBlur, Internal::HOOKED_DoImageSpaceMotionBlur );
@@ -422,7 +422,7 @@ namespace Hooks
         hookState.ORIG_LoadLibraryW = LoadLibraryW;
         hookState.ORIG_FreeLibrary = FreeLibrary;
 
-        AttachDetours( L"Win32", 6,
+        AttachDetours( L"WinApi", 6,
             &hookState.ORIG_LoadLibraryA, Internal::HOOKED_LoadLibraryA,
             &hookState.ORIG_LoadLibraryW, Internal::HOOKED_LoadLibraryW,
             &hookState.ORIG_FreeLibrary, Internal::HOOKED_FreeLibrary );
@@ -436,7 +436,7 @@ namespace Hooks
             UnhookModule( it.first );
         }
 
-        DetachDetours( L"Win32", 6,
+        DetachDetours( L"WinApi", 6,
             &hookState.ORIG_LoadLibraryA, Internal::HOOKED_LoadLibraryA,
             &hookState.ORIG_LoadLibraryW, Internal::HOOKED_LoadLibraryW,
             &hookState.ORIG_FreeLibrary, Internal::HOOKED_FreeLibrary );

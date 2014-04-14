@@ -4,9 +4,9 @@
 #include <string>
 
 #include <detours.h>
-#include "detoursutils.h"
-#include "spt.h"
-#include "../utf8conv/utf8conv.h"
+#include "detoursutils.hpp"
+#include "spt.hpp"
+#include "../utf8conv/utf8conv.hpp"
 
 void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 {
@@ -44,6 +44,7 @@ void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
     DetourTransactionBegin();
     DetourUpdateThread( GetCurrentThread() );
 
+    unsigned int detourCount = 0;
     for (unsigned int i = 0; i < argCount; i += 2)
     {
         PVOID *pFunctionToDetour = va_arg( copy, PVOID * );
@@ -52,6 +53,7 @@ void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
         if ((pFunctionToDetour && *pFunctionToDetour) && functionToDetourWith)
         {
             DetourAttach( pFunctionToDetour, functionToDetourWith );
+            detourCount++;
         }
     }
     va_end( copy );
@@ -59,11 +61,11 @@ void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
     LONG error = DetourTransactionCommit();
     if (error == NO_ERROR)
     {
-        EngineLog( "Detoured the %s functions.\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
+        EngineLog( "Detoured %d %s function(s).\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str() );
     }
     else
     {
-        EngineWarning( "Error detouring the %s functions: %d.\n", utf8util::UTF8FromUTF16( moduleName ).c_str(), error );
+        EngineWarning( "Error detouring %d %s function(s): %d.\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str(), error );
     }
 }
 
@@ -103,6 +105,7 @@ void DetachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
     DetourTransactionBegin();
     DetourUpdateThread( GetCurrentThread() );
 
+    unsigned int detourCount = 0;
     for (unsigned int i = 0; i < argCount; i += 2)
     {
         PVOID *pFunctionToUndetour = va_arg( copy, PVOID * );
@@ -111,6 +114,7 @@ void DetachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
         if ((pFunctionToUndetour && *pFunctionToUndetour) && functionReplacement)
         {
             DetourDetach( pFunctionToUndetour, functionReplacement );
+            detourCount++;
         }
     }
     va_end( copy );
@@ -118,10 +122,10 @@ void DetachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
     LONG error = DetourTransactionCommit();
     if (error == NO_ERROR)
     {
-        EngineLog( "Removed the %s function detours.\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
+        EngineLog( "Removed %d %s function detour(s).\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str() );
     }
     else
     {
-        EngineWarning( "Error removing the %s function detours: %d.\n", utf8util::UTF8FromUTF16( moduleName ).c_str(), error );
+        EngineWarning( "Error removing %d %s function detour(s): %d.\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str(), error );
     }
 }
