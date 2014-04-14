@@ -3,7 +3,7 @@
  ☐ Add an _y_afterframes analogue. @feature
    --- ✄ -----------------------
    Stuff that I'll do when I get around to it
- ☐ Rearrange sources to folders
+ ✔ Rearrange sources to folders @done (14-04-14 14:13)
  ☐ Add old engine support
  ☐ Add multiplayer engine support (for the motion blur fix and autojump and whatnot)
  ✔ Change build to be a string @done (14-04-02 23:02)
