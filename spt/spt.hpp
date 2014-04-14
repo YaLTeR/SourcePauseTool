@@ -15,8 +15,8 @@
 class CSourcePauseTool : public IServerPluginCallbacks
 {
 public:
-    CSourcePauseTool( );
-    ~CSourcePauseTool( );
+    CSourcePauseTool();
+    ~CSourcePauseTool();
 
     // IServerPluginCallbacks methods
     virtual bool            Load( CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory );
@@ -52,13 +52,13 @@ void EngineLog( std::string format, Args... args )
 template <typename... Args>
 void EngineDevLog( std::string format, Args... args )
 {
-    DevLog( ("SPT: " + format).c_str( ), args... );
+    DevLog( ("SPT: " + format).c_str(), args... );
 }
 
 template <typename... Args>
 void EngineWarning( std::string format, Args... args )
 {
-    Warning( ("SPT: " + format).c_str( ), args... );
+    Warning( ("SPT: " + format).c_str(), args... );
 }
 
 #endif // __SPT_H__
