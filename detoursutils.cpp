@@ -6,6 +6,7 @@
 #include <detours.h>
 #include "detoursutils.h"
 #include "spt.h"
+#include "utf8conv/utf8conv.h"
 
 void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 {
@@ -36,7 +37,7 @@ void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
     if (!needToDetour)
     {
         va_end( copy );
-        EngineLog( "No %s functions to detour!\n", WStringToString( moduleName ).c_str() );
+        EngineLog( "No %s functions to detour!\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
         return;
     }
 
@@ -58,11 +59,11 @@ void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
     LONG error = DetourTransactionCommit();
     if (error == NO_ERROR)
     {
-        EngineLog( "Detoured the %s functions.\n", WStringToString( moduleName ).c_str() );
+        EngineLog( "Detoured the %s functions.\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
     }
     else
     {
-        EngineWarning( "Error detouring the %s functions: %d.\n", WStringToString( moduleName ).c_str(), error );
+        EngineWarning( "Error detouring the %s functions: %d.\n", utf8util::UTF8FromUTF16( moduleName ).c_str(), error );
     }
 }
 
@@ -95,7 +96,7 @@ void DetachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
     if (!needToUndetour)
     {
         va_end( copy );
-        EngineLog( "No %s functions to detour!\n", WStringToString( moduleName ).c_str() );
+        EngineLog( "No %s functions to detour!\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
         return;
     }
 
@@ -117,10 +118,10 @@ void DetachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
     LONG error = DetourTransactionCommit();
     if (error == NO_ERROR)
     {
-        EngineLog( "Removed the %s function detours.\n", WStringToString( moduleName ).c_str() );
+        EngineLog( "Removed the %s function detours.\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
     }
     else
     {
-        EngineWarning( "Error removing the %s function detours: %d.\n", WStringToString( moduleName ).c_str(), error );
+        EngineWarning( "Error removing the %s function detours: %d.\n", utf8util::UTF8FromUTF16( moduleName ).c_str(), error );
     }
 }

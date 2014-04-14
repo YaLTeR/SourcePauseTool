@@ -5,6 +5,8 @@
 #include <Windows.h>
 #include <detours.h>
 
+#include "utf8conv/utf8conv.h"
+
 #include "detoursutils.h"
 #include "hooks.h"
 #include "patterns.h"
@@ -35,11 +37,6 @@ namespace Hooks
 
     ConVar y_spt_pause( "y_spt_pause", "1", FCVAR_ARCHIVE );
     ConVar y_spt_motion_blur_fix( "y_spt_motion_blur_fix", "0" );
-
-    namespace Internal
-    {
-
-    }
 
     namespace EngineDll
     {
@@ -353,13 +350,82 @@ namespace Hooks
         }
     }
 
+    struct
+    {
+        _LoadLibraryA   ORIG_LoadLibraryA;
+        _LoadLibraryW   ORIG_LoadLibraryW;
+        _FreeLibrary    ORIG_FreeLibrary;
+
+        std::unordered_map<std::wstring, HMODULE> hookedModules;
+    } hookState;
+
+    namespace Internal
+    {
+        HMODULE WINAPI HOOKED_LoadLibraryA( LPCSTR lpLibFileName )
+        {
+            HMODULE rv = hookState.ORIG_LoadLibraryA( lpLibFileName );
+
+            EngineDevLog( "Engine call: LoadLibraryA(\"%s\") => %p\n", lpLibFileName, rv );
+
+            if (rv != NULL)
+            {
+                HookModule( utf8util::UTF16FromUTF8( lpLibFileName ) );
+            }
+
+            return rv;
+        }
+
+        HMODULE WINAPI HOOKED_LoadLibraryW( LPCWSTR lpLibFileName )
+        {
+            HMODULE rv = hookState.ORIG_LoadLibraryW( lpLibFileName );
+
+            EngineDevLog( "Engine call: LoadLibraryW(\"%s\") => %p\n", utf8util::UTF8FromUTF16( lpLibFileName ), rv );
+
+            if (rv != NULL)
+            {
+                HookModule( std::wstring( lpLibFileName ) );
+            }
+
+            return rv;
+        }
+
+        BOOL WINAPI HOOKED_FreeLibrary( HMODULE hModule )
+        {
+            for (auto it : hookState.hookedModules)
+            {
+                if (it.second == hModule)
+                {
+                    UnhookModule( it.first );
+                    break;
+                }
+            }
+
+            BOOL rv = hookState.ORIG_FreeLibrary( hModule );
+
+            EngineDevLog( "Engine call: FreeLibrary(%p) => %d\n", hModule, rv );
+
+            return rv;
+        }
+    }
+
     void Init()
     {
+        Clear();
+
         // Try hooking each module in case it is already loaded
         for (auto it : moduleHookList)
         {
             HookModule( it.first );
         }
+
+        hookState.ORIG_LoadLibraryA = LoadLibraryA;
+        hookState.ORIG_LoadLibraryW = LoadLibraryW;
+        hookState.ORIG_FreeLibrary = FreeLibrary;
+
+        AttachDetours( L"Win32", 6,
+            &hookState.ORIG_LoadLibraryA, Internal::HOOKED_LoadLibraryA,
+            &hookState.ORIG_LoadLibraryW, Internal::HOOKED_LoadLibraryW,
+            &hookState.ORIG_FreeLibrary, Internal::HOOKED_FreeLibrary );
     }
 
     void Free()
@@ -369,6 +435,21 @@ namespace Hooks
         {
             UnhookModule( it.first );
         }
+
+        DetachDetours( L"Win32", 6,
+            &hookState.ORIG_LoadLibraryA, Internal::HOOKED_LoadLibraryA,
+            &hookState.ORIG_LoadLibraryW, Internal::HOOKED_LoadLibraryW,
+            &hookState.ORIG_FreeLibrary, Internal::HOOKED_FreeLibrary );
+
+        Clear();
+    }
+
+    void Clear()
+    {
+        hookState.ORIG_LoadLibraryA = NULL;
+        hookState.ORIG_LoadLibraryW = NULL;
+        hookState.ORIG_FreeLibrary = NULL;
+        hookState.hookedModules.clear();
     }
 
     void HookModule( std::wstring moduleName )
@@ -380,17 +461,18 @@ namespace Hooks
             size_t targetModuleStart, targetModuleLength;
             if (MemUtils::GetModuleInfo( moduleName.c_str(), targetModule, targetModuleStart, targetModuleLength ))
             {
-                EngineLog( "Hooking %s (start: %p; size: %x)...\n", WStringToString( moduleName ).c_str(), targetModuleStart, targetModuleLength );
+                EngineLog( "Hooking %s (start: %p; size: %x)...\n", utf8util::UTF8FromUTF16( moduleName ).c_str(), targetModuleStart, targetModuleLength );
                 module->second.Hook( moduleName, targetModule, targetModuleStart, targetModuleLength );
+                hookState.hookedModules.insert( std::pair<std::wstring, HMODULE> ( moduleName, targetModule ) );
             }
             else
             {
-                EngineWarning( "Unable to obtain the %s module info!\n", WStringToString( moduleName ).c_str() );
+                EngineWarning( "Unable to obtain the %s module info!\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
             }
         }
         else
         {
-            EngineDevLog( "Tried to hook an unlisted module: %s\n", WStringToString( moduleName ).c_str() );
+            EngineDevLog( "Tried to hook an unlisted module: %s\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
         }
     }
 
@@ -399,12 +481,13 @@ namespace Hooks
         auto module = moduleHookList.find( moduleName );
         if (module != moduleHookList.end())
         {
-            EngineLog( "Unhooking %s...\n", WStringToString( moduleName ).c_str( ) );
+            EngineLog( "Unhooking %s...\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
             module->second.Unhook( moduleName );
+            hookState.hookedModules.erase( moduleName );
         }
         else
         {
-            EngineDevLog( "Tried to unhook an unlisted module: %s\n", WStringToString( moduleName ).c_str( ) );
+            EngineDevLog( "Tried to unhook an unlisted module: %s\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
         }
     }
 }

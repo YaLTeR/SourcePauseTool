@@ -25,12 +25,6 @@ inline bool FStrEq(const char *sz1, const char *sz2)
     return(Q_stricmp(sz1, sz2) == 0);
 }
 
-// Simple conversion of wstrings that only consist of simple characters
-std::string WStringToString( std::wstring wstr )
-{
-    return std::string( wstr.begin(), wstr.end() );
-}
-
 //
 // The plugin is a static singleton that is exported as an interface
 //

@@ -43,8 +43,6 @@ public:
     virtual void            OnEdictFreed( const edict_t *edict );
 };
 
-std::string WStringToString( std::wstring wstr );
-
 template <typename... Args>
 void EngineLog( std::string format, Args... args )
 {

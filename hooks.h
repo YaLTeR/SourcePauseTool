@@ -29,13 +29,6 @@ namespace Hooks
     } module_info_t;
 
     // Hooked functions
-    namespace Internal
-    {
-        HMODULE WINAPI HOOKED_LoadLibraryA( LPCSTR lpLibFileName );
-        HMODULE WINAPI HOOKED_LoadLibraryW( LPCWSTR lpLibFileName );
-        BOOL WINAPI HOOKED_FreeLibrary( HMODULE hModule );
-    }
-
     namespace EngineDll
     {
         namespace Internal
@@ -46,8 +39,8 @@ namespace Hooks
         }
 
         typedef bool( __cdecl *_SV_ActivateServer ) ();
-        typedef void( __fastcall *_FinishRestore ) (void *thisptr, int edx);
-        typedef void( __fastcall *_SetPaused ) (void *thisptr, int edx, bool paused);
+        typedef void( __fastcall *_FinishRestore ) ( void *thisptr, int edx );
+        typedef void( __fastcall *_SetPaused ) ( void *thisptr, int edx, bool paused );
 
         void Hook( std::wstring moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength );
         void Unhook( std::wstring moduleName );
@@ -61,15 +54,28 @@ namespace Hooks
             void __cdecl HOOKED_DoImageSpaceMotionBlur( void *view, int x, int y, int w, int h );
         }
 
-        typedef void( __cdecl *_DoImageSpaceMotionBlur ) (void *view, int x, int y, int w, int h);
+        typedef void( __cdecl *_DoImageSpaceMotionBlur ) ( void *view, int x, int y, int w, int h );
         
         void Hook( std::wstring moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength );
         void Unhook( std::wstring moduleName );
         void Clear();
     }
 
+    namespace Internal
+    {
+        HMODULE WINAPI HOOKED_LoadLibraryA( LPCSTR lpLibFileName );
+        HMODULE WINAPI HOOKED_LoadLibraryW( LPCWSTR lpLibFileName );
+        BOOL WINAPI HOOKED_FreeLibrary( HMODULE hModule );
+    }
+
+    typedef HMODULE( WINAPI *_LoadLibraryA ) ( LPCSTR lpLibFileName );
+    typedef HMODULE( WINAPI *_LoadLibraryW ) ( LPCWSTR lpLibFileName );
+    typedef BOOL( WINAPI *_FreeLibrary ) ( HMODULE hModule );
+
     void Init();
     void Free();
+    void Clear();
+
     void HookModule( std::wstring moduleName );
     void UnhookModule( std::wstring moduleName );
 }

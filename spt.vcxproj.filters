@@ -69,6 +69,12 @@
     <ClInclude Include="hooks.h" />
     <ClInclude Include="spt.h" />
     <ClInclude Include="detoursutils.h" />
+    <ClInclude Include="utf8conv\utf8conv.h">
+      <Filter>utf8conv</Filter>
+    </ClInclude>
+    <ClInclude Include="utf8conv\utf8conv_inl.h">
+      <Filter>utf8conv</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">
@@ -90,6 +96,9 @@
   <ItemGroup>
     <Filter Include="SDK includes &amp; libs">
       <UniqueIdentifier>{eade2e26-4b70-429d-ac6b-01135e887da7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utf8conv">
+      <UniqueIdentifier>{13c83f06-d44b-4b4e-a485-17fb6dfe7bf1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
