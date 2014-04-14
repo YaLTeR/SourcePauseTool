@@ -1,13 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="memutils.cpp" />
-    <ClCompile Include="spt.cpp" />
-    <ClCompile Include="hooks.cpp" />
-    <ClCompile Include="detoursutils.cpp" />
+    <ClCompile Include="spt\detoursutils.cpp">
+      <Filter>spt</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\hooks.cpp">
+      <Filter>spt</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\memutils.cpp">
+      <Filter>spt</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\spt.cpp">
+      <Filter>spt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="memutils.h" />
     <ClInclude Include="..\..\public\tier0\basetypes.h">
       <Filter>SDK includes &amp; libs</Filter>
     </ClInclude>
@@ -65,15 +72,26 @@
     <ClInclude Include="..\..\public\vstdlib\vstdlib.h">
       <Filter>SDK includes &amp; libs</Filter>
     </ClInclude>
-    <ClInclude Include="patterns.h" />
-    <ClInclude Include="hooks.h" />
-    <ClInclude Include="spt.h" />
-    <ClInclude Include="detoursutils.h" />
     <ClInclude Include="utf8conv\utf8conv.h">
       <Filter>utf8conv</Filter>
     </ClInclude>
     <ClInclude Include="utf8conv\utf8conv_inl.h">
       <Filter>utf8conv</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\detoursutils.h">
+      <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\hooks.h">
+      <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\memutils.h">
+      <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\patterns.h">
+      <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\spt.h">
+      <Filter>spt</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -99,6 +117,9 @@
     </Filter>
     <Filter Include="utf8conv">
       <UniqueIdentifier>{13c83f06-d44b-4b4e-a485-17fb6dfe7bf1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt">
+      <UniqueIdentifier>{42277bb4-807d-445f-8dc9-abaf03016da9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

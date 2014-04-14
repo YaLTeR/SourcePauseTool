@@ -6,7 +6,7 @@
 #include <detours.h>
 #include "detoursutils.h"
 #include "spt.h"
-#include "utf8conv/utf8conv.h"
+#include "../utf8conv/utf8conv.h"
 
 void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 {

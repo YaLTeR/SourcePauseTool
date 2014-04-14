@@ -196,10 +196,10 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="detoursutils.cpp" />
-    <ClCompile Include="hooks.cpp" />
-    <ClCompile Include="memutils.cpp" />
-    <ClCompile Include="spt.cpp" />
+    <ClCompile Include="spt\detoursutils.cpp" />
+    <ClCompile Include="spt\hooks.cpp" />
+    <ClCompile Include="spt\memutils.cpp" />
+    <ClCompile Include="spt\spt.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib" />
@@ -228,11 +228,11 @@
     <ClInclude Include="..\..\public\tier1\utlmemory.h" />
     <ClInclude Include="..\..\public\tier1\utlvector.h" />
     <ClInclude Include="..\..\public\vstdlib\vstdlib.h" />
-    <ClInclude Include="detoursutils.h" />
-    <ClInclude Include="hooks.h" />
-    <ClInclude Include="patterns.h" />
-    <ClInclude Include="memutils.h" />
-    <ClInclude Include="spt.h" />
+    <ClInclude Include="spt\detoursutils.h" />
+    <ClInclude Include="spt\hooks.h" />
+    <ClInclude Include="spt\patterns.h" />
+    <ClInclude Include="spt\memutils.h" />
+    <ClInclude Include="spt\spt.h" />
     <ClInclude Include="utf8conv\utf8conv.h" />
     <ClInclude Include="utf8conv\utf8conv_inl.h" />
   </ItemGroup>

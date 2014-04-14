@@ -5,7 +5,7 @@
 #include <Windows.h>
 #include <detours.h>
 
-#include "utf8conv/utf8conv.h"
+#include "../utf8conv/utf8conv.h"
 
 #include "detoursutils.h"
 #include "hooks.h"
