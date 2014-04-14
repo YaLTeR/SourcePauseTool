@@ -4,6 +4,7 @@
     <ClCompile Include="memutils.cpp" />
     <ClCompile Include="spt.cpp" />
     <ClCompile Include="hooks.cpp" />
+    <ClCompile Include="detoursutils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="memutils.h" />
@@ -67,6 +68,7 @@
     <ClInclude Include="patterns.h" />
     <ClInclude Include="hooks.h" />
     <ClInclude Include="spt.h" />
+    <ClInclude Include="detoursutils.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">

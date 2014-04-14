@@ -5,6 +5,7 @@
 #include <Windows.h>
 #include <detours.h>
 
+#include "detoursutils.h"
 #include "hooks.h"
 #include "patterns.h"
 #include "spt.h"
@@ -212,62 +213,18 @@ namespace Hooks
                 EngineWarning( "y_spt_pause has no effect.\n" );
             }
 
-            if (hookState.ORIG_SV_ActivateServer
-                || hookState.ORIG_FinishRestore
-                || hookState.ORIG_SetPaused)
-            {
-                DetourTransactionBegin( );
-                DetourUpdateThread( GetCurrentThread( ) );
-
-                if (hookState.ORIG_SV_ActivateServer)
-                    DetourAttach( &(PVOID &)hookState.ORIG_SV_ActivateServer, Internal::HOOKED_SV_ActivateServer );
-
-                if (hookState.ORIG_FinishRestore)
-                    DetourAttach( &(PVOID &)hookState.ORIG_FinishRestore, Internal::HOOKED_FinishRestore );
-
-                if (hookState.ORIG_SetPaused)
-                    DetourAttach( &(PVOID &)hookState.ORIG_SetPaused, Internal::HOOKED_SetPaused );
-
-                LONG error = DetourTransactionCommit( );
-                if (error == NO_ERROR)
-                {
-                    EngineLog( "Detoured the %s functions.\n", WStringToString( moduleName ).c_str() );
-                }
-                else
-                {
-                    EngineWarning( "Error detouring the %s functions: %d.\n", WStringToString( moduleName ).c_str(), error );
-                }
-            }
+            AttachDetours( moduleName, 6,
+                &hookState.ORIG_SV_ActivateServer, Internal::HOOKED_SV_ActivateServer,
+                &hookState.ORIG_FinishRestore, Internal::HOOKED_FinishRestore,
+                &hookState.ORIG_SetPaused, Internal::HOOKED_SetPaused );
         }
 
         void Unhook( std::wstring moduleName )
         {
-            if (hookState.ORIG_SV_ActivateServer
-                || hookState.ORIG_FinishRestore
-                || hookState.ORIG_SetPaused)
-            {
-                DetourTransactionBegin( );
-                DetourUpdateThread( GetCurrentThread( ) );
-
-                if (hookState.ORIG_SV_ActivateServer)
-                    DetourDetach( &(PVOID &)hookState.ORIG_SV_ActivateServer, Internal::HOOKED_SV_ActivateServer );
-
-                if (hookState.ORIG_FinishRestore)
-                    DetourDetach( &(PVOID &)hookState.ORIG_FinishRestore, Internal::HOOKED_FinishRestore );
-
-                if (hookState.ORIG_SetPaused)
-                    DetourDetach( &(PVOID &)hookState.ORIG_SetPaused, Internal::HOOKED_SetPaused );
-
-                LONG error = DetourTransactionCommit( );
-                if (error == NO_ERROR)
-                {
-                    EngineLog( "Removed the %s function detours.\n", WStringToString( moduleName ).c_str() );
-                }
-                else
-                {
-                    EngineWarning( "Error removing the %s function detours: %d.\n", WStringToString( moduleName ).c_str(), error );
-                }
-            }
+            DetachDetours( moduleName, 6,
+                &hookState.ORIG_SV_ActivateServer, Internal::HOOKED_SV_ActivateServer,
+                &hookState.ORIG_FinishRestore, Internal::HOOKED_FinishRestore,
+                &hookState.ORIG_SetPaused, Internal::HOOKED_SetPaused );
 
             Clear();
         }

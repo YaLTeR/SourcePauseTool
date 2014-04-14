@@ -196,6 +196,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="detoursutils.cpp" />
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="memutils.cpp" />
     <ClCompile Include="spt.cpp" />
@@ -227,6 +228,7 @@
     <ClInclude Include="..\..\public\tier1\utlmemory.h" />
     <ClInclude Include="..\..\public\tier1\utlvector.h" />
     <ClInclude Include="..\..\public\vstdlib\vstdlib.h" />
+    <ClInclude Include="detoursutils.h" />
     <ClInclude Include="hooks.h" />
     <ClInclude Include="patterns.h" />
     <ClInclude Include="memutils.h" />
