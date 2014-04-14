@@ -37,37 +37,6 @@ std::string WStringToString( std::wstring wstr )
 CSourcePauseTool g_SourcePauseTool;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CSourcePauseTool, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, g_SourcePauseTool);
 
-// client.dll functions
-//void __cdecl HOOKED_DoImageSpaceMotionBlur( void *view, int x, int y, int w, int h )
-//{
-//    DWORD_PTR origgpGlobals = *pgpGlobals;
-//
-//    /*
-//        Replace gpGlobals with (gpGlobals + 12). gpGlobals->realtime is the first variable,
-//        so it is located at gpGlobals. (gpGlobals + 12) is gpGlobals->curtime. This
-//        function does not use anything apart from gpGlobals->realtime from gpGlobals,
-//        so we can do such a replace to make it use gpGlobals->curtime instead without
-//        breaking anything else.
-//    */
-//    if (hookState.bFoundgpGlobals)
-//    {
-//        if (y_spt_motion_blur_fix.GetBool())
-//        {
-//            *pgpGlobals = *pgpGlobals + 12;
-//        }
-//    }
-//
-//    ORIG_DoImageSpaceMorionBlur( view, x, y, w, h );
-//
-//    if (hookState.bFoundgpGlobals)
-//    {
-//        if (y_spt_motion_blur_fix.GetBool())
-//        {
-//            *pgpGlobals = origgpGlobals;
-//        }
-//    }
-//}
-
 //---------------------------------------------------------------------------------
 // Purpose: constructor/destructor
 //---------------------------------------------------------------------------------
@@ -84,86 +53,6 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 
     Hooks::Init();
 
-    //hClientDll = GetModuleHandleA( "client.dll" );
-    //if (!MemUtils::GetModuleInfo( hClientDll, dwClientDllStart, dwClientDllSize ))
-    //{
-    //    Warning("SPT: Could not obtain the client.dll module info!\n");
-    //    Warning("SPT: y_spt_motion_blur_fix has no effect.\n");
-
-    //    hookState.bFoundDoImageSpaceMotionBlur = false;
-    //    hookState.bFoundgpGlobals = false;
-    //}
-    //else
-    //{
-    //    Log("SPT: Obtained the client.dll module info. Start: %p; Size: %x;\n", dwClientDllStart, dwClientDllSize);
-
-    //    DWORD_PTR pDoImageSpaceMotionBlur = NULL;
-    //    ptnNumber = MemUtils::FindUniqueSequence( dwClientDllStart, dwClientDllSize, Patterns::ptnsDoImageSpaceMotionBlur, &pDoImageSpaceMotionBlur );
-    //    if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
-    //    {
-    //        ORIG_DoImageSpaceMorionBlur = (DoImageSpaceMotionBlur_t)pDoImageSpaceMotionBlur;
-    //        Log( "SPT: Found DoImageSpaceMotionBlur at %p (using the build %s pattern).\n", pDoImageSpaceMotionBlur, Patterns::ptnsDoImageSpaceMotionBlur[ptnNumber].build.c_str( ) );
-
-    //        switch (ptnNumber)
-    //        {
-    //        case 0:
-    //            pgpGlobals = *(DWORD_PTR **)(pDoImageSpaceMotionBlur + 132);
-    //            break;
-
-    //        case 1:
-    //            pgpGlobals = *(DWORD_PTR **)(pDoImageSpaceMotionBlur + 153);
-    //            break;
-
-    //        case 2:
-    //            pgpGlobals = *(DWORD_PTR **)(pDoImageSpaceMotionBlur + 129);
-    //            break;
-    //        }
-
-    //        Log("SPT: pgpGlobals is %p.\n", pgpGlobals);
-    //    }
-    //    else
-    //    {
-    //        Warning("SPT: Could not find DoImageSpaceMotionBlur!\n");
-    //        Warning("SPT: y_spt_motion_blur_fix has no effect.\n");
-
-    //        hookState.bFoundDoImageSpaceMotionBlur = false;
-    //        hookState.bFoundgpGlobals = false;
-    //    }
-    //}
-
-    // Detours
-    /*if (hookState.bFoundSV_ActivateServer
-        || hookState.bFoundFinishRestore
-        || hookState.bFoundSetPaused
-        || hookState.bFoundDoImageSpaceMotionBlur)
-    {
-        DetourTransactionBegin();
-        DetourUpdateThread(GetCurrentThread());
-
-        if (hookState.bFoundSV_ActivateServer)
-            DetourAttach(&(PVOID &)ORIG_SV_ActivateServer, HOOKED_SV_ActivateServer);
-
-        if (hookState.bFoundFinishRestore)
-            DetourAttach(&(PVOID &)ORIG_FinishRestore, HOOKED_FinishRestore);
-
-        if (hookState.bFoundSetPaused)
-            DetourAttach(&(PVOID &)ORIG_SetPaused, HOOKED_SetPaused);
-
-        if (hookState.bFoundDoImageSpaceMotionBlur)
-            DetourAttach( &(PVOID &)ORIG_DoImageSpaceMorionBlur, HOOKED_DoImageSpaceMotionBlur );
-
-        LONG error = DetourTransactionCommit();
-        if (error == NO_ERROR)
-        {
-            Log("SPT: Detoured functions.\n");
-        }
-        else
-        {
-            Warning("SPT: Error detouring functions: %d.\n", error);
-            return false;
-        }
-    }*/
-
     Msg("SourcePauseTool v" SPT_VERSION " was loaded successfully.\n");
 
     return true;
@@ -175,37 +64,6 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 void CSourcePauseTool::Unload( void )
 {
     Hooks::Free();
-
-    /*if (hookState.bFoundSV_ActivateServer
-        || hookState.bFoundFinishRestore
-        || hookState.bFoundSetPaused
-        || hookState.bFoundDoImageSpaceMotionBlur)
-    {
-        DetourTransactionBegin();
-        DetourUpdateThread(GetCurrentThread());
-
-        if (hookState.bFoundSV_ActivateServer)
-            DetourDetach(&(PVOID &)ORIG_SV_ActivateServer, HOOKED_SV_ActivateServer);
-
-        if (hookState.bFoundFinishRestore)
-            DetourDetach(&(PVOID &)ORIG_FinishRestore, HOOKED_FinishRestore);
-
-        if (hookState.bFoundSetPaused)
-            DetourDetach(&(PVOID &)ORIG_SetPaused, HOOKED_SetPaused);
-
-        if (hookState.bFoundDoImageSpaceMotionBlur)
-            DetourDetach( &(PVOID &)ORIG_DoImageSpaceMorionBlur, HOOKED_DoImageSpaceMotionBlur );
-
-        LONG error = DetourTransactionCommit();
-        if (error == NO_ERROR)
-        {
-            Log("SPT: Removed the function detours successfully.\n");
-        }
-        else
-        {
-            Warning("SPT: Error removing the function detours: %d.\n", error);
-        }
-    }*/
 
     ConVar_Unregister();
     DisconnectTier1Libraries( );

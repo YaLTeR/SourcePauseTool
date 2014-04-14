@@ -254,14 +254,102 @@ namespace Hooks
             DWORD_PTR *pgpGlobals;
         } hookState;
 
+        namespace Internal
+        {
+            void __cdecl HOOKED_DoImageSpaceMotionBlur( void *view, int x, int y, int w, int h )
+            {
+                DWORD_PTR origgpGlobals = NULL;
+
+                /*
+                Replace gpGlobals with (gpGlobals + 12). gpGlobals->realtime is the first variable,
+                so it is located at gpGlobals. (gpGlobals + 12) is gpGlobals->curtime. This
+                function does not use anything apart from gpGlobals->realtime from gpGlobals,
+                so we can do such a replace to make it use gpGlobals->curtime instead without
+                breaking anything else.
+                */
+                if (hookState.pgpGlobals)
+                {
+                    if (y_spt_motion_blur_fix.GetBool())
+                    {
+                        origgpGlobals = *hookState.pgpGlobals;
+                        *hookState.pgpGlobals = *hookState.pgpGlobals + 12;
+                    }
+                }
+
+                hookState.ORIG_DoImageSpaceMorionBlur( view, x, y, w, h );
+
+                if (hookState.pgpGlobals)
+                {
+                    if (y_spt_motion_blur_fix.GetBool())
+                    {
+                        *hookState.pgpGlobals = origgpGlobals;
+                    }
+                }
+            }
+        }
+
         void Hook( std::wstring moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength )
         {
-            // TODO
+            Clear(); // Just in case.
+
+            hookState.moduleInfo.hModule = hModule;
+            hookState.moduleInfo.moduleStart = moduleStart;
+            hookState.moduleInfo.moduleLength = moduleLength;
+
+            MemUtils::ptnvec_size ptnNumber;
+
+            // DoImageSpaceMotionBlur
+            EngineLog( "Searching for DoImageSpaceMotionBlur...\n" );
+
+            DWORD_PTR pDoImageSpaceMotionBlur = NULL;
+            ptnNumber = MemUtils::FindUniqueSequence( hookState.moduleInfo.moduleStart, hookState.moduleInfo.moduleLength, Patterns::ptnsDoImageSpaceMotionBlur, &pDoImageSpaceMotionBlur );
+            if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+            {
+                hookState.ORIG_DoImageSpaceMorionBlur = (_DoImageSpaceMotionBlur)pDoImageSpaceMotionBlur;
+                Log( "SPT: Found DoImageSpaceMotionBlur at %p (using the build %s pattern).\n", pDoImageSpaceMotionBlur, Patterns::ptnsDoImageSpaceMotionBlur[ptnNumber].build.c_str() );
+
+                switch (ptnNumber)
+                {
+                case 0:
+                    hookState.pgpGlobals = *(DWORD_PTR **)(pDoImageSpaceMotionBlur + 132);
+                    break;
+
+                case 1:
+                    hookState.pgpGlobals = *(DWORD_PTR **)(pDoImageSpaceMotionBlur + 153);
+                    break;
+
+                case 2:
+                    hookState.pgpGlobals = *(DWORD_PTR **)(pDoImageSpaceMotionBlur + 129);
+                    break;
+                }
+
+                Log( "SPT: pgpGlobals is %p.\n", hookState.pgpGlobals );
+            }
+            else
+            {
+                Warning( "SPT: Could not find DoImageSpaceMotionBlur!\n" );
+                Warning( "SPT: y_spt_motion_blur_fix has no effect.\n" );
+            }
+
+            AttachDetours( moduleName, 2,
+                &hookState.ORIG_DoImageSpaceMorionBlur, Internal::HOOKED_DoImageSpaceMotionBlur );
         }
 
         void Unhook( std::wstring moduleName )
         {
-            // TODO
+            DetachDetours( moduleName, 2,
+                &hookState.ORIG_DoImageSpaceMorionBlur, Internal::HOOKED_DoImageSpaceMotionBlur );
+
+            Clear();
+        }
+
+        void Clear( )
+        {
+            hookState.moduleInfo.hModule = NULL;
+            hookState.moduleInfo.moduleStart = NULL;
+            hookState.moduleInfo.moduleLength = NULL;
+            hookState.ORIG_DoImageSpaceMorionBlur = NULL;
+            hookState.pgpGlobals = NULL;
         }
     }
 
