@@ -33,7 +33,7 @@ namespace Hooks
     {
         namespace Internal
         {
-            bool __cdecl HOOKED_SV_ActivateServer( );
+            bool __cdecl HOOKED_SV_ActivateServer();
             void __fastcall HOOKED_FinishRestore( void *thisptr, int edx );
             void __fastcall HOOKED_SetPaused( void *thisptr, int edx, bool paused );
         }

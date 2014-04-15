@@ -55,18 +55,18 @@ namespace Hooks
 
         namespace Internal
         {
-            bool __cdecl HOOKED_SV_ActivateServer( )
+            bool __cdecl HOOKED_SV_ActivateServer()
             {
-                bool result = hookState.ORIG_SV_ActivateServer( );
+                bool result = hookState.ORIG_SV_ActivateServer();
 
-                EngineDevLog( "Engine call: SV_ActivateServer() => %d;\n", result );
+                EngineDevLog( "Engine call: SV_ActivateServer() => %s;\n", (result ? "true" : "false") );
 
                 if (hookState.ORIG_SetPaused && hookState.pM_bLoadgame && hookState.pGameServer)
                 {
-                    if ((y_spt_pause.GetInt( ) == 2) && *hookState.pM_bLoadgame)
+                    if ((y_spt_pause.GetInt() == 2) && *hookState.pM_bLoadgame)
                     {
                         hookState.ORIG_SetPaused( (void *)hookState.pGameServer, 0, true );
-                        DevLog( "SPT: Pausing...\n" );
+                        EngineDevLog( "Pausing...\n" );
 
                         hookState.shouldPreventNextUnpause = true;
                     }
@@ -79,10 +79,10 @@ namespace Hooks
             {
                 EngineDevLog( "Engine call: FinishRestore();\n" );
 
-                if (hookState.ORIG_SetPaused && (y_spt_pause.GetInt( ) == 1))
+                if (hookState.ORIG_SetPaused && (y_spt_pause.GetInt() == 1))
                 {
                     hookState.ORIG_SetPaused( thisptr, 0, true );
-                    DevLog( "SPT: Pausing...\n" );
+                    EngineDevLog( "Pausing...\n" );
 
                     hookState.shouldPreventNextUnpause = true;
                 }
@@ -94,18 +94,18 @@ namespace Hooks
             {
                 if (hookState.pM_bLoadgame)
                 {
-                    EngineDevLog( "Engine call: SetPaused(%d); m_bLoadgame = %d\n", paused, *hookState.pM_bLoadgame );
+                    EngineDevLog( "Engine call: SetPaused( %s ); m_bLoadgame = %s\n", (paused ? "true" : "false"), (*hookState.pM_bLoadgame ? "true" : "false") );
                 }
                 else
                 {
-                    EngineDevLog( "Engine call: SetPaused(%d);\n", paused );
+                    EngineDevLog( "Engine call: SetPaused( %s );\n", (paused ? "true" : "false") );
                 }
 
                 if (paused == false)
                 {
                     if (hookState.shouldPreventNextUnpause)
                     {
-                        DevLog( "SPT: Unpause prevented.\n" );
+                        EngineDevLog( "Unpause prevented.\n" );
                         hookState.shouldPreventNextUnpause = false;
                         return;
                     }
@@ -340,7 +340,7 @@ namespace Hooks
             Clear();
         }
 
-        void Clear( )
+        void Clear()
         {
             hookState.moduleInfo.hModule = NULL;
             hookState.moduleInfo.moduleStart = NULL;
@@ -365,7 +365,7 @@ namespace Hooks
         {
             HMODULE rv = hookState.ORIG_LoadLibraryA( lpLibFileName );
 
-            EngineDevLog( "Engine call: LoadLibraryA(\"%s\") => %p\n", lpLibFileName, rv );
+            EngineDevLog( "Engine call: LoadLibraryA( \"%s\" ) => %p\n", lpLibFileName, rv );
 
             if (rv != NULL)
             {
@@ -379,7 +379,7 @@ namespace Hooks
         {
             HMODULE rv = hookState.ORIG_LoadLibraryW( lpLibFileName );
 
-            EngineDevLog( "Engine call: LoadLibraryW(\"%s\") => %p\n", utf8util::UTF8FromUTF16( lpLibFileName ), rv );
+            EngineDevLog( "Engine call: LoadLibraryW( \"%s\" ) => %p\n", utf8util::UTF8FromUTF16( lpLibFileName ), rv );
 
             if (rv != NULL)
             {
@@ -402,7 +402,7 @@ namespace Hooks
 
             BOOL rv = hookState.ORIG_FreeLibrary( hModule );
 
-            EngineDevLog( "Engine call: FreeLibrary(%p) => %d\n", hModule, rv );
+            EngineDevLog( "Engine call: FreeLibrary( %p ) => %s\n", hModule, (rv ? "true" : "false") );
 
             return rv;
         }

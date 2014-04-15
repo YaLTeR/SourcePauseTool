@@ -27,7 +27,7 @@ namespace MemUtils
 
     bool GetModuleInfo( const WCHAR *szModuleName, HMODULE &moduleHandle, size_t &moduleBase, size_t &moduleSize )
     {
-        HANDLE hProcess = GetCurrentProcess( );
+        HANDLE hProcess = GetCurrentProcess();
         moduleHandle = GetModuleHandleW( szModuleName );
 
         if (!hProcess || !moduleHandle)
