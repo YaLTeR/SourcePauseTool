@@ -354,6 +354,8 @@ namespace Hooks
     {
         _LoadLibraryA   ORIG_LoadLibraryA;
         _LoadLibraryW   ORIG_LoadLibraryW;
+        _LoadLibraryExA   ORIG_LoadLibraryExA;
+        _LoadLibraryExW   ORIG_LoadLibraryExW;
         _FreeLibrary    ORIG_FreeLibrary;
 
         std::unordered_map<std::wstring, HMODULE> hookedModules;
@@ -361,29 +363,57 @@ namespace Hooks
 
     namespace Internal
     {
-        HMODULE WINAPI HOOKED_LoadLibraryA( LPCSTR lpLibFileName )
+        HMODULE WINAPI HOOKED_LoadLibraryA( LPCSTR lpFileName )
         {
-            HMODULE rv = hookState.ORIG_LoadLibraryA( lpLibFileName );
+            HMODULE rv = hookState.ORIG_LoadLibraryA( lpFileName );
 
-            EngineDevLog( "Engine call: LoadLibraryA( \"%s\" ) => %p\n", lpLibFileName, rv );
+            EngineDevLog( "Engine call: LoadLibraryA( \"%s\" ) => %p\n", lpFileName, rv );
 
             if (rv != NULL)
             {
-                HookModule( utf8util::UTF16FromUTF8( lpLibFileName ) );
+                HookModule( utf8util::UTF16FromUTF8( lpFileName ) );
             }
 
             return rv;
         }
 
-        HMODULE WINAPI HOOKED_LoadLibraryW( LPCWSTR lpLibFileName )
+        HMODULE WINAPI HOOKED_LoadLibraryW( LPCWSTR lpFileName )
         {
-            HMODULE rv = hookState.ORIG_LoadLibraryW( lpLibFileName );
+            HMODULE rv = hookState.ORIG_LoadLibraryW( lpFileName );
 
-            EngineDevLog( "Engine call: LoadLibraryW( \"%s\" ) => %p\n", utf8util::UTF8FromUTF16( lpLibFileName ), rv );
+            EngineDevLog( "Engine call: LoadLibraryW( \"%s\" ) => %p\n", utf8util::UTF8FromUTF16( lpFileName ), rv );
 
             if (rv != NULL)
             {
-                HookModule( std::wstring( lpLibFileName ) );
+                HookModule( std::wstring( lpFileName ) );
+            }
+
+            return rv;
+        }
+
+        HMODULE WINAPI HOOKED_LoadLibraryExA( LPCSTR lpFileName, HANDLE hFile, DWORD dwFlags )
+        {
+            HMODULE rv = hookState.ORIG_LoadLibraryExA( lpFileName, hFile, dwFlags );
+
+            EngineDevLog( "Engine call: LoadLibraryExA( \"%s\" ) => %p\n", lpFileName, rv );
+
+            if (rv != NULL)
+            {
+                HookModule( utf8util::UTF16FromUTF8( lpFileName ) );
+            }
+
+            return rv;
+        }
+
+        HMODULE WINAPI HOOKED_LoadLibraryExW( LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags )
+        {
+            HMODULE rv = hookState.ORIG_LoadLibraryExW( lpFileName, hFile, dwFlags );
+
+            EngineDevLog( "Engine call: LoadLibraryExW( \"%s\" ) => %p\n", utf8util::UTF8FromUTF16( lpFileName ), rv );
+
+            if (rv != NULL)
+            {
+                HookModule( std::wstring( lpFileName ) );
             }
 
             return rv;
@@ -420,11 +450,15 @@ namespace Hooks
 
         hookState.ORIG_LoadLibraryA = LoadLibraryA;
         hookState.ORIG_LoadLibraryW = LoadLibraryW;
+        hookState.ORIG_LoadLibraryExA = LoadLibraryExA;
+        hookState.ORIG_LoadLibraryExW = LoadLibraryExW;
         hookState.ORIG_FreeLibrary = FreeLibrary;
 
-        AttachDetours( L"WinApi", 6,
+        AttachDetours( L"WinApi", 10,
             &hookState.ORIG_LoadLibraryA, Internal::HOOKED_LoadLibraryA,
             &hookState.ORIG_LoadLibraryW, Internal::HOOKED_LoadLibraryW,
+            &hookState.ORIG_LoadLibraryExA, Internal::HOOKED_LoadLibraryExA,
+            &hookState.ORIG_LoadLibraryExW, Internal::HOOKED_LoadLibraryExW,
             &hookState.ORIG_FreeLibrary, Internal::HOOKED_FreeLibrary );
     }
 
@@ -436,9 +470,11 @@ namespace Hooks
             UnhookModule( it.first );
         }
 
-        DetachDetours( L"WinApi", 6,
+        DetachDetours( L"WinApi", 10,
             &hookState.ORIG_LoadLibraryA, Internal::HOOKED_LoadLibraryA,
             &hookState.ORIG_LoadLibraryW, Internal::HOOKED_LoadLibraryW,
+            &hookState.ORIG_LoadLibraryExA, Internal::HOOKED_LoadLibraryExA,
+            &hookState.ORIG_LoadLibraryExW, Internal::HOOKED_LoadLibraryExW,
             &hookState.ORIG_FreeLibrary, Internal::HOOKED_FreeLibrary );
 
         Clear();
@@ -448,12 +484,16 @@ namespace Hooks
     {
         hookState.ORIG_LoadLibraryA = NULL;
         hookState.ORIG_LoadLibraryW = NULL;
+        hookState.ORIG_LoadLibraryExA = NULL;
+        hookState.ORIG_LoadLibraryExW = NULL;
         hookState.ORIG_FreeLibrary = NULL;
         hookState.hookedModules.clear();
     }
 
     void HookModule( std::wstring moduleName )
     {
+        moduleName = GetFileName( moduleName );
+
         auto module = moduleHookList.find( moduleName );
         if (module != moduleHookList.end())
         {
@@ -478,6 +518,8 @@ namespace Hooks
 
     void UnhookModule( std::wstring moduleName )
     {
+        moduleName = GetFileName( moduleName );
+
         auto module = moduleHookList.find( moduleName );
         if (module != moduleHookList.end())
         {

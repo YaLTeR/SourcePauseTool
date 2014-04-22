@@ -5,10 +5,14 @@
 #pragma once
 #endif
 
+#include <string>
+
 #define SPT_VERSION "0.3-beta"
 
 extern void ( *EngineLog )( const char *format, ... );
 extern void ( *EngineDevLog )( const char *format, ... );
 extern void ( *EngineWarning )( const char *format, ... );
+
+std::wstring GetFileName( const std::wstring &fileNameWithPath );
 
 #endif // __SPT_H__

@@ -63,13 +63,17 @@ namespace Hooks
 
     namespace Internal
     {
-        HMODULE WINAPI HOOKED_LoadLibraryA( LPCSTR lpLibFileName );
-        HMODULE WINAPI HOOKED_LoadLibraryW( LPCWSTR lpLibFileName );
+        HMODULE WINAPI HOOKED_LoadLibraryA( LPCSTR lpFileName );
+        HMODULE WINAPI HOOKED_LoadLibraryW( LPCWSTR lpFileName );
+        HMODULE WINAPI HOOKED_LoadLibraryExA( LPCSTR lpFileName, HANDLE hFile, DWORD dwFlags );
+        HMODULE WINAPI HOOKED_LoadLibraryExW( LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags );
         BOOL WINAPI HOOKED_FreeLibrary( HMODULE hModule );
     }
 
-    typedef HMODULE( WINAPI *_LoadLibraryA ) ( LPCSTR lpLibFileName );
-    typedef HMODULE( WINAPI *_LoadLibraryW ) ( LPCWSTR lpLibFileName );
+    typedef HMODULE( WINAPI *_LoadLibraryA ) ( LPCSTR lpLFileName );
+    typedef HMODULE( WINAPI *_LoadLibraryW ) ( LPCWSTR lpFileName );
+    typedef HMODULE( WINAPI *_LoadLibraryExA ) ( LPCSTR lpFileName, HANDLE hFile, DWORD dwFlags );
+    typedef HMODULE( WINAPI *_LoadLibraryExW ) ( LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags );
     typedef BOOL( WINAPI *_FreeLibrary ) ( HMODULE hModule );
 
     void Init();
