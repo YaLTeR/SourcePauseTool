@@ -10,8 +10,6 @@
 #include <Windows.h>
 #include <string>
 
-#include <detours.h>
-
 void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... );
 void DetachDetours( const std::wstring &moduleName, unsigned int argCount, ... );
 

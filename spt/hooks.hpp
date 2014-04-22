@@ -55,7 +55,7 @@ namespace Hooks
         }
 
         typedef void( __cdecl *_DoImageSpaceMotionBlur ) ( void *view, int x, int y, int w, int h );
-        
+
         void Hook( std::wstring &moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength );
         void Unhook( std::wstring &moduleName );
         void Clear();

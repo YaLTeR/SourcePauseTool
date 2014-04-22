@@ -200,6 +200,7 @@
     <ClCompile Include="spt\hooks.cpp" />
     <ClCompile Include="spt\memutils.cpp" />
     <ClCompile Include="spt\spt.cpp" />
+    <ClCompile Include="spt\OrangeBox\spt-serverplugin.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib" />
@@ -233,6 +234,7 @@
     <ClInclude Include="spt\memutils.hpp" />
     <ClInclude Include="spt\patterns.hpp" />
     <ClInclude Include="spt\spt.hpp" />
+    <ClInclude Include="spt\OrangeBox\spt-serverplugin.hpp" />
     <ClInclude Include="utf8conv\utf8conv.hpp" />
     <ClInclude Include="utf8conv\utf8conv_inl.hpp" />
   </ItemGroup>
