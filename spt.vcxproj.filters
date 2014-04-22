@@ -13,6 +13,9 @@
     <ClCompile Include="spt\spt.cpp">
       <Filter>spt</Filter>
     </ClCompile>
+    <ClCompile Include="spt\OrangeBox\spt-serverplugin.cpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -93,6 +96,9 @@
     <ClInclude Include="utf8conv\utf8conv_inl.hpp">
       <Filter>utf8conv</Filter>
     </ClInclude>
+    <ClInclude Include="spt\OrangeBox\spt-serverplugin.hpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">
@@ -120,6 +126,9 @@
     </Filter>
     <Filter Include="spt">
       <UniqueIdentifier>{42277bb4-807d-445f-8dc9-abaf03016da9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\OrangeBox">
+      <UniqueIdentifier>{74a03d34-0969-405d-838c-fa6350306ddf}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
