@@ -5,8 +5,6 @@
 #pragma once
 #endif
 
-#include <string>
-
 #include "engine/iserverplugin.h"
 
 //---------------------------------------------------------------------------------

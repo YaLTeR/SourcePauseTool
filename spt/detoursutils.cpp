@@ -8,6 +8,8 @@
 #include "spt.hpp"
 #include "../utf8conv/utf8conv.hpp"
 
+#pragma comment (lib, "detours.lib")
+
 void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 {
     if ((argCount < 2) || ((argCount % 2) != 0)) // Must pass a set of functions and a set of replacement functions.

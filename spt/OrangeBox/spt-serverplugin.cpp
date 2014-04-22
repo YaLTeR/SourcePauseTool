@@ -2,12 +2,8 @@
 #include "../spt.hpp"
 #include "../hooks.hpp"
 
-#include <detours.h>
-
 #include "engine/iserverplugin.h"
 #include "tier2/tier2.h"
-
-#pragma comment( lib, "detours.lib" )
 
 #include "tier0/memdbgoff.h" // YaLTeR - switch off the memory debugging.
 
