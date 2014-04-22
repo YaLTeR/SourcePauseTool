@@ -5,9 +5,6 @@
 #pragma once
 #endif
 
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
 #include <string>
 
 void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... );
