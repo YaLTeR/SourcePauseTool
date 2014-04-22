@@ -4,7 +4,8 @@ void ( *EngineLog )( const char *format, ... );
 void ( *EngineDevLog )( const char *format, ... );
 void ( *EngineWarning )( const char *format, ... );
 
-std::wstring GetFileName( const std::wstring &fileNameWithPath ) {
+std::wstring GetFileName( const std::wstring &fileNameWithPath )
+{
     unsigned slashPos = fileNameWithPath.rfind('/');
     if (slashPos != std::wstring::npos)
     {
