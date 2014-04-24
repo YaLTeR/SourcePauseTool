@@ -19,18 +19,16 @@ namespace Hooks
             module_info_t moduleInfo;
 
             _CheckJumpButton ORIG_CheckJumpButton;
-            _FinishGravity ORIG_FinishGravity;
 
-            bool inCheckJumpButton;
+            ptrdiff_t off1M_nOldButtons;
+            ptrdiff_t off2M_nOldButtons;
             bool cantJumpNextTime;
         } hookState;
 
         namespace Internal
         {
-            void __fastcall HOOKED_CheckJumpButton( void *thisptr, int edx )
+            bool __fastcall HOOKED_CheckJumpButton( void *thisptr, int edx )
             {
-                // EngineDevLog( "SPT: Engine call: [server dll] CheckJumpButton!\n" );
-
                 /*
                     CheckJumpButton calls FinishGravity() if and only if we jumped.
                 */
@@ -41,20 +39,22 @@ namespace Hooks
 
                 if ( y_spt_autojump.GetBool() )
                 {
-                    pM_nOldButtons = (int *)(*((DWORD_PTR *)thisptr + 2) + 40);
+                    pM_nOldButtons = (int *)(*((DWORD_PTR *)thisptr + hookState.off1M_nOldButtons) + hookState.off2M_nOldButtons);
                     origM_nOldButtons = *pM_nOldButtons;
 
                     if ( !hookState.cantJumpNextTime ) // Do not do anything if we jumped on the previous tick.
                     {
                         *pM_nOldButtons &= ~IN_JUMP; // Reset the jump button state as if it wasn't pressed.
                     }
+                    else
+                    {
+                        EngineDevLog( "SPT: Con jump prevented!\n" );
+                    }
                 }
 
                 hookState.cantJumpNextTime = false;
 
-                hookState.inCheckJumpButton = true;
-                hookState.ORIG_CheckJumpButton( thisptr, edx ); // This function can only change the jump bit.
-                hookState.inCheckJumpButton = false;
+                bool rv = hookState.ORIG_CheckJumpButton( thisptr, edx ); // This function can only change the jump bit.
 
                 if ( y_spt_autojump.GetBool() )
                 {
@@ -63,19 +63,21 @@ namespace Hooks
                         *pM_nOldButtons = origM_nOldButtons; // Restore the old jump button state.
                     }
                 }
-            }
 
-            void __fastcall HOOKED_FinishGravity( void *thisptr, int edx )
-            {
-                if (hookState.inCheckJumpButton)
+                if ( rv )
                 {
                     // We jumped.
-                    hookState.cantJumpNextTime = true; // Prevent consecutive jumps.
+                    if ( y_spt_autojump_ensure_legit.GetBool() )
+                    {
+                        hookState.cantJumpNextTime = true; // Prevent consecutive jumps.
+                    }
 
-                    // EngineDevLog( "SPT: Jump!\n" );
+                    EngineDevLog( "SPT: Jump!\n" );
                 }
 
-                return hookState.ORIG_FinishGravity( thisptr, edx );
+                // EngineDevLog( "SPT: Engine call: [server dll] CheckJumpButton() => %s\n", (rv ? "true" : "false") );
+
+                return rv;
             }
         }
 
@@ -98,6 +100,18 @@ namespace Hooks
             {
                 hookState.ORIG_CheckJumpButton = (_CheckJumpButton)pCheckJumpButton;
                 EngineLog( "SPT: [server dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsServerCheckJumpButton[ptnNumber].build.c_str() );
+
+                switch (ptnNumber)
+                {
+                case 0:
+                    hookState.off1M_nOldButtons = 2;
+                    hookState.off2M_nOldButtons = 40;
+                    break;
+                case 1:
+                    hookState.off1M_nOldButtons = 1;
+                    hookState.off2M_nOldButtons = 40;
+                    break;
+                }
             }
             else
             {
@@ -105,32 +119,14 @@ namespace Hooks
                 EngineWarning( "SPT: [server dll] y_spt_autojump has no effect.\n" );
             }
 
-            // FinishGravity
-            EngineLog( "SPT: [server dll] Searching for FinishGravity...\n" );
-
-            DWORD_PTR pFinishGravity = NULL;
-            ptnNumber = MemUtils::FindUniqueSequence( hookState.moduleInfo.moduleStart, hookState.moduleInfo.moduleLength, Patterns::ptnsServerFinishGravity, &pFinishGravity );
-            if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
-            {
-                hookState.ORIG_FinishGravity = (_FinishGravity)pFinishGravity;
-                EngineLog( "SPT: [server dll] Found FinishGravity at %p (using the build %s pattern).\n", pFinishGravity, Patterns::ptnsServerFinishGravity[ptnNumber].build.c_str() );
-            }
-            else
-            {
-                EngineWarning( "SPT: [server dll] Could not find FinishGravity!\n" );
-                EngineWarning( "SPT: [server dll] Consecutive jump protection is disabled.\n" );
-            }
-
-            AttachDetours( moduleName, 4,
-                &hookState.ORIG_CheckJumpButton, Internal::HOOKED_CheckJumpButton,
-                &hookState.ORIG_FinishGravity, Internal::HOOKED_FinishGravity );
+            AttachDetours( moduleName, 2,
+                &hookState.ORIG_CheckJumpButton, Internal::HOOKED_CheckJumpButton );
         }
 
         void Unhook( std::wstring &moduleName )
         {
-            DetachDetours( moduleName, 4,
-                &hookState.ORIG_CheckJumpButton, Internal::HOOKED_CheckJumpButton,
-                &hookState.ORIG_FinishGravity, Internal::HOOKED_FinishGravity );
+            DetachDetours( moduleName, 2,
+                &hookState.ORIG_CheckJumpButton, Internal::HOOKED_CheckJumpButton );
 
             Clear();
         }
@@ -141,8 +137,8 @@ namespace Hooks
             hookState.moduleInfo.moduleStart = NULL;
             hookState.moduleInfo.moduleLength = NULL;
             hookState.ORIG_CheckJumpButton = NULL;
-            hookState.ORIG_FinishGravity = NULL;
-            hookState.inCheckJumpButton = false;
+            hookState.off1M_nOldButtons = 0;
+            hookState.off2M_nOldButtons = 0;
             hookState.cantJumpNextTime = false;
         }
     }
