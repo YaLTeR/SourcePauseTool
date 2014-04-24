@@ -1,6 +1,7 @@
  ☐ Hook demo cvar setting so that I can disable demos setting sensitivity. @feature
  ☐ Add autojump. @feature
  ☐ Add an _y_afterframes analogue. @feature
+ ☐ Add a cvar to force FOV. @feature
    --- ✄ -----------------------
    Stuff that I'll do when I get around to it
  ✔ Rearrange sources to folders @done (14-04-14 14:13)

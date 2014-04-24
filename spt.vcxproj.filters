@@ -16,6 +16,15 @@
     <ClCompile Include="spt\OrangeBox\spt-serverplugin.cpp">
       <Filter>spt\OrangeBox</Filter>
     </ClCompile>
+    <ClCompile Include="spt\OrangeBox\hooks-client-dll.cpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\hooks-engine-dll.cpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\cvars.cpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -97,6 +106,9 @@
       <Filter>utf8conv</Filter>
     </ClInclude>
     <ClInclude Include="spt\OrangeBox\spt-serverplugin.hpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\cvars.hpp">
       <Filter>spt\OrangeBox</Filter>
     </ClInclude>
   </ItemGroup>

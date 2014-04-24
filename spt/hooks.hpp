@@ -52,9 +52,11 @@ namespace Hooks
         namespace Internal
         {
             void __cdecl HOOKED_DoImageSpaceMotionBlur( void *view, int x, int y, int w, int h );
+            void __fastcall HOOKED_CheckJumpButton( void *thisptr, int edx );
         }
 
         typedef void( __cdecl *_DoImageSpaceMotionBlur ) ( void *view, int x, int y, int w, int h );
+        typedef void( __fastcall *_CheckJumpButton ) ( void *thisptr, int edx );
 
         void Hook( std::wstring &moduleName, HMODULE hModule, size_t moduleStart, size_t moduleLength );
         void Unhook( std::wstring &moduleName );

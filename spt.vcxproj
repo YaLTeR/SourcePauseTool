@@ -199,6 +199,9 @@
     <ClCompile Include="spt\detoursutils.cpp" />
     <ClCompile Include="spt\hooks.cpp" />
     <ClCompile Include="spt\memutils.cpp" />
+    <ClCompile Include="spt\OrangeBox\cvars.cpp" />
+    <ClCompile Include="spt\OrangeBox\hooks-client-dll.cpp" />
+    <ClCompile Include="spt\OrangeBox\hooks-engine-dll.cpp" />
     <ClCompile Include="spt\spt.cpp" />
     <ClCompile Include="spt\OrangeBox\spt-serverplugin.cpp" />
   </ItemGroup>
@@ -232,6 +235,7 @@
     <ClInclude Include="spt\detoursutils.hpp" />
     <ClInclude Include="spt\hooks.hpp" />
     <ClInclude Include="spt\memutils.hpp" />
+    <ClInclude Include="spt\OrangeBox\cvars.hpp" />
     <ClInclude Include="spt\patterns.hpp" />
     <ClInclude Include="spt\spt.hpp" />
     <ClInclude Include="spt\OrangeBox\spt-serverplugin.hpp" />
