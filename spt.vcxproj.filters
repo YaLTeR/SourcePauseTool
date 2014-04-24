@@ -25,6 +25,9 @@
     <ClCompile Include="spt\OrangeBox\cvars.cpp">
       <Filter>spt\OrangeBox</Filter>
     </ClCompile>
+    <ClCompile Include="spt\OrangeBox\hooks-server-dll.cpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">

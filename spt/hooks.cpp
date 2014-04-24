@@ -31,6 +31,14 @@ namespace Hooks
                 ClientDll::Hook,
                 ClientDll::Unhook
             }
+        },
+
+        {
+            L"server.dll",
+            {
+                ServerDll::Hook,
+                ServerDll::Unhook
+            }
         }
     };
 

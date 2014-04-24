@@ -20,8 +20,11 @@ namespace Hooks
 
             _DoImageSpaceMotionBlur ORIG_DoImageSpaceMorionBlur;
             _CheckJumpButton ORIG_CheckJumpButton;
+            _FinishGravity ORIG_FinishGravity;
 
             DWORD_PTR *pgpGlobals;
+            bool inCheckJumpButton;
+            bool cantJumpNextTime;
         } hookState;
 
         namespace Internal
@@ -61,7 +64,54 @@ namespace Hooks
             {
                 EngineDevLog( "SPT: Engine call: [client dll] CheckJumpButton!\n" );
 
-                return hookState.ORIG_CheckJumpButton( thisptr, edx );
+                /*
+                    Not sure if this gets called at all from the client dll, but
+                    I will just hook it in exactly the same way as the server one.
+
+                    CheckJumpButton calls FinishGravity() if and only if we jumped.
+                */
+                const int IN_JUMP = (1 << 1);
+
+                int *pM_nOldButtons = NULL;
+                int origM_nOldButtons = 0;
+
+                if ( y_spt_autojump.GetBool() )
+                {
+                    pM_nOldButtons = (int *)(*((DWORD_PTR *)thisptr + 2) + 40);
+                    origM_nOldButtons = *pM_nOldButtons;
+
+                    if ( !hookState.cantJumpNextTime ) // Do not do anything if we jumped on the previous tick.
+                    {
+                        *pM_nOldButtons &= ~IN_JUMP; // Reset the jump button state as if it wasn't pressed.
+                    }
+                }
+
+                hookState.cantJumpNextTime = false;
+
+                hookState.inCheckJumpButton = true;
+                hookState.ORIG_CheckJumpButton( thisptr, edx ); // This function can only change the jump bit.
+                hookState.inCheckJumpButton = false;
+
+                if ( y_spt_autojump.GetBool() )
+                {
+                    if ( !(*pM_nOldButtons & IN_JUMP) ) // CheckJumpButton didn't change anything (we didn't jump).
+                    {
+                        *pM_nOldButtons = origM_nOldButtons; // Restore the old jump button state.
+                    }
+                }
+            }
+
+            void __fastcall HOOKED_FinishGravity( void *thisptr, int edx )
+            {
+                if (hookState.inCheckJumpButton)
+                {
+                    // We jumped.
+                    hookState.cantJumpNextTime = true; // Prevent consecutive jumps.
+
+                    // EngineDevLog( "SPT: Jump!\n" );
+                }
+
+                return hookState.ORIG_FinishGravity( thisptr, edx );
             }
         }
 
@@ -112,20 +162,11 @@ namespace Hooks
             EngineLog( "SPT: [client dll] Searching for CheckJumpButton...\n" );
 
             DWORD_PTR pCheckJumpButton = NULL;
-            ptnNumber = MemUtils::FindUniqueSequence( hookState.moduleInfo.moduleStart, hookState.moduleInfo.moduleLength, Patterns::ptnsCheckJumpButton, &pCheckJumpButton );
+            ptnNumber = MemUtils::FindUniqueSequence( hookState.moduleInfo.moduleStart, hookState.moduleInfo.moduleLength, Patterns::ptnsClientCheckJumpButton, &pCheckJumpButton );
             if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
             {
                 hookState.ORIG_CheckJumpButton = (_CheckJumpButton)pCheckJumpButton;
-                EngineLog( "SPT: [client dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsCheckJumpButton[ptnNumber].build.c_str() );
-
-                /*switch (ptnNumber)
-                {
-                case 0:
-                hookState.pgpGlobals = *(DWORD_PTR **)(pDoImageSpaceMotionBlur + 132);
-                break;
-                }
-
-                Log( "SPT: pgpGlobals is %p.\n", hookState.pgpGlobals );*/
+                EngineLog( "SPT: [client dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsClientCheckJumpButton[ptnNumber].build.c_str() );
             }
             else
             {
@@ -133,16 +174,34 @@ namespace Hooks
                 EngineWarning( "SPT: [client dll] y_spt_autojump has no effect.\n" );
             }
 
-            AttachDetours( moduleName, 4,
+            // FinishGravity
+            EngineLog( "SPT: [client dll] Searching for FinishGravity...\n" );
+
+            DWORD_PTR pFinishGravity = NULL;
+            ptnNumber = MemUtils::FindUniqueSequence( hookState.moduleInfo.moduleStart, hookState.moduleInfo.moduleLength, Patterns::ptnsClientFinishGravity, &pFinishGravity );
+            if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+            {
+                hookState.ORIG_FinishGravity = (_FinishGravity)pFinishGravity;
+                EngineLog( "SPT: [client dll] Found FinishGravity at %p (using the build %s pattern).\n", pFinishGravity, Patterns::ptnsClientFinishGravity[ptnNumber].build.c_str() );
+            }
+            else
+            {
+                EngineWarning( "SPT: [client dll] Could not find FinishGravity!\n" );
+                EngineWarning( "SPT: [client dll] Consecutive jump protection is disabled.\n" );
+            }
+
+            AttachDetours( moduleName, 6,
                 &hookState.ORIG_DoImageSpaceMorionBlur, Internal::HOOKED_DoImageSpaceMotionBlur,
-                &hookState.ORIG_CheckJumpButton, Internal::HOOKED_CheckJumpButton );
+                &hookState.ORIG_CheckJumpButton, Internal::HOOKED_CheckJumpButton,
+                &hookState.ORIG_FinishGravity, Internal::HOOKED_FinishGravity );
         }
 
         void Unhook( std::wstring &moduleName )
         {
-            DetachDetours( moduleName, 4,
+            DetachDetours( moduleName, 6,
                 &hookState.ORIG_DoImageSpaceMorionBlur, Internal::HOOKED_DoImageSpaceMotionBlur,
-                &hookState.ORIG_CheckJumpButton, Internal::HOOKED_CheckJumpButton );
+                &hookState.ORIG_CheckJumpButton, Internal::HOOKED_CheckJumpButton,
+                &hookState.ORIG_FinishGravity, Internal::HOOKED_FinishGravity );
 
             Clear();
         }
@@ -153,6 +212,8 @@ namespace Hooks
             hookState.moduleInfo.moduleStart = NULL;
             hookState.moduleInfo.moduleLength = NULL;
             hookState.ORIG_DoImageSpaceMorionBlur = NULL;
+            hookState.ORIG_CheckJumpButton = NULL;
+            hookState.ORIG_FinishGravity = NULL;
             hookState.pgpGlobals = NULL;
         }
     }

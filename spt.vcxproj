@@ -202,6 +202,7 @@
     <ClCompile Include="spt\OrangeBox\cvars.cpp" />
     <ClCompile Include="spt\OrangeBox\hooks-client-dll.cpp" />
     <ClCompile Include="spt\OrangeBox\hooks-engine-dll.cpp" />
+    <ClCompile Include="spt\OrangeBox\hooks-server-dll.cpp" />
     <ClCompile Include="spt\spt.cpp" />
     <ClCompile Include="spt\OrangeBox\spt-serverplugin.cpp" />
   </ItemGroup>
