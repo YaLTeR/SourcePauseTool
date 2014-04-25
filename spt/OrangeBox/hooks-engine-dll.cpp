@@ -101,7 +101,7 @@ namespace Hooks
             MemUtils::ptnvec_size ptnNumber;
 
             // m_bLoadgame and pGameServer (&sv)
-            EngineLog( "SPT: Searching for SpawnPlayer...\n" );
+            EngineDevLog( "SPT: Searching for SpawnPlayer...\n" );
 
             DWORD_PTR pSpawnPlayer = NULL;
             ptnNumber = MemUtils::FindUniqueSequence(hookState.moduleInfo.moduleStart, hookState.moduleInfo.moduleLength, Patterns::ptnsSpawnPlayer, &pSpawnPlayer);
@@ -137,7 +137,7 @@ namespace Hooks
             }
 
             // SV_ActivateServer
-            EngineLog( "SPT: Searching for SV_ActivateServer...\n" );
+            EngineDevLog( "SPT: Searching for SV_ActivateServer...\n" );
 
             DWORD_PTR pSV_ActivateServer = NULL;
             ptnNumber = MemUtils::FindUniqueSequence( hookState.moduleInfo.moduleStart, hookState.moduleInfo.moduleLength, Patterns::ptnsSV_ActivateServer, &pSV_ActivateServer );
@@ -153,7 +153,7 @@ namespace Hooks
             }
 
             // FinishRestore
-            EngineLog( "SPT: Searching for FinishRestore...\n" );
+            EngineDevLog( "SPT: Searching for FinishRestore...\n" );
 
             DWORD_PTR pFinishRestore = NULL;
             ptnNumber = MemUtils::FindUniqueSequence( hookState.moduleInfo.moduleStart, hookState.moduleInfo.moduleLength, Patterns::ptnsFinishRestore, &pFinishRestore );
@@ -169,7 +169,7 @@ namespace Hooks
             }
 
             // SetPaused
-            EngineLog( "SPT: Searching for SetPaused...\n" );
+            EngineDevLog( "SPT: Searching for SetPaused...\n" );
 
             DWORD_PTR pSetPaused = NULL;
             ptnNumber = MemUtils::FindUniqueSequence( hookState.moduleInfo.moduleStart, hookState.moduleInfo.moduleLength, Patterns::ptnsSetPaused, &pSetPaused );

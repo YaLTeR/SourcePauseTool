@@ -128,7 +128,7 @@ namespace Hooks
             MemUtils::ptnvec_size ptnNumber;
 
             // DoImageSpaceMotionBlur
-            EngineLog( "SPT: Searching for DoImageSpaceMotionBlur...\n" );
+            EngineDevLog( "SPT: Searching for DoImageSpaceMotionBlur...\n" );
 
             DWORD_PTR pDoImageSpaceMotionBlur = NULL;
             ptnNumber = MemUtils::FindUniqueSequence( hookState.moduleInfo.moduleStart, hookState.moduleInfo.moduleLength, Patterns::ptnsDoImageSpaceMotionBlur, &pDoImageSpaceMotionBlur );
@@ -161,7 +161,7 @@ namespace Hooks
             }
 
             // CheckJumpButton
-            EngineLog( "SPT: [client dll] Searching for CheckJumpButton...\n" );
+            EngineDevLog( "SPT: [client dll] Searching for CheckJumpButton...\n" );
 
             DWORD_PTR pCheckJumpButton = NULL;
             ptnNumber = MemUtils::FindUniqueSequence( hookState.moduleInfo.moduleStart, hookState.moduleInfo.moduleLength, Patterns::ptnsClientCheckJumpButton, &pCheckJumpButton );
@@ -179,6 +179,11 @@ namespace Hooks
 
                 case 1:
                     hookState.off1M_nOldButtons = 1;
+                    hookState.off2M_nOldButtons = 40;
+                    break;
+
+                case 2:
+                    hookState.off1M_nOldButtons = 2;
                     hookState.off2M_nOldButtons = 40;
                     break;
                 }

@@ -48,7 +48,7 @@ namespace Hooks
                     }
                     else
                     {
-                        EngineDevLog( "SPT: Con jump prevented!\n" );
+                        // EngineDevLog( "SPT: Con jump prevented!\n" );
                     }
                 }
 
@@ -72,7 +72,7 @@ namespace Hooks
                         hookState.cantJumpNextTime = true; // Prevent consecutive jumps.
                     }
 
-                    EngineDevLog( "SPT: Jump!\n" );
+                    // EngineDevLog( "SPT: Jump!\n" );
                 }
 
                 // EngineDevLog( "SPT: Engine call: [server dll] CheckJumpButton() => %s\n", (rv ? "true" : "false") );
@@ -92,7 +92,7 @@ namespace Hooks
             MemUtils::ptnvec_size ptnNumber;
 
             // CheckJumpButton
-            EngineLog( "SPT: [server dll] Searching for CheckJumpButton...\n" );
+            EngineDevLog( "SPT: [server dll] Searching for CheckJumpButton...\n" );
 
             DWORD_PTR pCheckJumpButton = NULL;
             ptnNumber = MemUtils::FindUniqueSequence( hookState.moduleInfo.moduleStart, hookState.moduleInfo.moduleLength, Patterns::ptnsServerCheckJumpButton, &pCheckJumpButton );
@@ -107,8 +107,14 @@ namespace Hooks
                     hookState.off1M_nOldButtons = 2;
                     hookState.off2M_nOldButtons = 40;
                     break;
+
                 case 1:
                     hookState.off1M_nOldButtons = 1;
+                    hookState.off2M_nOldButtons = 40;
+                    break;
+
+                case 2:
+                    hookState.off1M_nOldButtons = 2;
                     hookState.off2M_nOldButtons = 40;
                     break;
                 }
