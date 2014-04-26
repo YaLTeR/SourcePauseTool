@@ -73,12 +73,12 @@ namespace Hooks
                 int *pM_nOldButtons = NULL;
                 int origM_nOldButtons = 0;
 
-                if ( y_spt_autojump.GetBool() )
+                if (y_spt_autojump.GetBool())
                 {
                     pM_nOldButtons = (int *)(*((DWORD_PTR *)thisptr + hookState.off1M_nOldButtons) + hookState.off2M_nOldButtons);
                     origM_nOldButtons = *pM_nOldButtons;
 
-                    if ( !hookState.cantJumpNextTime ) // Do not do anything if we jumped on the previous tick.
+                    if (!hookState.cantJumpNextTime) // Do not do anything if we jumped on the previous tick.
                     {
                         *pM_nOldButtons &= ~IN_JUMP; // Reset the jump button state as if it wasn't pressed.
                     }
@@ -92,7 +92,7 @@ namespace Hooks
 
                 bool rv = hookState.ORIG_CheckJumpButton( thisptr, edx ); // This function can only change the jump bit.
 
-                if ( y_spt_autojump.GetBool() )
+                if (y_spt_autojump.GetBool())
                 {
                     if ( !(*pM_nOldButtons & IN_JUMP) ) // CheckJumpButton didn't change anything (we didn't jump).
                     {
@@ -100,10 +100,10 @@ namespace Hooks
                     }
                 }
 
-                if ( rv )
+                if (rv)
                 {
                     // We jumped.
-                    if ( y_spt_autojump_ensure_legit.GetBool() )
+                    if (y_spt_autojump_ensure_legit.GetBool())
                     {
                         hookState.cantJumpNextTime = true; // Prevent consecutive jumps.
                     }
