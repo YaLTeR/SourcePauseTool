@@ -13,7 +13,7 @@
         {
             "tab_size": 4,
             "trim_trailing_white_space_on_save": true,
-            "translate_tabs_to_spaces" : true
+            "translate_tabs_to_spaces" : false
         }
     ],
     "build_systems":

@@ -2,14 +2,14 @@
 //
 // FILE: utf8conv.h
 //
-// Header file defining prototypes of helper functions for converting 
+// Header file defining prototypes of helper functions for converting
 // strings between Unicode UTF-8 and UTF-16.
 // (The implementation file is "utf8conv_inl.h").
 //
-// UTF-8 text is stored in std::string; 
+// UTF-8 text is stored in std::string;
 // UTF-16 text is stored in std::wstring.
 //
-// This code just uses Win32 Platform SDK and C++ standard library; 
+// This code just uses Win32 Platform SDK and C++ standard library;
 // so it can be used also with the Express editions of Visual Studio.
 //
 //
@@ -54,67 +54,67 @@ namespace utf8util {
 //------------------------------------------------------------------------
 // Exception class representing an error occurred during UTF-8 conversion.
 //------------------------------------------------------------------------
-class utf8_conversion_error 
-    : public std::runtime_error
+class utf8_conversion_error
+	: public std::runtime_error
 {
 public:
-  
-    //
-    // Naming convention note:
-    // -----------------------
-    //
-    // This exception class is derived from std::runtime_error class,
-    // so I chose to use the same naming convention of STL classes
-    // (e.g. do_something_intersting() instead of DoSomethingInteresting()).
-    //
+
+	//
+	// Naming convention note:
+	// -----------------------
+	//
+	// This exception class is derived from std::runtime_error class,
+	// so I chose to use the same naming convention of STL classes
+	// (e.g. do_something_intersting() instead of DoSomethingInteresting()).
+	//
 
 
-    // Error code type 
-    // (a DWORD, as the return value type from ::GetLastError())
-    typedef unsigned long error_code_type;
+	// Error code type
+	// (a DWORD, as the return value type from ::GetLastError())
+	typedef unsigned long error_code_type;
 
-    // Type of conversion
-    enum conversion_type
-    {
-        conversion_utf8_from_utf16,     // UTF-16 ---> UTF-8
-        conversion_utf16_from_utf8      // UTF-8  ---> UTF-16
-    };
-
-
-    // Constructs an UTF-8 conversion error exception 
-    // with a raw C string message, conversion type and error code.
-    utf8_conversion_error(
-        const char * message, 
-        conversion_type conversion, 
-        error_code_type error_code
-    );
+	// Type of conversion
+	enum conversion_type
+	{
+		conversion_utf8_from_utf16,     // UTF-16 ---> UTF-8
+		conversion_utf16_from_utf8      // UTF-8  ---> UTF-16
+	};
 
 
-    // Constructs an UTF-8 conversion error exception 
-    // with a std::string message, conversion type and error code.
-    utf8_conversion_error(
-        const std::string & message, 
-        conversion_type conversion, 
-        error_code_type error_code
-    );
+	// Constructs an UTF-8 conversion error exception
+	// with a raw C string message, conversion type and error code.
+	utf8_conversion_error(
+		const char * message,
+		conversion_type conversion,
+		error_code_type error_code
+	);
 
 
-    // Returns the type of conversion (UTF-8 from UTF-16, or vice versa)
-    conversion_type conversion() const;
+	// Constructs an UTF-8 conversion error exception
+	// with a std::string message, conversion type and error code.
+	utf8_conversion_error(
+		const std::string & message,
+		conversion_type conversion,
+		error_code_type error_code
+	);
 
 
-    // Returns the error code occurred during the conversion
-    // (which is typically the return value of ::GetLastError()).
-    error_code_type error_code() const;
+	// Returns the type of conversion (UTF-8 from UTF-16, or vice versa)
+	conversion_type conversion() const;
+
+
+	// Returns the error code occurred during the conversion
+	// (which is typically the return value of ::GetLastError()).
+	error_code_type error_code() const;
 
 
 
-    //
-    // IMPLEMENTATION
-    //
+	//
+	// IMPLEMENTATION
+	//
 private:
-    conversion_type m_conversion;   // kind of conversion
-    error_code_type m_error_code;   // error code
+	conversion_type m_conversion;   // kind of conversion
+	error_code_type m_error_code;   // error code
 };
 
 //------------------------------------------------------------------------

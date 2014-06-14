@@ -6,19 +6,19 @@ void ( *EngineWarning )( const char *format, ... );
 
 std::wstring GetFileName( const std::wstring &fileNameWithPath )
 {
-    unsigned slashPos = fileNameWithPath.rfind('/');
-    if (slashPos != std::wstring::npos)
-    {
-        return std::wstring( fileNameWithPath, (slashPos + 1) );
-    }
-    else
-    {
-        slashPos = fileNameWithPath.rfind('\\');
-        if (slashPos != std::wstring::npos)
-        {
-            return std::wstring( fileNameWithPath, (slashPos + 1) );
-        }
-    }
+	unsigned slashPos = fileNameWithPath.rfind('/');
+	if (slashPos != std::wstring::npos)
+	{
+		return std::wstring( fileNameWithPath, (slashPos + 1) );
+	}
+	else
+	{
+		slashPos = fileNameWithPath.rfind('\\');
+		if (slashPos != std::wstring::npos)
+		{
+			return std::wstring( fileNameWithPath, (slashPos + 1) );
+		}
+	}
 
-    return fileNameWithPath;
+	return fileNameWithPath;
 }

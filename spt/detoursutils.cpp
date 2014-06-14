@@ -12,122 +12,122 @@
 
 void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 {
-    if ((argCount < 2) || ((argCount % 2) != 0)) // Must pass a set of functions and a set of replacement functions.
-        return;
+	if ((argCount < 2) || ((argCount % 2) != 0)) // Must pass a set of functions and a set of replacement functions.
+		return;
 
-    va_list args, copy;
-    va_start( args, argCount );
-    va_copy( copy, args );
+	va_list args, copy;
+	va_start( args, argCount );
+	va_copy( copy, args );
 
-    // Check if we need to detour something.
-    bool needToDetour = false;
-    for (unsigned int i = 0; i < argCount; i += 2)
-    {
-        PVOID *pFunctionToDetour = va_arg( args, PVOID * );
-        PVOID functionToDetourWith = va_arg( args, PVOID );
+	// Check if we need to detour something.
+	bool needToDetour = false;
+	for (unsigned int i = 0; i < argCount; i += 2)
+	{
+		PVOID *pFunctionToDetour = va_arg( args, PVOID * );
+		PVOID functionToDetourWith = va_arg( args, PVOID );
 
-        if ((pFunctionToDetour && *pFunctionToDetour) && functionToDetourWith)
-        {
-            // We have something to detour!
-            needToDetour = true;
-            break;
-        }
-    }
-    va_end( args );
+		if ((pFunctionToDetour && *pFunctionToDetour) && functionToDetourWith)
+		{
+			// We have something to detour!
+			needToDetour = true;
+			break;
+		}
+	}
+	va_end( args );
 
-    // We don't have anything to detour.
-    if (!needToDetour)
-    {
-        va_end( copy );
-        EngineLog( "SPT: No %s functions to detour!\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
-        return;
-    }
+	// We don't have anything to detour.
+	if (!needToDetour)
+	{
+		va_end( copy );
+		EngineLog( "SPT: No %s functions to detour!\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
+		return;
+	}
 
-    DetourTransactionBegin();
-    DetourUpdateThread( GetCurrentThread() );
+	DetourTransactionBegin();
+	DetourUpdateThread( GetCurrentThread() );
 
-    unsigned int detourCount = 0;
-    for (unsigned int i = 0; i < argCount; i += 2)
-    {
-        PVOID *pFunctionToDetour = va_arg( copy, PVOID * );
-        PVOID functionToDetourWith = va_arg( copy, PVOID );
+	unsigned int detourCount = 0;
+	for (unsigned int i = 0; i < argCount; i += 2)
+	{
+		PVOID *pFunctionToDetour = va_arg( copy, PVOID * );
+		PVOID functionToDetourWith = va_arg( copy, PVOID );
 
-        if ((pFunctionToDetour && *pFunctionToDetour) && functionToDetourWith)
-        {
-            DetourAttach( pFunctionToDetour, functionToDetourWith );
-            detourCount++;
-        }
-    }
-    va_end( copy );
+		if ((pFunctionToDetour && *pFunctionToDetour) && functionToDetourWith)
+		{
+			DetourAttach( pFunctionToDetour, functionToDetourWith );
+			detourCount++;
+		}
+	}
+	va_end( copy );
 
-    LONG error = DetourTransactionCommit();
-    if (error == NO_ERROR)
-    {
-        EngineLog( "SPT: Detoured %d %s function(s).\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str() );
-    }
-    else
-    {
-        EngineWarning( "SPT: Error detouring %d %s function(s): %d.\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str(), error );
-    }
+	LONG error = DetourTransactionCommit();
+	if (error == NO_ERROR)
+	{
+		EngineLog( "SPT: Detoured %d %s function(s).\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str() );
+	}
+	else
+	{
+		EngineWarning( "SPT: Error detouring %d %s function(s): %d.\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str(), error );
+	}
 }
 
 void DetachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 {
-    if ((argCount < 2) || ((argCount % 2) != 0)) // Must pass a set of functions and a set of replacement functions.
-        return;
+	if ((argCount < 2) || ((argCount % 2) != 0)) // Must pass a set of functions and a set of replacement functions.
+		return;
 
-    va_list args, copy;
-    va_start( args, argCount );
-    va_copy( copy, args );
+	va_list args, copy;
+	va_start( args, argCount );
+	va_copy( copy, args );
 
-    // Check if we need to undetour something.
-    bool needToUndetour = false;
-    for (unsigned int i = 0; i < argCount; i += 2)
-    {
-        PVOID *pFunctionToUndetour = va_arg( args, PVOID * );
-        PVOID functionReplacement = va_arg( args, PVOID );
+	// Check if we need to undetour something.
+	bool needToUndetour = false;
+	for (unsigned int i = 0; i < argCount; i += 2)
+	{
+		PVOID *pFunctionToUndetour = va_arg( args, PVOID * );
+		PVOID functionReplacement = va_arg( args, PVOID );
 
-        if ((pFunctionToUndetour && *pFunctionToUndetour) && functionReplacement)
-        {
-            // We have something to detour!
-            needToUndetour = true;
-            break;
-        }
-    }
-    va_end( args );
+		if ((pFunctionToUndetour && *pFunctionToUndetour) && functionReplacement)
+		{
+			// We have something to detour!
+			needToUndetour = true;
+			break;
+		}
+	}
+	va_end( args );
 
-    // We don't have anything to undetour.
-    if (!needToUndetour)
-    {
-        va_end( copy );
-        EngineLog( "SPT: No %s functions to detour!\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
-        return;
-    }
+	// We don't have anything to undetour.
+	if (!needToUndetour)
+	{
+		va_end( copy );
+		EngineLog( "SPT: No %s functions to detour!\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
+		return;
+	}
 
-    DetourTransactionBegin();
-    DetourUpdateThread( GetCurrentThread() );
+	DetourTransactionBegin();
+	DetourUpdateThread( GetCurrentThread() );
 
-    unsigned int detourCount = 0;
-    for (unsigned int i = 0; i < argCount; i += 2)
-    {
-        PVOID *pFunctionToUndetour = va_arg( copy, PVOID * );
-        PVOID functionReplacement = va_arg( copy, PVOID );
+	unsigned int detourCount = 0;
+	for (unsigned int i = 0; i < argCount; i += 2)
+	{
+		PVOID *pFunctionToUndetour = va_arg( copy, PVOID * );
+		PVOID functionReplacement = va_arg( copy, PVOID );
 
-        if ((pFunctionToUndetour && *pFunctionToUndetour) && functionReplacement)
-        {
-            DetourDetach( pFunctionToUndetour, functionReplacement );
-            detourCount++;
-        }
-    }
-    va_end( copy );
+		if ((pFunctionToUndetour && *pFunctionToUndetour) && functionReplacement)
+		{
+			DetourDetach( pFunctionToUndetour, functionReplacement );
+			detourCount++;
+		}
+	}
+	va_end( copy );
 
-    LONG error = DetourTransactionCommit();
-    if (error == NO_ERROR)
-    {
-        EngineLog( "SPT: Removed %d %s function detour(s).\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str() );
-    }
-    else
-    {
-        EngineWarning( "SPT: Error removing %d %s function detour(s): %d.\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str(), error );
-    }
+	LONG error = DetourTransactionCommit();
+	if (error == NO_ERROR)
+	{
+		EngineLog( "SPT: Removed %d %s function detour(s).\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str() );
+	}
+	else
+	{
+		EngineWarning( "SPT: Error removing %d %s function detour(s): %d.\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str(), error );
+	}
 }

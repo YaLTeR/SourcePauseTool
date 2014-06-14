@@ -10,7 +10,7 @@
 // useful helper func
 inline bool FStrEq( const char *sz1, const char *sz2 )
 {
-    return(Q_stricmp( sz1, sz2 ) == 0);
+	return(Q_stricmp( sz1, sz2 ) == 0);
 }
 
 //
@@ -30,18 +30,18 @@ CSourcePauseTool::~CSourcePauseTool() {};
 //---------------------------------------------------------------------------------
 bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory )
 {
-    ConnectTier1Libraries(&interfaceFactory, 1);
-    ConVar_Register(0);
+	ConnectTier1Libraries(&interfaceFactory, 1);
+	ConVar_Register(0);
 
-    EngineLog = Log;
-    EngineDevLog = DevLog;
-    EngineWarning = Warning;
+	EngineLog = Log;
+	EngineDevLog = DevLog;
+	EngineWarning = Warning;
 
-    Hooks::Init();
+	Hooks::Init();
 
-    Msg("SourcePauseTool v" SPT_VERSION " was loaded successfully.\n");
+	Msg("SourcePauseTool v" SPT_VERSION " was loaded successfully.\n");
 
-    return true;
+	return true;
 }
 
 //---------------------------------------------------------------------------------
@@ -49,10 +49,10 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 //---------------------------------------------------------------------------------
 void CSourcePauseTool::Unload( void )
 {
-    Hooks::Free();
+	Hooks::Free();
 
-    ConVar_Unregister();
-    DisconnectTier1Libraries();
+	ConVar_Unregister();
+	DisconnectTier1Libraries();
 }
 
 //---------------------------------------------------------------------------------
@@ -70,7 +70,7 @@ void CSourcePauseTool::UnPause( void ) {};
 //---------------------------------------------------------------------------------
 const char *CSourcePauseTool::GetPluginDescription( void )
 {
-    return "SourcePauseTool v" SPT_VERSION ", Ivan \"YaLTeR\" Molodetskikh";
+	return "SourcePauseTool v" SPT_VERSION ", Ivan \"YaLTeR\" Molodetskikh";
 }
 
 //---------------------------------------------------------------------------------
@@ -124,7 +124,7 @@ void CSourcePauseTool::ClientSettingsChanged( edict_t *pEdict ) {};
 //---------------------------------------------------------------------------------
 PLUGIN_RESULT CSourcePauseTool::ClientConnect( bool *bAllowConnect, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen )
 {
-    return PLUGIN_CONTINUE;
+	return PLUGIN_CONTINUE;
 }
 
 //---------------------------------------------------------------------------------
@@ -132,7 +132,7 @@ PLUGIN_RESULT CSourcePauseTool::ClientConnect( bool *bAllowConnect, edict_t *pEn
 //---------------------------------------------------------------------------------
 PLUGIN_RESULT CSourcePauseTool::ClientCommand( edict_t *pEntity, const CCommand &args )
 {
-    return PLUGIN_CONTINUE;
+	return PLUGIN_CONTINUE;
 }
 
 //---------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ PLUGIN_RESULT CSourcePauseTool::ClientCommand( edict_t *pEntity, const CCommand 
 //---------------------------------------------------------------------------------
 PLUGIN_RESULT CSourcePauseTool::NetworkIDValidated( const char *pszUserName, const char *pszNetworkID )
 {
-    return PLUGIN_CONTINUE;
+	return PLUGIN_CONTINUE;
 }
 
 //---------------------------------------------------------------------------------

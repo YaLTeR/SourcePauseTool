@@ -11,4 +11,4 @@ You can control how the plugin works using the **y_spt_pause** cvar. If it is eq
 ##Building
 To build it you will need Detours v3.0 (the Express version will do) and SourceSDK. Place everything into the *src\utils\serverplugin_sample\* folder, where *src* is the folder with the mod source code. Configure VC++ Directories so that you have your Detours *includes* and *libs* directories listed appropriately.
 
-Built with Source 2007 code and Visual Studio 2013 Express for Windows Desktop.
+Built with the Source 2007 code and Visual Studio 2013 Express for Windows Desktop.
