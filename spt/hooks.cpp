@@ -43,11 +43,11 @@ void Hooks::Init()
 {
 	Clear();
 
-	modules.push_back(&engineDLL);
-	modules.push_back(&clientDLL);
-	modules.push_back(&serverDLL);
+	AddToHookedModules(&engineDLL);
+	AddToHookedModules(&clientDLL);
+	AddToHookedModules(&serverDLL);
 
-	EngineLog("SPT: modules contain %d entries\n", modules.size());
+	EngineDevLog("SPT: Modules contain %d entries.\n", modules.size());
 
 	// Try hooking each module in case it is already loaded
 	for (auto it = modules.cbegin(); it != modules.cend(); ++it)
@@ -71,7 +71,7 @@ void Hooks::Init()
 
 void Hooks::Free()
 {
-	EngineLog("SPT: modules contain %d entries\n", modules.size());
+	EngineDevLog("SPT: Modules contain %d entries.\n", modules.size());
 
 	// Unhook everything
 	for (auto it = modules.begin(); it != modules.end(); ++it)
@@ -152,7 +152,7 @@ void Hooks::AddToHookedModules(IHookableModule* module)
 		return;
 
 	modules.push_back(module);
-	EngineLog("Adding a module\n");
+	EngineDevLog("SPT: Adding a module %p.\n", module);
 }
 
 HMODULE WINAPI Hooks::HOOKED_LoadLibraryA_Func(LPCSTR lpFileName)
