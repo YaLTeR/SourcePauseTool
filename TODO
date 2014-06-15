@@ -3,7 +3,7 @@
  ☐ Add an _y_afterframes analogue. @feature
  ☐ Add a cvar to force FOV. @feature
  ☐ Merge Bunnymod XT into spt.
- ☐ Support the newest HL2 update.
+ ✔ Support the newest HL2 update. @done (14-06-15 15:09)
   --- ✄ -----------------------
    Stuff that I'll do when I get around to it
  ✔ Rearrange sources to folders @done (14-04-14 14:13)
