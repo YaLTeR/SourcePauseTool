@@ -5,18 +5,27 @@
 #pragma once
 #endif
 
+#include <cstddef>
+#include <cstdint>
+#include <limits>
+#include <string>
 #include <vector>
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <Windows.h>
 
+using std::uintptr_t;
+using std::size_t;
+
 namespace MemUtils
 {
+	typedef unsigned char byte;
+
 	typedef struct
 	{
 		std::string build;
-		std::vector<BYTE> pattern;
+		std::vector<unsigned char> pattern;
 		std::string mask;
 	} pattern_def_t;
 
@@ -26,16 +35,16 @@ namespace MemUtils
 #undef max // Just in case
 	const ptnvec_size INVALID_SEQUENCE_INDEX = std::numeric_limits<ptnvec_size>::max();
 
-	bool GetModuleInfo(const WCHAR *szModuleName, size_t &moduleBase, size_t &moduleSize);
-	bool GetModuleInfo(const WCHAR *szModuleName, HMODULE &moduleHandle, size_t &moduleBase, size_t &moduleSize);
-	bool GetModuleInfo(HMODULE hModule, size_t &moduleBase, size_t &moduleSize);
+	bool GetModuleInfo(const std::wstring& szModuleName, uintptr_t* moduleBase, size_t* moduleSize);
+	bool GetModuleInfo(const std::wstring& szModuleName, HMODULE* moduleHandle, uintptr_t* moduleBase, size_t* moduleSize);
+	bool GetModuleInfo(HMODULE hModule, uintptr_t* moduleBase, size_t* moduleSize);
 
-	inline bool DataCompare(const BYTE *pData, const BYTE *pSig, const char *szPattern);
-	DWORD_PTR FindPattern(size_t dwStart, size_t dwLength, const BYTE *pSig, const char *szMask);
+	inline bool DataCompare(const byte* pData, const byte* pSig, const char* szPattern);
+	uintptr_t FindPattern(uintptr_t start, size_t length, const byte* pSig, const char* szMask);
 
-	ptnvec_size FindUniqueSequence(size_t dwStart, size_t dwLength, const ptnvec &patterns, DWORD_PTR *pdwAddress = NULL);
+	ptnvec_size FindUniqueSequence(uintptr_t start, size_t length, const ptnvec& patterns, uintptr_t* pdwAddress = nullptr);
 
-	void ReplaceBytes(const DWORD_PTR dwAddr, const size_t length, const BYTE *pNewBytes);
+	void ReplaceBytes(const uintptr_t addr, const size_t length, const byte* pNewBytes);
 }
 
 #endif // __MEMUTILS_H__

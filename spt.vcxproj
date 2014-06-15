@@ -137,7 +137,7 @@
       <AdditionalIncludeDirectories>..\..\common;..\..\public;..\..\public\tier0;..\..\public\tier1;..\..\game\server;..\..\game\shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;sptONLY;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <ExceptionHandling />
+      <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -197,12 +197,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="spt\detoursutils.cpp" />
-    <ClCompile Include="spt\hooks.cpp" />
+    <ClCompile Include="spt\Hooks.cpp" />
+    <ClCompile Include="spt\IHookableModule.cpp" />
+    <ClCompile Include="spt\IHookableNameFilter.cpp" />
     <ClCompile Include="spt\memutils.cpp" />
     <ClCompile Include="spt\OrangeBox\cvars.cpp" />
-    <ClCompile Include="spt\OrangeBox\hooks-client-dll.cpp" />
-    <ClCompile Include="spt\OrangeBox\hooks-engine-dll.cpp" />
-    <ClCompile Include="spt\OrangeBox\hooks-server-dll.cpp" />
+    <ClCompile Include="spt\OrangeBox\modules\ClientDLL.cpp" />
+    <ClCompile Include="spt\OrangeBox\modules\EngineDLL.cpp" />
+    <ClCompile Include="spt\OrangeBox\modules\ServerDLL.cpp" />
     <ClCompile Include="spt\spt.cpp" />
     <ClCompile Include="spt\OrangeBox\spt-serverplugin.cpp" />
   </ItemGroup>
@@ -234,9 +236,14 @@
     <ClInclude Include="..\..\public\tier1\utlvector.h" />
     <ClInclude Include="..\..\public\vstdlib\vstdlib.h" />
     <ClInclude Include="spt\detoursutils.hpp" />
-    <ClInclude Include="spt\hooks.hpp" />
+    <ClInclude Include="spt\Hooks.hpp" />
+    <ClInclude Include="spt\IHookableModule.hpp" />
+    <ClInclude Include="spt\IHookableNameFilter.hpp" />
     <ClInclude Include="spt\memutils.hpp" />
     <ClInclude Include="spt\OrangeBox\cvars.hpp" />
+    <ClInclude Include="spt\OrangeBox\modules\ClientDLL.hpp" />
+    <ClInclude Include="spt\OrangeBox\modules\EngineDLL.hpp" />
+    <ClInclude Include="spt\OrangeBox\modules\ServerDLL.hpp" />
     <ClInclude Include="spt\patterns.hpp" />
     <ClInclude Include="spt\spt.hpp" />
     <ClInclude Include="spt\OrangeBox\spt-serverplugin.hpp" />

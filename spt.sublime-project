@@ -1,26 +1,43 @@
 {
-    "folders":
-    [
-        {
-            "follow_symlinks": true,
-            "path": ".",
-            "folder_exclude_patterns": ["Debug", "Release"],
-            "file_exclude_patterns": [".git*", "*.bat", "*.sublime*", "*.vcxproj*"]
-        }
-    ],
-    "settings":
-    [
-        {
-            "tab_size": 4,
-            "trim_trailing_white_space_on_save": true,
-            "translate_tabs_to_spaces" : false
-        }
-    ],
-    "build_systems":
-    [
-        {
-            "name": "SPT - Release",
-            "cmd": ["build-release.bat"]
-        }
-    ]
+	"build_systems":
+	[
+		{
+			"cmd":
+			[
+				"build-release.bat"
+			],
+			"name": "SPT - Release"
+		}
+	],
+	"folders":
+	[
+		{
+			"file_exclude_patterns":
+			[
+				".git*",
+				"*.bat",
+				"*.sublime*",
+				"*.vcxproj*"
+			],
+			"folder_exclude_patterns":
+			[
+				"Debug",
+				"Release"
+			],
+			"follow_symlinks": true,
+			"path": "."
+		},
+		{
+			"follow_symlinks": true,
+			"path": "E:\\Users\\YaLTeR\\Documents\\BunnyMod Pro"
+		}
+	],
+	"settings":
+	[
+		{
+			"tab_size": 4,
+			"translate_tabs_to_spaces": false,
+			"trim_trailing_white_space_on_save": true
+		}
+	]
 }

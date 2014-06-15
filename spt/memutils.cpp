@@ -1,15 +1,26 @@
-#include "memutils.hpp"
+#include <cstddef>
+#include <cstdint>
 #include <limits>
+#include <string>
+
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <Windows.h>
+
 #include <Psapi.h>
+#include "memutils.hpp"
 
 #pragma comment( lib, "psapi.lib" )
 
+using std::uintptr_t;
+using std::size_t;
+
 namespace MemUtils
 {
-	bool GetModuleInfo(const WCHAR *szModuleName, size_t &moduleBase, size_t &moduleSize)
+	bool GetModuleInfo(const std::wstring& szModuleName, uintptr_t* moduleBase, size_t* moduleSize)
 	{
 		HANDLE hProcess = GetCurrentProcess();
-		HMODULE hModule = GetModuleHandleW(szModuleName);
+		HMODULE hModule = GetModuleHandleW(szModuleName.c_str());
 
 		if (!hProcess || !hModule)
 		{
@@ -19,32 +30,41 @@ namespace MemUtils
 		MODULEINFO moduleInfo;
 		GetModuleInformation(hProcess, hModule, &moduleInfo, sizeof(moduleInfo));
 
-		moduleBase = (size_t)moduleInfo.lpBaseOfDll;
-		moduleSize = (size_t)moduleInfo.SizeOfImage;
+		if (moduleBase)
+			*moduleBase = (uintptr_t)moduleInfo.lpBaseOfDll;
+
+		if (moduleSize)
+			*moduleSize = (size_t)moduleInfo.SizeOfImage;
 
 		return true;
 	}
 
-	bool GetModuleInfo( const WCHAR *szModuleName, HMODULE &moduleHandle, size_t &moduleBase, size_t &moduleSize )
+	bool GetModuleInfo(const std::wstring& szModuleName, HMODULE* moduleHandle, uintptr_t* moduleBase, size_t* moduleSize)
 	{
 		HANDLE hProcess = GetCurrentProcess();
-		moduleHandle = GetModuleHandleW( szModuleName );
+		HMODULE hModule = GetModuleHandleW(szModuleName.c_str());
 
-		if (!hProcess || !moduleHandle)
+		if (!hProcess || !hModule)
 		{
 			return false;
 		}
 
 		MODULEINFO moduleInfo;
-		GetModuleInformation( hProcess, moduleHandle, &moduleInfo, sizeof(moduleInfo) );
+		GetModuleInformation( hProcess, hModule, &moduleInfo, sizeof(moduleInfo) );
 
-		moduleBase = (size_t)moduleInfo.lpBaseOfDll;
-		moduleSize = (size_t)moduleInfo.SizeOfImage;
+		if (moduleHandle)
+			*moduleHandle = hModule;
+
+		if (moduleBase)
+			*moduleBase = (uintptr_t)moduleInfo.lpBaseOfDll;
+
+		if (moduleSize)
+			*moduleSize = (size_t)moduleInfo.SizeOfImage;
 
 		return true;
 	}
 
-	bool GetModuleInfo(HMODULE hModule, size_t &moduleBase, size_t &moduleSize)
+	bool GetModuleInfo(HMODULE hModule, uintptr_t* moduleBase, size_t* moduleSize)
 	{
 		HANDLE hProcess = GetCurrentProcess();
 
@@ -56,15 +76,18 @@ namespace MemUtils
 		MODULEINFO moduleInfo;
 		GetModuleInformation(hProcess, hModule, &moduleInfo, sizeof(moduleInfo));
 
-		moduleBase = (size_t)moduleInfo.lpBaseOfDll;
-		moduleSize = (size_t)moduleInfo.SizeOfImage;
+		if (moduleBase)
+			*moduleBase = (uintptr_t)moduleInfo.lpBaseOfDll;
+
+		if (moduleSize)
+			*moduleSize = (size_t)moduleInfo.SizeOfImage;
 
 		return true;
 	}
 
-	inline bool DataCompare(const BYTE *pData, const BYTE *pSig, const char *szPattern)
+	inline bool DataCompare(const byte* pData, const byte* pSig, const char* szPattern)
 	{
-		for (; *szPattern != NULL; ++pData, ++pSig, ++szPattern)
+		for (; *szPattern != 0; ++pData, ++pSig, ++szPattern)
 		{
 			if (*szPattern == 'x' && *pData != *pSig)
 			{
@@ -72,30 +95,30 @@ namespace MemUtils
 			}
 		}
 
-		return (*szPattern == NULL);
+		return (*szPattern == 0);
 	}
 
-	DWORD_PTR FindPattern(size_t dwStart, size_t dwLength, const BYTE *pSig, const char *szMask)
+	uintptr_t FindPattern(uintptr_t start, size_t length, const byte* pSig, const char* szMask)
 	{
-		for (DWORD_PTR i = NULL; i < dwLength; i++)
+		for (uintptr_t i = NULL; i < length; i++)
 		{
-			if (DataCompare((BYTE *)(dwStart + i), pSig, szMask))
+			if (DataCompare((byte *)(start + i), pSig, szMask))
 			{
-				return (DWORD_PTR)(dwStart + i);
+				return (start + i);
 			}
 		}
 
 		return NULL;
 	}
 
-	ptnvec_size FindUniqueSequence(size_t dwStart, size_t dwLength, const ptnvec &patterns, DWORD_PTR *pdwAddress)
+	ptnvec_size FindUniqueSequence(uintptr_t start, size_t length, const ptnvec& patterns, uintptr_t* pdwAddress)
 	{
 		for (ptnvec_size i = 0; i < patterns.size(); i++)
 		{
-			DWORD_PTR address = FindPattern(dwStart, dwLength, patterns[i].pattern.data(), patterns[i].mask.c_str());
+			uintptr_t address = FindPattern(start, length, patterns[i].pattern.data(), patterns[i].mask.c_str());
 			if (address)
 			{
-				size_t newSize = dwLength - (address - dwStart + 1);
+				size_t newSize = length - (address - start + 1);
 				if ( NULL == FindPattern(address + 1, newSize, patterns[i].pattern.data(), patterns[i].mask.c_str()) )
 				{
 					if (pdwAddress)
@@ -125,17 +148,17 @@ namespace MemUtils
 		return INVALID_SEQUENCE_INDEX; // Didn't find anything.
 	}
 
-	void ReplaceBytes(const DWORD_PTR dwAddr, const size_t dwLength, const BYTE *pNewBytes)
+	void ReplaceBytes(const uintptr_t addr, const size_t length, const byte* pNewBytes)
 	{
 		DWORD dwOldProtect;
 
-		VirtualProtect((void *)dwAddr, dwLength, PAGE_EXECUTE_READWRITE, &dwOldProtect);
+		VirtualProtect((void *)addr, length, PAGE_EXECUTE_READWRITE, &dwOldProtect);
 
-		for (DWORD_PTR i = NULL; i < dwLength; i++)
+		for (uintptr_t i = NULL; i < length; i++)
 		{
-			*(BYTE *)(dwAddr + i) = pNewBytes[i];
+			*(byte *)(addr + i) = pNewBytes[i];
 		}
 
-		VirtualProtect((void *)dwAddr, dwLength, dwOldProtect, NULL);
+		VirtualProtect((void *)addr, length, dwOldProtect, NULL);
 	}
 }

@@ -4,9 +4,6 @@
     <ClCompile Include="spt\detoursutils.cpp">
       <Filter>spt</Filter>
     </ClCompile>
-    <ClCompile Include="spt\hooks.cpp">
-      <Filter>spt</Filter>
-    </ClCompile>
     <ClCompile Include="spt\memutils.cpp">
       <Filter>spt</Filter>
     </ClCompile>
@@ -16,17 +13,26 @@
     <ClCompile Include="spt\OrangeBox\spt-serverplugin.cpp">
       <Filter>spt\OrangeBox</Filter>
     </ClCompile>
-    <ClCompile Include="spt\OrangeBox\hooks-client-dll.cpp">
-      <Filter>spt\OrangeBox</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\OrangeBox\hooks-engine-dll.cpp">
-      <Filter>spt\OrangeBox</Filter>
-    </ClCompile>
     <ClCompile Include="spt\OrangeBox\cvars.cpp">
       <Filter>spt\OrangeBox</Filter>
     </ClCompile>
-    <ClCompile Include="spt\OrangeBox\hooks-server-dll.cpp">
-      <Filter>spt\OrangeBox</Filter>
+    <ClCompile Include="spt\OrangeBox\modules\EngineDLL.cpp">
+      <Filter>spt\OrangeBox\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\IHookableNameFilter.cpp">
+      <Filter>spt</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\IHookableModule.cpp">
+      <Filter>spt</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\Hooks.cpp">
+      <Filter>spt</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\modules\ServerDLL.cpp">
+      <Filter>spt\OrangeBox\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\modules\ClientDLL.cpp">
+      <Filter>spt\OrangeBox\modules</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -90,9 +96,6 @@
     <ClInclude Include="spt\detoursutils.hpp">
       <Filter>spt</Filter>
     </ClInclude>
-    <ClInclude Include="spt\hooks.hpp">
-      <Filter>spt</Filter>
-    </ClInclude>
     <ClInclude Include="spt\memutils.hpp">
       <Filter>spt</Filter>
     </ClInclude>
@@ -113,6 +116,24 @@
     </ClInclude>
     <ClInclude Include="spt\OrangeBox\cvars.hpp">
       <Filter>spt\OrangeBox</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\modules\EngineDLL.hpp">
+      <Filter>spt\OrangeBox\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\IHookableModule.hpp">
+      <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\IHookableNameFilter.hpp">
+      <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\Hooks.hpp">
+      <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\modules\ServerDLL.hpp">
+      <Filter>spt\OrangeBox\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\modules\ClientDLL.hpp">
+      <Filter>spt\OrangeBox\modules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -144,6 +165,9 @@
     </Filter>
     <Filter Include="spt\OrangeBox">
       <UniqueIdentifier>{74a03d34-0969-405d-838c-fa6350306ddf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\OrangeBox\modules">
+      <UniqueIdentifier>{28768b27-be51-439b-aaa3-cf347347da1b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -37,7 +37,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	EngineDevLog = DevLog;
 	EngineWarning = Warning;
 
-	Hooks::Init();
+	Hooks::getInstance().Init();
 
 	Msg("SourcePauseTool v" SPT_VERSION " was loaded successfully.\n");
 
@@ -49,7 +49,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 //---------------------------------------------------------------------------------
 void CSourcePauseTool::Unload( void )
 {
-	Hooks::Free();
+	Hooks::getInstance().Free();
 
 	ConVar_Unregister();
 	DisconnectTier1Libraries();
