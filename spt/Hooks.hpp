@@ -16,29 +16,6 @@
 #include "OrangeBox\modules\ClientDLL.hpp"
 #include "OrangeBox\modules\ServerDLL.hpp"
 
-//// Hooked functions
-//namespace ClientDll
-//{
-//	namespace Internal
-//	{
-//		void __cdecl HOOKED_DoImageSpaceMotionBlur( void *view, int x, int y, int w, int h );
-//		bool __fastcall HOOKED_CheckJumpButton( void *thisptr, int edx );
-//	}
-//
-//	typedef void( __cdecl *_DoImageSpaceMotionBlur ) ( void *view, int x, int y, int w, int h );
-//	typedef bool( __fastcall *_CheckJumpButton ) ( void *thisptr, int edx );
-//}
-//
-//namespace ServerDll
-//{
-//	namespace Internal
-//	{
-//		bool __fastcall HOOKED_CheckJumpButton( void *thisptr, int edx );
-//	}
-//
-//	typedef bool( __fastcall *_CheckJumpButton ) ( void *thisptr, int edx );
-//}
-
 typedef HMODULE(WINAPI *_LoadLibraryA) (LPCSTR lpLFileName);
 typedef HMODULE(WINAPI *_LoadLibraryW) (LPCWSTR lpFileName);
 typedef HMODULE(WINAPI *_LoadLibraryExA) (LPCSTR lpFileName, HANDLE hFile, DWORD dwFlags);
