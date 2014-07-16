@@ -108,6 +108,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	else
 	{
 		EngineWarning("SPT: [server dll] Could not find FinishGravity!\n");
+		EngineWarning("SPT: [server dll] y_spt_additional_abh has no effect.\n");
 	}
 
 	AttachDetours(moduleName, 4,
@@ -133,13 +134,12 @@ void ServerDLL::Clear()
 	off2M_nOldButtons = NULL;
 	cantJumpNextTime = false;
 	insideCheckJumpButton = false;
+	off1M_bDucked = NULL;
+	off2M_bDucked = NULL;
 }
 
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 {
-	/*
-	CheckJumpButton calls FinishGravity() if and only if we jumped.
-	*/
 	const int IN_JUMP = (1 << 1);
 
 	int *pM_nOldButtons = NULL;
@@ -147,9 +147,7 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 
 	if (y_spt_autojump.GetBool())
 	{
-		CMoveData* mv = (CMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
-
-		pM_nOldButtons = &(mv->m_nOldButtons); //(int *)(*((uintptr_t *)thisptr + off1M_nOldButtons) + off2M_nOldButtons);
+		pM_nOldButtons = (int *)(*((uintptr_t *)thisptr + off1M_nOldButtons) + off2M_nOldButtons);
 		// EngineLog("thisptr: %p, pM_nOldButtons: %p, difference: %x\n", thisptr, pM_nOldButtons, (pM_nOldButtons - thisptr));
 		origM_nOldButtons = *pM_nOldButtons;
 

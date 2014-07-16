@@ -161,6 +161,7 @@ void ClientDLL::Clear()
 	IHookableNameFilter::Clear();
 	ORIG_DoImageSpaceMorionBlur = nullptr;
 	ORIG_CheckJumpButton = nullptr;
+	ORIG_HudUpdate = nullptr;
 	pgpGlobals = nullptr;
 	off1M_nOldButtons = NULL;
 	off2M_nOldButtons = NULL;
@@ -228,8 +229,6 @@ bool __fastcall ClientDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 	/*
 	Not sure if this gets called at all from the client dll, but
 	I will just hook it in exactly the same way as the server one.
-
-	CheckJumpButton calls FinishGravity() if and only if we jumped.
 	*/
 	const int IN_JUMP = (1 << 1);
 

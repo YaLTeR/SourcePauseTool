@@ -21,7 +21,8 @@ IVEngineClient *engine = nullptr;
 
 void CallServerCommand(const char* cmd)
 {
-	engine->ClientCmd(cmd);
+	if (engine)
+		engine->ClientCmd(cmd);
 }
 
 //
@@ -47,8 +48,8 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	engine = (IVEngineClient*)interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION, NULL);
 	if (!engine)
 	{
-		Warning("Failed to get the IVEngineClient interface.\n");
-		return false;
+		Warning("SPT: Failed to get the IVEngineClient interface.\n");
+		Warning("SPT: y_spt_afterframes has no effect.\n");
 	}
 
 	EngineLog = Log;
