@@ -27,6 +27,11 @@ bool __fastcall ClientDLL::HOOKED_CheckJumpButton(void* thisptr, int edx)
 	return Hooks::getInstance().clientDLL.HOOKED_CheckJumpButton_Func(thisptr, edx);
 }
 
+void __stdcall ClientDLL::HOOKED_HudUpdate(bool bActive)
+{
+	return Hooks::getInstance().clientDLL.HOOKED_HudUpdate_Func(bActive);
+}
+
 void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.
@@ -119,16 +124,34 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("SPT: [client dll] This should not matter.\n");
 	}
 
-	AttachDetours(moduleName, 4,
+	// CreateAllElements
+	EngineDevLog("SPT: [client dll] Searching for CHLClient::HudUpdate...\n");
+
+	uintptr_t pHudUpdate = NULL;
+	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsHudUpdate, &pHudUpdate);
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_HudUpdate = (_HudUpdate)pHudUpdate;
+		EngineLog("SPT: [client dll] Found CHLClient::HudUpdate at %p (using the build %s pattern).\n", pHudUpdate, Patterns::ptnsHudUpdate[ptnNumber].build.c_str());
+	}
+	else
+	{
+		EngineWarning("SPT: [client dll] Could not find CHLClient::HudUpdate.\n");
+		EngineWarning("SPT: [client dll] y_afterframes has no effect.\n");
+	}
+
+	AttachDetours(moduleName, 6,
 		&ORIG_DoImageSpaceMorionBlur, HOOKED_DoImageSpaceMotionBlur,
-		&ORIG_CheckJumpButton, HOOKED_CheckJumpButton);
+		&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
+		&ORIG_HudUpdate, HOOKED_HudUpdate);
 }
 
 void ClientDLL::Unhook()
 {
-	DetachDetours(moduleName, 4,
+	DetachDetours(moduleName, 6,
 		&ORIG_DoImageSpaceMorionBlur, HOOKED_DoImageSpaceMotionBlur,
-		&ORIG_CheckJumpButton, HOOKED_CheckJumpButton);
+		&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
+		&ORIG_HudUpdate, HOOKED_HudUpdate);
 
 	Clear();
 }
@@ -142,6 +165,31 @@ void ClientDLL::Clear()
 	off1M_nOldButtons = NULL;
 	off2M_nOldButtons = NULL;
 	cantJumpNextTime = false;
+}
+
+void ClientDLL::AddIntoAfterframesQueue(const afterframes_entry_t& entry)
+{
+	afterframesQueue.push_back(entry);
+}
+
+void ClientDLL::ResetAfterframesQueue()
+{
+	afterframesQueue.clear();
+}
+
+void ClientDLL::OnFrame()
+{
+	for (auto it = afterframesQueue.begin(); it != afterframesQueue.end(); )
+	{
+		it->framesLeft--;
+		if (it->framesLeft <= 0)
+		{
+			EngineConCmd(it->command.c_str());
+			it = afterframesQueue.erase(it);
+		}
+		else
+			it++;
+	}
 }
 
 void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, int y, int w, int h)
@@ -229,4 +277,11 @@ bool __fastcall ClientDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 	EngineDevLog("SPT: Engine call: [client dll] CheckJumpButton() => %s\n", (rv ? "true" : "false"));
 
 	return rv;
+}
+
+void __stdcall ClientDLL::HOOKED_HudUpdate_Func(bool bActive)
+{
+	OnFrame();
+
+	return ORIG_HudUpdate(bActive);
 }

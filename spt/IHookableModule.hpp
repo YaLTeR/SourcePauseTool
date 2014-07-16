@@ -19,7 +19,6 @@ using std::size_t;
 class IHookableModule
 {
 public:
-	IHookableModule();
 	virtual ~IHookableModule() {}
 	virtual bool CanHook(const std::wstring& moduleFullName) = 0;
 	virtual HMODULE GetModule();

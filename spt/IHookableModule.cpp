@@ -7,11 +7,6 @@
 #include "Hooks.hpp"
 #include "IHookableModule.hpp"
 
-IHookableModule::IHookableModule()
-{
-	//Hooks::getInstance().AddToHookedModules(this);
-}
-
 HMODULE IHookableModule::GetModule()
 {
 	return hModule;

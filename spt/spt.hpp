@@ -12,6 +12,7 @@
 extern void ( *EngineLog )( const char *format, ... );
 extern void ( *EngineDevLog )( const char *format, ... );
 extern void ( *EngineWarning )( const char *format, ... );
+extern void ( *EngineConCmd )( const char *cmd );
 
 std::wstring GetFileName( const std::wstring &fileNameWithPath );
 

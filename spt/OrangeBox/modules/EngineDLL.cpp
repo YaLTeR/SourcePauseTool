@@ -98,6 +98,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	{
 		EngineWarning("SPT: Could not find SV_ActivateServer!\n");
 		EngineWarning("SPT: y_spt_pause 2 has no effect.\n");
+		EngineWarning("SPT: y_spt_afterframes_reset_on_server_activate has no effect.\n");
 	}
 
 	// FinishRestore
@@ -175,6 +176,9 @@ bool __cdecl EngineDLL::HOOKED_SV_ActivateServer_Func()
 			shouldPreventNextUnpause = true;
 		}
 	}
+
+	if (y_spt_afterframes_reset_on_server_activate.GetBool())
+		Hooks::getInstance().clientDLL.ResetAfterframesQueue();
 
 	return result;
 }

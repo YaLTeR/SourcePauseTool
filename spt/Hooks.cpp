@@ -149,7 +149,10 @@ void Hooks::UnhookModule(std::wstring moduleName)
 void Hooks::AddToHookedModules(IHookableModule* module)
 {
 	if (!module)
+	{
+		EngineWarning("SPT: Tried to add a nullptr module!\n");
 		return;
+	}
 
 	modules.push_back(module);
 	EngineDevLog("SPT: Adding a module %p.\n", module);

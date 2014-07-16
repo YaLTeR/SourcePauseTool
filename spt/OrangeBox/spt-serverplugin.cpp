@@ -1,7 +1,10 @@
+#include <sstream>
+
 #include "spt-serverplugin.hpp"
 #include "../spt.hpp"
 #include "../hooks.hpp"
 
+#include "cdll_int.h"
 #include "engine/iserverplugin.h"
 #include "tier2/tier2.h"
 
@@ -11,6 +14,14 @@
 inline bool FStrEq( const char *sz1, const char *sz2 )
 {
 	return(Q_stricmp( sz1, sz2 ) == 0);
+}
+
+// Interfaces from the engine
+IVEngineClient *engine = nullptr;
+
+void CallServerCommand(const char* cmd)
+{
+	engine->ClientCmd(cmd);
 }
 
 //
@@ -33,9 +44,17 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	ConnectTier1Libraries(&interfaceFactory, 1);
 	ConVar_Register(0);
 
+	engine = (IVEngineClient*)interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION, NULL);
+	if (!engine)
+	{
+		Warning("Failed to get the IVEngineClient interface.\n");
+		return false;
+	}
+
 	EngineLog = Log;
 	EngineDevLog = DevLog;
 	EngineWarning = Warning;
+	EngineConCmd = CallServerCommand;
 
 	Hooks::getInstance().Init();
 
@@ -71,6 +90,28 @@ void CSourcePauseTool::UnPause( void ) {};
 const char *CSourcePauseTool::GetPluginDescription( void )
 {
 	return "SourcePauseTool v" SPT_VERSION ", Ivan \"YaLTeR\" Molodetskikh";
+}
+
+CON_COMMAND(y_spt_afterframes, "Add a command into an afterframes queue. Usage: y_spt_afterframes <count> <command>")
+{
+	if (args.ArgC() != 3)
+	{
+		Msg("Usage: y_spt_afterframes <count> <command>\n");
+		return;
+	}
+
+	afterframes_entry_t entry;
+
+	std::istringstream ss(args.Arg(1));
+	ss >> entry.framesLeft;
+	entry.command.assign(args.Arg(2));
+
+	Hooks::getInstance().clientDLL.AddIntoAfterframesQueue(entry);
+}
+
+CON_COMMAND(y_spt_afterframes_reset, "Reset the afterframes queue.")
+{
+	Hooks::getInstance().clientDLL.ResetAfterframesQueue();
 }
 
 //---------------------------------------------------------------------------------
