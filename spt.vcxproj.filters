@@ -135,6 +135,15 @@
     <ClInclude Include="spt\OrangeBox\modules\ClientDLL.hpp">
       <Filter>spt\OrangeBox\modules</Filter>
     </ClInclude>
+    <ClInclude Include="SDK\igamemovement.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\imovehelper.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\hl_movedata.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">
@@ -168,6 +177,9 @@
     </Filter>
     <Filter Include="spt\OrangeBox\modules">
       <UniqueIdentifier>{28768b27-be51-439b-aaa3-cf347347da1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK">
+      <UniqueIdentifier>{78e5a6c2-53a8-40e3-be19-b7e7bc33f3c9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

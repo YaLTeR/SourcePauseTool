@@ -66,7 +66,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\common;..\..\public;..\..\public\tier0;..\..\public\tier1;..\..\game\server;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\common;..\..\public;..\..\public\tier0;..\..\public\tier1;..\..\game\server;..\..\game\shared%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WIN32;_DEBUG;DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;sptONLY;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
@@ -235,6 +235,9 @@
     <ClInclude Include="..\..\public\tier1\utlmemory.h" />
     <ClInclude Include="..\..\public\tier1\utlvector.h" />
     <ClInclude Include="..\..\public\vstdlib\vstdlib.h" />
+    <ClInclude Include="SDK\hl_movedata.h" />
+    <ClInclude Include="SDK\igamemovement.h" />
+    <ClInclude Include="SDK\imovehelper.h" />
     <ClInclude Include="spt\detoursutils.hpp" />
     <ClInclude Include="spt\Hooks.hpp" />
     <ClInclude Include="spt\IHookableModule.hpp" />

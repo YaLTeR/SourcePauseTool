@@ -124,7 +124,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("SPT: [client dll] This should not matter.\n");
 	}
 
-	// CreateAllElements
+	// HudUpdate
 	EngineDevLog("SPT: [client dll] Searching for CHLClient::HudUpdate...\n");
 
 	uintptr_t pHudUpdate = NULL;

@@ -22,6 +22,11 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton(void* thisptr, int edx)
 	return Hooks::getInstance().serverDLL.HOOKED_CheckJumpButton_Func(thisptr, edx);
 }
 
+void __fastcall ServerDLL::HOOKED_FinishGravity(void* thisptr, int edx)
+{
+	return Hooks::getInstance().serverDLL.HOOKED_FinishGravity_Func(thisptr, edx);
+}
+
 void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.
@@ -69,6 +74,11 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			off1M_nOldButtons = 2;
 			off2M_nOldButtons = 40;
 			break;
+
+		case 5:
+			off1M_nOldButtons = 2;
+			off2M_nOldButtons = 40;
+			break;
 		}
 	}
 	else
@@ -77,14 +87,39 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("SPT: [server dll] y_spt_autojump has no effect.\n");
 	}
 
-	AttachDetours(moduleName, 2,
-		&ORIG_CheckJumpButton, HOOKED_CheckJumpButton);
+	// FinishGravity
+	EngineDevLog("SPT: [server dll] Searching for FinishGravity...\n");
+
+	uintptr_t pFinishGravity = NULL;
+	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsFinishGravity, &pFinishGravity);
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_FinishGravity = (_FinishGravity)pFinishGravity;
+		EngineLog("SPT: [server dll] Found FinishGravity at %p (using the build %s pattern).\n", pFinishGravity, Patterns::ptnsFinishGravity[ptnNumber].build.c_str());
+
+		switch (ptnNumber)
+		{
+		case 0:
+			off1M_bDucked = 1;
+			off2M_bDucked = 2128;
+			break;
+		}
+	}
+	else
+	{
+		EngineWarning("SPT: [server dll] Could not find FinishGravity!\n");
+	}
+
+	AttachDetours(moduleName, 4,
+		&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
+		&ORIG_FinishGravity, HOOKED_FinishGravity);
 }
 
 void ServerDLL::Unhook()
 {
-	DetachDetours(moduleName, 2,
-		&ORIG_CheckJumpButton, HOOKED_CheckJumpButton);
+	DetachDetours(moduleName, 4,
+		&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
+		&ORIG_FinishGravity, HOOKED_FinishGravity);
 
 	Clear();
 }
@@ -93,9 +128,11 @@ void ServerDLL::Clear()
 {
 	IHookableNameFilter::Clear();
 	ORIG_CheckJumpButton = nullptr;
+	ORIG_FinishGravity = nullptr;
 	off1M_nOldButtons = NULL;
 	off2M_nOldButtons = NULL;
 	cantJumpNextTime = false;
+	insideCheckJumpButton = false;
 }
 
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
@@ -110,7 +147,9 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 
 	if (y_spt_autojump.GetBool())
 	{
-		pM_nOldButtons = (int *)(*((uintptr_t *)thisptr + off1M_nOldButtons) + off2M_nOldButtons);
+		CMoveData* mv = (CMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
+
+		pM_nOldButtons = &(mv->m_nOldButtons); //(int *)(*((uintptr_t *)thisptr + off1M_nOldButtons) + off2M_nOldButtons);
 		// EngineLog("thisptr: %p, pM_nOldButtons: %p, difference: %x\n", thisptr, pM_nOldButtons, (pM_nOldButtons - thisptr));
 		origM_nOldButtons = *pM_nOldButtons;
 
@@ -126,7 +165,9 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 
 	cantJumpNextTime = false;
 
+	insideCheckJumpButton = true;
 	bool rv = ORIG_CheckJumpButton(thisptr, edx); // This function can only change the jump bit.
+	insideCheckJumpButton = false;
 
 	if (y_spt_autojump.GetBool())
 	{
@@ -150,4 +191,41 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 	//EngineDevLog( "SPT: Engine call: [server dll] CheckJumpButton() => %s\n", (rv ? "true" : "false") );
 
 	return rv;
+}
+
+void __fastcall ServerDLL::HOOKED_FinishGravity_Func(void* thisptr, int edx)
+{
+	if (insideCheckJumpButton && y_spt_additional_abh.GetBool())
+	{
+		CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
+		bool ducked = *(bool*)(*((uintptr_t *)thisptr + off1M_bDucked) + off2M_bDucked);
+
+		// <stolen from gamemovement.cpp>
+		Vector vecForward;
+		AngleVectors(mv->m_vecViewAngles, &vecForward);
+		vecForward.z = 0;
+		VectorNormalize(vecForward);
+
+		// We give a certain percentage of the current forward movement as a bonus to the jump speed.  That bonus is clipped
+		// to not accumulate over time.
+		float flSpeedBoostPerc = (!mv->m_bIsSprinting && !ducked) ? 0.5f : 0.1f;
+		float flSpeedAddition = fabs(mv->m_flForwardMove * flSpeedBoostPerc);
+		float flMaxSpeed = mv->m_flMaxSpeed + (mv->m_flMaxSpeed * flSpeedBoostPerc);
+		float flNewSpeed = (flSpeedAddition + mv->m_vecVelocity.Length2D());
+
+		// If we're over the maximum, we want to only boost as much as will get us to the goal speed
+		if (flNewSpeed > flMaxSpeed)
+		{
+			flSpeedAddition -= flNewSpeed - flMaxSpeed;
+		}
+
+		if (mv->m_flForwardMove < 0.0f)
+			flSpeedAddition *= -1.0f;
+
+		// Add it on
+		VectorAdd((vecForward*flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity);
+		// </stolen from gamemovement.cpp>
+	}
+
+	return ORIG_FinishGravity(thisptr, edx);
 }
