@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define SPT_VERSION "0.5-beta"
+#define SPT_VERSION "0.5"
 
 extern void ( *EngineLog )( const char *format, ... );
 extern void ( *EngineDevLog )( const char *format, ... );

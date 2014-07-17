@@ -145,6 +145,9 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 	int *pM_nOldButtons = NULL;
 	int origM_nOldButtons = 0;
 
+	//CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
+	//EngineDevLog("SPT: (x, y, z) %.8f %.8f %.8f\n", mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z);
+
 	if (y_spt_autojump.GetBool())
 	{
 		pM_nOldButtons = (int *)(*((uintptr_t *)thisptr + off1M_nOldButtons) + off2M_nOldButtons);
