@@ -176,7 +176,7 @@ HMODULE WINAPI Hooks::HOOKED_LoadLibraryW_Func(LPCWSTR lpFileName)
 {
 	HMODULE rv = ORIG_LoadLibraryW(lpFileName);
 
-	EngineDevLog("SPT: Engine call: LoadLibraryW( \"%s\" ) => %p\n", utf8util::UTF8FromUTF16(lpFileName), rv);
+	EngineDevLog("SPT: Engine call: LoadLibraryW( \"%s\" ) => %p\n", utf8util::UTF8FromUTF16(lpFileName).c_str(), rv);
 
 	if (rv != NULL)
 	{
@@ -204,7 +204,7 @@ HMODULE WINAPI Hooks::HOOKED_LoadLibraryExW_Func(LPCWSTR lpFileName, HANDLE hFil
 {
 	HMODULE rv = ORIG_LoadLibraryExW(lpFileName, hFile, dwFlags);
 
-	EngineDevLog("SPT: Engine call: LoadLibraryExW( \"%s\" ) => %p\n", utf8util::UTF8FromUTF16(lpFileName), rv);
+	EngineDevLog("SPT: Engine call: LoadLibraryExW( \"%s\" ) => %p\n", utf8util::UTF8FromUTF16(lpFileName).c_str(), rv);
 
 	if (rv != NULL)
 	{
