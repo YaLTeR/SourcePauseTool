@@ -1,7 +1,7 @@
 #include <string>
 
-void ( *EngineLog )( const char *format, ... );
-void ( *EngineDevLog )( const char *format, ... );
+void ( *EngineMsg )( const char *format, ... );
+void ( *EngineDevMsg )( const char *format, ... );
 void ( *EngineWarning )( const char *format, ... );
 void ( *EngineConCmd )( const char *cmd );
 

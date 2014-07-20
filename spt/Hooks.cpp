@@ -47,7 +47,7 @@ void Hooks::Init()
 	AddToHookedModules(&clientDLL);
 	AddToHookedModules(&serverDLL);
 
-	EngineDevLog("SPT: Modules contain %d entries.\n", modules.size());
+	EngineDevMsg("SPT: Modules contain %d entries.\n", modules.size());
 
 	// Try hooking each module in case it is already loaded
 	for (auto it = modules.cbegin(); it != modules.cend(); ++it)
@@ -71,7 +71,7 @@ void Hooks::Init()
 
 void Hooks::Free()
 {
-	EngineDevLog("SPT: Modules contain %d entries.\n", modules.size());
+	EngineDevMsg("SPT: Modules contain %d entries.\n", modules.size());
 
 	// Unhook everything
 	for (auto it = modules.begin(); it != modules.end(); ++it)
@@ -110,7 +110,7 @@ void Hooks::HookModule(std::wstring moduleName)
 		{
 			if ((module != NULL) || (MemUtils::GetModuleInfo(moduleName, &module, &start, &size)))
 			{
-				EngineLog("SPT: Hooking %s (start: %p; size: %x)...\n", utf8util::UTF8FromUTF16(moduleName).c_str(), start, size);
+				EngineMsg("SPT: Hooking %s (start: %p; size: %x)...\n", utf8util::UTF8FromUTF16(moduleName).c_str(), start, size);
 				(*it)->Hook(moduleName, module, start, size);
 			}
 			else
@@ -123,7 +123,7 @@ void Hooks::HookModule(std::wstring moduleName)
 
 	if (module == NULL)
 	{
-		EngineDevLog("SPT: Tried to hook an unlisted module: %s\n", utf8util::UTF8FromUTF16(moduleName).c_str());
+		EngineDevMsg("SPT: Tried to hook an unlisted module: %s\n", utf8util::UTF8FromUTF16(moduleName).c_str());
 	}
 }
 
@@ -134,7 +134,7 @@ void Hooks::UnhookModule(std::wstring moduleName)
 	{
 		if ((*it)->GetHookedModuleName().compare(moduleName) == 0)
 		{
-			EngineLog("SPT: Unhooking %s...\n", utf8util::UTF8FromUTF16(moduleName).c_str());
+			EngineMsg("SPT: Unhooking %s...\n", utf8util::UTF8FromUTF16(moduleName).c_str());
 			(*it)->Unhook();
 			unhookedSomething = true;
 		}
@@ -142,7 +142,7 @@ void Hooks::UnhookModule(std::wstring moduleName)
 	
 	if (!unhookedSomething)
 	{
-		EngineDevLog("SPT: Tried to unhook an unlisted module: %s\n", utf8util::UTF8FromUTF16(moduleName).c_str());
+		EngineDevMsg("SPT: Tried to unhook an unlisted module: %s\n", utf8util::UTF8FromUTF16(moduleName).c_str());
 	}
 }
 
@@ -155,14 +155,14 @@ void Hooks::AddToHookedModules(IHookableModule* module)
 	}
 
 	modules.push_back(module);
-	EngineDevLog("SPT: Adding a module %p.\n", module);
+	EngineDevMsg("SPT: Adding a module %p.\n", module);
 }
 
 HMODULE WINAPI Hooks::HOOKED_LoadLibraryA_Func(LPCSTR lpFileName)
 {
 	HMODULE rv = ORIG_LoadLibraryA(lpFileName);
 
-	EngineDevLog("SPT: Engine call: LoadLibraryA( \"%s\" ) => %p\n", lpFileName, rv);
+	EngineDevMsg("SPT: Engine call: LoadLibraryA( \"%s\" ) => %p\n", lpFileName, rv);
 
 	if (rv != NULL)
 	{
@@ -176,7 +176,7 @@ HMODULE WINAPI Hooks::HOOKED_LoadLibraryW_Func(LPCWSTR lpFileName)
 {
 	HMODULE rv = ORIG_LoadLibraryW(lpFileName);
 
-	EngineDevLog("SPT: Engine call: LoadLibraryW( \"%s\" ) => %p\n", utf8util::UTF8FromUTF16(lpFileName).c_str(), rv);
+	EngineDevMsg("SPT: Engine call: LoadLibraryW( \"%s\" ) => %p\n", utf8util::UTF8FromUTF16(lpFileName).c_str(), rv);
 
 	if (rv != NULL)
 	{
@@ -190,7 +190,7 @@ HMODULE WINAPI Hooks::HOOKED_LoadLibraryExA_Func(LPCSTR lpFileName, HANDLE hFile
 {
 	HMODULE rv = ORIG_LoadLibraryExA(lpFileName, hFile, dwFlags);
 
-	EngineDevLog("SPT: Engine call: LoadLibraryExA( \"%s\" ) => %p\n", lpFileName, rv);
+	EngineDevMsg("SPT: Engine call: LoadLibraryExA( \"%s\" ) => %p\n", lpFileName, rv);
 
 	if (rv != NULL)
 	{
@@ -204,7 +204,7 @@ HMODULE WINAPI Hooks::HOOKED_LoadLibraryExW_Func(LPCWSTR lpFileName, HANDLE hFil
 {
 	HMODULE rv = ORIG_LoadLibraryExW(lpFileName, hFile, dwFlags);
 
-	EngineDevLog("SPT: Engine call: LoadLibraryExW( \"%s\" ) => %p\n", utf8util::UTF8FromUTF16(lpFileName).c_str(), rv);
+	EngineDevMsg("SPT: Engine call: LoadLibraryExW( \"%s\" ) => %p\n", utf8util::UTF8FromUTF16(lpFileName).c_str(), rv);
 
 	if (rv != NULL)
 	{
@@ -224,7 +224,7 @@ BOOL WINAPI Hooks::HOOKED_FreeLibrary_Func(HMODULE hModule)
 
 	BOOL rv = ORIG_FreeLibrary(hModule);
 
-	EngineDevLog("SPT: Engine call: FreeLibrary( %p ) => %s\n", hModule, (rv ? "true" : "false"));
+	EngineDevMsg("SPT: Engine call: FreeLibrary( %p ) => %s\n", hModule, (rv ? "true" : "false"));
 
 	return rv;
 }

@@ -9,8 +9,8 @@
 
 #define SPT_VERSION "0.5"
 
-extern void ( *EngineLog )( const char *format, ... );
-extern void ( *EngineDevLog )( const char *format, ... );
+extern void ( *EngineMsg )( const char *format, ... );
+extern void ( *EngineDevMsg )( const char *format, ... );
 extern void ( *EngineWarning )( const char *format, ... );
 extern void ( *EngineConCmd )( const char *cmd );
 

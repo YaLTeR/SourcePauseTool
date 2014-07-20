@@ -39,14 +39,14 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	MemUtils::ptnvec_size ptnNumber;
 
 	// CheckJumpButton
-	EngineDevLog("SPT: [server dll] Searching for CheckJumpButton...\n");
+	EngineDevMsg("SPT: [server dll] Searching for CheckJumpButton...\n");
 
 	uintptr_t pCheckJumpButton = NULL;
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsServerCheckJumpButton, &pCheckJumpButton);
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_CheckJumpButton = (_CheckJumpButton)pCheckJumpButton;
-		EngineLog("SPT: [server dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsServerCheckJumpButton[ptnNumber].build.c_str());
+		EngineMsg("SPT: [server dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsServerCheckJumpButton[ptnNumber].build.c_str());
 
 		switch (ptnNumber)
 		{
@@ -88,14 +88,14 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 
 	// FinishGravity
-	EngineDevLog("SPT: [server dll] Searching for FinishGravity...\n");
+	EngineDevMsg("SPT: [server dll] Searching for FinishGravity...\n");
 
 	uintptr_t pFinishGravity = NULL;
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsFinishGravity, &pFinishGravity);
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_FinishGravity = (_FinishGravity)pFinishGravity;
-		EngineLog("SPT: [server dll] Found FinishGravity at %p (using the build %s pattern).\n", pFinishGravity, Patterns::ptnsFinishGravity[ptnNumber].build.c_str());
+		EngineMsg("SPT: [server dll] Found FinishGravity at %p (using the build %s pattern).\n", pFinishGravity, Patterns::ptnsFinishGravity[ptnNumber].build.c_str());
 
 		switch (ptnNumber)
 		{
@@ -146,12 +146,12 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 	int origM_nOldButtons = 0;
 
 	//CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
-	//EngineDevLog("SPT: (x, y, z) %.8f %.8f %.8f\n", mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z);
+	//EngineDevMsg("SPT: (x, y, z) %.8f %.8f %.8f\n", mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z);
 
 	if (y_spt_autojump.GetBool())
 	{
 		pM_nOldButtons = (int *)(*((uintptr_t *)thisptr + off1M_nOldButtons) + off2M_nOldButtons);
-		// EngineLog("thisptr: %p, pM_nOldButtons: %p, difference: %x\n", thisptr, pM_nOldButtons, (pM_nOldButtons - thisptr));
+		// EngineMsg("thisptr: %p, pM_nOldButtons: %p, difference: %x\n", thisptr, pM_nOldButtons, (pM_nOldButtons - thisptr));
 		origM_nOldButtons = *pM_nOldButtons;
 
 		if (!cantJumpNextTime) // Do not do anything if we jumped on the previous tick.
@@ -160,7 +160,7 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 		}
 		else
 		{
-			//EngineDevLog( "SPT: Con jump prevented!\n" );
+			//EngineDevMsg( "SPT: Con jump prevented!\n" );
 		}
 	}
 
@@ -186,10 +186,10 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 			cantJumpNextTime = true; // Prevent consecutive jumps.
 		}
 
-		//EngineDevLog( "SPT: Jump!\n" );
+		//EngineDevMsg( "SPT: Jump!\n" );
 	}
 
-	//EngineDevLog( "SPT: Engine call: [server dll] CheckJumpButton() => %s\n", (rv ? "true" : "false") );
+	//EngineDevMsg( "SPT: Engine call: [server dll] CheckJumpButton() => %s\n", (rv ? "true" : "false") );
 
 	return rv;
 }

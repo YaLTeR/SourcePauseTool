@@ -44,14 +44,14 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	MemUtils::ptnvec_size ptnNumber;
 
 	// DoImageSpaceMotionBlur
-	EngineDevLog("SPT: Searching for DoImageSpaceMotionBlur...\n");
+	EngineDevMsg("SPT: Searching for DoImageSpaceMotionBlur...\n");
 
 	uintptr_t pDoImageSpaceMotionBlur = NULL;
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsDoImageSpaceMotionBlur, &pDoImageSpaceMotionBlur);
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_DoImageSpaceMorionBlur = (_DoImageSpaceMotionBlur)pDoImageSpaceMotionBlur;
-		EngineLog("SPT: Found DoImageSpaceMotionBlur at %p (using the build %s pattern).\n", pDoImageSpaceMotionBlur, Patterns::ptnsDoImageSpaceMotionBlur[ptnNumber].build.c_str());
+		EngineMsg("SPT: Found DoImageSpaceMotionBlur at %p (using the build %s pattern).\n", pDoImageSpaceMotionBlur, Patterns::ptnsDoImageSpaceMotionBlur[ptnNumber].build.c_str());
 
 		switch (ptnNumber)
 		{
@@ -72,7 +72,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			break;
 		}
 
-		EngineLog("SPT: pgpGlobals is %p.\n", pgpGlobals);
+		EngineMsg("SPT: pgpGlobals is %p.\n", pgpGlobals);
 	}
 	else
 	{
@@ -81,14 +81,14 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 
 	// CheckJumpButton
-	EngineDevLog("SPT: [client dll] Searching for CheckJumpButton...\n");
+	EngineDevMsg("SPT: [client dll] Searching for CheckJumpButton...\n");
 
 	uintptr_t pCheckJumpButton = NULL;
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsClientCheckJumpButton, &pCheckJumpButton);
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_CheckJumpButton = (_CheckJumpButton)pCheckJumpButton;
-		EngineLog("SPT: [client dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsClientCheckJumpButton[ptnNumber].build.c_str());
+		EngineMsg("SPT: [client dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsClientCheckJumpButton[ptnNumber].build.c_str());
 
 		switch (ptnNumber)
 		{
@@ -125,14 +125,14 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 
 	// HudUpdate
-	EngineDevLog("SPT: [client dll] Searching for CHLClient::HudUpdate...\n");
+	EngineDevMsg("SPT: [client dll] Searching for CHLClient::HudUpdate...\n");
 
 	uintptr_t pHudUpdate = NULL;
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsHudUpdate, &pHudUpdate);
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_HudUpdate = (_HudUpdate)pHudUpdate;
-		EngineLog("SPT: [client dll] Found CHLClient::HudUpdate at %p (using the build %s pattern).\n", pHudUpdate, Patterns::ptnsHudUpdate[ptnNumber].build.c_str());
+		EngineMsg("SPT: [client dll] Found CHLClient::HudUpdate at %p (using the build %s pattern).\n", pHudUpdate, Patterns::ptnsHudUpdate[ptnNumber].build.c_str());
 	}
 	else
 	{
@@ -246,7 +246,7 @@ bool __fastcall ClientDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 		}
 		else
 		{
-			// EngineDevLog( "SPT: Con jump prevented!\n" );
+			// EngineDevMsg( "SPT: Con jump prevented!\n" );
 		}
 	}
 
@@ -270,10 +270,10 @@ bool __fastcall ClientDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 			cantJumpNextTime = true; // Prevent consecutive jumps.
 		}
 
-		// EngineDevLog( "SPT: Jump!\n" );
+		// EngineDevMsg( "SPT: Jump!\n" );
 	}
 
-	EngineDevLog("SPT: Engine call: [client dll] CheckJumpButton() => %s\n", (rv ? "true" : "false"));
+	EngineDevMsg("SPT: Engine call: [client dll] CheckJumpButton() => %s\n", (rv ? "true" : "false"));
 
 	return rv;
 }

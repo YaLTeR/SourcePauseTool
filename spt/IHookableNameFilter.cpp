@@ -32,7 +32,7 @@ void IHookableNameFilter::TryHookAll()
 		size_t size;
 		if (MemUtils::GetModuleInfo(name, &hModule, &start, &size))
 		{
-			EngineLog("SPT: Hooking %s (start: %p; size: %x)...\n", utf8util::UTF8FromUTF16(name).c_str(), start, size);
+			EngineMsg("SPT: Hooking %s (start: %p; size: %x)...\n", utf8util::UTF8FromUTF16(name).c_str(), start, size);
 			Hook(name, hModule, start, size);
 			break;
 		}

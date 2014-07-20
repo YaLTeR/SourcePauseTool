@@ -52,8 +52,8 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		Warning("SPT: y_spt_afterframes has no effect.\n");
 	}
 
-	EngineLog = Log;
-	EngineDevLog = DevLog;
+	EngineMsg = Msg;
+	EngineDevMsg = DevMsg;
 	EngineWarning = Warning;
 	EngineConCmd = CallServerCommand;
 
