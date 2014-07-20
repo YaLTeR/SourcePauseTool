@@ -1,15 +1,19 @@
  ☐ Hook demo cvar setting so that I can disable demos setting sensitivity. @feature
- ✔ Add autojump. @feature @done (14-04-25 18:54)
- ☐ Add an _y_afterframes analogue. @feature
  ☐ Add a cvar to force FOV. @feature
  ☐ Merge Bunnymod XT into spt.
- ✔ Support the newest HL2 update. @done (14-06-15 15:09)
   --- ✄ -----------------------
    Stuff that I'll do when I get around to it
- ✔ Rearrange sources to folders @done (14-04-14 14:13)
  ☐ Add old engine support
  ☐ Add multiplayer engine support (for the motion blur fix and autojump and whatnot)
- ✔ Change build to be a string @done (14-04-02 23:02)
  ☐ Support custom builds of the Source 2007 leak
  ☐ Support new VS builds of Source SDK (like Ghosting)
  ☐ Implement plugin pause and unpause (maybe there are people who wish to use that)
+ ☐ Try to do stuff with threading.
+
+＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿
+Archive:
+ ✔ Add autojump. @feature @done (14-04-25 18:54)
+ ✔ Add an _y_afterframes analogue. @feature @done (14-07-20 15:39)
+ ✔ Support the newest HL2 update. @done (14-06-15 15:09)
+ ✔ Rearrange sources to folders @done (14-04-14 14:13)
+ ✔ Change build to be a string @done (14-04-02 23:02)
