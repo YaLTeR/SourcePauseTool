@@ -22,10 +22,10 @@ void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur(void* view, int x, int y, 
 	return Hooks::getInstance().clientDLL.HOOKED_DoImageSpaceMotionBlur_Func(view, x, y, w, h);
 }
 
-bool __fastcall ClientDLL::HOOKED_CheckJumpButton(void* thisptr, int edx)
-{
-	return Hooks::getInstance().clientDLL.HOOKED_CheckJumpButton_Func(thisptr, edx);
-}
+//bool __fastcall ClientDLL::HOOKED_CheckJumpButton(void* thisptr, int edx)
+//{
+//	return Hooks::getInstance().clientDLL.HOOKED_CheckJumpButton_Func(thisptr, edx);
+//}
 
 void __stdcall ClientDLL::HOOKED_HudUpdate(bool bActive)
 {
@@ -81,47 +81,50 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 
 	// CheckJumpButton
-	EngineDevMsg("SPT: [client dll] Searching for CheckJumpButton...\n");
+	// Commented out because used only for client prediction, when we're playing on a server.
+	// SPT doesn't support multiplayer games yet so that's not a problem.
 
-	uintptr_t pCheckJumpButton = NULL;
-	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsClientCheckJumpButton, &pCheckJumpButton);
-	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
-	{
-		ORIG_CheckJumpButton = (_CheckJumpButton)pCheckJumpButton;
-		EngineDevMsg("SPT: [client dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsClientCheckJumpButton[ptnNumber].build.c_str());
+	//EngineDevMsg("SPT: [client dll] Searching for CheckJumpButton...\n");
 
-		switch (ptnNumber)
-		{
-		case 0:
-			off1M_nOldButtons = 2;
-			off2M_nOldButtons = 40;
-			break;
+	//uintptr_t pCheckJumpButton = NULL;
+	//ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsClientCheckJumpButton, &pCheckJumpButton);
+	//if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	//{
+	//	ORIG_CheckJumpButton = (_CheckJumpButton)pCheckJumpButton;
+	//	EngineDevMsg("SPT: [client dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsClientCheckJumpButton[ptnNumber].build.c_str());
 
-		case 1:
-			off1M_nOldButtons = 1;
-			off2M_nOldButtons = 40;
-			break;
+	//	switch (ptnNumber)
+	//	{
+	//	case 0:
+	//		off1M_nOldButtons = 2;
+	//		off2M_nOldButtons = 40;
+	//		break;
 
-		case 2:
-			off1M_nOldButtons = 2;
-			off2M_nOldButtons = 40;
-			break;
+	//	case 1:
+	//		off1M_nOldButtons = 1;
+	//		off2M_nOldButtons = 40;
+	//		break;
 
-		case 3:
-			off1M_nOldButtons = 2;
-			off2M_nOldButtons = 40;
-			break;
+	//	case 2:
+	//		off1M_nOldButtons = 2;
+	//		off2M_nOldButtons = 40;
+	//		break;
 
-		case 4:
-			off1M_nOldButtons = 2;
-			off2M_nOldButtons = 40;
-			break;
-		}
-	}
-	else
-	{
-		EngineDevWarning("SPT: [client dll] Could not find CheckJumpButton.\n");
-	}
+	//	case 3:
+	//		off1M_nOldButtons = 2;
+	//		off2M_nOldButtons = 40;
+	//		break;
+
+	//	case 4:
+	//		off1M_nOldButtons = 2;
+	//		off2M_nOldButtons = 40;
+	//		break;
+	//	}
+	//}
+	//else
+	//{
+	//	EngineDevWarning("SPT: [client dll] Could not find CheckJumpButton.\n");
+	//}
 
 	// HudUpdate
 	EngineDevMsg("SPT: [client dll] Searching for CHLClient::HudUpdate...\n");
@@ -139,17 +142,17 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("SPT: [client dll] y_spt_afterframes has no effect.\n");
 	}
 
-	AttachDetours(moduleName, 6,
+	AttachDetours(moduleName, 4,
 		&ORIG_DoImageSpaceMorionBlur, HOOKED_DoImageSpaceMotionBlur,
-		&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
+		//&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
 		&ORIG_HudUpdate, HOOKED_HudUpdate);
 }
 
 void ClientDLL::Unhook()
 {
-	DetachDetours(moduleName, 6,
+	DetachDetours(moduleName, 4,
 		&ORIG_DoImageSpaceMorionBlur, HOOKED_DoImageSpaceMotionBlur,
-		&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
+		//&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
 		&ORIG_HudUpdate, HOOKED_HudUpdate);
 
 	Clear();
@@ -159,12 +162,12 @@ void ClientDLL::Clear()
 {
 	IHookableNameFilter::Clear();
 	ORIG_DoImageSpaceMorionBlur = nullptr;
-	ORIG_CheckJumpButton = nullptr;
+	//ORIG_CheckJumpButton = nullptr;
 	ORIG_HudUpdate = nullptr;
 	pgpGlobals = nullptr;
-	off1M_nOldButtons = NULL;
-	off2M_nOldButtons = NULL;
-	cantJumpNextTime = false;
+	//off1M_nOldButtons = NULL;
+	//off2M_nOldButtons = NULL;
+	//cantJumpNextTime = false;
 }
 
 void ClientDLL::AddIntoAfterframesQueue(const afterframes_entry_t& entry)
@@ -223,59 +226,59 @@ void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, in
 	}
 }
 
-bool __fastcall ClientDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
-{
-	/*
-	Not sure if this gets called at all from the client dll, but
-	I will just hook it in exactly the same way as the server one.
-	*/
-	const int IN_JUMP = (1 << 1);
-
-	int *pM_nOldButtons = NULL;
-	int origM_nOldButtons = 0;
-
-	if (y_spt_autojump.GetBool())
-	{
-		pM_nOldButtons = (int *)(*((uintptr_t *)thisptr + off1M_nOldButtons) + off2M_nOldButtons);
-		origM_nOldButtons = *pM_nOldButtons;
-
-		if (!cantJumpNextTime) // Do not do anything if we jumped on the previous tick.
-		{
-			*pM_nOldButtons &= ~IN_JUMP; // Reset the jump button state as if it wasn't pressed.
-		}
-		else
-		{
-			// EngineDevMsg( "SPT: Con jump prevented!\n" );
-		}
-	}
-
-	cantJumpNextTime = false;
-
-	bool rv = ORIG_CheckJumpButton(thisptr, edx); // This function can only change the jump bit.
-
-	if (y_spt_autojump.GetBool())
-	{
-		if (!(*pM_nOldButtons & IN_JUMP)) // CheckJumpButton didn't change anything (we didn't jump).
-		{
-			*pM_nOldButtons = origM_nOldButtons; // Restore the old jump button state.
-		}
-	}
-
-	if (rv)
-	{
-		// We jumped.
-		if (y_spt_autojump_ensure_legit.GetBool())
-		{
-			cantJumpNextTime = true; // Prevent consecutive jumps.
-		}
-
-		// EngineDevMsg( "SPT: Jump!\n" );
-	}
-
-	EngineDevMsg("SPT: Engine call: [client dll] CheckJumpButton() => %s\n", (rv ? "true" : "false"));
-
-	return rv;
-}
+//bool __fastcall ClientDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
+//{
+//	/*
+//	Not sure if this gets called at all from the client dll, but
+//	I will just hook it in exactly the same way as the server one.
+//	*/
+//	const int IN_JUMP = (1 << 1);
+//
+//	int *pM_nOldButtons = NULL;
+//	int origM_nOldButtons = 0;
+//
+//	if (y_spt_autojump.GetBool())
+//	{
+//		pM_nOldButtons = (int *)(*((uintptr_t *)thisptr + off1M_nOldButtons) + off2M_nOldButtons);
+//		origM_nOldButtons = *pM_nOldButtons;
+//
+//		if (!cantJumpNextTime) // Do not do anything if we jumped on the previous tick.
+//		{
+//			*pM_nOldButtons &= ~IN_JUMP; // Reset the jump button state as if it wasn't pressed.
+//		}
+//		else
+//		{
+//			// EngineDevMsg( "SPT: Con jump prevented!\n" );
+//		}
+//	}
+//
+//	cantJumpNextTime = false;
+//
+//	bool rv = ORIG_CheckJumpButton(thisptr, edx); // This function can only change the jump bit.
+//
+//	if (y_spt_autojump.GetBool())
+//	{
+//		if (!(*pM_nOldButtons & IN_JUMP)) // CheckJumpButton didn't change anything (we didn't jump).
+//		{
+//			*pM_nOldButtons = origM_nOldButtons; // Restore the old jump button state.
+//		}
+//	}
+//
+//	if (rv)
+//	{
+//		// We jumped.
+//		if (y_spt_autojump_ensure_legit.GetBool())
+//		{
+//			cantJumpNextTime = true; // Prevent consecutive jumps.
+//		}
+//
+//		// EngineDevMsg( "SPT: Jump!\n" );
+//	}
+//
+//	EngineDevMsg("SPT: Engine call: [client dll] CheckJumpButton() => %s\n", (rv ? "true" : "false"));
+//
+//	return rv;
+//}
 
 void __stdcall ClientDLL::HOOKED_HudUpdate_Func(bool bActive)
 {

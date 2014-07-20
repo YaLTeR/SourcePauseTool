@@ -20,7 +20,7 @@ using std::uintptr_t;
 using std::size_t;
 
 typedef void(__cdecl *_DoImageSpaceMotionBlur) (void* view, int x, int y, int w, int h);
-typedef bool(__fastcall *_CheckJumpButton) (void* thisptr, int edx);
+//typedef bool(__fastcall *_CheckJumpButton) (void* thisptr, int edx);
 typedef void(__stdcall *_HudUpdate) (bool bActive);
 
 typedef struct
@@ -38,10 +38,10 @@ public:
 	virtual void Clear();
 
 	static void __cdecl HOOKED_DoImageSpaceMotionBlur(void* view, int x, int y, int w, int h);
-	static bool __fastcall HOOKED_CheckJumpButton(void* thisptr, int edx);
+	//static bool __fastcall HOOKED_CheckJumpButton(void* thisptr, int edx);
 	static void __stdcall HOOKED_HudUpdate(bool bActive);
 	void __cdecl HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, int y, int w, int h);
-	bool __fastcall HOOKED_CheckJumpButton_Func(void* thisptr, int edx);
+	//bool __fastcall HOOKED_CheckJumpButton_Func(void* thisptr, int edx);
 	void __stdcall HOOKED_HudUpdate_Func(bool bActive);
 
 	void AddIntoAfterframesQueue(const afterframes_entry_t& entry);
@@ -49,13 +49,13 @@ public:
 
 protected:
 	_DoImageSpaceMotionBlur ORIG_DoImageSpaceMorionBlur;
-	_CheckJumpButton ORIG_CheckJumpButton;
+	//_CheckJumpButton ORIG_CheckJumpButton;
 	_HudUpdate ORIG_HudUpdate;
 
 	uintptr_t* pgpGlobals;
-	ptrdiff_t off1M_nOldButtons;
-	ptrdiff_t off2M_nOldButtons;
-	bool cantJumpNextTime;
+	//ptrdiff_t off1M_nOldButtons;
+	//ptrdiff_t off2M_nOldButtons;
+	//bool cantJumpNextTime;
 
 	std::vector<afterframes_entry_t> afterframesQueue;
 
