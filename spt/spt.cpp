@@ -3,6 +3,7 @@
 void ( *EngineMsg )( const char *format, ... );
 void ( *EngineDevMsg )( const char *format, ... );
 void ( *EngineWarning )( const char *format, ... );
+void ( *EngineDevWarning )( const char *format, ... );
 void ( *EngineConCmd )( const char *cmd );
 
 std::wstring GetFileName( const std::wstring &fileNameWithPath )

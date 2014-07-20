@@ -50,7 +50,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsSpawnPlayer, &pSpawnPlayer);
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
-		EngineMsg("SPT: Found SpawnPlayer at %p (using the build %s pattern).\n", pSpawnPlayer, Patterns::ptnsSpawnPlayer[ptnNumber].build.c_str());
+		EngineDevMsg("SPT: Found SpawnPlayer at %p (using the build %s pattern).\n", pSpawnPlayer, Patterns::ptnsSpawnPlayer[ptnNumber].build.c_str());
 
 		switch (ptnNumber)
 		{
@@ -75,12 +75,12 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			break;
 		}
 
-		EngineMsg("SPT: m_bLoadGame is situated at %p.\n", pM_bLoadgame);
-		EngineMsg("SPT: pGameServer is %p.\n", pGameServer);
+		EngineDevMsg("SPT: m_bLoadGame is situated at %p.\n", pM_bLoadgame);
+		EngineDevMsg("SPT: pGameServer is %p.\n", pGameServer);
 	}
 	else
 	{
-		EngineWarning("SPT: Could not find SpawnPlayer!\n");
+		EngineDevWarning("SPT: Could not find SpawnPlayer!\n");
 		EngineWarning("SPT: y_spt_pause 2 has no effect.\n");
 	}
 
@@ -92,11 +92,11 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_SV_ActivateServer = (_SV_ActivateServer)pSV_ActivateServer;
-		EngineMsg("SPT: Found SV_ActivateServer at %p (using the build %s pattern).\n", pSV_ActivateServer, Patterns::ptnsSV_ActivateServer[ptnNumber].build.c_str());
+		EngineDevMsg("SPT: Found SV_ActivateServer at %p (using the build %s pattern).\n", pSV_ActivateServer, Patterns::ptnsSV_ActivateServer[ptnNumber].build.c_str());
 	}
 	else
 	{
-		EngineWarning("SPT: Could not find SV_ActivateServer!\n");
+		EngineDevWarning("SPT: Could not find SV_ActivateServer!\n");
 		EngineWarning("SPT: y_spt_pause 2 has no effect.\n");
 		EngineWarning("SPT: y_spt_afterframes_reset_on_server_activate has no effect.\n");
 	}
@@ -109,11 +109,11 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_FinishRestore = (_FinishRestore)pFinishRestore;
-		EngineMsg("SPT: Found FinishRestore at %p (using the build %s pattern).\n", pFinishRestore, Patterns::ptnsFinishRestore[ptnNumber].build.c_str());
+		EngineDevMsg("SPT: Found FinishRestore at %p (using the build %s pattern).\n", pFinishRestore, Patterns::ptnsFinishRestore[ptnNumber].build.c_str());
 	}
 	else
 	{
-		EngineWarning("SPT: Could not find FinishRestore!\n");
+		EngineDevWarning("SPT: Could not find FinishRestore!\n");
 		EngineWarning("SPT: y_spt_pause 1 has no effect.\n");
 	}
 
@@ -125,11 +125,11 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (pSetPaused)
 	{
 		ORIG_SetPaused = (_SetPaused)pSetPaused;
-		EngineMsg("SPT: Found SetPaused at %p (using the build %s pattern).\n", pSetPaused, Patterns::ptnsSetPaused[ptnNumber].build.c_str());
+		EngineDevMsg("SPT: Found SetPaused at %p (using the build %s pattern).\n", pSetPaused, Patterns::ptnsSetPaused[ptnNumber].build.c_str());
 	}
 	else
 	{
-		EngineWarning("SPT: Could not find SetPaused!\n");
+		EngineDevWarning("SPT: Could not find SetPaused!\n");
 		EngineWarning("SPT: y_spt_pause has no effect.\n");
 	}
 

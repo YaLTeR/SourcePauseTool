@@ -76,6 +76,7 @@ void Hooks::Free()
 	// Unhook everything
 	for (auto it = modules.begin(); it != modules.end(); ++it)
 	{
+		EngineDevMsg("SPT: Unhooking %s...\n", utf8util::UTF8FromUTF16((*it)->GetHookedModuleName()).c_str());
 		(*it)->Unhook();
 	}
 
@@ -110,7 +111,7 @@ void Hooks::HookModule(std::wstring moduleName)
 		{
 			if ((module != NULL) || (MemUtils::GetModuleInfo(moduleName, &module, &start, &size)))
 			{
-				EngineMsg("SPT: Hooking %s (start: %p; size: %x)...\n", utf8util::UTF8FromUTF16(moduleName).c_str(), start, size);
+				EngineDevMsg("SPT: Hooking %s (start: %p; size: %x)...\n", utf8util::UTF8FromUTF16(moduleName).c_str(), start, size);
 				(*it)->Hook(moduleName, module, start, size);
 			}
 			else
@@ -134,7 +135,7 @@ void Hooks::UnhookModule(std::wstring moduleName)
 	{
 		if ((*it)->GetHookedModuleName().compare(moduleName) == 0)
 		{
-			EngineMsg("SPT: Unhooking %s...\n", utf8util::UTF8FromUTF16(moduleName).c_str());
+			EngineDevMsg("SPT: Unhooking %s...\n", utf8util::UTF8FromUTF16(moduleName).c_str());
 			(*it)->Unhook();
 			unhookedSomething = true;
 		}
@@ -155,7 +156,6 @@ void Hooks::AddToHookedModules(IHookableModule* module)
 	}
 
 	modules.push_back(module);
-	EngineDevMsg("SPT: Adding a module %p.\n", module);
 }
 
 HMODULE WINAPI Hooks::HOOKED_LoadLibraryA_Func(LPCSTR lpFileName)

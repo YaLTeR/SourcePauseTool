@@ -51,7 +51,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_DoImageSpaceMorionBlur = (_DoImageSpaceMotionBlur)pDoImageSpaceMotionBlur;
-		EngineMsg("SPT: Found DoImageSpaceMotionBlur at %p (using the build %s pattern).\n", pDoImageSpaceMotionBlur, Patterns::ptnsDoImageSpaceMotionBlur[ptnNumber].build.c_str());
+		EngineDevMsg("SPT: Found DoImageSpaceMotionBlur at %p (using the build %s pattern).\n", pDoImageSpaceMotionBlur, Patterns::ptnsDoImageSpaceMotionBlur[ptnNumber].build.c_str());
 
 		switch (ptnNumber)
 		{
@@ -72,11 +72,11 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			break;
 		}
 
-		EngineMsg("SPT: pgpGlobals is %p.\n", pgpGlobals);
+		EngineDevMsg("SPT: pgpGlobals is %p.\n", pgpGlobals);
 	}
 	else
 	{
-		EngineWarning("SPT: Could not find DoImageSpaceMotionBlur!\n");
+		EngineDevWarning("SPT: Could not find DoImageSpaceMotionBlur!\n");
 		EngineWarning("SPT: y_spt_motion_blur_fix has no effect.\n");
 	}
 
@@ -88,7 +88,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_CheckJumpButton = (_CheckJumpButton)pCheckJumpButton;
-		EngineMsg("SPT: [client dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsClientCheckJumpButton[ptnNumber].build.c_str());
+		EngineDevMsg("SPT: [client dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsClientCheckJumpButton[ptnNumber].build.c_str());
 
 		switch (ptnNumber)
 		{
@@ -120,8 +120,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 	else
 	{
-		EngineWarning("SPT: [client dll] Could not find CheckJumpButton.\n");
-		EngineWarning("SPT: [client dll] This should not matter.\n");
+		EngineDevWarning("SPT: [client dll] Could not find CheckJumpButton.\n");
 	}
 
 	// HudUpdate
@@ -132,12 +131,12 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_HudUpdate = (_HudUpdate)pHudUpdate;
-		EngineMsg("SPT: [client dll] Found CHLClient::HudUpdate at %p (using the build %s pattern).\n", pHudUpdate, Patterns::ptnsHudUpdate[ptnNumber].build.c_str());
+		EngineDevMsg("SPT: [client dll] Found CHLClient::HudUpdate at %p (using the build %s pattern).\n", pHudUpdate, Patterns::ptnsHudUpdate[ptnNumber].build.c_str());
 	}
 	else
 	{
-		EngineWarning("SPT: [client dll] Could not find CHLClient::HudUpdate.\n");
-		EngineWarning("SPT: [client dll] y_afterframes has no effect.\n");
+		EngineDevWarning("SPT: [client dll] Could not find CHLClient::HudUpdate.\n");
+		EngineWarning("SPT: [client dll] y_spt_afterframes has no effect.\n");
 	}
 
 	AttachDetours(moduleName, 6,

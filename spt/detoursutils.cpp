@@ -39,7 +39,7 @@ void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 	if (!needToDetour)
 	{
 		va_end( copy );
-		EngineMsg( "SPT: No %s functions to detour!\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
+		EngineDevMsg( "SPT: No %s functions to detour!\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
 		return;
 	}
 
@@ -63,7 +63,7 @@ void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 	LONG error = DetourTransactionCommit();
 	if (error == NO_ERROR)
 	{
-		EngineMsg( "SPT: Detoured %d %s function(s).\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str() );
+		EngineDevMsg( "SPT: Detoured %d %s function(s).\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str() );
 	}
 	else
 	{
@@ -100,7 +100,7 @@ void DetachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 	if (!needToUndetour)
 	{
 		va_end( copy );
-		EngineMsg( "SPT: No %s functions to detour!\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
+		EngineDevMsg( "SPT: No %s functions to undetour!\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
 		return;
 	}
 
@@ -124,7 +124,7 @@ void DetachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 	LONG error = DetourTransactionCommit();
 	if (error == NO_ERROR)
 	{
-		EngineMsg( "SPT: Removed %d %s function detour(s).\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str() );
+		EngineDevMsg( "SPT: Removed %d %s function detour(s).\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str() );
 	}
 	else
 	{

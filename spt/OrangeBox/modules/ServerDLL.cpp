@@ -46,7 +46,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_CheckJumpButton = (_CheckJumpButton)pCheckJumpButton;
-		EngineMsg("SPT: [server dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsServerCheckJumpButton[ptnNumber].build.c_str());
+		EngineDevMsg("SPT: [server dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsServerCheckJumpButton[ptnNumber].build.c_str());
 
 		switch (ptnNumber)
 		{
@@ -83,7 +83,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 	else
 	{
-		EngineWarning("SPT: [server dll] Could not find CheckJumpButton!\n");
+		EngineDevWarning("SPT: [server dll] Could not find CheckJumpButton!\n");
 		EngineWarning("SPT: [server dll] y_spt_autojump has no effect.\n");
 	}
 
@@ -95,7 +95,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_FinishGravity = (_FinishGravity)pFinishGravity;
-		EngineMsg("SPT: [server dll] Found FinishGravity at %p (using the build %s pattern).\n", pFinishGravity, Patterns::ptnsFinishGravity[ptnNumber].build.c_str());
+		EngineDevMsg("SPT: [server dll] Found FinishGravity at %p (using the build %s pattern).\n", pFinishGravity, Patterns::ptnsFinishGravity[ptnNumber].build.c_str());
 
 		switch (ptnNumber)
 		{
@@ -107,7 +107,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 	else
 	{
-		EngineWarning("SPT: [server dll] Could not find FinishGravity!\n");
+		EngineDevWarning("SPT: [server dll] Could not find FinishGravity!\n");
 		EngineWarning("SPT: [server dll] y_spt_additional_abh has no effect.\n");
 	}
 

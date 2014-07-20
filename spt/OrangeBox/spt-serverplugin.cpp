@@ -48,18 +48,19 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	engine = (IVEngineClient*)interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION, NULL);
 	if (!engine)
 	{
-		Warning("SPT: Failed to get the IVEngineClient interface.\n");
+		DevWarning("SPT: Failed to get the IVEngineClient interface.\n");
 		Warning("SPT: y_spt_afterframes has no effect.\n");
 	}
 
 	EngineMsg = Msg;
 	EngineDevMsg = DevMsg;
 	EngineWarning = Warning;
+	EngineDevWarning = DevWarning;
 	EngineConCmd = CallServerCommand;
 
 	Hooks::getInstance().Init();
 
-	Msg("SourcePauseTool v" SPT_VERSION " was loaded successfully.\n");
+	Msg("SourcePauseTool v" SPT_VERSION " was loaded.\n");
 
 	return true;
 }
