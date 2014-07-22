@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <cstdint>
+#include <future>
 #include <string>
 
 #define WIN32_LEAN_AND_MEAN
@@ -38,10 +39,12 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 	MemUtils::ptnvec_size ptnNumber;
 
-	// CheckJumpButton
-	EngineDevMsg("SPT: [server dll] Searching for CheckJumpButton...\n");
+	uintptr_t pCheckJumpButton = NULL,
+		pFinishGravity = NULL;
 
-	uintptr_t pCheckJumpButton = NULL;
+	auto fFinishGravity = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsFinishGravity, &pFinishGravity);
+
+	// CheckJumpButton
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsServerCheckJumpButton, &pCheckJumpButton);
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
@@ -88,10 +91,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 
 	// FinishGravity
-	EngineDevMsg("SPT: [server dll] Searching for FinishGravity...\n");
-
-	uintptr_t pFinishGravity = NULL;
-	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsFinishGravity, &pFinishGravity);
+	ptnNumber = fFinishGravity.get();
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_FinishGravity = (_FinishGravity)pFinishGravity;
