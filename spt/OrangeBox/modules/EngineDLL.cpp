@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <cstdint>
+#include <future>
 #include <string>
 
 #define WIN32_LEAN_AND_MEAN
@@ -43,10 +44,16 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 	MemUtils::ptnvec_size ptnNumber;
 
-	// m_bLoadgame and pGameServer (&sv)
-	EngineDevMsg("SPT: Searching for SpawnPlayer...\n");
+	uintptr_t pSpawnPlayer = NULL,
+		pSV_ActivateServer = NULL,
+		pFinishRestore = NULL,
+		pSetPaused = NULL;
 
-	uintptr_t pSpawnPlayer = NULL;
+	auto fActivateServer = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSV_ActivateServer, &pSV_ActivateServer);
+	auto fFinishRestore = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsFinishRestore, &pFinishRestore);
+	auto fSetPaused = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSetPaused, &pSetPaused);
+
+	// m_bLoadgame and pGameServer (&sv)
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsSpawnPlayer, &pSpawnPlayer);
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
@@ -85,10 +92,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 
 	// SV_ActivateServer
-	EngineDevMsg("SPT: Searching for SV_ActivateServer...\n");
-
-	uintptr_t pSV_ActivateServer = NULL;
-	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsSV_ActivateServer, &pSV_ActivateServer);
+	ptnNumber = fActivateServer.get();
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_SV_ActivateServer = (_SV_ActivateServer)pSV_ActivateServer;
@@ -102,10 +106,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 
 	// FinishRestore
-	EngineDevMsg("SPT: Searching for FinishRestore...\n");
-
-	uintptr_t pFinishRestore = NULL;
-	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsFinishRestore, &pFinishRestore);
+	ptnNumber = fFinishRestore.get();
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_FinishRestore = (_FinishRestore)pFinishRestore;
@@ -118,10 +119,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 
 	// SetPaused
-	EngineDevMsg("SPT: Searching for SetPaused...\n");
-
-	uintptr_t pSetPaused = NULL;
-	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsSetPaused, &pSetPaused);
+	ptnNumber = fSetPaused.get();
 	if (pSetPaused)
 	{
 		ORIG_SetPaused = (_SetPaused)pSetPaused;

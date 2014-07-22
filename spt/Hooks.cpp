@@ -97,6 +97,8 @@ void Hooks::Clear()
 	ORIG_LoadLibraryExA = nullptr;
 	ORIG_LoadLibraryExW = nullptr;
 	ORIG_FreeLibrary = nullptr;
+
+	modules.clear();
 }
 
 void Hooks::HookModule(std::wstring moduleName)

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define SPT_VERSION "0.6-beta"
+#define SPT_VERSION "0.6-beta-threading"
 
 extern void ( *EngineMsg )( const char *format, ... );
 extern void ( *EngineDevMsg )( const char *format, ... );

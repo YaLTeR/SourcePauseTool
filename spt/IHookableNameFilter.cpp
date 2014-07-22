@@ -20,7 +20,6 @@ bool IHookableNameFilter::CanHook(const std::wstring& moduleFullName)
 void IHookableNameFilter::Clear()
 {
 	IHookableModule::Clear();
-	moduleNames.clear();
 }
 
 void IHookableNameFilter::TryHookAll()
