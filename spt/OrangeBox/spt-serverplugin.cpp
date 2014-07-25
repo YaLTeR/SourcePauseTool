@@ -19,6 +19,7 @@ inline bool FStrEq( const char *sz1, const char *sz2 )
 
 // Interfaces from the engine
 IVEngineClient *engine = nullptr;
+ICvar *icvar = nullptr;
 
 void CallServerCommand(const char* cmd)
 {
@@ -53,6 +54,13 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	{
 		DevWarning("SPT: Failed to get the IVEngineClient interface.\n");
 		Warning("SPT: y_spt_afterframes has no effect.\n");
+	}
+
+	icvar = (ICvar*)interfaceFactory(CVAR_INTERFACE_VERSION, NULL);
+	if (!icvar)
+	{
+		DevWarning("SPT: Failed to get the ICvar interface.\n");
+		Warning("SPT: y_spt_cvar has no effect.\n");
 	}
 
 	EngineMsg = Msg;
@@ -103,6 +111,9 @@ const char *CSourcePauseTool::GetPluginDescription( void )
 
 CON_COMMAND(y_spt_afterframes, "Add a command into an afterframes queue. Usage: y_spt_afterframes <count> <command>")
 {
+	if (!icvar)
+		return;
+
 	if (args.ArgC() != 3)
 	{
 		Msg("Usage: y_spt_afterframes <count> <command>\n");
@@ -121,6 +132,47 @@ CON_COMMAND(y_spt_afterframes, "Add a command into an afterframes queue. Usage: 
 CON_COMMAND(y_spt_afterframes_reset, "Reset the afterframes queue.")
 {
 	Hooks::getInstance().clientDLL.ResetAfterframesQueue();
+}
+
+CON_COMMAND(y_spt_cvar, "CVar manipulation.")
+{
+	if (args.ArgC() < 2)
+	{
+		Msg("Usage: y_spt_cvar <name> [value]\n");
+		return;
+	}
+
+	ConVar *cvar = icvar->FindVar(args.Arg(1));
+	if (!cvar)
+	{
+		Warning("Couldn't find the cvar: %s\n", args.Arg(1));
+		return;
+	}
+
+	if (args.ArgC() == 2)
+	{
+		Msg("\"%s\" = \"%s\"\n", cvar->GetName(), cvar->GetString(), cvar->GetHelpText());
+		Msg("Default: %s\n", cvar->GetDefault());
+
+		float val;
+		if (cvar->GetMin(val))
+		{
+			Msg("Min: %f\n", val);
+		}
+
+		if (cvar->GetMax(val))
+		{
+			Msg("Max: %f\n", val);
+		}
+		
+		const char *helpText = cvar->GetHelpText();
+		if (strlen(helpText) > 0)
+			Msg("- %s\n", cvar->GetHelpText());
+
+		return;
+	}
+
+	cvar->SetValue(args.Arg(2));
 }
 
 //---------------------------------------------------------------------------------
