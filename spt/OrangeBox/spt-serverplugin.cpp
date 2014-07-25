@@ -172,7 +172,8 @@ CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 		return;
 	}
 
-	cvar->SetValue(args.Arg(2));
+	const char *value = args.ArgS() + strlen(args.Arg(1)) + 1;
+	cvar->SetValue(value);
 }
 
 //---------------------------------------------------------------------------------
