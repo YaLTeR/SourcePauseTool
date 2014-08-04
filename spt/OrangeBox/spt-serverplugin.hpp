@@ -1,9 +1,4 @@
-#ifndef __SPT_SERVERPLUGIN_H__
-#define __SPT_SERVERPLUGIN_H__
-
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include "engine/iserverplugin.h"
 
@@ -40,5 +35,3 @@ public:
 	virtual void            OnEdictAllocated( edict_t *edict );
 	virtual void            OnEdictFreed( const edict_t *edict );
 };
-
-#endif // __SPT_SERVERPLUGIN_H__

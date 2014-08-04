@@ -1,9 +1,4 @@
-#ifndef __PATTERNS_H__
-#define __PATTERNS_H__
-
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include "memutils.hpp"
 
@@ -311,5 +306,3 @@ namespace Patterns
 		}
 	};
 }
-
-#endif // __PATTERNS_H__

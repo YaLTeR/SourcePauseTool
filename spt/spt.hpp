@@ -1,9 +1,4 @@
-#ifndef __SPT_H__
-#define __SPT_H__
-
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include <string>
 
@@ -16,5 +11,3 @@ extern void ( *EngineDevWarning )( const char *format, ... );
 extern void ( *EngineConCmd )( const char *cmd );
 
 std::wstring GetFileName( const std::wstring &fileNameWithPath );
-
-#endif // __SPT_H__

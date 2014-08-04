@@ -1,17 +1,5 @@
-#ifndef __IHOOKABLEMODULE_H__
-#define __IHOOKABLEMODULE_H__
-
-#ifdef _WIN32
+#include "stdafx.h"
 #pragma once
-#endif // _WIN32
-
-#include <cstddef>
-#include <cstdint>
-#include <string>
-
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
 
 using std::uintptr_t;
 using std::size_t;
@@ -36,5 +24,3 @@ protected:
 	size_t moduleLength;
 	std::wstring moduleName;
 };
-
-#endif // __IHOOKABLEMODULE_H__

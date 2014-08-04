@@ -34,6 +34,9 @@
     <ClCompile Include="spt\OrangeBox\modules\ClientDLL.cpp">
       <Filter>spt\OrangeBox\modules</Filter>
     </ClCompile>
+    <ClCompile Include="spt\stdafx.cpp">
+      <Filter>spt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -143,6 +146,9 @@
     </ClInclude>
     <ClInclude Include="SDK\hl_movedata.h">
       <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\stdafx.h">
+      <Filter>spt</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

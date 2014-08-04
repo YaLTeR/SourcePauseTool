@@ -1,8 +1,4 @@
-#include <string>
-
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
+#include "stdafx.h"
 
 #include "Hooks.hpp"
 #include "IHookableModule.hpp"

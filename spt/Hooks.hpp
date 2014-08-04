@@ -1,16 +1,7 @@
-#ifndef __HOOKS_H__
-#define __HOOKS_H__
-
-#ifdef _WIN32
+#include "stdafx.h"
 #pragma once
-#endif
 
-#include <string>
 #include <vector>
-
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
 
 #include "OrangeBox\modules\EngineDLL.hpp"
 #include "OrangeBox\modules\ClientDLL.hpp"
@@ -64,5 +55,3 @@ protected:
 	_LoadLibraryExW   ORIG_LoadLibraryExW;
 	_FreeLibrary    ORIG_FreeLibrary;
 };
-
-#endif // __HOOKS_H__

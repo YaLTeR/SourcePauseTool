@@ -1,8 +1,7 @@
+#include "stdafx.h"
+
 #include <unordered_map>
 
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
 #include <detours.h>
 
 #include "../utf8conv/utf8conv.hpp"

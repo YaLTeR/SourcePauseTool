@@ -1,19 +1,8 @@
-#ifndef __MEMUTILS_H__
-#define __MEMUTILS_H__
-
-#ifdef _WIN32
+#include "stdafx.h"
 #pragma once
-#endif
 
-#include <cstddef>
-#include <cstdint>
 #include <limits>
-#include <string>
 #include <vector>
-
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
 
 using std::uintptr_t;
 using std::size_t;
@@ -47,5 +36,3 @@ namespace MemUtils
 	void ReplaceBytes(const uintptr_t addr, const size_t length, const byte* pNewBytes);
 	uintptr_t HookVTable(const uintptr_t* vtable, const size_t index, const uintptr_t function);
 }
-
-#endif // __MEMUTILS_H__

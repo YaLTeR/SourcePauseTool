@@ -1,11 +1,6 @@
-#include <cstddef>
-#include <cstdint>
-#include <limits>
-#include <string>
+#include "stdafx.h"
 
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
+#include <limits>
 
 #include <Psapi.h>
 #include "memutils.hpp"

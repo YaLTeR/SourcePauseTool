@@ -1,17 +1,5 @@
-#ifndef __ENGINEDLL_H__
-#define __ENGINEDLL_H__
-
-#ifdef _WIN32
+#include "stdafx.h"
 #pragma once
-#endif // _WIN32
-
-#include <cstddef>
-#include <cstdint>
-#include <string>
-
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
 
 #include "..\..\IHookableNameFilter.hpp"
 
@@ -46,5 +34,3 @@ protected:
 	bool* pM_bLoadgame;
 	bool shouldPreventNextUnpause;
 };
-
-#endif // __ENGINEDLL_H__

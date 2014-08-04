@@ -1,11 +1,6 @@
-#include <cstddef>
-#include <cstdint>
-#include <future>
-#include <string>
+#include "stdafx.h"
 
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
+#include <future>
 
 #include "..\cvars.hpp"
 #include "..\..\spt.hpp"

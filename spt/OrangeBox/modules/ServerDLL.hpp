@@ -1,17 +1,5 @@
-#ifndef __SERVERDLL_H__
-#define __SERVERDLL_H__
-
-#ifdef _WIN32
+#include "stdafx.h"
 #pragma once
-#endif // _WIN32
-
-#include <cstddef>
-#include <cstdint>
-#include <string>
-
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
 
 #include "..\..\IHookableNameFilter.hpp"
 
@@ -50,5 +38,3 @@ protected:
 	ptrdiff_t off1M_bDucked;
 	ptrdiff_t off2M_bDucked;
 };
-
-#endif // __SERVERDLL_H__

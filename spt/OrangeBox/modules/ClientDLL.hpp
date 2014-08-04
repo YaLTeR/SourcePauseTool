@@ -1,18 +1,7 @@
-#ifndef __CLIENTDLL_H__
-#define __CLIENTDLL_H__
-
-#ifdef _WIN32
+#include "stdafx.h"
 #pragma once
-#endif // _WIN32
 
-#include <cstddef>
-#include <cstdint>
-#include <string>
 #include <vector>
-
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
 
 #include "..\..\IHookableNameFilter.hpp"
 
@@ -68,5 +57,3 @@ protected:
 
 	void OnFrame();
 };
-
-#endif // __CLIENTDLL_H__
