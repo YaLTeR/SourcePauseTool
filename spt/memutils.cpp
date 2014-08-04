@@ -161,4 +161,13 @@ namespace MemUtils
 
 		VirtualProtect((void *)addr, length, dwOldProtect, NULL);
 	}
+
+	uintptr_t HookVTable(const uintptr_t* vtable, const size_t index, const uintptr_t function)
+	{
+		uintptr_t oldFunction = vtable[index];
+
+		ReplaceBytes( (uintptr_t)( &(vtable[index]) ), sizeof(uintptr_t), (byte*)&function );
+
+		return oldFunction;
+	}
 }

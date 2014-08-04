@@ -8,7 +8,7 @@ void ( *EngineConCmd )( const char *cmd );
 
 std::wstring GetFileName( const std::wstring &fileNameWithPath )
 {
-	unsigned slashPos = fileNameWithPath.rfind('/');
+	size_t slashPos = fileNameWithPath.rfind('/');
 	if (slashPos != std::wstring::npos)
 	{
 		return std::wstring( fileNameWithPath, (slashPos + 1) );

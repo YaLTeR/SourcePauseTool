@@ -166,7 +166,7 @@ CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 		}
 		
 		const char *helpText = cvar->GetHelpText();
-		if (strlen(helpText) > 0)
+		if (helpText[0] != '\0')
 			Msg("- %s\n", cvar->GetHelpText());
 
 		return;

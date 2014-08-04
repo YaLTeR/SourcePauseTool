@@ -45,6 +45,7 @@ namespace MemUtils
 	ptnvec_size FindUniqueSequence(uintptr_t start, size_t length, const ptnvec& patterns, uintptr_t* pdwAddress = nullptr);
 
 	void ReplaceBytes(const uintptr_t addr, const size_t length, const byte* pNewBytes);
+	uintptr_t HookVTable(const uintptr_t* vtable, const size_t index, const uintptr_t function);
 }
 
 #endif // __MEMUTILS_H__

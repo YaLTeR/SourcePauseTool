@@ -32,6 +32,11 @@ void __stdcall ClientDLL::HOOKED_HudUpdate(bool bActive)
 	return Hooks::getInstance().clientDLL.HOOKED_HudUpdate_Func(bActive);
 }
 
+void __stdcall ClientDLL::HOOKED_CreateMove(int sequence_number, float input_sample_frametime, bool active)
+{
+	return Hooks::getInstance().clientDLL.HOOKED_CreateMove_Func(sequence_number, input_sample_frametime, active);
+}
+
 void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.
@@ -40,6 +45,8 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	this->moduleStart = moduleStart;
 	this->moduleLength = moduleLength;
 	this->moduleName = moduleName;
+
+	bool detected5135 = false;
 
 	MemUtils::ptnvec_size ptnNumber;
 
@@ -57,6 +64,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		{
 		case 0:
 			pgpGlobals = *(uintptr_t **)(pDoImageSpaceMotionBlur + 132);
+			detected5135 = true;
 			break;
 
 		case 1:
@@ -142,6 +150,44 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("SPT: [client dll] y_spt_afterframes has no effect.\n");
 	}
 
+	// CreateMove
+	EngineDevMsg("SPT: [client dll] Trying to obtain the IBaseClientDLL interface...\n");
+
+	CreateInterfaceFn cdllIfaceFactory = (CreateInterfaceFn)GetProcAddress(hModule, "CreateInterface");
+	if (cdllIfaceFactory)
+	{
+		EngineDevMsg("SPT: [client dll] CreateInterface: %p\n", cdllIfaceFactory);
+
+		if (clientDll = (uintptr_t)cdllIfaceFactory("VClient015", NULL))
+		{
+			EngineDevMsg("SPT: [client dll] IBaseClientDLL v15 is located at %p\n", clientDll);
+			viCreateMove = 18;
+
+			// HACK, 5135 exposes updated interfaces with the old version number
+			if (detected5135)
+				viCreateMove = 19;
+		}
+		else if (clientDll = (uintptr_t)cdllIfaceFactory("VClient017", NULL))
+		{
+			EngineDevMsg("SPT: [client dll] IBaseClientDLL v17 is located at %p\n", clientDll);
+			viCreateMove = 21;
+		}
+		else
+		{
+			EngineDevWarning("SPT: [client dll] Could not obtain the IBaseClientDLL interface.\n");
+		}
+
+		if (clientDll)
+		{
+			ORIG_CreateMove = (_CreateMove)MemUtils::HookVTable(*(uintptr_t**)clientDll, viCreateMove, (uintptr_t)HOOKED_CreateMove);
+			EngineDevMsg("SPT: [client dll] CreateMove is located at %p\n", ORIG_CreateMove);
+		}
+	}
+	else
+	{
+		EngineDevWarning("SPT: [client dll] Could not obtain CreateInterface.\n");
+	}
+
 	AttachDetours(moduleName, 4,
 		&ORIG_DoImageSpaceMorionBlur, HOOKED_DoImageSpaceMotionBlur,
 		//&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
@@ -155,6 +201,9 @@ void ClientDLL::Unhook()
 		//&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
 		&ORIG_HudUpdate, HOOKED_HudUpdate);
 
+	if (ORIG_CreateMove)
+		MemUtils::HookVTable(*(uintptr_t**)clientDll, viCreateMove, (uintptr_t)ORIG_CreateMove);
+
 	Clear();
 }
 
@@ -164,10 +213,13 @@ void ClientDLL::Clear()
 	ORIG_DoImageSpaceMorionBlur = nullptr;
 	//ORIG_CheckJumpButton = nullptr;
 	ORIG_HudUpdate = nullptr;
+	ORIG_CreateMove = nullptr;
 	pgpGlobals = nullptr;
 	//off1M_nOldButtons = NULL;
 	//off2M_nOldButtons = NULL;
 	//cantJumpNextTime = false;
+	clientDll = 0;
+	viCreateMove = 0;
 }
 
 void ClientDLL::AddIntoAfterframesQueue(const afterframes_entry_t& entry)
@@ -191,7 +243,7 @@ void ClientDLL::OnFrame()
 			it = afterframesQueue.erase(it);
 		}
 		else
-			it++;
+			++it;
 	}
 }
 
@@ -285,4 +337,9 @@ void __stdcall ClientDLL::HOOKED_HudUpdate_Func(bool bActive)
 	OnFrame();
 
 	return ORIG_HudUpdate(bActive);
+}
+
+void __stdcall ClientDLL::HOOKED_CreateMove_Func(int sequence_number, float input_sample_frametime, bool active)
+{
+	return ORIG_CreateMove(sequence_number, input_sample_frametime, active);
 }
