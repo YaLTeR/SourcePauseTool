@@ -27,6 +27,28 @@ void CallServerCommand(const char* cmd)
 		engine->ClientCmd(cmd);
 }
 
+void GetViewAngles(float viewangles[3])
+{
+	if (engine)
+	{
+		QAngle va;
+		engine->GetViewAngles(va);
+
+		viewangles[0] = va.x;
+		viewangles[1] = va.y;
+		viewangles[2] = va.z;
+	}
+}
+
+void SetViewAngles(const float viewangles[3])
+{
+	if (engine)
+	{
+		QAngle va(viewangles[0], viewangles[1], viewangles[2]);
+		engine->SetViewAngles(va);
+	}
+}
+
 //
 // The plugin is a static singleton that is exported as an interface
 //
@@ -68,6 +90,8 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	EngineWarning = Warning;
 	EngineDevWarning = DevWarning;
 	EngineConCmd = CallServerCommand;
+	EngineGetViewAngles = GetViewAngles;
+	EngineSetViewAngles = SetViewAngles;
 
 	Hooks::getInstance().Init();
 
@@ -188,6 +212,27 @@ static void DuckspamUp(const CCommand &args)
 }
 static ConCommand DuckspamUp_Command("-y_spt_duckspam", DuckspamUp, "Disables the duckspam.");
 
+CON_COMMAND(_y_spt_setpitch, "Sets the pitch. Usage: _y_spt_setpitch <pitch>")
+{
+	if (args.ArgC() != 2)
+	{
+		Msg("Usage: _y_spt_setpitch <pitch>\n");
+		return;
+	}
+
+	Hooks::getInstance().clientDLL.SetPitch( atof(args.Arg(1)) );
+}
+
+CON_COMMAND(_y_spt_setyaw, "Sets the yaw. Usage: _y_spt_setyaw <yaw>")
+{
+	if (args.ArgC() != 2)
+	{
+		Msg("Usage: _y_spt_setyaw <yaw>\n");
+		return;
+	}
+
+	Hooks::getInstance().clientDLL.SetYaw( atof(args.Arg(1)) );
+}
 
 //---------------------------------------------------------------------------------
 // Purpose: called on level start

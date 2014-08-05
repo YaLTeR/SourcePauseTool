@@ -5,6 +5,8 @@ void ( *EngineDevMsg )( const char *format, ... );
 void ( *EngineWarning )( const char *format, ... );
 void ( *EngineDevWarning )( const char *format, ... );
 void ( *EngineConCmd )( const char *cmd );
+void ( *EngineGetViewAngles )( float viewangles[3] );
+void ( *EngineSetViewAngles )( const float viewangles[3] );
 
 std::wstring GetFileName( const std::wstring &fileNameWithPath )
 {

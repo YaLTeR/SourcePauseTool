@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include <future>
+
 #include "..\cvars.hpp"
 #include "..\..\spt.hpp"
 #include "..\..\memutils.hpp"
@@ -31,6 +33,11 @@ int __fastcall ClientDLL::HOOKED_GetButtonBits(void* thisptr, int edx, int bRese
 	return Hooks::getInstance().clientDLL.HOOKED_GetButtonBits_Func(thisptr, edx, bResetState);
 }
 
+void __fastcall ClientDLL::HOOKED_AdjustAngles(void* thisptr, int edx, float frametime)
+{
+	return Hooks::getInstance().clientDLL.HOOKED_AdjustAngles_Func(thisptr, edx, frametime);
+}
+
 void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.
@@ -40,13 +47,17 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	this->moduleLength = moduleLength;
 	this->moduleName = moduleName;
 
-	bool detected5135 = false;
-
 	MemUtils::ptnvec_size ptnNumber;
 
-	// DoImageSpaceMotionBlur
-	EngineDevMsg("SPT: Searching for DoImageSpaceMotionBlur...\n");
+	uintptr_t pHudUpdate,
+		pGetButtonBits,
+		pAdjustAngles;
 
+	auto fHudUpdate = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsHudUpdate, &pHudUpdate);
+	auto fGetButtonBits = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsGetButtonBits, &pGetButtonBits);
+	auto fAdjustAngles = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsAdjustAngles, &pAdjustAngles);
+
+	// DoImageSpaceMotionBlur
 	uintptr_t pDoImageSpaceMotionBlur = NULL;
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsDoImageSpaceMotionBlur, &pDoImageSpaceMotionBlur);
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
@@ -58,7 +69,6 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		{
 		case 0:
 			pgpGlobals = *(uintptr_t **)(pDoImageSpaceMotionBlur + 132);
-			detected5135 = true;
 			break;
 
 		case 1:
@@ -129,10 +139,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	//}
 
 	// HudUpdate
-	EngineDevMsg("SPT: [client dll] Searching for CHLClient::HudUpdate...\n");
-
-	uintptr_t pHudUpdate = NULL;
-	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsHudUpdate, &pHudUpdate);
+	ptnNumber = fHudUpdate.get();
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_HudUpdate = (_HudUpdate)pHudUpdate;
@@ -145,10 +152,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 
 	// GetButtonBits
-	EngineDevMsg("SPT: [client dll] Searching for CInput::GetButtonBits...\n");
-
-	uintptr_t pGetButtonBits = NULL;
-	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsGetButtonBits, &pGetButtonBits);
+	ptnNumber = fGetButtonBits.get();
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_GetButtonBits = (_GetButtonBits)pGetButtonBits;
@@ -160,20 +164,35 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("SPT: [client dll] +y_spt_duckspam has no effect.\n");
 	}
 
-	AttachDetours(moduleName, 6,
+	// AdjustAngles
+	ptnNumber = fAdjustAngles.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_AdjustAngles = (_AdjustAngles)pAdjustAngles;
+		EngineDevMsg("SPT: [client dll] Found CInput::AdjustAngles at %p (using the build %s pattern).\n", pAdjustAngles, Patterns::ptnsAdjustAngles[ptnNumber].build.c_str());
+	}
+	else
+	{
+		EngineDevWarning("SPT: [client dll] Could not find CInput::AdjustAngles.\n");
+		EngineWarning("SPT: [client dll] _y_spt_setpitch and _y_spt_setyaw have no effect.\n");
+	}
+
+	AttachDetours(moduleName, 8,
 		&ORIG_DoImageSpaceMorionBlur, HOOKED_DoImageSpaceMotionBlur,
 		//&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
 		&ORIG_HudUpdate, HOOKED_HudUpdate,
-		&ORIG_GetButtonBits, HOOKED_GetButtonBits);
+		&ORIG_GetButtonBits, HOOKED_GetButtonBits,
+		&ORIG_AdjustAngles, HOOKED_AdjustAngles);
 }
 
 void ClientDLL::Unhook()
 {
-	DetachDetours(moduleName, 6,
+	DetachDetours(moduleName, 8,
 		&ORIG_DoImageSpaceMorionBlur, HOOKED_DoImageSpaceMotionBlur,
 		//&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
 		&ORIG_HudUpdate, HOOKED_HudUpdate,
-		&ORIG_GetButtonBits, HOOKED_GetButtonBits);
+		&ORIG_GetButtonBits, HOOKED_GetButtonBits,
+		&ORIG_AdjustAngles, HOOKED_AdjustAngles);
 
 	Clear();
 }
@@ -185,9 +204,15 @@ void ClientDLL::Clear()
 	//ORIG_CheckJumpButton = nullptr;
 	ORIG_HudUpdate = nullptr;
 	ORIG_GetButtonBits = nullptr;
+	ORIG_AdjustAngles = nullptr;
+
 	pgpGlobals = nullptr;
+
 	afterframesQueue.clear();
 	duckspam = false;
+
+	setPitch.set = false;
+	setYaw.set = false;
 	//off1M_nOldButtons = NULL;
 	//off2M_nOldButtons = NULL;
 	//cantJumpNextTime = false;
@@ -333,4 +358,29 @@ int __fastcall ClientDLL::HOOKED_GetButtonBits_Func(void* thisptr, int edx, int 
 	}
 
 	return rv;
+}
+
+void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, float frametime)
+{
+	ORIG_AdjustAngles(thisptr, edx, frametime);
+
+	if (setPitch.set || setYaw.set)
+	{
+		float va[3];
+		EngineGetViewAngles(va);
+
+		if (setPitch.set)
+		{
+			setPitch.set = false;
+			va[0] = setPitch.angle;
+		}
+
+		if (setYaw.set)
+		{
+			setYaw.set = false;
+			va[1] = setYaw.angle;
+		}
+
+		EngineSetViewAngles(va);
+	}
 }
