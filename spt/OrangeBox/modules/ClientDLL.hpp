@@ -11,7 +11,7 @@ using std::size_t;
 typedef void(__cdecl *_DoImageSpaceMotionBlur) (void* view, int x, int y, int w, int h);
 //typedef bool(__fastcall *_CheckJumpButton) (void* thisptr, int edx);
 typedef void(__stdcall *_HudUpdate) (bool bActive);
-typedef void(__stdcall *_CreateMove) (int sequence_number, float input_sample_frametime, bool active);
+typedef int(__fastcall *_GetButtonBits) (void* thisptr, int edx, int bResetState);
 
 typedef struct
 {
@@ -30,30 +30,27 @@ public:
 	static void __cdecl HOOKED_DoImageSpaceMotionBlur(void* view, int x, int y, int w, int h);
 	//static bool __fastcall HOOKED_CheckJumpButton(void* thisptr, int edx);
 	static void __stdcall HOOKED_HudUpdate(bool bActive);
-	static void __stdcall HOOKED_CreateMove(int sequence_number, float input_sample_frametime, bool active);
+	static int __fastcall HOOKED_GetButtonBits(void* thisptr, int edx, int bResetState);
 	void __cdecl HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, int y, int w, int h);
 	//bool __fastcall HOOKED_CheckJumpButton_Func(void* thisptr, int edx);
 	void __stdcall HOOKED_HudUpdate_Func(bool bActive);
-	void __stdcall HOOKED_CreateMove_Func(int sequence_number, float input_sample_frametime, bool active);
+	int __fastcall HOOKED_GetButtonBits_Func(void* thisptr, int edx, int bResetState);
 
 	void AddIntoAfterframesQueue(const afterframes_entry_t& entry);
 	void ResetAfterframesQueue();
+
+	void EnableDuckspam() { duckspam = true; }
+	void DisableDuckspam() { duckspam = false; }
 
 protected:
 	_DoImageSpaceMotionBlur ORIG_DoImageSpaceMorionBlur;
 	//_CheckJumpButton ORIG_CheckJumpButton;
 	_HudUpdate ORIG_HudUpdate;
-	_CreateMove ORIG_CreateMove;
+	_GetButtonBits ORIG_GetButtonBits;
 
 	uintptr_t* pgpGlobals;
-	//ptrdiff_t off1M_nOldButtons;
-	//ptrdiff_t off2M_nOldButtons;
-	//bool cantJumpNextTime;
-
-	uintptr_t clientDll;
-	size_t viCreateMove;
 
 	std::vector<afterframes_entry_t> afterframesQueue;
-
+	bool duckspam;
 	void OnFrame();
 };

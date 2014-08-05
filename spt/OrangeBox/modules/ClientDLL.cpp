@@ -26,9 +26,9 @@ void __stdcall ClientDLL::HOOKED_HudUpdate(bool bActive)
 	return Hooks::getInstance().clientDLL.HOOKED_HudUpdate_Func(bActive);
 }
 
-void __stdcall ClientDLL::HOOKED_CreateMove(int sequence_number, float input_sample_frametime, bool active)
+int __fastcall ClientDLL::HOOKED_GetButtonBits(void* thisptr, int edx, int bResetState)
 {
-	return Hooks::getInstance().clientDLL.HOOKED_CreateMove_Func(sequence_number, input_sample_frametime, active);
+	return Hooks::getInstance().clientDLL.HOOKED_GetButtonBits_Func(thisptr, edx, bResetState);
 }
 
 void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
@@ -144,59 +144,36 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("SPT: [client dll] y_spt_afterframes has no effect.\n");
 	}
 
-	// CreateMove
-	EngineDevMsg("SPT: [client dll] Trying to obtain the IBaseClientDLL interface...\n");
+	// GetButtonBits
+	EngineDevMsg("SPT: [client dll] Searching for CInput::GetButtonBits...\n");
 
-	CreateInterfaceFn cdllIfaceFactory = (CreateInterfaceFn)GetProcAddress(hModule, "CreateInterface");
-	if (cdllIfaceFactory)
+	uintptr_t pGetButtonBits = NULL;
+	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsGetButtonBits, &pGetButtonBits);
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
-		EngineDevMsg("SPT: [client dll] CreateInterface: %p\n", cdllIfaceFactory);
-
-		if (clientDll = (uintptr_t)cdllIfaceFactory("VClient015", NULL))
-		{
-			EngineDevMsg("SPT: [client dll] IBaseClientDLL v15 is located at %p\n", clientDll);
-			viCreateMove = 18;
-
-			// HACK, 5135 exposes updated interfaces with the old version number
-			if (detected5135)
-				viCreateMove = 19;
-		}
-		else if (clientDll = (uintptr_t)cdllIfaceFactory("VClient017", NULL))
-		{
-			EngineDevMsg("SPT: [client dll] IBaseClientDLL v17 is located at %p\n", clientDll);
-			viCreateMove = 21;
-		}
-		else
-		{
-			EngineDevWarning("SPT: [client dll] Could not obtain the IBaseClientDLL interface.\n");
-		}
-
-		if (clientDll)
-		{
-			ORIG_CreateMove = (_CreateMove)MemUtils::HookVTable(*(uintptr_t**)clientDll, viCreateMove, (uintptr_t)HOOKED_CreateMove);
-			EngineDevMsg("SPT: [client dll] CreateMove is located at %p\n", ORIG_CreateMove);
-		}
+		ORIG_GetButtonBits = (_GetButtonBits)pGetButtonBits;
+		EngineDevMsg("SPT: [client dll] Found CInput::GetButtonBits at %p (using the build %s pattern).\n", pGetButtonBits, Patterns::ptnsGetButtonBits[ptnNumber].build.c_str());
 	}
 	else
 	{
-		EngineDevWarning("SPT: [client dll] Could not obtain CreateInterface.\n");
+		EngineDevWarning("SPT: [client dll] Could not find CInput::GetButtonBits.\n");
+		EngineWarning("SPT: [client dll] +y_spt_duckspam has no effect.\n");
 	}
 
-	AttachDetours(moduleName, 4,
+	AttachDetours(moduleName, 6,
 		&ORIG_DoImageSpaceMorionBlur, HOOKED_DoImageSpaceMotionBlur,
 		//&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
-		&ORIG_HudUpdate, HOOKED_HudUpdate);
+		&ORIG_HudUpdate, HOOKED_HudUpdate,
+		&ORIG_GetButtonBits, HOOKED_GetButtonBits);
 }
 
 void ClientDLL::Unhook()
 {
-	DetachDetours(moduleName, 4,
+	DetachDetours(moduleName, 6,
 		&ORIG_DoImageSpaceMorionBlur, HOOKED_DoImageSpaceMotionBlur,
 		//&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
-		&ORIG_HudUpdate, HOOKED_HudUpdate);
-
-	if (ORIG_CreateMove)
-		MemUtils::HookVTable(*(uintptr_t**)clientDll, viCreateMove, (uintptr_t)ORIG_CreateMove);
+		&ORIG_HudUpdate, HOOKED_HudUpdate,
+		&ORIG_GetButtonBits, HOOKED_GetButtonBits);
 
 	Clear();
 }
@@ -207,13 +184,13 @@ void ClientDLL::Clear()
 	ORIG_DoImageSpaceMorionBlur = nullptr;
 	//ORIG_CheckJumpButton = nullptr;
 	ORIG_HudUpdate = nullptr;
-	ORIG_CreateMove = nullptr;
+	ORIG_GetButtonBits = nullptr;
 	pgpGlobals = nullptr;
+	afterframesQueue.clear();
+	duckspam = false;
 	//off1M_nOldButtons = NULL;
 	//off2M_nOldButtons = NULL;
 	//cantJumpNextTime = false;
-	clientDll = 0;
-	viCreateMove = 0;
 }
 
 void ClientDLL::AddIntoAfterframesQueue(const afterframes_entry_t& entry)
@@ -333,7 +310,27 @@ void __stdcall ClientDLL::HOOKED_HudUpdate_Func(bool bActive)
 	return ORIG_HudUpdate(bActive);
 }
 
-void __stdcall ClientDLL::HOOKED_CreateMove_Func(int sequence_number, float input_sample_frametime, bool active)
+int __fastcall ClientDLL::HOOKED_GetButtonBits_Func(void* thisptr, int edx, int bResetState)
 {
-	return ORIG_CreateMove(sequence_number, input_sample_frametime, active);
+	int rv = ORIG_GetButtonBits(thisptr, edx, bResetState);
+
+	if (bResetState == 1)
+	{
+		static bool duckPressed = false;
+		
+		if (duckspam)
+		{
+			if (duckPressed)
+				duckPressed = false;
+			else
+			{
+				duckPressed = true;
+				rv |= (1 << 2); // IN_DUCK
+			}
+		}
+		else
+			duckPressed = false;
+	}
+
+	return rv;
 }

@@ -176,6 +176,19 @@ CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 	cvar->SetValue(value);
 }
 
+static void DuckspamDown(const CCommand &args)
+{
+	Hooks::getInstance().clientDLL.EnableDuckspam();
+}
+static ConCommand DuckspamDown_Command("+y_spt_duckspam", DuckspamDown, "Enables the duckspam.");
+
+static void DuckspamUp(const CCommand &args)
+{
+	Hooks::getInstance().clientDLL.DisableDuckspam();
+}
+static ConCommand DuckspamUp_Command("-y_spt_duckspam", DuckspamUp, "Disables the duckspam.");
+
+
 //---------------------------------------------------------------------------------
 // Purpose: called on level start
 //---------------------------------------------------------------------------------
