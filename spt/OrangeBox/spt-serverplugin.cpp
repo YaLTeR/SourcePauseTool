@@ -76,6 +76,8 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	{
 		DevWarning("SPT: Failed to get the IVEngineClient interface.\n");
 		Warning("SPT: y_spt_afterframes has no effect.\n");
+		Warning("SPT: _y_spt_setpitch and _y_spt_setyaw have no effect.\n");
+		Warning("SPT: _y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
 	}
 
 	icvar = (ICvar*)interfaceFactory(CVAR_INTERFACE_VERSION, NULL);
@@ -133,14 +135,14 @@ const char *CSourcePauseTool::GetPluginDescription( void )
 	return "SourcePauseTool v" SPT_VERSION ", Ivan \"YaLTeR\" Molodetskikh";
 }
 
-CON_COMMAND(y_spt_afterframes, "Add a command into an afterframes queue. Usage: y_spt_afterframes <count> <command>")
+CON_COMMAND(_y_spt_afterframes, "Add a command into an afterframes queue. Usage: _y_spt_afterframes <count> <command>")
 {
 	if (!icvar)
 		return;
 
 	if (args.ArgC() != 3)
 	{
-		Msg("Usage: y_spt_afterframes <count> <command>\n");
+		Msg("Usage: _y_spt_afterframes <count> <command>\n");
 		return;
 	}
 
@@ -149,6 +151,27 @@ CON_COMMAND(y_spt_afterframes, "Add a command into an afterframes queue. Usage: 
 	std::istringstream ss(args.Arg(1));
 	ss >> entry.framesLeft;
 	entry.command.assign(args.Arg(2));
+
+	Hooks::getInstance().clientDLL.AddIntoAfterframesQueue(entry);
+}
+
+CON_COMMAND(_y_spt_afterframes2, "Add everything after count as a command into the queue. Do not insert the command in quotes. Usage: _y_spt_afterframes2 <count> <command>")
+{
+	if (!icvar)
+		return;
+
+	if (args.ArgC() < 3)
+	{
+		Msg("Usage: _y_spt_afterframes2 <count> <command>\n");
+		return;
+	}
+
+	afterframes_entry_t entry;
+
+	std::istringstream ss(args.Arg(1));
+	ss >> entry.framesLeft;
+	const char *cmd = args.ArgS() + strlen(args.Arg(1)) + 1;
+	entry.command.assign(cmd);
 
 	Hooks::getInstance().clientDLL.AddIntoAfterframesQueue(entry);
 }
@@ -232,6 +255,14 @@ CON_COMMAND(_y_spt_setyaw, "Sets the yaw. Usage: _y_spt_setyaw <yaw>")
 	}
 
 	Hooks::getInstance().clientDLL.SetYaw( atof(args.Arg(1)) );
+}
+
+CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
+{
+	const Vector vel = Hooks::getInstance().serverDLL.GetLastVelocity();
+
+	Warning("Velocity (x, y, z): %f %f %f\n", vel.x, vel.y, vel.z);
+	Warning("Velocity (xy): %f\n", vel.Length2D());
 }
 
 //---------------------------------------------------------------------------------

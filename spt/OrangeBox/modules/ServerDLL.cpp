@@ -23,6 +23,11 @@ void __fastcall ServerDLL::HOOKED_FinishGravity(void* thisptr, int edx)
 	return Hooks::getInstance().serverDLL.HOOKED_FinishGravity_Func(thisptr, edx);
 }
 
+void __fastcall ServerDLL::HOOKED_PlayerRunCommand(void* thisptr, int edx, void* ucmd, void* moveHelper)
+{
+	return Hooks::getInstance().serverDLL.HOOKED_PlayerRunCommand_Func(thisptr, edx, ucmd, moveHelper);
+}
+
 void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.
@@ -35,9 +40,11 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	MemUtils::ptnvec_size ptnNumber;
 
 	uintptr_t pCheckJumpButton = NULL,
-		pFinishGravity = NULL;
+		pFinishGravity = NULL,
+		pPlayerRunCommand = NULL;
 
 	auto fFinishGravity = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsFinishGravity, &pFinishGravity);
+	auto fPlayerRunCommand = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsPlayerRunCommand, &pPlayerRunCommand);
 
 	// CheckJumpButton
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsServerCheckJumpButton, &pCheckJumpButton);
@@ -106,16 +113,58 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("SPT: [server dll] y_spt_additional_abh has no effect.\n");
 	}
 
-	AttachDetours(moduleName, 4,
+	// PlayerRunCommand
+	ptnNumber = fPlayerRunCommand.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_PlayerRunCommand = (_PlayerRunCommand)pPlayerRunCommand;
+		EngineDevMsg("SPT: [server dll] Found PlayerRunCommand at %p (using the build %s pattern).\n", pPlayerRunCommand, Patterns::ptnsPlayerRunCommand[ptnNumber].build.c_str());
+
+		switch (ptnNumber)
+		{
+		case 0:
+			offM_vecAbsVelocity = 476;
+			break;
+
+		case 1:
+			offM_vecAbsVelocity = 476;
+			break;
+
+		case 2:
+			offM_vecAbsVelocity = 532;
+			break;
+
+		case 3:
+			offM_vecAbsVelocity = 532;
+			break;
+
+		case 4:
+			offM_vecAbsVelocity = 532;
+			break;
+
+		case 5:
+			offM_vecAbsVelocity = 476;
+			break;
+		}
+	}
+	else
+	{
+		EngineDevWarning("SPT: [server dll] Could not find PlayerRunCommand!\n");
+		EngineWarning("SPT: [server dll] _y_spt_getvel has no effect.\n");
+	}
+
+	AttachDetours(moduleName, 6,
 		&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
-		&ORIG_FinishGravity, HOOKED_FinishGravity);
+		&ORIG_FinishGravity, HOOKED_FinishGravity,
+		&ORIG_PlayerRunCommand, HOOKED_PlayerRunCommand);
 }
 
 void ServerDLL::Unhook()
 {
-	DetachDetours(moduleName, 4,
+	DetachDetours(moduleName, 6,
 		&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
-		&ORIG_FinishGravity, HOOKED_FinishGravity);
+		&ORIG_FinishGravity, HOOKED_FinishGravity,
+		&ORIG_PlayerRunCommand, HOOKED_PlayerRunCommand);
 
 	Clear();
 }
@@ -125,12 +174,15 @@ void ServerDLL::Clear()
 	IHookableNameFilter::Clear();
 	ORIG_CheckJumpButton = nullptr;
 	ORIG_FinishGravity = nullptr;
-	off1M_nOldButtons = NULL;
-	off2M_nOldButtons = NULL;
+	ORIG_PlayerRunCommand = nullptr;
+	off1M_nOldButtons = 0;
+	off2M_nOldButtons = 0;
 	cantJumpNextTime = false;
 	insideCheckJumpButton = false;
-	off1M_bDucked = NULL;
-	off2M_bDucked = NULL;
+	off1M_bDucked = 0;
+	off2M_bDucked = 0;
+	offM_vecAbsVelocity = 0;
+	lastVelocity.Zero();
 }
 
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
@@ -226,4 +278,11 @@ void __fastcall ServerDLL::HOOKED_FinishGravity_Func(void* thisptr, int edx)
 	}
 
 	return ORIG_FinishGravity(thisptr, edx);
+}
+
+void __fastcall ServerDLL::HOOKED_PlayerRunCommand_Func(void* thisptr, int edx, void* ucmd, void* moveHelper)
+{
+	ORIG_PlayerRunCommand(thisptr, edx, ucmd, moveHelper);
+
+	lastVelocity = *(Vector*)((uintptr_t)thisptr + offM_vecAbsVelocity);
 }

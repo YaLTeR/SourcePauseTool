@@ -175,6 +175,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	{
 		EngineDevWarning("SPT: [client dll] Could not find CInput::AdjustAngles.\n");
 		EngineWarning("SPT: [client dll] _y_spt_setpitch and _y_spt_setyaw have no effect.\n");
+		EngineWarning("SPT: [client dll] _y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
 	}
 
 	AttachDetours(moduleName, 8,
@@ -364,10 +365,18 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 {
 	ORIG_AdjustAngles(thisptr, edx, frametime);
 
-	if (setPitch.set || setYaw.set)
+	double pitchSpeed = atof(_y_spt_pitchspeed.GetString()),
+		yawSpeed = atof(_y_spt_yawspeed.GetString());
+
+	if (setPitch.set || setYaw.set
+		|| (pitchSpeed != 0.0)
+		|| (yawSpeed != 0.0))
 	{
 		float va[3];
 		EngineGetViewAngles(va);
+
+		va[0] += pitchSpeed;
+		va[1] += yawSpeed;
 
 		if (setPitch.set)
 		{

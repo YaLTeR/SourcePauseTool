@@ -65,7 +65,6 @@ protected:
 
 	std::vector<afterframes_entry_t> afterframesQueue;
 	bool duckspam;
-
 	angset_command_t setPitch, setYaw;
 
 	void OnFrame();
