@@ -88,7 +88,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 	else
 	{
-		EngineDevWarning("SPT: Could not find DoImageSpaceMotionBlur!\n");
+		EngineDevWarning("SPT: [client dll] Could not find DoImageSpaceMotionBlur!\n");
 		EngineWarning("SPT: y_spt_motion_blur_fix has no effect.\n");
 	}
 
@@ -148,7 +148,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	else
 	{
 		EngineDevWarning("SPT: [client dll] Could not find CHLClient::HudUpdate.\n");
-		EngineWarning("SPT: [client dll] y_spt_afterframes has no effect.\n");
+		EngineWarning("SPT: y_spt_afterframes has no effect.\n");
 	}
 
 	// GetButtonBits
@@ -161,7 +161,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	else
 	{
 		EngineDevWarning("SPT: [client dll] Could not find CInput::GetButtonBits.\n");
-		EngineWarning("SPT: [client dll] +y_spt_duckspam has no effect.\n");
+		EngineWarning("SPT: +y_spt_duckspam has no effect.\n");
 	}
 
 	// AdjustAngles
@@ -174,8 +174,8 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	else
 	{
 		EngineDevWarning("SPT: [client dll] Could not find CInput::AdjustAngles.\n");
-		EngineWarning("SPT: [client dll] _y_spt_setpitch and _y_spt_setyaw have no effect.\n");
-		EngineWarning("SPT: [client dll] _y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
+		EngineWarning("SPT: _y_spt_setpitch and _y_spt_setyaw have no effect.\n");
+		EngineWarning("SPT: _y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
 	}
 
 	AttachDetours(moduleName, 8,

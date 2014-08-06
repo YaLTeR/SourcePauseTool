@@ -89,7 +89,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	else
 	{
 		EngineDevWarning("SPT: [server dll] Could not find CheckJumpButton!\n");
-		EngineWarning("SPT: [server dll] y_spt_autojump has no effect.\n");
+		EngineWarning("SPT: y_spt_autojump has no effect.\n");
 	}
 
 	// FinishGravity
@@ -110,7 +110,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	else
 	{
 		EngineDevWarning("SPT: [server dll] Could not find FinishGravity!\n");
-		EngineWarning("SPT: [server dll] y_spt_additional_abh has no effect.\n");
+		EngineWarning("SPT: y_spt_additional_abh has no effect.\n");
 	}
 
 	// PlayerRunCommand
@@ -150,7 +150,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	else
 	{
 		EngineDevWarning("SPT: [server dll] Could not find PlayerRunCommand!\n");
-		EngineWarning("SPT: [server dll] _y_spt_getvel has no effect.\n");
+		EngineWarning("SPT: _y_spt_getvel has no effect.\n");
 	}
 
 	AttachDetours(moduleName, 6,
