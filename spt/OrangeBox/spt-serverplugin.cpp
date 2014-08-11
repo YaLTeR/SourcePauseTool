@@ -176,7 +176,7 @@ CON_COMMAND(_y_spt_afterframes2, "Add everything after count as a command into t
 	Hooks::getInstance().clientDLL.AddIntoAfterframesQueue(entry);
 }
 
-CON_COMMAND(y_spt_afterframes_reset, "Reset the afterframes queue.")
+CON_COMMAND(_y_spt_afterframes_reset, "Reset the afterframes queue.")
 {
 	Hooks::getInstance().clientDLL.ResetAfterframesQueue();
 }

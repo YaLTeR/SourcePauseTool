@@ -170,7 +170,7 @@ bool __cdecl EngineDLL::HOOKED_SV_ActivateServer_Func()
 		}
 	}
 
-	if (y_spt_afterframes_reset_on_server_activate.GetBool())
+	if (_y_spt_afterframes_reset_on_server_activate.GetBool())
 		Hooks::getInstance().clientDLL.ResetAfterframesQueue();
 
 	return result;

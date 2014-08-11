@@ -84,6 +84,11 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			off1M_nOldButtons = 2;
 			off2M_nOldButtons = 40;
 			break;
+
+		case 6:
+			off1M_nOldButtons = 2;
+			off2M_nOldButtons = 40;
+			break;
 		}
 	}
 	else
@@ -144,6 +149,10 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 		case 5:
 			offM_vecAbsVelocity = 476;
+			break;
+
+		case 6:
+			offM_vecAbsVelocity = 532;
 			break;
 		}
 	}
