@@ -2,7 +2,7 @@
 
 #include <string>
 
-#define SPT_VERSION "0.6"
+#define SPT_VERSION "0.7-beta"
 
 extern void ( *EngineMsg )( const char *format, ... );
 extern void ( *EngineDevMsg )( const char *format, ... );
