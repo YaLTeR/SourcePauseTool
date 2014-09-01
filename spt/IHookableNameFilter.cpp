@@ -2,7 +2,6 @@
 
 #include "spt.hpp"
 #include "memutils.hpp"
-#include "..\utf8conv\utf8conv.hpp"
 #include "IHookableNameFilter.hpp"
 
 using std::uintptr_t;
@@ -27,7 +26,7 @@ void IHookableNameFilter::TryHookAll()
 		size_t size;
 		if (MemUtils::GetModuleInfo(name, &hModule, &start, &size))
 		{
-			EngineDevMsg("SPT: Hooking %s (start: %p; size: %x)...\n", utf8util::UTF8FromUTF16(name).c_str(), start, size);
+			EngineDevMsg("SPT: Hooking %s (start: %p; size: %x)...\n", string_converter.to_bytes(name).c_str(), start, size);
 			Hook(name, hModule, start, size);
 			break;
 		}

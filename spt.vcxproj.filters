@@ -37,6 +37,9 @@
     <ClCompile Include="spt\stdafx.cpp">
       <Filter>spt</Filter>
     </ClCompile>
+    <ClCompile Include="spt\OrangeBox\modules.cpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -102,17 +105,8 @@
     <ClInclude Include="spt\memutils.hpp">
       <Filter>spt</Filter>
     </ClInclude>
-    <ClInclude Include="spt\patterns.hpp">
-      <Filter>spt</Filter>
-    </ClInclude>
     <ClInclude Include="spt\spt.hpp">
       <Filter>spt</Filter>
-    </ClInclude>
-    <ClInclude Include="utf8conv\utf8conv.hpp">
-      <Filter>utf8conv</Filter>
-    </ClInclude>
-    <ClInclude Include="utf8conv\utf8conv_inl.hpp">
-      <Filter>utf8conv</Filter>
     </ClInclude>
     <ClInclude Include="spt\OrangeBox\spt-serverplugin.hpp">
       <Filter>spt\OrangeBox</Filter>
@@ -150,6 +144,12 @@
     <ClInclude Include="spt\stdafx.h">
       <Filter>spt</Filter>
     </ClInclude>
+    <ClInclude Include="spt\OrangeBox\patterns.hpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\modules.hpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">
@@ -171,9 +171,6 @@
   <ItemGroup>
     <Filter Include="SDK includes &amp; libs">
       <UniqueIdentifier>{eade2e26-4b70-429d-ac6b-01135e887da7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="utf8conv">
-      <UniqueIdentifier>{13c83f06-d44b-4b4e-a485-17fb6dfe7bf1}</UniqueIdentifier>
     </Filter>
     <Filter Include="spt">
       <UniqueIdentifier>{42277bb4-807d-445f-8dc9-abaf03016da9}</UniqueIdentifier>

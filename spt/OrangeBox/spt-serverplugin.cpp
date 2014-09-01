@@ -2,6 +2,7 @@
 #include <sstream>
 
 #include "spt-serverplugin.hpp"
+#include "modules.hpp"
 #include "../spt.hpp"
 #include "../hooks.hpp"
 
@@ -95,6 +96,10 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	EngineGetViewAngles = GetViewAngles;
 	EngineSetViewAngles = SetViewAngles;
 
+	Hooks::getInstance().AddToHookedModules(&engineDLL);
+	Hooks::getInstance().AddToHookedModules(&clientDLL);
+	Hooks::getInstance().AddToHookedModules(&serverDLL);
+
 	Hooks::getInstance().Init();
 
 	auto loadTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
@@ -152,7 +157,7 @@ CON_COMMAND(_y_spt_afterframes, "Add a command into an afterframes queue. Usage:
 	ss >> entry.framesLeft;
 	entry.command.assign(args.Arg(2));
 
-	Hooks::getInstance().clientDLL.AddIntoAfterframesQueue(entry);
+	clientDLL.AddIntoAfterframesQueue(entry);
 }
 
 CON_COMMAND(_y_spt_afterframes2, "Add everything after count as a command into the queue. Do not insert the command in quotes. Usage: _y_spt_afterframes2 <count> <command>")
@@ -173,12 +178,12 @@ CON_COMMAND(_y_spt_afterframes2, "Add everything after count as a command into t
 	const char *cmd = args.ArgS() + strlen(args.Arg(1)) + 1;
 	entry.command.assign(cmd);
 
-	Hooks::getInstance().clientDLL.AddIntoAfterframesQueue(entry);
+	clientDLL.AddIntoAfterframesQueue(entry);
 }
 
 CON_COMMAND(_y_spt_afterframes_reset, "Reset the afterframes queue.")
 {
-	Hooks::getInstance().clientDLL.ResetAfterframesQueue();
+	clientDLL.ResetAfterframesQueue();
 }
 
 CON_COMMAND(y_spt_cvar, "CVar manipulation.")
@@ -225,13 +230,13 @@ CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 
 static void DuckspamDown(const CCommand &args)
 {
-	Hooks::getInstance().clientDLL.EnableDuckspam();
+	clientDLL.EnableDuckspam();
 }
 static ConCommand DuckspamDown_Command("+y_spt_duckspam", DuckspamDown, "Enables the duckspam.");
 
 static void DuckspamUp(const CCommand &args)
 {
-	Hooks::getInstance().clientDLL.DisableDuckspam();
+	clientDLL.DisableDuckspam();
 }
 static ConCommand DuckspamUp_Command("-y_spt_duckspam", DuckspamUp, "Disables the duckspam.");
 
@@ -243,7 +248,7 @@ CON_COMMAND(_y_spt_setpitch, "Sets the pitch. Usage: _y_spt_setpitch <pitch>")
 		return;
 	}
 
-	Hooks::getInstance().clientDLL.SetPitch( atof(args.Arg(1)) );
+	clientDLL.SetPitch( atof(args.Arg(1)) );
 }
 
 CON_COMMAND(_y_spt_setyaw, "Sets the yaw. Usage: _y_spt_setyaw <yaw>")
@@ -254,12 +259,12 @@ CON_COMMAND(_y_spt_setyaw, "Sets the yaw. Usage: _y_spt_setyaw <yaw>")
 		return;
 	}
 
-	Hooks::getInstance().clientDLL.SetYaw( atof(args.Arg(1)) );
+	clientDLL.SetYaw( atof(args.Arg(1)) );
 }
 
 CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 {
-	const Vector vel = Hooks::getInstance().serverDLL.GetLastVelocity();
+	const Vector vel = serverDLL.GetLastVelocity();
 
 	Warning("Velocity (x, y, z): %f %f %f\n", vel.x, vel.y, vel.z);
 	Warning("Velocity (xy): %f\n", vel.Length2D());

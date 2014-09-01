@@ -3,10 +3,11 @@
 #include <future>
 
 #include "..\cvars.hpp"
+#include "..\modules.hpp"
+#include "..\patterns.hpp"
 #include "..\..\spt.hpp"
 #include "..\..\memutils.hpp"
 #include "..\..\detoursutils.hpp"
-#include "..\..\patterns.hpp"
 #include "..\..\hooks.hpp"
 #include "ServerDLL.hpp"
 
@@ -15,17 +16,17 @@ using std::size_t;
 
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton(void* thisptr, int edx)
 {
-	return Hooks::getInstance().serverDLL.HOOKED_CheckJumpButton_Func(thisptr, edx);
+	return serverDLL.HOOKED_CheckJumpButton_Func(thisptr, edx);
 }
 
 void __fastcall ServerDLL::HOOKED_FinishGravity(void* thisptr, int edx)
 {
-	return Hooks::getInstance().serverDLL.HOOKED_FinishGravity_Func(thisptr, edx);
+	return serverDLL.HOOKED_FinishGravity_Func(thisptr, edx);
 }
 
 void __fastcall ServerDLL::HOOKED_PlayerRunCommand(void* thisptr, int edx, void* ucmd, void* moveHelper)
 {
-	return Hooks::getInstance().serverDLL.HOOKED_PlayerRunCommand_Func(thisptr, edx, ucmd, moveHelper);
+	return serverDLL.HOOKED_PlayerRunCommand_Func(thisptr, edx, ucmd, moveHelper);
 }
 
 void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)

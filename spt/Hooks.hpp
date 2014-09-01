@@ -3,9 +3,7 @@
 
 #include <vector>
 
-#include "OrangeBox\modules\EngineDLL.hpp"
-#include "OrangeBox\modules\ClientDLL.hpp"
-#include "OrangeBox\modules\ServerDLL.hpp"
+#include "IHookableModule.hpp"
 
 typedef HMODULE(WINAPI *_LoadLibraryA) (LPCSTR lpLFileName);
 typedef HMODULE(WINAPI *_LoadLibraryW) (LPCWSTR lpFileName);
@@ -16,10 +14,6 @@ typedef BOOL(WINAPI *_FreeLibrary) (HMODULE hModule);
 class Hooks
 {
 public:
-	EngineDLL engineDLL;
-	ClientDLL clientDLL;
-	ServerDLL serverDLL;
-
 	static Hooks& getInstance()
 	{
 		static Hooks instance;

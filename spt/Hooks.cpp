@@ -4,14 +4,10 @@
 
 #include <detours.h>
 
-#include "../utf8conv/utf8conv.hpp"
-
 #include "hooks.hpp"
 #include "detoursutils.hpp"
 #include "memutils.hpp"
-#include "patterns.hpp"
 #include "spt.hpp"
-#include "OrangeBox\modules\EngineDLL.hpp"
 
 HMODULE WINAPI HOOKED_LoadLibraryA(LPCSTR lpFileName)
 {
@@ -40,12 +36,6 @@ BOOL WINAPI HOOKED_FreeLibrary(HMODULE hModule)
 
 void Hooks::Init()
 {
-	Clear();
-
-	AddToHookedModules(&engineDLL);
-	AddToHookedModules(&clientDLL);
-	AddToHookedModules(&serverDLL);
-
 	EngineDevMsg("SPT: Modules contain %d entries.\n", modules.size());
 
 	// Try hooking each module in case it is already loaded
@@ -75,7 +65,7 @@ void Hooks::Free()
 	// Unhook everything
 	for (auto it = modules.begin(); it != modules.end(); ++it)
 	{
-		EngineDevMsg("SPT: Unhooking %s...\n", utf8util::UTF8FromUTF16((*it)->GetHookedModuleName()).c_str());
+		EngineDevMsg("SPT: Unhooking %s...\n", string_converter.to_bytes((*it)->GetHookedModuleName()).c_str());
 		(*it)->Unhook();
 	}
 
@@ -112,12 +102,12 @@ void Hooks::HookModule(std::wstring moduleName)
 		{
 			if ((module != NULL) || (MemUtils::GetModuleInfo(moduleName, &module, &start, &size)))
 			{
-				EngineDevMsg("SPT: Hooking %s (start: %p; size: %x)...\n", utf8util::UTF8FromUTF16(moduleName).c_str(), start, size);
+				EngineDevMsg("SPT: Hooking %s (start: %p; size: %x)...\n", string_converter.to_bytes(moduleName).c_str(), start, size);
 				(*it)->Hook(moduleName, module, start, size);
 			}
 			else
 			{
-				EngineWarning("SPT: Unable to obtain the %s module info!\n", utf8util::UTF8FromUTF16(moduleName).c_str());
+				EngineWarning("SPT: Unable to obtain the %s module info!\n", string_converter.to_bytes(moduleName).c_str());
 				return;
 			}
 		}
@@ -125,7 +115,7 @@ void Hooks::HookModule(std::wstring moduleName)
 
 	if (module == NULL)
 	{
-		EngineDevMsg("SPT: Tried to hook an unlisted module: %s\n", utf8util::UTF8FromUTF16(moduleName).c_str());
+		EngineDevMsg("SPT: Tried to hook an unlisted module: %s\n", string_converter.to_bytes(moduleName).c_str());
 	}
 }
 
@@ -136,7 +126,7 @@ void Hooks::UnhookModule(std::wstring moduleName)
 	{
 		if ((*it)->GetHookedModuleName().compare(moduleName) == 0)
 		{
-			EngineDevMsg("SPT: Unhooking %s...\n", utf8util::UTF8FromUTF16(moduleName).c_str());
+			EngineDevMsg("SPT: Unhooking %s...\n", string_converter.to_bytes(moduleName).c_str());
 			(*it)->Unhook();
 			unhookedSomething = true;
 		}
@@ -144,7 +134,7 @@ void Hooks::UnhookModule(std::wstring moduleName)
 	
 	if (!unhookedSomething)
 	{
-		EngineDevMsg("SPT: Tried to unhook an unlisted module: %s\n", utf8util::UTF8FromUTF16(moduleName).c_str());
+		EngineDevMsg("SPT: Tried to unhook an unlisted module: %s\n", string_converter.to_bytes(moduleName).c_str());
 	}
 }
 
@@ -167,7 +157,7 @@ HMODULE WINAPI Hooks::HOOKED_LoadLibraryA_Func(LPCSTR lpFileName)
 
 	if (rv != NULL)
 	{
-		HookModule( utf8util::UTF16FromUTF8(lpFileName) );
+		HookModule( string_converter.from_bytes(lpFileName) );
 	}
 
 	return rv;
@@ -177,7 +167,7 @@ HMODULE WINAPI Hooks::HOOKED_LoadLibraryW_Func(LPCWSTR lpFileName)
 {
 	HMODULE rv = ORIG_LoadLibraryW(lpFileName);
 
-	EngineDevMsg("SPT: Engine call: LoadLibraryW( \"%s\" ) => %p\n", utf8util::UTF8FromUTF16(lpFileName).c_str(), rv);
+	EngineDevMsg("SPT: Engine call: LoadLibraryW( \"%s\" ) => %p\n", string_converter.to_bytes(lpFileName).c_str(), rv);
 
 	if (rv != NULL)
 	{
@@ -195,7 +185,7 @@ HMODULE WINAPI Hooks::HOOKED_LoadLibraryExA_Func(LPCSTR lpFileName, HANDLE hFile
 
 	if (rv != NULL)
 	{
-		HookModule( utf8util::UTF16FromUTF8(lpFileName) );
+		HookModule( string_converter.from_bytes(lpFileName) );
 	}
 
 	return rv;
@@ -205,7 +195,7 @@ HMODULE WINAPI Hooks::HOOKED_LoadLibraryExW_Func(LPCWSTR lpFileName, HANDLE hFil
 {
 	HMODULE rv = ORIG_LoadLibraryExW(lpFileName, hFile, dwFlags);
 
-	EngineDevMsg("SPT: Engine call: LoadLibraryExW( \"%s\" ) => %p\n", utf8util::UTF8FromUTF16(lpFileName).c_str(), rv);
+	EngineDevMsg("SPT: Engine call: LoadLibraryExW( \"%s\" ) => %p\n", string_converter.to_bytes(lpFileName).c_str(), rv);
 
 	if (rv != NULL)
 	{

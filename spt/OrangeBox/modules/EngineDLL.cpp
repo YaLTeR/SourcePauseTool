@@ -3,10 +3,11 @@
 #include <future>
 
 #include "..\cvars.hpp"
+#include "..\modules.hpp"
+#include "..\patterns.hpp"
 #include "..\..\spt.hpp"
 #include "..\..\memutils.hpp"
 #include "..\..\detoursutils.hpp"
-#include "..\..\patterns.hpp"
 #include "..\..\hooks.hpp"
 #include "EngineDLL.hpp"
 
@@ -15,17 +16,17 @@ using std::size_t;
 
 bool __cdecl EngineDLL::HOOKED_SV_ActivateServer()
 {
-	return Hooks::getInstance().engineDLL.HOOKED_SV_ActivateServer_Func();
+	return engineDLL.HOOKED_SV_ActivateServer_Func();
 }
 
 void __fastcall EngineDLL::HOOKED_FinishRestore(void* thisptr, int edx)
 {
-	return Hooks::getInstance().engineDLL.HOOKED_FinishRestore_Func(thisptr, edx);
+	return engineDLL.HOOKED_FinishRestore_Func(thisptr, edx);
 }
 
 void __fastcall EngineDLL::HOOKED_SetPaused(void* thisptr, int edx, bool paused)
 {
-	return Hooks::getInstance().engineDLL.HOOKED_SetPaused_Func(thisptr, edx, paused);
+	return engineDLL.HOOKED_SetPaused_Func(thisptr, edx, paused);
 }
 
 void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
@@ -171,7 +172,7 @@ bool __cdecl EngineDLL::HOOKED_SV_ActivateServer_Func()
 	}
 
 	if (_y_spt_afterframes_reset_on_server_activate.GetBool())
-		Hooks::getInstance().clientDLL.ResetAfterframesQueue();
+		clientDLL.ResetAfterframesQueue();
 
 	return result;
 }

@@ -1,9 +1,11 @@
 #include "stdafx.h"
 
+#include <codecvt>
+#include <locale>
+
 #include <detours.h>
 #include "detoursutils.hpp"
 #include "spt.hpp"
-#include "../utf8conv/utf8conv.hpp"
 
 #pragma comment (lib, "detours.lib")
 
@@ -36,7 +38,7 @@ void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 	if (!needToDetour)
 	{
 		va_end( copy );
-		EngineDevMsg( "SPT: No %s functions to detour!\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
+		EngineDevMsg("SPT: No %s functions to detour!\n", string_converter.to_bytes(moduleName).c_str());
 		return;
 	}
 
@@ -60,11 +62,11 @@ void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 	LONG error = DetourTransactionCommit();
 	if (error == NO_ERROR)
 	{
-		EngineDevMsg( "SPT: Detoured %d %s function(s).\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str() );
+		EngineDevMsg("SPT: Detoured %d %s function(s).\n", detourCount, string_converter.to_bytes(moduleName).c_str());
 	}
 	else
 	{
-		EngineWarning( "SPT: Error detouring %d %s function(s): %d.\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str(), error );
+		EngineWarning("SPT: Error detouring %d %s function(s): %d.\n", detourCount, string_converter.to_bytes(moduleName).c_str(), error);
 	}
 }
 
@@ -91,13 +93,13 @@ void DetachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 			break;
 		}
 	}
-	va_end( args );
+	va_end(args);
 
 	// We don't have anything to undetour.
 	if (!needToUndetour)
 	{
 		va_end( copy );
-		EngineDevMsg( "SPT: No %s functions to undetour!\n", utf8util::UTF8FromUTF16( moduleName ).c_str() );
+		EngineDevMsg("SPT: No %s functions to undetour!\n", string_converter.to_bytes(moduleName).c_str());
 		return;
 	}
 
@@ -121,10 +123,10 @@ void DetachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 	LONG error = DetourTransactionCommit();
 	if (error == NO_ERROR)
 	{
-		EngineDevMsg( "SPT: Removed %d %s function detour(s).\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str() );
+		EngineDevMsg("SPT: Removed %d %s function detour(s).\n", detourCount, string_converter.to_bytes(moduleName).c_str());
 	}
 	else
 	{
-		EngineWarning( "SPT: Error removing %d %s function detour(s): %d.\n", detourCount, utf8util::UTF8FromUTF16( moduleName ).c_str(), error );
+		EngineWarning("SPT: Error removing %d %s function detour(s): %d.\n", detourCount, string_converter.to_bytes(moduleName).c_str(), error);
 	}
 }

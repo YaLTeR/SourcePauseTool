@@ -3,10 +3,11 @@
 #include <future>
 
 #include "..\cvars.hpp"
+#include "..\modules.hpp"
+#include "..\patterns.hpp"
 #include "..\..\spt.hpp"
 #include "..\..\memutils.hpp"
 #include "..\..\detoursutils.hpp"
-#include "..\..\patterns.hpp"
 #include "..\..\hooks.hpp"
 #include "ClientDLL.hpp"
 
@@ -15,7 +16,7 @@ using std::size_t;
 
 void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur(void* view, int x, int y, int w, int h)
 {
-	return Hooks::getInstance().clientDLL.HOOKED_DoImageSpaceMotionBlur_Func(view, x, y, w, h);
+	return clientDLL.HOOKED_DoImageSpaceMotionBlur_Func(view, x, y, w, h);
 }
 
 //bool __fastcall ClientDLL::HOOKED_CheckJumpButton(void* thisptr, int edx)
@@ -25,17 +26,17 @@ void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur(void* view, int x, int y, 
 
 void __stdcall ClientDLL::HOOKED_HudUpdate(bool bActive)
 {
-	return Hooks::getInstance().clientDLL.HOOKED_HudUpdate_Func(bActive);
+	return clientDLL.HOOKED_HudUpdate_Func(bActive);
 }
 
 int __fastcall ClientDLL::HOOKED_GetButtonBits(void* thisptr, int edx, int bResetState)
 {
-	return Hooks::getInstance().clientDLL.HOOKED_GetButtonBits_Func(thisptr, edx, bResetState);
+	return clientDLL.HOOKED_GetButtonBits_Func(thisptr, edx, bResetState);
 }
 
 void __fastcall ClientDLL::HOOKED_AdjustAngles(void* thisptr, int edx, float frametime)
 {
-	return Hooks::getInstance().clientDLL.HOOKED_AdjustAngles_Func(thisptr, edx, frametime);
+	return clientDLL.HOOKED_AdjustAngles_Func(thisptr, edx, frametime);
 }
 
 void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)

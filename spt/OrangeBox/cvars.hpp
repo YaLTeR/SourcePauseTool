@@ -1,3 +1,5 @@
+#pragma once
+
 #include "convar.h"
 
 extern ConVar y_spt_pause;

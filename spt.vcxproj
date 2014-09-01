@@ -205,6 +205,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="spt\OrangeBox\modules.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="spt\OrangeBox\modules\ClientDLL.cpp" />
     <ClCompile Include="spt\OrangeBox\modules\EngineDLL.cpp" />
     <ClCompile Include="spt\OrangeBox\modules\ServerDLL.cpp" />
@@ -257,15 +260,14 @@
     <ClInclude Include="spt\IHookableNameFilter.hpp" />
     <ClInclude Include="spt\memutils.hpp" />
     <ClInclude Include="spt\OrangeBox\cvars.hpp" />
+    <ClInclude Include="spt\OrangeBox\modules.hpp" />
     <ClInclude Include="spt\OrangeBox\modules\ClientDLL.hpp" />
     <ClInclude Include="spt\OrangeBox\modules\EngineDLL.hpp" />
     <ClInclude Include="spt\OrangeBox\modules\ServerDLL.hpp" />
-    <ClInclude Include="spt\patterns.hpp" />
+    <ClInclude Include="spt\OrangeBox\patterns.hpp" />
     <ClInclude Include="spt\spt.hpp" />
     <ClInclude Include="spt\OrangeBox\spt-serverplugin.hpp" />
     <ClInclude Include="spt\stdafx.h" />
-    <ClInclude Include="utf8conv\utf8conv.hpp" />
-    <ClInclude Include="utf8conv\utf8conv_inl.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
