@@ -1,4 +1,4 @@
-#include "..\..\stdafx.h"
+#include "..\..\stdafx.hpp"
 #pragma once
 
 #include <vector>

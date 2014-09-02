@@ -126,9 +126,6 @@
     <ClInclude Include="SDK\hl_movedata.h">
       <Filter>SDK</Filter>
     </ClInclude>
-    <ClInclude Include="spt\stdafx.h">
-      <Filter>spt</Filter>
-    </ClInclude>
     <ClInclude Include="spt\OrangeBox\patterns.hpp">
       <Filter>spt\OrangeBox</Filter>
     </ClInclude>
@@ -157,6 +154,9 @@
       <Filter>SPTLib</Filter>
     </ClInclude>
     <ClInclude Include="spt\sptlib-wrapper.hpp">
+      <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\stdafx.hpp">
       <Filter>spt</Filter>
     </ClInclude>
   </ItemGroup>
