@@ -6,9 +6,9 @@
 #include "..\modules.hpp"
 #include "..\patterns.hpp"
 #include "..\..\sptlib-wrapper.hpp"
-#include "..\..\..\sptlib\memutils.hpp"
-#include "..\..\..\sptlib\detoursutils.hpp"
-#include "..\..\..\sptlib\hooks.hpp"
+#include "..\..\..\SPTLib\memutils.hpp"
+#include "..\..\..\SPTLib\detoursutils.hpp"
+#include "..\..\..\SPTLib\hooks.hpp"
 #include "EngineDLL.hpp"
 
 using std::uintptr_t;

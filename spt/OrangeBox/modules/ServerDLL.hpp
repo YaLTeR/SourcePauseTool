@@ -1,7 +1,7 @@
 #include "..\..\stdafx.h"
 #pragma once
 
-#include "..\..\..\sptlib\IHookableNameFilter.hpp"
+#include "..\..\..\SPTLib\IHookableNameFilter.hpp"
 
 #include "engine\iserverplugin.h"
 #include "..\..\..\SDK\hl_movedata.h"
