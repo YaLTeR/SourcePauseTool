@@ -1,10 +1,10 @@
 #include "..\..\stdafx.hpp"
 #pragma once
 
-#include "..\..\..\SPTLib\IHookableNameFilter.hpp"
+#include <SPTLib\IHookableNameFilter.hpp>
 
 #include "engine\iserverplugin.h"
-#include "..\..\..\SDK\hl_movedata.h"
+#include <SDK\hl_movedata.h>
 
 using std::uintptr_t;
 using std::size_t;

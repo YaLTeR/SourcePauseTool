@@ -4,7 +4,7 @@
 #include "spt-serverplugin.hpp"
 #include "modules.hpp"
 #include "..\sptlib-wrapper.hpp"
-#include "..\..\SPTLib\hooks.hpp"
+#include <SPTLib\Hooks.hpp>
 
 #include "cdll_int.h"
 #include "engine\iserverplugin.h"

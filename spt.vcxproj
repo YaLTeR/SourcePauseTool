@@ -46,7 +46,7 @@
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
-    <IncludePath>D:\Tools\Source\Detours\include;$(IncludePath)</IncludePath>
+    <IncludePath>D:\Tools\Source\Detours\include;.;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Tools\Source\Detours\lib.X86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -57,7 +57,7 @@
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
-    <IncludePath>D:\Tools\Source\Detours\include;$(IncludePath)</IncludePath>
+    <IncludePath>D:\Tools\Source\Detours\include;.;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Tools\Source\Detours\lib.X86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
