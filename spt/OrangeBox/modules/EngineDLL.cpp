@@ -5,10 +5,10 @@
 #include "..\cvars.hpp"
 #include "..\modules.hpp"
 #include "..\patterns.hpp"
-#include "..\..\sptlib.hpp"
-#include "..\..\memutils.hpp"
-#include "..\..\detoursutils.hpp"
-#include "..\..\hooks.hpp"
+#include "..\..\sptlib-wrapper.hpp"
+#include "..\..\..\sptlib\memutils.hpp"
+#include "..\..\..\sptlib\detoursutils.hpp"
+#include "..\..\..\sptlib\hooks.hpp"
 #include "EngineDLL.hpp"
 
 using std::uintptr_t;

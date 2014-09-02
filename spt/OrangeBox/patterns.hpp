@@ -1,6 +1,6 @@
 #pragma once
 
-#include "..\memutils.hpp"
+#include "..\..\sptlib\memutils.hpp"
 
 namespace Patterns
 {

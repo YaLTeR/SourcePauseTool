@@ -2,7 +2,7 @@
 
 #define SPT_VERSION "0.7-beta"
 
-#include "engine/iserverplugin.h"
+#include "engine\iserverplugin.h"
 
 //---------------------------------------------------------------------------------
 // Purpose: a sample 3rd party plugin class

@@ -1,12 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="spt\detoursutils.cpp">
-      <Filter>spt</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\memutils.cpp">
-      <Filter>spt</Filter>
-    </ClCompile>
     <ClCompile Include="spt\OrangeBox\spt-serverplugin.cpp">
       <Filter>spt\OrangeBox</Filter>
     </ClCompile>
@@ -15,15 +9,6 @@
     </ClCompile>
     <ClCompile Include="spt\OrangeBox\modules\EngineDLL.cpp">
       <Filter>spt\OrangeBox\modules</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\IHookableNameFilter.cpp">
-      <Filter>spt</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\IHookableModule.cpp">
-      <Filter>spt</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\Hooks.cpp">
-      <Filter>spt</Filter>
     </ClCompile>
     <ClCompile Include="spt\OrangeBox\modules\ServerDLL.cpp">
       <Filter>spt\OrangeBox\modules</Filter>
@@ -37,8 +22,26 @@
     <ClCompile Include="spt\OrangeBox\modules.cpp">
       <Filter>spt\OrangeBox</Filter>
     </ClCompile>
-    <ClCompile Include="spt\sptlib.cpp">
-      <Filter>spt</Filter>
+    <ClCompile Include="sptlib\detoursutils.cpp">
+      <Filter>sptlib</Filter>
+    </ClCompile>
+    <ClCompile Include="sptlib\Hooks.cpp">
+      <Filter>sptlib</Filter>
+    </ClCompile>
+    <ClCompile Include="sptlib\IHookableModule.cpp">
+      <Filter>sptlib</Filter>
+    </ClCompile>
+    <ClCompile Include="sptlib\IHookableNameFilter.cpp">
+      <Filter>sptlib</Filter>
+    </ClCompile>
+    <ClCompile Include="sptlib\memutils.cpp">
+      <Filter>sptlib</Filter>
+    </ClCompile>
+    <ClCompile Include="sptlib\sptlib.cpp">
+      <Filter>sptlib</Filter>
+    </ClCompile>
+    <ClCompile Include="sptlib\sptlib-stdafx.cpp">
+      <Filter>sptlib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -99,12 +102,6 @@
     <ClInclude Include="..\..\public\vstdlib\vstdlib.h">
       <Filter>SDK includes &amp; libs</Filter>
     </ClInclude>
-    <ClInclude Include="spt\detoursutils.hpp">
-      <Filter>spt</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\memutils.hpp">
-      <Filter>spt</Filter>
-    </ClInclude>
     <ClInclude Include="spt\OrangeBox\spt-serverplugin.hpp">
       <Filter>spt\OrangeBox</Filter>
     </ClInclude>
@@ -113,15 +110,6 @@
     </ClInclude>
     <ClInclude Include="spt\OrangeBox\modules\EngineDLL.hpp">
       <Filter>spt\OrangeBox\modules</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\IHookableModule.hpp">
-      <Filter>spt</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\IHookableNameFilter.hpp">
-      <Filter>spt</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\Hooks.hpp">
-      <Filter>spt</Filter>
     </ClInclude>
     <ClInclude Include="spt\OrangeBox\modules\ServerDLL.hpp">
       <Filter>spt\OrangeBox\modules</Filter>
@@ -147,7 +135,28 @@
     <ClInclude Include="spt\OrangeBox\modules.hpp">
       <Filter>spt\OrangeBox</Filter>
     </ClInclude>
-    <ClInclude Include="spt\sptlib.hpp">
+    <ClInclude Include="sptlib\detoursutils.hpp">
+      <Filter>sptlib</Filter>
+    </ClInclude>
+    <ClInclude Include="sptlib\Hooks.hpp">
+      <Filter>sptlib</Filter>
+    </ClInclude>
+    <ClInclude Include="sptlib\IHookableModule.hpp">
+      <Filter>sptlib</Filter>
+    </ClInclude>
+    <ClInclude Include="sptlib\IHookableNameFilter.hpp">
+      <Filter>sptlib</Filter>
+    </ClInclude>
+    <ClInclude Include="sptlib\memutils.hpp">
+      <Filter>sptlib</Filter>
+    </ClInclude>
+    <ClInclude Include="sptlib\sptlib.hpp">
+      <Filter>sptlib</Filter>
+    </ClInclude>
+    <ClInclude Include="sptlib\sptlib-stdafx.hpp">
+      <Filter>sptlib</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\sptlib-wrapper.hpp">
       <Filter>spt</Filter>
     </ClInclude>
   </ItemGroup>
@@ -183,6 +192,9 @@
     </Filter>
     <Filter Include="SDK">
       <UniqueIdentifier>{78e5a6c2-53a8-40e3-be19-b7e7bc33f3c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sptlib">
+      <UniqueIdentifier>{62068487-8a42-452a-b559-e0253a231434}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "sptlib-stdafx.hpp"
 #pragma once
 
 void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... );

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "sptlib-stdafx.hpp"
 
 #include "sptlib.hpp"
 #include "memutils.hpp"

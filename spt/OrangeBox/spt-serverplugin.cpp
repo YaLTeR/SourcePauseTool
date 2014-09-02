@@ -3,14 +3,14 @@
 
 #include "spt-serverplugin.hpp"
 #include "modules.hpp"
-#include "../sptlib.hpp"
-#include "../hooks.hpp"
+#include "..\sptlib-wrapper.hpp"
+#include "..\..\sptlib\hooks.hpp"
 
 #include "cdll_int.h"
-#include "engine/iserverplugin.h"
-#include "tier2/tier2.h"
+#include "engine\iserverplugin.h"
+#include "tier2\tier2.h"
 
-#include "tier0/memdbgoff.h" // YaLTeR - switch off the memory debugging.
+#include "tier0\memdbgoff.h" // YaLTeR - switch off the memory debugging.
 
 // useful helper func
 inline bool FStrEq( const char *sz1, const char *sz2 )

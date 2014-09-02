@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "..\..\IHookableNameFilter.hpp"
+#include "..\..\..\sptlib\IHookableNameFilter.hpp"
 
 using std::uintptr_t;
 using std::size_t;

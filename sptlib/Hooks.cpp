@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "sptlib-stdafx.hpp"
 
 #include <unordered_map>
 
@@ -36,7 +36,7 @@ BOOL WINAPI HOOKED_FreeLibrary(HMODULE hModule)
 
 void Hooks::Init()
 {
-	EngineDevMsg("SPTLib version " SPTLIB_VERSION ".\n");
+	_EngineDevMsg("SPTLib version " SPTLIB_VERSION ".\n");
 	EngineDevMsg("Modules contain %d entries.\n", modules.size());
 
 	// Try hooking each module in case it is already loaded
@@ -51,7 +51,7 @@ void Hooks::Init()
 	ORIG_LoadLibraryExW = LoadLibraryExW;
 	ORIG_FreeLibrary = FreeLibrary;
 
-	AttachDetours(L"WinApi", 10,
+	AttachDetours(L"WinAPI", 10,
 		&ORIG_LoadLibraryA, HOOKED_LoadLibraryA,
 		&ORIG_LoadLibraryW, HOOKED_LoadLibraryW,
 		&ORIG_LoadLibraryExA, HOOKED_LoadLibraryExA,
@@ -70,7 +70,7 @@ void Hooks::Free()
 		(*it)->Unhook();
 	}
 
-	DetachDetours(L"WinApi", 10,
+	DetachDetours(L"WinAPI", 10,
 		&ORIG_LoadLibraryA, HOOKED_LoadLibraryA,
 		&ORIG_LoadLibraryW, HOOKED_LoadLibraryW,
 		&ORIG_LoadLibraryExA, HOOKED_LoadLibraryExA,

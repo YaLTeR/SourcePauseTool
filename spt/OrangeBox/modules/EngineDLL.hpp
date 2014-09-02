@@ -1,7 +1,7 @@
 #include "..\..\stdafx.h"
 #pragma once
 
-#include "..\..\IHookableNameFilter.hpp"
+#include "..\..\..\sptlib\IHookableNameFilter.hpp"
 
 using std::uintptr_t;
 using std::size_t;
