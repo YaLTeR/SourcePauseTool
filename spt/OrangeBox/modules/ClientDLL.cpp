@@ -1,7 +1,5 @@
 #include "stdafx.hpp"
 
-#include <future>
-
 #include "..\cvars.hpp"
 #include "..\modules.hpp"
 #include "..\patterns.hpp"
