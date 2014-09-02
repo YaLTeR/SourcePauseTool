@@ -1,0 +1,200 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="spt\OrangeBox\spt-serverplugin.cpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\cvars.cpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\modules\EngineDLL.cpp">
+      <Filter>spt\OrangeBox\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\modules\ServerDLL.cpp">
+      <Filter>spt\OrangeBox\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\modules\ClientDLL.cpp">
+      <Filter>spt\OrangeBox\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\stdafx.cpp">
+      <Filter>spt</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\modules.cpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClCompile>
+    <ClCompile Include="sptlib\detoursutils.cpp">
+      <Filter>sptlib</Filter>
+    </ClCompile>
+    <ClCompile Include="sptlib\Hooks.cpp">
+      <Filter>sptlib</Filter>
+    </ClCompile>
+    <ClCompile Include="sptlib\IHookableModule.cpp">
+      <Filter>sptlib</Filter>
+    </ClCompile>
+    <ClCompile Include="sptlib\IHookableNameFilter.cpp">
+      <Filter>sptlib</Filter>
+    </ClCompile>
+    <ClCompile Include="sptlib\memutils.cpp">
+      <Filter>sptlib</Filter>
+    </ClCompile>
+    <ClCompile Include="sptlib\sptlib.cpp">
+      <Filter>sptlib</Filter>
+    </ClCompile>
+    <ClCompile Include="sptlib\sptlib-stdafx.cpp">
+      <Filter>sptlib</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\public\tier0\basetypes.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\Color.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier0\dbg.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\eiface.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\filesystem.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\vstdlib\ICommandLine.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\igameevents.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier1\interface.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\game\server\iplayerinfo.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\engine\iserverplugin.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier1\KeyValues.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier0\mem.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier0\memalloc.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier0\memdbgon.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\vstdlib\strtools.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier1\utlbuffer.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier1\utlmemory.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\tier1\utlvector.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\vstdlib\vstdlib.h">
+      <Filter>SDK includes &amp; libs</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\spt-serverplugin.hpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\cvars.hpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\modules\EngineDLL.hpp">
+      <Filter>spt\OrangeBox\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\modules\ServerDLL.hpp">
+      <Filter>spt\OrangeBox\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\modules\ClientDLL.hpp">
+      <Filter>spt\OrangeBox\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\igamemovement.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\imovehelper.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\hl_movedata.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\stdafx.h">
+      <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\patterns.hpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\modules.hpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClInclude>
+    <ClInclude Include="sptlib\detoursutils.hpp">
+      <Filter>sptlib</Filter>
+    </ClInclude>
+    <ClInclude Include="sptlib\Hooks.hpp">
+      <Filter>sptlib</Filter>
+    </ClInclude>
+    <ClInclude Include="sptlib\IHookableModule.hpp">
+      <Filter>sptlib</Filter>
+    </ClInclude>
+    <ClInclude Include="sptlib\IHookableNameFilter.hpp">
+      <Filter>sptlib</Filter>
+    </ClInclude>
+    <ClInclude Include="sptlib\memutils.hpp">
+      <Filter>sptlib</Filter>
+    </ClInclude>
+    <ClInclude Include="sptlib\sptlib.hpp">
+      <Filter>sptlib</Filter>
+    </ClInclude>
+    <ClInclude Include="sptlib\sptlib-stdafx.hpp">
+      <Filter>sptlib</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\sptlib-wrapper.hpp">
+      <Filter>spt</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\..\lib\public\mathlib.lib">
+      <Filter>SDK includes &amp; libs</Filter>
+    </Library>
+    <Library Include="..\..\lib\public\tier0.lib">
+      <Filter>SDK includes &amp; libs</Filter>
+    </Library>
+    <Library Include="..\..\lib\public\tier1.lib">
+      <Filter>SDK includes &amp; libs</Filter>
+    </Library>
+    <Library Include="..\..\lib\public\tier2.lib">
+      <Filter>SDK includes &amp; libs</Filter>
+    </Library>
+    <Library Include="..\..\lib\public\vstdlib.lib">
+      <Filter>SDK includes &amp; libs</Filter>
+    </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="SDK includes &amp; libs">
+      <UniqueIdentifier>{eade2e26-4b70-429d-ac6b-01135e887da7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt">
+      <UniqueIdentifier>{42277bb4-807d-445f-8dc9-abaf03016da9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\OrangeBox">
+      <UniqueIdentifier>{74a03d34-0969-405d-838c-fa6350306ddf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\OrangeBox\modules">
+      <UniqueIdentifier>{28768b27-be51-439b-aaa3-cf347347da1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK">
+      <UniqueIdentifier>{78e5a6c2-53a8-40e3-be19-b7e7bc33f3c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sptlib">
+      <UniqueIdentifier>{62068487-8a42-452a-b559-e0253a231434}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
