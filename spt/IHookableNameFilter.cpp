@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "spt.hpp"
+#include "sptlib.hpp"
 #include "memutils.hpp"
 #include "IHookableNameFilter.hpp"
 
@@ -26,7 +26,7 @@ void IHookableNameFilter::TryHookAll()
 		size_t size;
 		if (MemUtils::GetModuleInfo(name, &hModule, &start, &size))
 		{
-			EngineDevMsg("SPT: Hooking %s (start: %p; size: %x)...\n", string_converter.to_bytes(name).c_str(), start, size);
+			EngineDevMsg("Hooking %s (start: %p; size: %x)...\n", string_converter.to_bytes(name).c_str(), start, size);
 			Hook(name, hModule, start, size);
 			break;
 		}

@@ -5,7 +5,7 @@
 #include "..\cvars.hpp"
 #include "..\modules.hpp"
 #include "..\patterns.hpp"
-#include "..\..\spt.hpp"
+#include "..\..\sptlib.hpp"
 #include "..\..\memutils.hpp"
 #include "..\..\detoursutils.hpp"
 #include "..\..\hooks.hpp"
@@ -64,7 +64,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_DoImageSpaceMorionBlur = (_DoImageSpaceMotionBlur)pDoImageSpaceMotionBlur;
-		EngineDevMsg("SPT: Found DoImageSpaceMotionBlur at %p (using the build %s pattern).\n", pDoImageSpaceMotionBlur, Patterns::ptnsDoImageSpaceMotionBlur[ptnNumber].build.c_str());
+		EngineDevMsg("Found DoImageSpaceMotionBlur at %p (using the build %s pattern).\n", pDoImageSpaceMotionBlur, Patterns::ptnsDoImageSpaceMotionBlur[ptnNumber].build.c_str());
 
 		switch (ptnNumber)
 		{
@@ -85,26 +85,26 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			break;
 		}
 
-		EngineDevMsg("SPT: pgpGlobals is %p.\n", pgpGlobals);
+		EngineDevMsg("pgpGlobals is %p.\n", pgpGlobals);
 	}
 	else
 	{
-		EngineDevWarning("SPT: [client dll] Could not find DoImageSpaceMotionBlur!\n");
-		EngineWarning("SPT: y_spt_motion_blur_fix has no effect.\n");
+		EngineDevWarning("[client dll] Could not find DoImageSpaceMotionBlur!\n");
+		EngineWarning("y_spt_motion_blur_fix has no effect.\n");
 	}
 
 	// CheckJumpButton
 	// Commented out because used only for client prediction, when we're playing on a server.
 	// SPT doesn't support multiplayer games yet so that's not a problem.
 
-	//EngineDevMsg("SPT: [client dll] Searching for CheckJumpButton...\n");
+	//EngineDevMsg("[client dll] Searching for CheckJumpButton...\n");
 
 	//uintptr_t pCheckJumpButton = NULL;
 	//ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsClientCheckJumpButton, &pCheckJumpButton);
 	//if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	//{
 	//	ORIG_CheckJumpButton = (_CheckJumpButton)pCheckJumpButton;
-	//	EngineDevMsg("SPT: [client dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsClientCheckJumpButton[ptnNumber].build.c_str());
+	//	EngineDevMsg("[client dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsClientCheckJumpButton[ptnNumber].build.c_str());
 
 	//	switch (ptnNumber)
 	//	{
@@ -136,7 +136,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	//}
 	//else
 	//{
-	//	EngineDevWarning("SPT: [client dll] Could not find CheckJumpButton.\n");
+	//	EngineDevWarning("[client dll] Could not find CheckJumpButton.\n");
 	//}
 
 	// HudUpdate
@@ -144,12 +144,12 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_HudUpdate = (_HudUpdate)pHudUpdate;
-		EngineDevMsg("SPT: [client dll] Found CHLClient::HudUpdate at %p (using the build %s pattern).\n", pHudUpdate, Patterns::ptnsHudUpdate[ptnNumber].build.c_str());
+		EngineDevMsg("[client dll] Found CHLClient::HudUpdate at %p (using the build %s pattern).\n", pHudUpdate, Patterns::ptnsHudUpdate[ptnNumber].build.c_str());
 	}
 	else
 	{
-		EngineDevWarning("SPT: [client dll] Could not find CHLClient::HudUpdate.\n");
-		EngineWarning("SPT: y_spt_afterframes has no effect.\n");
+		EngineDevWarning("[client dll] Could not find CHLClient::HudUpdate.\n");
+		EngineWarning("y_spt_afterframes has no effect.\n");
 	}
 
 	// GetButtonBits
@@ -157,12 +157,12 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_GetButtonBits = (_GetButtonBits)pGetButtonBits;
-		EngineDevMsg("SPT: [client dll] Found CInput::GetButtonBits at %p (using the build %s pattern).\n", pGetButtonBits, Patterns::ptnsGetButtonBits[ptnNumber].build.c_str());
+		EngineDevMsg("[client dll] Found CInput::GetButtonBits at %p (using the build %s pattern).\n", pGetButtonBits, Patterns::ptnsGetButtonBits[ptnNumber].build.c_str());
 	}
 	else
 	{
-		EngineDevWarning("SPT: [client dll] Could not find CInput::GetButtonBits.\n");
-		EngineWarning("SPT: +y_spt_duckspam has no effect.\n");
+		EngineDevWarning("[client dll] Could not find CInput::GetButtonBits.\n");
+		EngineWarning("+y_spt_duckspam has no effect.\n");
 	}
 
 	// AdjustAngles
@@ -170,13 +170,13 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_AdjustAngles = (_AdjustAngles)pAdjustAngles;
-		EngineDevMsg("SPT: [client dll] Found CInput::AdjustAngles at %p (using the build %s pattern).\n", pAdjustAngles, Patterns::ptnsAdjustAngles[ptnNumber].build.c_str());
+		EngineDevMsg("[client dll] Found CInput::AdjustAngles at %p (using the build %s pattern).\n", pAdjustAngles, Patterns::ptnsAdjustAngles[ptnNumber].build.c_str());
 	}
 	else
 	{
-		EngineDevWarning("SPT: [client dll] Could not find CInput::AdjustAngles.\n");
-		EngineWarning("SPT: _y_spt_setpitch and _y_spt_setyaw have no effect.\n");
-		EngineWarning("SPT: _y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
+		EngineDevWarning("[client dll] Could not find CInput::AdjustAngles.\n");
+		EngineWarning("_y_spt_setpitch and _y_spt_setyaw have no effect.\n");
+		EngineWarning("_y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
 	}
 
 	AttachDetours(moduleName, 8,
@@ -298,7 +298,7 @@ void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, in
 //		}
 //		else
 //		{
-//			// EngineDevMsg( "SPT: Con jump prevented!\n" );
+//			// EngineDevMsg( "Con jump prevented!\n" );
 //		}
 //	}
 //
@@ -322,10 +322,10 @@ void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, in
 //			cantJumpNextTime = true; // Prevent consecutive jumps.
 //		}
 //
-//		// EngineDevMsg( "SPT: Jump!\n" );
+//		// EngineDevMsg( "Jump!\n" );
 //	}
 //
-//	EngineDevMsg("SPT: Engine call: [client dll] CheckJumpButton() => %s\n", (rv ? "true" : "false"));
+//	EngineDevMsg("Engine call: [client dll] CheckJumpButton() => %s\n", (rv ? "true" : "false"));
 //
 //	return rv;
 //}

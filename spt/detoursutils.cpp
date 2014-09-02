@@ -5,7 +5,7 @@
 
 #include <detours.h>
 #include "detoursutils.hpp"
-#include "spt.hpp"
+#include "sptlib.hpp"
 
 #pragma comment (lib, "detours.lib")
 
@@ -38,7 +38,7 @@ void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 	if (!needToDetour)
 	{
 		va_end( copy );
-		EngineDevMsg("SPT: No %s functions to detour!\n", string_converter.to_bytes(moduleName).c_str());
+		EngineDevMsg("No %s functions to detour!\n", string_converter.to_bytes(moduleName).c_str());
 		return;
 	}
 
@@ -62,11 +62,11 @@ void AttachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 	LONG error = DetourTransactionCommit();
 	if (error == NO_ERROR)
 	{
-		EngineDevMsg("SPT: Detoured %d %s function(s).\n", detourCount, string_converter.to_bytes(moduleName).c_str());
+		EngineDevMsg("Detoured %d %s function(s).\n", detourCount, string_converter.to_bytes(moduleName).c_str());
 	}
 	else
 	{
-		EngineWarning("SPT: Error detouring %d %s function(s): %d.\n", detourCount, string_converter.to_bytes(moduleName).c_str(), error);
+		EngineWarning("Error detouring %d %s function(s): %d.\n", detourCount, string_converter.to_bytes(moduleName).c_str(), error);
 	}
 }
 
@@ -99,7 +99,7 @@ void DetachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 	if (!needToUndetour)
 	{
 		va_end( copy );
-		EngineDevMsg("SPT: No %s functions to undetour!\n", string_converter.to_bytes(moduleName).c_str());
+		EngineDevMsg("No %s functions to undetour!\n", string_converter.to_bytes(moduleName).c_str());
 		return;
 	}
 
@@ -123,10 +123,10 @@ void DetachDetours( const std::wstring &moduleName, unsigned int argCount, ... )
 	LONG error = DetourTransactionCommit();
 	if (error == NO_ERROR)
 	{
-		EngineDevMsg("SPT: Removed %d %s function detour(s).\n", detourCount, string_converter.to_bytes(moduleName).c_str());
+		EngineDevMsg("Removed %d %s function detour(s).\n", detourCount, string_converter.to_bytes(moduleName).c_str());
 	}
 	else
 	{
-		EngineWarning("SPT: Error removing %d %s function detour(s): %d.\n", detourCount, string_converter.to_bytes(moduleName).c_str(), error);
+		EngineWarning("Error removing %d %s function detour(s): %d.\n", detourCount, string_converter.to_bytes(moduleName).c_str(), error);
 	}
 }

@@ -7,7 +7,7 @@
 #include "hooks.hpp"
 #include "detoursutils.hpp"
 #include "memutils.hpp"
-#include "spt.hpp"
+#include "sptlib.hpp"
 
 HMODULE WINAPI HOOKED_LoadLibraryA(LPCSTR lpFileName)
 {
@@ -36,7 +36,8 @@ BOOL WINAPI HOOKED_FreeLibrary(HMODULE hModule)
 
 void Hooks::Init()
 {
-	EngineDevMsg("SPT: Modules contain %d entries.\n", modules.size());
+	EngineDevMsg("SPTLib version " SPTLIB_VERSION ".\n");
+	EngineDevMsg("Modules contain %d entries.\n", modules.size());
 
 	// Try hooking each module in case it is already loaded
 	for (auto it = modules.cbegin(); it != modules.cend(); ++it)
@@ -60,12 +61,12 @@ void Hooks::Init()
 
 void Hooks::Free()
 {
-	EngineDevMsg("SPT: Modules contain %d entries.\n", modules.size());
+	EngineDevMsg("Modules contain %d entries.\n", modules.size());
 
 	// Unhook everything
 	for (auto it = modules.begin(); it != modules.end(); ++it)
 	{
-		EngineDevMsg("SPT: Unhooking %s...\n", string_converter.to_bytes((*it)->GetHookedModuleName()).c_str());
+		EngineDevMsg("Unhooking %s...\n", string_converter.to_bytes((*it)->GetHookedModuleName()).c_str());
 		(*it)->Unhook();
 	}
 
@@ -102,12 +103,12 @@ void Hooks::HookModule(std::wstring moduleName)
 		{
 			if ((module != NULL) || (MemUtils::GetModuleInfo(moduleName, &module, &start, &size)))
 			{
-				EngineDevMsg("SPT: Hooking %s (start: %p; size: %x)...\n", string_converter.to_bytes(moduleName).c_str(), start, size);
+				EngineDevMsg("Hooking %s (start: %p; size: %x)...\n", string_converter.to_bytes(moduleName).c_str(), start, size);
 				(*it)->Hook(moduleName, module, start, size);
 			}
 			else
 			{
-				EngineWarning("SPT: Unable to obtain the %s module info!\n", string_converter.to_bytes(moduleName).c_str());
+				EngineWarning("Unable to obtain the %s module info!\n", string_converter.to_bytes(moduleName).c_str());
 				return;
 			}
 		}
@@ -115,7 +116,7 @@ void Hooks::HookModule(std::wstring moduleName)
 
 	if (module == NULL)
 	{
-		EngineDevMsg("SPT: Tried to hook an unlisted module: %s\n", string_converter.to_bytes(moduleName).c_str());
+		EngineDevMsg("Tried to hook an unlisted module: %s\n", string_converter.to_bytes(moduleName).c_str());
 	}
 }
 
@@ -126,7 +127,7 @@ void Hooks::UnhookModule(std::wstring moduleName)
 	{
 		if ((*it)->GetHookedModuleName().compare(moduleName) == 0)
 		{
-			EngineDevMsg("SPT: Unhooking %s...\n", string_converter.to_bytes(moduleName).c_str());
+			EngineDevMsg("Unhooking %s...\n", string_converter.to_bytes(moduleName).c_str());
 			(*it)->Unhook();
 			unhookedSomething = true;
 		}
@@ -134,7 +135,7 @@ void Hooks::UnhookModule(std::wstring moduleName)
 	
 	if (!unhookedSomething)
 	{
-		EngineDevMsg("SPT: Tried to unhook an unlisted module: %s\n", string_converter.to_bytes(moduleName).c_str());
+		EngineDevMsg("Tried to unhook an unlisted module: %s\n", string_converter.to_bytes(moduleName).c_str());
 	}
 }
 
@@ -142,7 +143,7 @@ void Hooks::AddToHookedModules(IHookableModule* module)
 {
 	if (!module)
 	{
-		EngineWarning("SPT: Tried to add a nullptr module!\n");
+		EngineWarning("Tried to add a nullptr module!\n");
 		return;
 	}
 
@@ -153,7 +154,7 @@ HMODULE WINAPI Hooks::HOOKED_LoadLibraryA_Func(LPCSTR lpFileName)
 {
 	HMODULE rv = ORIG_LoadLibraryA(lpFileName);
 
-	EngineDevMsg("SPT: Engine call: LoadLibraryA( \"%s\" ) => %p\n", lpFileName, rv);
+	EngineDevMsg("Engine call: LoadLibraryA( \"%s\" ) => %p\n", lpFileName, rv);
 
 	if (rv != NULL)
 	{
@@ -167,7 +168,7 @@ HMODULE WINAPI Hooks::HOOKED_LoadLibraryW_Func(LPCWSTR lpFileName)
 {
 	HMODULE rv = ORIG_LoadLibraryW(lpFileName);
 
-	EngineDevMsg("SPT: Engine call: LoadLibraryW( \"%s\" ) => %p\n", string_converter.to_bytes(lpFileName).c_str(), rv);
+	EngineDevMsg("Engine call: LoadLibraryW( \"%s\" ) => %p\n", string_converter.to_bytes(lpFileName).c_str(), rv);
 
 	if (rv != NULL)
 	{
@@ -181,7 +182,7 @@ HMODULE WINAPI Hooks::HOOKED_LoadLibraryExA_Func(LPCSTR lpFileName, HANDLE hFile
 {
 	HMODULE rv = ORIG_LoadLibraryExA(lpFileName, hFile, dwFlags);
 
-	EngineDevMsg("SPT: Engine call: LoadLibraryExA( \"%s\" ) => %p\n", lpFileName, rv);
+	EngineDevMsg("Engine call: LoadLibraryExA( \"%s\" ) => %p\n", lpFileName, rv);
 
 	if (rv != NULL)
 	{
@@ -195,7 +196,7 @@ HMODULE WINAPI Hooks::HOOKED_LoadLibraryExW_Func(LPCWSTR lpFileName, HANDLE hFil
 {
 	HMODULE rv = ORIG_LoadLibraryExW(lpFileName, hFile, dwFlags);
 
-	EngineDevMsg("SPT: Engine call: LoadLibraryExW( \"%s\" ) => %p\n", string_converter.to_bytes(lpFileName).c_str(), rv);
+	EngineDevMsg("Engine call: LoadLibraryExW( \"%s\" ) => %p\n", string_converter.to_bytes(lpFileName).c_str(), rv);
 
 	if (rv != NULL)
 	{
@@ -215,7 +216,7 @@ BOOL WINAPI Hooks::HOOKED_FreeLibrary_Func(HMODULE hModule)
 
 	BOOL rv = ORIG_FreeLibrary(hModule);
 
-	EngineDevMsg("SPT: Engine call: FreeLibrary( %p ) => %s\n", hModule, (rv ? "true" : "false"));
+	EngineDevMsg("Engine call: FreeLibrary( %p ) => %s\n", hModule, (rv ? "true" : "false"));
 
 	return rv;
 }

@@ -3,7 +3,7 @@
 
 #include "spt-serverplugin.hpp"
 #include "modules.hpp"
-#include "../spt.hpp"
+#include "../sptlib.hpp"
 #include "../hooks.hpp"
 
 #include "cdll_int.h"
@@ -88,13 +88,14 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		Warning("SPT: y_spt_cvar has no effect.\n");
 	}
 
-	EngineMsg = Msg;
-	EngineDevMsg = DevMsg;
-	EngineWarning = Warning;
-	EngineDevWarning = DevWarning;
 	EngineConCmd = CallServerCommand;
 	EngineGetViewAngles = GetViewAngles;
 	EngineSetViewAngles = SetViewAngles;
+
+	_EngineMsg = Msg;
+	_EngineDevMsg = DevMsg;
+	_EngineWarning = Warning;
+	_EngineDevWarning = DevWarning;
 
 	Hooks::getInstance().AddToHookedModules(&engineDLL);
 	Hooks::getInstance().AddToHookedModules(&clientDLL);

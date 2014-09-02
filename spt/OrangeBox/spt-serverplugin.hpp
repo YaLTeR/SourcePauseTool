@@ -1,5 +1,7 @@
 #pragma once
 
+#define SPT_VERSION "0.7-beta"
+
 #include "engine/iserverplugin.h"
 
 //---------------------------------------------------------------------------------

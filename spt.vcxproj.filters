@@ -7,9 +7,6 @@
     <ClCompile Include="spt\memutils.cpp">
       <Filter>spt</Filter>
     </ClCompile>
-    <ClCompile Include="spt\spt.cpp">
-      <Filter>spt</Filter>
-    </ClCompile>
     <ClCompile Include="spt\OrangeBox\spt-serverplugin.cpp">
       <Filter>spt\OrangeBox</Filter>
     </ClCompile>
@@ -39,6 +36,9 @@
     </ClCompile>
     <ClCompile Include="spt\OrangeBox\modules.cpp">
       <Filter>spt\OrangeBox</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\sptlib.cpp">
+      <Filter>spt</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -105,9 +105,6 @@
     <ClInclude Include="spt\memutils.hpp">
       <Filter>spt</Filter>
     </ClInclude>
-    <ClInclude Include="spt\spt.hpp">
-      <Filter>spt</Filter>
-    </ClInclude>
     <ClInclude Include="spt\OrangeBox\spt-serverplugin.hpp">
       <Filter>spt\OrangeBox</Filter>
     </ClInclude>
@@ -149,6 +146,9 @@
     </ClInclude>
     <ClInclude Include="spt\OrangeBox\modules.hpp">
       <Filter>spt\OrangeBox</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\sptlib.hpp">
+      <Filter>spt</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -5,7 +5,7 @@
 #include "..\cvars.hpp"
 #include "..\modules.hpp"
 #include "..\patterns.hpp"
-#include "..\..\spt.hpp"
+#include "..\..\sptlib.hpp"
 #include "..\..\memutils.hpp"
 #include "..\..\detoursutils.hpp"
 #include "..\..\hooks.hpp"
@@ -52,7 +52,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_CheckJumpButton = (_CheckJumpButton)pCheckJumpButton;
-		EngineDevMsg("SPT: [server dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsServerCheckJumpButton[ptnNumber].build.c_str());
+		EngineDevMsg("[server dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsServerCheckJumpButton[ptnNumber].build.c_str());
 
 		switch (ptnNumber)
 		{
@@ -99,8 +99,8 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 	else
 	{
-		EngineDevWarning("SPT: [server dll] Could not find CheckJumpButton!\n");
-		EngineWarning("SPT: y_spt_autojump has no effect.\n");
+		EngineDevWarning("[server dll] Could not find CheckJumpButton!\n");
+		EngineWarning("y_spt_autojump has no effect.\n");
 	}
 
 	// FinishGravity
@@ -108,7 +108,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_FinishGravity = (_FinishGravity)pFinishGravity;
-		EngineDevMsg("SPT: [server dll] Found FinishGravity at %p (using the build %s pattern).\n", pFinishGravity, Patterns::ptnsFinishGravity[ptnNumber].build.c_str());
+		EngineDevMsg("[server dll] Found FinishGravity at %p (using the build %s pattern).\n", pFinishGravity, Patterns::ptnsFinishGravity[ptnNumber].build.c_str());
 
 		switch (ptnNumber)
 		{
@@ -120,8 +120,8 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 	else
 	{
-		EngineDevWarning("SPT: [server dll] Could not find FinishGravity!\n");
-		EngineWarning("SPT: y_spt_additional_abh has no effect.\n");
+		EngineDevWarning("[server dll] Could not find FinishGravity!\n");
+		EngineWarning("y_spt_additional_abh has no effect.\n");
 	}
 
 	// PlayerRunCommand
@@ -129,7 +129,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_PlayerRunCommand = (_PlayerRunCommand)pPlayerRunCommand;
-		EngineDevMsg("SPT: [server dll] Found PlayerRunCommand at %p (using the build %s pattern).\n", pPlayerRunCommand, Patterns::ptnsPlayerRunCommand[ptnNumber].build.c_str());
+		EngineDevMsg("[server dll] Found PlayerRunCommand at %p (using the build %s pattern).\n", pPlayerRunCommand, Patterns::ptnsPlayerRunCommand[ptnNumber].build.c_str());
 
 		switch (ptnNumber)
 		{
@@ -168,8 +168,8 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 	else
 	{
-		EngineDevWarning("SPT: [server dll] Could not find PlayerRunCommand!\n");
-		EngineWarning("SPT: _y_spt_getvel has no effect.\n");
+		EngineDevWarning("[server dll] Could not find PlayerRunCommand!\n");
+		EngineWarning("_y_spt_getvel has no effect.\n");
 	}
 
 	AttachDetours(moduleName, 6,
@@ -212,7 +212,7 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 	int origM_nOldButtons = 0;
 
 	//CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
-	//EngineDevMsg("SPT: (x, y, z) %.8f %.8f %.8f\n", mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z);
+	//EngineDevMsg("(x, y, z) %.8f %.8f %.8f\n", mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z);
 
 	if (y_spt_autojump.GetBool())
 	{
@@ -226,7 +226,7 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 		}
 		else
 		{
-			//EngineDevMsg( "SPT: Con jump prevented!\n" );
+			//EngineDevMsg( "Con jump prevented!\n" );
 		}
 	}
 
@@ -252,10 +252,10 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 			cantJumpNextTime = true; // Prevent consecutive jumps.
 		}
 
-		//EngineDevMsg( "SPT: Jump!\n" );
+		//EngineDevMsg( "Jump!\n" );
 	}
 
-	//EngineDevMsg( "SPT: Engine call: [server dll] CheckJumpButton() => %s\n", (rv ? "true" : "false") );
+	//EngineDevMsg( "Engine call: [server dll] CheckJumpButton() => %s\n", (rv ? "true" : "false") );
 
 	return rv;
 }

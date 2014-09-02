@@ -5,7 +5,7 @@
 #include "..\cvars.hpp"
 #include "..\modules.hpp"
 #include "..\patterns.hpp"
-#include "..\..\spt.hpp"
+#include "..\..\sptlib.hpp"
 #include "..\..\memutils.hpp"
 #include "..\..\detoursutils.hpp"
 #include "..\..\hooks.hpp"
@@ -53,7 +53,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsSpawnPlayer, &pSpawnPlayer);
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
-		EngineDevMsg("SPT: Found SpawnPlayer at %p (using the build %s pattern).\n", pSpawnPlayer, Patterns::ptnsSpawnPlayer[ptnNumber].build.c_str());
+		EngineDevMsg("Found SpawnPlayer at %p (using the build %s pattern).\n", pSpawnPlayer, Patterns::ptnsSpawnPlayer[ptnNumber].build.c_str());
 
 		switch (ptnNumber)
 		{
@@ -78,13 +78,13 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			break;
 		}
 
-		EngineDevMsg("SPT: m_bLoadGame is situated at %p.\n", pM_bLoadgame);
-		EngineDevMsg("SPT: pGameServer is %p.\n", pGameServer);
+		EngineDevMsg("m_bLoadGame is situated at %p.\n", pM_bLoadgame);
+		EngineDevMsg("pGameServer is %p.\n", pGameServer);
 	}
 	else
 	{
-		EngineDevWarning("SPT: Could not find SpawnPlayer!\n");
-		EngineWarning("SPT: y_spt_pause 2 has no effect.\n");
+		EngineDevWarning("Could not find SpawnPlayer!\n");
+		EngineWarning("y_spt_pause 2 has no effect.\n");
 	}
 
 	// SV_ActivateServer
@@ -92,13 +92,13 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_SV_ActivateServer = (_SV_ActivateServer)pSV_ActivateServer;
-		EngineDevMsg("SPT: Found SV_ActivateServer at %p (using the build %s pattern).\n", pSV_ActivateServer, Patterns::ptnsSV_ActivateServer[ptnNumber].build.c_str());
+		EngineDevMsg("Found SV_ActivateServer at %p (using the build %s pattern).\n", pSV_ActivateServer, Patterns::ptnsSV_ActivateServer[ptnNumber].build.c_str());
 	}
 	else
 	{
-		EngineDevWarning("SPT: Could not find SV_ActivateServer!\n");
-		EngineWarning("SPT: y_spt_pause 2 has no effect.\n");
-		EngineWarning("SPT: y_spt_afterframes_reset_on_server_activate has no effect.\n");
+		EngineDevWarning("Could not find SV_ActivateServer!\n");
+		EngineWarning("y_spt_pause 2 has no effect.\n");
+		EngineWarning("y_spt_afterframes_reset_on_server_activate has no effect.\n");
 	}
 
 	// FinishRestore
@@ -106,12 +106,12 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_FinishRestore = (_FinishRestore)pFinishRestore;
-		EngineDevMsg("SPT: Found FinishRestore at %p (using the build %s pattern).\n", pFinishRestore, Patterns::ptnsFinishRestore[ptnNumber].build.c_str());
+		EngineDevMsg("Found FinishRestore at %p (using the build %s pattern).\n", pFinishRestore, Patterns::ptnsFinishRestore[ptnNumber].build.c_str());
 	}
 	else
 	{
-		EngineDevWarning("SPT: Could not find FinishRestore!\n");
-		EngineWarning("SPT: y_spt_pause 1 has no effect.\n");
+		EngineDevWarning("Could not find FinishRestore!\n");
+		EngineWarning("y_spt_pause 1 has no effect.\n");
 	}
 
 	// SetPaused
@@ -119,12 +119,12 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (pSetPaused)
 	{
 		ORIG_SetPaused = (_SetPaused)pSetPaused;
-		EngineDevMsg("SPT: Found SetPaused at %p (using the build %s pattern).\n", pSetPaused, Patterns::ptnsSetPaused[ptnNumber].build.c_str());
+		EngineDevMsg("Found SetPaused at %p (using the build %s pattern).\n", pSetPaused, Patterns::ptnsSetPaused[ptnNumber].build.c_str());
 	}
 	else
 	{
-		EngineDevWarning("SPT: Could not find SetPaused!\n");
-		EngineWarning("SPT: y_spt_pause has no effect.\n");
+		EngineDevWarning("Could not find SetPaused!\n");
+		EngineWarning("y_spt_pause has no effect.\n");
 	}
 
 	AttachDetours(moduleName, 6,
@@ -158,14 +158,14 @@ bool __cdecl EngineDLL::HOOKED_SV_ActivateServer_Func()
 {
 	bool result = ORIG_SV_ActivateServer();
 
-	EngineDevMsg("SPT: Engine call: SV_ActivateServer() => %s;\n", (result ? "true" : "false"));
+	EngineDevMsg("Engine call: SV_ActivateServer() => %s;\n", (result ? "true" : "false"));
 
 	if (ORIG_SetPaused && pM_bLoadgame && pGameServer)
 	{
 		if ((y_spt_pause.GetInt() == 2) && *pM_bLoadgame)
 		{
 			ORIG_SetPaused((void *)pGameServer, 0, true);
-			EngineDevMsg("SPT: Pausing...\n");
+			EngineDevMsg("Pausing...\n");
 
 			shouldPreventNextUnpause = true;
 		}
@@ -179,12 +179,12 @@ bool __cdecl EngineDLL::HOOKED_SV_ActivateServer_Func()
 
 void __fastcall EngineDLL::HOOKED_FinishRestore_Func(void* thisptr, int edx)
 {
-	EngineDevMsg("SPT: Engine call: FinishRestore();\n");
+	EngineDevMsg("Engine call: FinishRestore();\n");
 
 	if (ORIG_SetPaused && (y_spt_pause.GetInt() == 1))
 	{
 		ORIG_SetPaused(thisptr, 0, true);
-		EngineDevMsg("SPT: Pausing...\n");
+		EngineDevMsg("Pausing...\n");
 
 		shouldPreventNextUnpause = true;
 	}
@@ -196,18 +196,18 @@ void __fastcall EngineDLL::HOOKED_SetPaused_Func(void* thisptr, int edx, bool pa
 {
 	if (pM_bLoadgame)
 	{
-		EngineDevMsg("SPT: Engine call: SetPaused( %s ); m_bLoadgame = %s\n", (paused ? "true" : "false"), (*pM_bLoadgame ? "true" : "false"));
+		EngineDevMsg("Engine call: SetPaused( %s ); m_bLoadgame = %s\n", (paused ? "true" : "false"), (*pM_bLoadgame ? "true" : "false"));
 	}
 	else
 	{
-		EngineDevMsg("SPT: Engine call: SetPaused( %s );\n", (paused ? "true" : "false"));
+		EngineDevMsg("Engine call: SetPaused( %s );\n", (paused ? "true" : "false"));
 	}
 
 	if (paused == false)
 	{
 		if (shouldPreventNextUnpause)
 		{
-			EngineDevMsg("SPT: Unpause prevented.\n");
+			EngineDevMsg("Unpause prevented.\n");
 			shouldPreventNextUnpause = false;
 			return;
 		}
