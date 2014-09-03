@@ -170,18 +170,20 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("_y_spt_getvel has no effect.\n");
 	}
 
-	AttachDetours(moduleName, 6,
-		&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
-		&ORIG_FinishGravity, HOOKED_FinishGravity,
-		&ORIG_PlayerRunCommand, HOOKED_PlayerRunCommand);
+	AttachDetours(moduleName, {
+		{ (PVOID *) (&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
+		{ (PVOID *) (&ORIG_FinishGravity), HOOKED_FinishGravity },
+		{ (PVOID *) (&ORIG_PlayerRunCommand), HOOKED_PlayerRunCommand }
+	});
 }
 
 void ServerDLL::Unhook()
 {
-	DetachDetours(moduleName, 6,
-		&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
-		&ORIG_FinishGravity, HOOKED_FinishGravity,
-		&ORIG_PlayerRunCommand, HOOKED_PlayerRunCommand);
+	DetachDetours(moduleName, {
+		{ (PVOID *)(&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
+		{ (PVOID *)(&ORIG_FinishGravity), HOOKED_FinishGravity },
+		{ (PVOID *)(&ORIG_PlayerRunCommand), HOOKED_PlayerRunCommand }
+	});
 
 	Clear();
 }

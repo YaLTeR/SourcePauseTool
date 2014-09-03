@@ -177,22 +177,24 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("_y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
 	}
 
-	AttachDetours(moduleName, 8,
-		&ORIG_DoImageSpaceMorionBlur, HOOKED_DoImageSpaceMotionBlur,
-		//&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
-		&ORIG_HudUpdate, HOOKED_HudUpdate,
-		&ORIG_GetButtonBits, HOOKED_GetButtonBits,
-		&ORIG_AdjustAngles, HOOKED_AdjustAngles);
+	AttachDetours(moduleName, {
+		{ (PVOID *) (&ORIG_DoImageSpaceMorionBlur), HOOKED_DoImageSpaceMotionBlur },
+		//{ (PVOID *) (&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
+		{ (PVOID *) (&ORIG_HudUpdate), HOOKED_HudUpdate },
+		{ (PVOID *) (&ORIG_GetButtonBits), HOOKED_GetButtonBits },
+		{ (PVOID *) (&ORIG_AdjustAngles), HOOKED_AdjustAngles }
+	});
 }
 
 void ClientDLL::Unhook()
 {
-	DetachDetours(moduleName, 8,
-		&ORIG_DoImageSpaceMorionBlur, HOOKED_DoImageSpaceMotionBlur,
-		//&ORIG_CheckJumpButton, HOOKED_CheckJumpButton,
-		&ORIG_HudUpdate, HOOKED_HudUpdate,
-		&ORIG_GetButtonBits, HOOKED_GetButtonBits,
-		&ORIG_AdjustAngles, HOOKED_AdjustAngles);
+	DetachDetours(moduleName, {
+		{ (PVOID *)(&ORIG_DoImageSpaceMorionBlur), HOOKED_DoImageSpaceMotionBlur },
+		//{ (PVOID *) (&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
+		{ (PVOID *)(&ORIG_HudUpdate), HOOKED_HudUpdate },
+		{ (PVOID *)(&ORIG_GetButtonBits), HOOKED_GetButtonBits },
+		{ (PVOID *)(&ORIG_AdjustAngles), HOOKED_AdjustAngles }
+	});
 
 	Clear();
 }

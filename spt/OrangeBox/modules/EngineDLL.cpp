@@ -125,18 +125,20 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("y_spt_pause has no effect.\n");
 	}
 
-	AttachDetours(moduleName, 6,
-		&ORIG_SV_ActivateServer, HOOKED_SV_ActivateServer,
-		&ORIG_FinishRestore, HOOKED_FinishRestore,
-		&ORIG_SetPaused, HOOKED_SetPaused);
+	AttachDetours(moduleName, {
+		{ (PVOID *)(&ORIG_SV_ActivateServer), HOOKED_SV_ActivateServer },
+		{ (PVOID *)(&ORIG_FinishRestore), HOOKED_FinishRestore },
+		{ (PVOID *)(&ORIG_SetPaused), HOOKED_SetPaused }
+	});
 }
 
 void EngineDLL::Unhook()
 {
-	DetachDetours(moduleName, 6,
-		&ORIG_SV_ActivateServer, HOOKED_SV_ActivateServer,
-		&ORIG_FinishRestore, HOOKED_FinishRestore,
-		&ORIG_SetPaused, HOOKED_SetPaused);
+	DetachDetours(moduleName, {
+		{ (PVOID *) (&ORIG_SV_ActivateServer), HOOKED_SV_ActivateServer },
+		{ (PVOID *) (&ORIG_FinishRestore), HOOKED_FinishRestore },
+		{ (PVOID *) (&ORIG_SetPaused), HOOKED_SetPaused }
+	});
 
 	Clear();
 }
