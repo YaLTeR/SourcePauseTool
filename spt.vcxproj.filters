@@ -43,6 +43,9 @@
     <ClCompile Include="sptlib\sptlib-stdafx.cpp">
       <Filter>SPTLib</Filter>
     </ClCompile>
+    <ClCompile Include="spt\sptlib-wrapper.cpp">
+      <Filter>spt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
