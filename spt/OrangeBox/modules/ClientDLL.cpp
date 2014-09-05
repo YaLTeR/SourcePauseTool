@@ -177,7 +177,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("_y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
 	}
 
-	AttachDetours(moduleName, {
+	DetoursUtils::AttachDetours(moduleName, {
 		{ (PVOID *) (&ORIG_DoImageSpaceMorionBlur), HOOKED_DoImageSpaceMotionBlur },
 		//{ (PVOID *) (&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
 		{ (PVOID *) (&ORIG_HudUpdate), HOOKED_HudUpdate },
@@ -188,7 +188,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 void ClientDLL::Unhook()
 {
-	DetachDetours(moduleName, {
+	DetoursUtils::DetachDetours(moduleName, {
 		{ (PVOID *)(&ORIG_DoImageSpaceMorionBlur), HOOKED_DoImageSpaceMotionBlur },
 		//{ (PVOID *) (&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
 		{ (PVOID *)(&ORIG_HudUpdate), HOOKED_HudUpdate },
