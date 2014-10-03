@@ -208,6 +208,10 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">sptlib-stdafx.hpp</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)SPTLib.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
+    <ClCompile Include="SPTLib\IHookableDirFilter.cpp">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">sptlib-stdafx.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">sptlib-stdafx.hpp</PrecompiledHeaderFile>
+    </ClCompile>
     <ClCompile Include="sptlib\IHookableModule.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">sptlib-stdafx.hpp</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)SPTLib.pch</PrecompiledHeaderOutputFile>
@@ -308,6 +312,7 @@
     <ClInclude Include="SDK\imovehelper.h" />
     <ClInclude Include="sptlib\detoursutils.hpp" />
     <ClInclude Include="sptlib\Hooks.hpp" />
+    <ClInclude Include="SPTLib\IHookableDirFilter.hpp" />
     <ClInclude Include="sptlib\IHookableModule.hpp" />
     <ClInclude Include="sptlib\IHookableNameFilter.hpp" />
     <ClInclude Include="sptlib\memutils.hpp" />

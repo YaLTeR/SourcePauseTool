@@ -46,6 +46,9 @@
     <ClCompile Include="spt\sptlib-wrapper.cpp">
       <Filter>spt</Filter>
     </ClCompile>
+    <ClCompile Include="SPTLib\IHookableDirFilter.cpp">
+      <Filter>SPTLib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -161,6 +164,9 @@
     </ClInclude>
     <ClInclude Include="spt\stdafx.hpp">
       <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="SPTLib\IHookableDirFilter.hpp">
+      <Filter>SPTLib</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
