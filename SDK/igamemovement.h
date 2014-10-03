@@ -14,7 +14,12 @@
 #pragma once
 #endif
 
+#if defined( OE )
+#include "vector.h"
+#else
 #include "mathlib/vector.h"
+#endif
+
 #include "interface.h"
 #include "imovehelper.h"
 #include "const.h"

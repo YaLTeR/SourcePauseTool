@@ -22,6 +22,28 @@ inline bool FStrEq( const char *sz1, const char *sz2 )
 IVEngineClient *engine = nullptr;
 ICvar *icvar = nullptr;
 
+// For OE CVar and ConCommand registering.
+#if defined( OE )
+class CPluginConVarAccessor : public IConCommandBaseAccessor
+{
+public:
+	virtual bool	RegisterConCommandBase(ConCommandBase *pCommand)
+	{
+		pCommand->AddFlags(FCVAR_PLUGIN);
+
+		// Unlink from plugin only list
+		pCommand->SetNext(0);
+
+		// Link to engine's list instead
+		icvar->RegisterConCommandBase(pCommand);
+		return true;
+	}
+
+};
+
+CPluginConVarAccessor g_ConVarAccessor;
+#endif
+
 void CallServerCommand(const char* cmd)
 {
 	if (engine)
@@ -56,21 +78,15 @@ void SetViewAngles(const float viewangles[3])
 CSourcePauseTool g_SourcePauseTool;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR( CSourcePauseTool, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, g_SourcePauseTool );
 
-//---------------------------------------------------------------------------------
-// Purpose: constructor/destructor
-//---------------------------------------------------------------------------------
-CSourcePauseTool::CSourcePauseTool() {};
-CSourcePauseTool::~CSourcePauseTool() {};
-
-//---------------------------------------------------------------------------------
-// Purpose: called when the plugin is loaded, load the interface we need from the engine
-//---------------------------------------------------------------------------------
 bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory )
 {
 	auto startTime = std::chrono::high_resolution_clock::now();
 
 	ConnectTier1Libraries(&interfaceFactory, 1);
+
+#if !defined( OE )
 	ConVar_Register(0);
+#endif
 
 	engine = (IVEngineClient*)interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION, NULL);
 	if (!engine)
@@ -81,12 +97,24 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		Warning("SPT: _y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
 	}
 
+#if defined( OE )
+	icvar = (ICvar*)interfaceFactory(VENGINE_CVAR_INTERFACE_VERSION, NULL);
+#else
 	icvar = (ICvar*)interfaceFactory(CVAR_INTERFACE_VERSION, NULL);
+#endif
+
 	if (!icvar)
 	{
 		DevWarning("SPT: Failed to get the ICvar interface.\n");
+		Warning("SPT: Could not register any CVars and ConCommands.\n");
 		Warning("SPT: y_spt_cvar has no effect.\n");
 	}
+#if defined( OE )
+	else
+	{
+		ConCommandBaseMgr::OneTimeInit(&g_ConVarAccessor);
+	}
+#endif
 
 	EngineConCmd = CallServerCommand;
 	EngineGetViewAngles = GetViewAngles;
@@ -112,30 +140,17 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	return true;
 }
 
-//---------------------------------------------------------------------------------
-// Purpose: called when the plugin is unloaded (turned off)
-//---------------------------------------------------------------------------------
 void CSourcePauseTool::Unload( void )
 {
 	Hooks::getInstance().Free();
 
+#if !defined( OE )
 	ConVar_Unregister();
+#endif
+
 	DisconnectTier1Libraries();
 }
 
-//---------------------------------------------------------------------------------
-// Purpose: called when the plugin is paused (i.e should stop running but isn't unloaded)
-//---------------------------------------------------------------------------------
-void CSourcePauseTool::Pause( void ) {};
-
-//---------------------------------------------------------------------------------
-// Purpose: called when the plugin is unpaused (i.e should start executing again)
-//---------------------------------------------------------------------------------
-void CSourcePauseTool::UnPause( void ) {};
-
-//---------------------------------------------------------------------------------
-// Purpose: the name of this plugin, returned in "plugin_print" command
-//---------------------------------------------------------------------------------
 const char *CSourcePauseTool::GetPluginDescription( void )
 {
 	return "SourcePauseTool v" SPT_VERSION ", Ivan \"YaLTeR\" Molodetskikh";
@@ -143,8 +158,12 @@ const char *CSourcePauseTool::GetPluginDescription( void )
 
 CON_COMMAND(_y_spt_afterframes, "Add a command into an afterframes queue. Usage: _y_spt_afterframes <count> <command>")
 {
-	if (!icvar)
+	if (!engine)
 		return;
+
+#if defined( OE )
+	ArgsWrapper args(engine);
+#endif
 
 	if (args.ArgC() != 3)
 	{
@@ -161,9 +180,10 @@ CON_COMMAND(_y_spt_afterframes, "Add a command into an afterframes queue. Usage:
 	clientDLL.AddIntoAfterframesQueue(entry);
 }
 
+#if !defined( OE )
 CON_COMMAND(_y_spt_afterframes2, "Add everything after count as a command into the queue. Do not insert the command in quotes. Usage: _y_spt_afterframes2 <count> <command>")
 {
-	if (!icvar)
+	if (!engine)
 		return;
 
 	if (args.ArgC() < 3)
@@ -181,6 +201,7 @@ CON_COMMAND(_y_spt_afterframes2, "Add everything after count as a command into t
 
 	clientDLL.AddIntoAfterframesQueue(entry);
 }
+#endif
 
 CON_COMMAND(_y_spt_afterframes_reset, "Reset the afterframes queue.")
 {
@@ -189,6 +210,59 @@ CON_COMMAND(_y_spt_afterframes_reset, "Reset the afterframes queue.")
 
 CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 {
+	if (!engine || !icvar)
+		return;
+
+#if defined( OE )
+	ArgsWrapper args(engine);
+#endif
+
+	if (args.ArgC() < 2)
+	{
+		Msg("Usage: y_spt_cvar <name> [value]\n");
+		return;
+	}
+
+	ConVar *cvar = icvar->FindVar(args.Arg(1));
+	if (!cvar)
+	{
+		Warning("Couldn't find the cvar: %s\n", args.Arg(1));
+		return;
+	}
+
+	if (args.ArgC() == 2)
+	{
+		Msg("\"%s\" = \"%s\"\n", cvar->GetName(), cvar->GetString(), cvar->GetHelpText());
+		Msg("Default: %s\n", cvar->GetDefault());
+
+		float val;
+		if (cvar->GetMin(val))
+		{
+			Msg("Min: %f\n", val);
+		}
+
+		if (cvar->GetMax(val))
+		{
+			Msg("Max: %f\n", val);
+		}
+		
+		const char *helpText = cvar->GetHelpText();
+		if (helpText[0] != '\0')
+			Msg("- %s\n", cvar->GetHelpText());
+
+		return;
+	}
+
+	const char *value = args.Arg(2);
+	cvar->SetValue(value);
+}
+
+#if !defined( OE )
+CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of the argument string.")
+{
+	if (!engine || !icvar)
+		return;
+
 	if (args.ArgC() < 2)
 	{
 		Msg("Usage: y_spt_cvar <name> [value]\n");
@@ -228,14 +302,23 @@ CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 	const char *value = args.ArgS() + strlen(args.Arg(1)) + 1;
 	cvar->SetValue(value);
 }
+#endif
 
+#if defined( OE )
+static void DuckspamDown()
+#else
 static void DuckspamDown(const CCommand &args)
+#endif
 {
 	clientDLL.EnableDuckspam();
 }
 static ConCommand DuckspamDown_Command("+y_spt_duckspam", DuckspamDown, "Enables the duckspam.");
 
+#if defined( OE )
+static void DuckspamUp()
+#else
 static void DuckspamUp(const CCommand &args)
+#endif
 {
 	clientDLL.DisableDuckspam();
 }
@@ -243,6 +326,13 @@ static ConCommand DuckspamUp_Command("-y_spt_duckspam", DuckspamUp, "Disables th
 
 CON_COMMAND(_y_spt_setpitch, "Sets the pitch. Usage: _y_spt_setpitch <pitch>")
 {
+	if (!engine)
+		return;
+
+#if defined( OE )
+	ArgsWrapper args(engine);
+#endif
+
 	if (args.ArgC() != 2)
 	{
 		Msg("Usage: _y_spt_setpitch <pitch>\n");
@@ -254,6 +344,13 @@ CON_COMMAND(_y_spt_setpitch, "Sets the pitch. Usage: _y_spt_setpitch <pitch>")
 
 CON_COMMAND(_y_spt_setyaw, "Sets the yaw. Usage: _y_spt_setyaw <yaw>")
 {
+	if (!engine)
+		return;
+
+#if defined( OE )
+	ArgsWrapper args(engine);
+#endif
+
 	if (args.ArgC() != 2)
 	{
 		Msg("Usage: _y_spt_setyaw <yaw>\n");
@@ -270,80 +367,3 @@ CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 	Warning("Velocity (x, y, z): %f %f %f\n", vel.x, vel.y, vel.z);
 	Warning("Velocity (xy): %f\n", vel.Length2D());
 }
-
-//---------------------------------------------------------------------------------
-// Purpose: called on level start
-//---------------------------------------------------------------------------------
-void CSourcePauseTool::LevelInit( char const *pMapName ) {};
-
-//---------------------------------------------------------------------------------
-// Purpose: called on level start, when the server is ready to accept client connections
-//      edictCount is the number of entities in the level, clientMax is the max client count
-//---------------------------------------------------------------------------------
-void CSourcePauseTool::ServerActivate( edict_t *pEdictList, int edictCount, int clientMax ) {};
-
-//---------------------------------------------------------------------------------
-// Purpose: called once per server frame, do recurring work here (like checking for timeouts)
-//---------------------------------------------------------------------------------
-void CSourcePauseTool::GameFrame( bool simulating ) {};
-
-//---------------------------------------------------------------------------------
-// Purpose: called on level end (as the server is shutting down or going to a new map)
-//---------------------------------------------------------------------------------
-void CSourcePauseTool::LevelShutdown( void ) {}; // !!!!this can get called multiple times per map change
-
-//---------------------------------------------------------------------------------
-// Purpose: called when a client spawns into a server (i.e as they begin to play)
-//---------------------------------------------------------------------------------
-void CSourcePauseTool::ClientActive( edict_t *pEntity ) {};
-
-//---------------------------------------------------------------------------------
-// Purpose: called when a client leaves a server (or is timed out)
-//---------------------------------------------------------------------------------
-void CSourcePauseTool::ClientDisconnect( edict_t *pEntity ) {};
-
-//---------------------------------------------------------------------------------
-// Purpose: called on
-//---------------------------------------------------------------------------------
-void CSourcePauseTool::ClientPutInServer( edict_t *pEntity, char const *playername ) {};
-
-//---------------------------------------------------------------------------------
-// Purpose: called on level start
-//---------------------------------------------------------------------------------
-void CSourcePauseTool::SetCommandClient( int index ) {};
-
-//---------------------------------------------------------------------------------
-// Purpose: called on level start
-//---------------------------------------------------------------------------------
-void CSourcePauseTool::ClientSettingsChanged( edict_t *pEdict ) {};
-
-//---------------------------------------------------------------------------------
-// Purpose: called when a client joins a server
-//---------------------------------------------------------------------------------
-PLUGIN_RESULT CSourcePauseTool::ClientConnect( bool *bAllowConnect, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen )
-{
-	return PLUGIN_CONTINUE;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: called when a client types in a command (only a subset of commands however, not CON_COMMAND's)
-//---------------------------------------------------------------------------------
-PLUGIN_RESULT CSourcePauseTool::ClientCommand( edict_t *pEntity, const CCommand &args )
-{
-	return PLUGIN_CONTINUE;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: called when a client is authenticated
-//---------------------------------------------------------------------------------
-PLUGIN_RESULT CSourcePauseTool::NetworkIDValidated( const char *pszUserName, const char *pszNetworkID )
-{
-	return PLUGIN_CONTINUE;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: called when a cvar value query is finished
-//---------------------------------------------------------------------------------
-void CSourcePauseTool::OnQueryCvarValueFinished( QueryCvarCookie_t iCookie, edict_t *pPlayerEntity, EQueryCvarValueStatus eStatus, const char *pCvarName, const char *pCvarValue ) {};
-void CSourcePauseTool::OnEdictAllocated( edict_t *edict ) {};
-void CSourcePauseTool::OnEdictFreed( const edict_t *edict ) {};

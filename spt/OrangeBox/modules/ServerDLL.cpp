@@ -201,7 +201,7 @@ void ServerDLL::Clear()
 	off1M_bDucked = 0;
 	off2M_bDucked = 0;
 	offM_vecAbsVelocity = 0;
-	lastVelocity.Zero();
+	lastVelocity.Init();
 }
 
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
@@ -247,7 +247,7 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 	if (rv)
 	{
 		// We jumped.
-		if (y_spt_autojump_ensure_legit.GetBool())
+		if (_y_spt_autojump_ensure_legit.GetBool())
 		{
 			cantJumpNextTime = true; // Prevent consecutive jumps.
 		}
