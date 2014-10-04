@@ -147,7 +147,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	else
 	{
 		EngineDevWarning("[client dll] Could not find CHLClient::HudUpdate.\n");
-		EngineWarning("y_spt_afterframes has no effect.\n");
+		EngineWarning("_y_spt_afterframes has no effect.\n");
 	}
 
 	// GetButtonBits

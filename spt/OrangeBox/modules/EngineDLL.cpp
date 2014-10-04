@@ -74,10 +74,18 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 8));
 			pGameServer = (*(void **)(pSpawnPlayer + 21));
 			break;
+
+		case 4:
+			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 26));
+			//pGameServer = (*(void **)(pSpawnPlayer + 21)); - We get this one from SV_ActivateServer in OE.
+			break;
 		}
 
 		EngineDevMsg("m_bLoadGame is situated at %p.\n", pM_bLoadgame);
+
+#if !defined( OE )
 		EngineDevMsg("pGameServer is %p.\n", pGameServer);
+#endif
 	}
 	else
 	{
@@ -91,12 +99,23 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	{
 		ORIG_SV_ActivateServer = (_SV_ActivateServer)pSV_ActivateServer;
 		EngineDevMsg("Found SV_ActivateServer at %p (using the build %s pattern).\n", pSV_ActivateServer, Patterns::ptnsSV_ActivateServer[ptnNumber].build.c_str());
+
+		switch (ptnNumber)
+		{
+		case 3:
+			pGameServer = (*(void **)(pSV_ActivateServer + 223));
+			break;
+		}
+
+#if defined( OE )
+		EngineDevMsg("pGameServer is %p.\n", pGameServer);
+#endif
 	}
 	else
 	{
 		EngineDevWarning("Could not find SV_ActivateServer!\n");
 		EngineWarning("y_spt_pause 2 has no effect.\n");
-		EngineWarning("y_spt_afterframes_reset_on_server_activate has no effect.\n");
+		EngineWarning("_y_spt_afterframes_reset_on_server_activate has no effect.\n");
 	}
 
 	// FinishRestore
