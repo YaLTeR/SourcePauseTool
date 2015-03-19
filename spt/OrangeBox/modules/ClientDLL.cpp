@@ -37,6 +37,11 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles(void* thisptr, int edx, float fra
 	return clientDLL.HOOKED_AdjustAngles_Func(thisptr, edx, frametime);
 }
 
+void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart(void* thisptr, int edx)
+{
+	return clientDLL.HOOKED_CViewRender__OnRenderStart_Func(thisptr, edx);
+}
+
 void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.
@@ -50,11 +55,13 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 	uintptr_t pHudUpdate,
 		pGetButtonBits,
-		pAdjustAngles;
+		pAdjustAngles,
+		pCViewRender__OnRenderStart;
 
 	auto fHudUpdate = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsHudUpdate, &pHudUpdate);
 	auto fGetButtonBits = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsGetButtonBits, &pGetButtonBits);
 	auto fAdjustAngles = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsAdjustAngles, &pAdjustAngles);
+	auto fCViewRender__OnRenderStart = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__OnRenderStart, &pCViewRender__OnRenderStart);
 
 	// DoImageSpaceMotionBlur
 	uintptr_t pDoImageSpaceMotionBlur = NULL;
@@ -177,12 +184,26 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("_y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
 	}
 
+	// CViewRender::OnRenderStart
+	ptnNumber = fCViewRender__OnRenderStart.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_CViewRender__OnRenderStart = (_CViewRender__OnRenderStart)pCViewRender__OnRenderStart;
+		EngineDevMsg("[client dll] Found CViewRender::OnRenderStart at %p (using the build %s pattern).\n", pCViewRender__OnRenderStart, Patterns::ptnsCViewRender__OnRenderStart[ptnNumber].build.c_str());
+	}
+	else
+	{
+		EngineDevWarning("[client dll] Could not find CViewRender::OnRenderStart.\n");
+		EngineWarning("_y_spt_force_90fov has no effect.\n");
+	}
+
 	DetoursUtils::AttachDetours(moduleName, {
 		{ (PVOID *) (&ORIG_DoImageSpaceMorionBlur), HOOKED_DoImageSpaceMotionBlur },
 		//{ (PVOID *) (&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
 		{ (PVOID *) (&ORIG_HudUpdate), HOOKED_HudUpdate },
 		{ (PVOID *) (&ORIG_GetButtonBits), HOOKED_GetButtonBits },
-		{ (PVOID *) (&ORIG_AdjustAngles), HOOKED_AdjustAngles }
+		{ (PVOID *)(&ORIG_AdjustAngles), HOOKED_AdjustAngles },
+		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart }
 	});
 }
 
@@ -193,7 +214,8 @@ void ClientDLL::Unhook()
 		//{ (PVOID *) (&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
 		{ (PVOID *)(&ORIG_HudUpdate), HOOKED_HudUpdate },
 		{ (PVOID *)(&ORIG_GetButtonBits), HOOKED_GetButtonBits },
-		{ (PVOID *)(&ORIG_AdjustAngles), HOOKED_AdjustAngles }
+		{ (PVOID *)(&ORIG_AdjustAngles), HOOKED_AdjustAngles },
+		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart }
 	});
 
 	Clear();
@@ -393,4 +415,17 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 
 		EngineSetViewAngles(va);
 	}
+}
+
+void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart_Func(void* thisptr, int edx)
+{
+	ORIG_CViewRender__OnRenderStart(thisptr, edx);
+
+	if (!_viewmodel_fov || !_y_spt_force_90fov.GetBool())
+		return;
+
+	float *fov = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(thisptr) + 52);
+	float *fovViewmodel = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(thisptr) + 56);
+	*fov = 90;
+	*fovViewmodel = _viewmodel_fov->GetFloat();
 }

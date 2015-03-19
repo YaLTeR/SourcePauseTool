@@ -13,6 +13,7 @@ typedef void(__cdecl *_DoImageSpaceMotionBlur) (void* view, int x, int y, int w,
 typedef void(__stdcall *_HudUpdate) (bool bActive);
 typedef int(__fastcall *_GetButtonBits) (void* thisptr, int edx, int bResetState);
 typedef void(__fastcall *_AdjustAngles) (void* thisptr, int edx, float frametime);
+typedef void(__fastcall *_CViewRender__OnRenderStart) (void* thisptr, int edx);
 
 typedef struct
 {
@@ -39,11 +40,13 @@ public:
 	static void __stdcall HOOKED_HudUpdate(bool bActive);
 	static int __fastcall HOOKED_GetButtonBits(void* thisptr, int edx, int bResetState);
 	static void __fastcall HOOKED_AdjustAngles(void* thisptr, int edx, float frametime);
+	static void __fastcall HOOKED_CViewRender__OnRenderStart(void* thisptr, int edx);
 	void __cdecl HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, int y, int w, int h);
 	//bool __fastcall HOOKED_CheckJumpButton_Func(void* thisptr, int edx);
 	void __stdcall HOOKED_HudUpdate_Func(bool bActive);
 	int __fastcall HOOKED_GetButtonBits_Func(void* thisptr, int edx, int bResetState);
 	void __fastcall HOOKED_AdjustAngles_Func(void* thisptr, int edx, float frametime);
+	void __fastcall HOOKED_CViewRender__OnRenderStart_Func(void* thisptr, int edx);
 
 	void AddIntoAfterframesQueue(const afterframes_entry_t& entry);
 	void ResetAfterframesQueue();
@@ -60,6 +63,7 @@ protected:
 	_HudUpdate ORIG_HudUpdate;
 	_GetButtonBits ORIG_GetButtonBits;
 	_AdjustAngles ORIG_AdjustAngles;
+	_CViewRender__OnRenderStart ORIG_CViewRender__OnRenderStart;
 
 	uintptr_t* pgpGlobals;
 

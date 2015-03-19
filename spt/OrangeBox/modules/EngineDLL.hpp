@@ -25,6 +25,9 @@ public:
 	void __fastcall HOOKED_FinishRestore_Func(void* thisptr, int edx);
 	void __fastcall HOOKED_SetPaused_Func(void* thisptr, int edx, bool paused);
 
+	float GetTickrate() const;
+	void SetTickrate(float value);
+
 protected:
 	_SV_ActivateServer ORIG_SV_ActivateServer;
 	_FinishRestore ORIG_FinishRestore;
@@ -33,4 +36,5 @@ protected:
 	void* pGameServer;
 	bool* pM_bLoadgame;
 	bool shouldPreventNextUnpause;
+	float* pIntervalPerTick;
 };

@@ -9,3 +9,6 @@ ConVar _y_spt_autojump_ensure_legit("_y_spt_autojump_ensure_legit", "1", FCVAR_A
 ConVar _y_spt_afterframes_reset_on_server_activate("_y_spt_afterframes_reset_on_server_activate", "1", FCVAR_ARCHIVE);
 ConVar _y_spt_pitchspeed("_y_spt_pitchspeed", "0");
 ConVar _y_spt_yawspeed("_y_spt_yawspeed", "0");
+ConVar _y_spt_force_90fov("_y_spt_force_90fov", "0");
+
+ConVar *_viewmodel_fov = nullptr;

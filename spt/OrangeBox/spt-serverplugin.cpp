@@ -3,6 +3,7 @@
 
 #include "spt-serverplugin.hpp"
 #include "modules.hpp"
+#include "cvars.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include <SPTLib\Hooks.hpp>
 
@@ -72,6 +73,15 @@ void SetViewAngles(const float viewangles[3])
 	}
 }
 
+void DefaultFOVChangeCallback(ConVar *var, char const *pOldString)
+{
+	if (FStrEq(var->GetString(), "75") && FStrEq(pOldString, "90"))
+	{
+		//Msg("Attempted to change default_fov from 90 to 75. Preventing.\n");
+		var->SetValue("90");
+	}
+}
+
 //
 // The plugin is a static singleton that is exported as an interface
 //
@@ -113,6 +123,23 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	else
 	{
 		ConCommandBaseMgr::OneTimeInit(&g_ConVarAccessor);
+
+		//auto c = icvar->FindVar("default_fov");
+		//if (!c)
+		//{
+		//	Warning("SPT: Could not find default_fov.\n");
+		//}
+		//else
+		//{
+		//	c->InstallChangeCallback(DefaultFOVChangeCallback);
+		//}
+
+		_viewmodel_fov = icvar->FindVar("viewmodel_fov");
+		if (!_viewmodel_fov)
+		{
+			DevWarning("SPT: Could not find viewmodel_fov.\n");
+			Warning("SPT: _y_spt_force_90fov has no effect.\n");
+		}
 	}
 #endif
 
@@ -366,4 +393,28 @@ CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 
 	Warning("Velocity (x, y, z): %f %f %f\n", vel.x, vel.y, vel.z);
 	Warning("Velocity (xy): %f\n", vel.Length2D());
+}
+
+CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [tickrate]")
+{
+	if (!engine)
+		return;
+
+#if defined( OE )
+	ArgsWrapper args(engine);
+#endif
+
+	switch (args.ArgC())
+	{
+	case 1:
+		Msg("Current tickrate: %f\n", engineDLL.GetTickrate());
+		break;
+
+	case 2:
+		engineDLL.SetTickrate( atof(args.Arg(1)) );
+		break;
+
+	default:
+		Msg("Usage: _y_spt_tickrate [tickrate]\n");
+	}
 }

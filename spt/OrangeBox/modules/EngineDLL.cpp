@@ -41,11 +41,13 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	uintptr_t pSpawnPlayer = NULL,
 		pSV_ActivateServer = NULL,
 		pFinishRestore = NULL,
-		pSetPaused = NULL;
+		pSetPaused = NULL,
+		pMiddleOfSV_InitGameDLL = NULL;
 
 	auto fActivateServer = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSV_ActivateServer, &pSV_ActivateServer);
 	auto fFinishRestore = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsFinishRestore, &pFinishRestore);
 	auto fSetPaused = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSetPaused, &pSetPaused);
+	auto fMiddleOfSV_InitGameDLL = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsMiddleOfSV_InitGameDLL, &pMiddleOfSV_InitGameDLL);
 
 	// m_bLoadgame and pGameServer (&sv)
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsSpawnPlayer, &pSpawnPlayer);
@@ -144,6 +146,21 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("y_spt_pause has no effect.\n");
 	}
 
+	// interval_per_tick
+	ptnNumber = fMiddleOfSV_InitGameDLL.get();
+	if (pMiddleOfSV_InitGameDLL)
+	{
+		EngineDevMsg("Found the interval_per_tick pattern at %p (using the build %s pattern).\n", pMiddleOfSV_InitGameDLL, Patterns::ptnsMiddleOfSV_InitGameDLL[ptnNumber].build.c_str());
+
+		pIntervalPerTick = *reinterpret_cast<float**>(pMiddleOfSV_InitGameDLL + 18);
+		EngineDevMsg("Found interval_per_tick at %p.\n", pIntervalPerTick);
+	}
+	else
+	{
+		EngineDevWarning("Could not find the interval_per_tick pattern!\n");
+		EngineWarning("_y_spt_tickrate has no effect.\n");
+	}
+
 	DetoursUtils::AttachDetours(moduleName, {
 		{ (PVOID *)(&ORIG_SV_ActivateServer), HOOKED_SV_ActivateServer },
 		{ (PVOID *)(&ORIG_FinishRestore), HOOKED_FinishRestore },
@@ -171,6 +188,21 @@ void EngineDLL::Clear()
 	pGameServer = nullptr;
 	pM_bLoadgame = nullptr;
 	shouldPreventNextUnpause = false;
+	pIntervalPerTick = nullptr;
+}
+
+float EngineDLL::GetTickrate() const
+{
+	if (pIntervalPerTick)
+		return *pIntervalPerTick;
+
+	return 0;
+}
+
+void EngineDLL::SetTickrate(float value)
+{
+	if (pIntervalPerTick)
+		*pIntervalPerTick = value;
 }
 
 bool __cdecl EngineDLL::HOOKED_SV_ActivateServer_Func()
