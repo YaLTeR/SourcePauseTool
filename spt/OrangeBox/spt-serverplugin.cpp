@@ -387,6 +387,25 @@ CON_COMMAND(_y_spt_setyaw, "Sets the yaw. Usage: _y_spt_setyaw <yaw>")
 	clientDLL.SetYaw( atof(args.Arg(1)) );
 }
 
+CON_COMMAND(_y_spt_setangles, "Sets the angles. Usage: _y_spt_setangles <pitch> <yaw>")
+{
+	if (!engine)
+		return;
+
+#if defined( OE )
+	ArgsWrapper args(engine);
+#endif
+
+	if (args.ArgC() != 3)
+	{
+		Msg("Usage: _y_spt_setangles <pitch> <yaw>\n");
+		return;
+	}
+	
+	clientDLL.SetPitch( atof(args.Arg(1)) );
+	clientDLL.SetYaw( atof(args.Arg(2)) );
+}
+
 CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 {
 	const Vector vel = serverDLL.GetLastVelocity();
