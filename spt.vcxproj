@@ -68,7 +68,7 @@
     <PreLinkEventUseInBuild>true</PreLinkEventUseInBuild>
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
     <IncludePath>D:\Tools\Source\Detours\include;.;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Tools\Source\Detours\lib.X86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
