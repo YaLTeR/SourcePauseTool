@@ -414,6 +414,14 @@ CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 	Warning("Velocity (xy): %f\n", vel.Length2D());
 }
 
+CON_COMMAND(_y_spt_getangles, "Gets the view angles of the player.")
+{
+	Warning("View Angle (x): %f\n", viewangles[0]);
+	Warning("View Angle (y): %f\n", viewangles[1]);
+	Warning("View Angle (z): %f\n", viewangles[2]);
+	Warning("View Angle (x, y, z): %f %f %f\n", viewangles[0], viewangles[1], viewangles[2]);
+}
+
 CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [tickrate]")
 {
 	if (!engine)
