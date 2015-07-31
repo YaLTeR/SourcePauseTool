@@ -422,7 +422,6 @@ CON_COMMAND(_y_spt_getangles, "Gets the view angles of the player.")
 	Warning("View Angle (x, y, z): %f %f %f\n", viewangles[0], viewangles[1], viewangles[2]);
 }
 
-
 CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [tickrate]")
 {
 	if (!engine)
