@@ -416,6 +416,13 @@ CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 
 CON_COMMAND(_y_spt_getangles, "Gets the view angles of the player.")
 {
+	QAngle va;
+	engine->GetViewAngles(va);
+
+	viewangles[0] = va.x;
+	viewangles[1] = va.y;
+	viewangles[2] = va.z;
+	
 	Warning("View Angle (x): %f\n", viewangles[0]);
 	Warning("View Angle (y): %f\n", viewangles[1]);
 	Warning("View Angle (z): %f\n", viewangles[2]);
