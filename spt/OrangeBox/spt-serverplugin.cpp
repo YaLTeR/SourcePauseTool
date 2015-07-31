@@ -417,9 +417,7 @@ CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 CON_COMMAND(_y_spt_getangles, "Gets the view angles of the player.")
 {
 	if (!engine)
-	{
 		return;
-	}
 	QAngle va;
 	engine->GetViewAngles(va);
 	
