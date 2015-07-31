@@ -416,8 +416,6 @@ CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 
 CON_COMMAND(_y_spt_getangles, "Gets the view angles of the player.")
 {
-	if (engine)
-	{
 		QAngle va;
 		engine->GetViewAngles(va);
 	
@@ -425,11 +423,6 @@ CON_COMMAND(_y_spt_getangles, "Gets the view angles of the player.")
 		Warning("View Angle (y): %f\n", va.y);
 		Warning("View Angle (z): %f\n", va.z);
 		Warning("View Angle (x, y, z): %f %f %f\n", va.x, va.y, va.z);
-	}
-	else
-	{
-		Warning("_y_spt_getangles doesn't work")
-	}
 }
 
 CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [tickrate]")
