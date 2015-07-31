@@ -416,13 +416,17 @@ CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 
 CON_COMMAND(_y_spt_getangles, "Gets the view angles of the player.")
 {
-		QAngle va;
-		engine->GetViewAngles(va);
+	if (!engine)
+	{
+		return;
+	}
+	QAngle va;
+	engine->GetViewAngles(va);
 	
-		Warning("View Angle (x): %f\n", va.x);
-		Warning("View Angle (y): %f\n", va.y);
-		Warning("View Angle (z): %f\n", va.z);
-		Warning("View Angle (x, y, z): %f %f %f\n", va.x, va.y, va.z);
+	Warning("View Angle (x): %f\n", va.x);
+	Warning("View Angle (y): %f\n", va.y);
+	Warning("View Angle (z): %f\n", va.z);
+	Warning("View Angle (x, y, z): %f %f %f\n", va.x, va.y, va.z);
 }
 
 CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [tickrate]")
