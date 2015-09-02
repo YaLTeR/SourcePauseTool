@@ -3,6 +3,7 @@
 #include <codecvt>
 #include <future>
 #include <locale>
+#include <sstream>
 #include <string>
 
 #define WIN32_LEAN_AND_MEAN

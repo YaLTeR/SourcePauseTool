@@ -451,3 +451,24 @@ CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [t
 		Msg("Usage: _y_spt_tickrate [tickrate]\n");
 	}
 }
+
+CON_COMMAND(y_spt_timer_start, "Starts the SPT timer.")
+{
+	serverDLL.StartTimer();
+}
+
+CON_COMMAND(y_spt_timer_stop, "Stops the SPT timer and prints the current time.")
+{
+	serverDLL.StopTimer();
+	Warning("Current time (in ticks): %u\n", serverDLL.GetTicksPassed());
+}
+
+CON_COMMAND(y_spt_timer_reset, "Stops and resets the SPT timer.")
+{
+	serverDLL.ResetTimer();
+}
+
+CON_COMMAND(y_spt_timer_print, "Prints the current time of the SPT timer.")
+{
+	Warning("Current time (in ticks): %u\n", serverDLL.GetTicksPassed());
+}
