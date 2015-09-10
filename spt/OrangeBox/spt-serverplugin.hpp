@@ -32,7 +32,13 @@ public:
 	virtual void            ClientPutInServer( edict_t *pEntity, char const *playername ) {};
 	virtual void            SetCommandClient( int index ) {};
 	virtual void            ClientSettingsChanged( edict_t *pEdict ) {};
-
+	// Timer variables
+	float timer_Totaltime;
+	int timer_Hours;
+	int timer_Minutes;
+	int timer_Seconds;
+	int timer_Milliseconds;
+	
 #if defined( OE )
 	virtual PLUGIN_RESULT	ClientConnect( bool *bAllowConnect, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen ) { return PLUGIN_CONTINUE; };
 	virtual PLUGIN_RESULT	ClientCommand( edict_t *pEntity ) { return PLUGIN_CONTINUE; };
