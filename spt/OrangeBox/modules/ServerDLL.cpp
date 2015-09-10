@@ -27,6 +27,11 @@ void __fastcall ServerDLL::HOOKED_PlayerRunCommand(void* thisptr, int edx, void*
 	return serverDLL.HOOKED_PlayerRunCommand_Func(thisptr, edx, ucmd, moveHelper);
 }
 
+int __fastcall ServerDLL::HOOKED_CheckStuck(void* thisptr, int edx)
+{
+	return serverDLL.HOOKED_CheckStuck_Func(thisptr, edx);
+}
+
 void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.
@@ -40,10 +45,12 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 	uintptr_t pCheckJumpButton = NULL,
 		pFinishGravity = NULL,
-		pPlayerRunCommand = NULL;
+		pPlayerRunCommand = NULL,
+		pCheckStuck = NULL;
 
 	auto fFinishGravity = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsFinishGravity, &pFinishGravity);
 	auto fPlayerRunCommand = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsPlayerRunCommand, &pPlayerRunCommand);
+	auto fCheckStuck = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCheckStuck, &pCheckStuck);
 
 	// CheckJumpButton
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsServerCheckJumpButton, &pCheckJumpButton);
@@ -90,12 +97,12 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			break;
 
 		case 7:
-			off1M_nOldButtons = 2;
+			off1M_nOldButtons = 1;
 			off2M_nOldButtons = 40;
 			break;
 
 		case 8:
-			off1M_nOldButtons = 1;
+			off1M_nOldButtons = 2;
 			off2M_nOldButtons = 40;
 			break;
 		}
@@ -179,10 +186,23 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("_y_spt_getvel has no effect.\n");
 	}
 
+	// CheckStuck
+	ptnNumber = fCheckStuck.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_CheckStuck = (_CheckStuck)pCheckStuck;
+		EngineDevMsg("[server dll] Found CheckStuck at %p (using the build %s pattern).\n", pCheckStuck, Patterns::ptnsCheckStuck[ptnNumber].build.c_str());
+	} else
+	{
+		EngineDevWarning("[server dll] Could not find CheckStuck!\n");
+		EngineWarning("y_spt_stucksave has no effect.\n");
+	}
+
 	DetoursUtils::AttachDetours(moduleName, {
-		{ (PVOID *) (&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
-		{ (PVOID *) (&ORIG_FinishGravity), HOOKED_FinishGravity },
-		{ (PVOID *) (&ORIG_PlayerRunCommand), HOOKED_PlayerRunCommand }
+		{ (PVOID *)(&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
+		{ (PVOID *)(&ORIG_FinishGravity), HOOKED_FinishGravity },
+		{ (PVOID *)(&ORIG_PlayerRunCommand), HOOKED_PlayerRunCommand },
+		{ (PVOID *)(&ORIG_CheckStuck), HOOKED_CheckStuck }
 	});
 }
 
@@ -191,7 +211,8 @@ void ServerDLL::Unhook()
 	DetoursUtils::DetachDetours(moduleName, {
 		{ (PVOID *)(&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
 		{ (PVOID *)(&ORIG_FinishGravity), HOOKED_FinishGravity },
-		{ (PVOID *)(&ORIG_PlayerRunCommand), HOOKED_PlayerRunCommand }
+		{ (PVOID *)(&ORIG_PlayerRunCommand), HOOKED_PlayerRunCommand },
+		{ (PVOID *)(&ORIG_CheckStuck), HOOKED_CheckStuck }
 	});
 
 	Clear();
@@ -203,6 +224,7 @@ void ServerDLL::Clear()
 	ORIG_CheckJumpButton = nullptr;
 	ORIG_FinishGravity = nullptr;
 	ORIG_PlayerRunCommand = nullptr;
+	ORIG_CheckStuck = nullptr;
 	off1M_nOldButtons = 0;
 	off2M_nOldButtons = 0;
 	cantJumpNextTime = false;
@@ -211,6 +233,8 @@ void ServerDLL::Clear()
 	off2M_bDucked = 0;
 	offM_vecAbsVelocity = 0;
 	lastVelocity.Init();
+	ticksPassed = 0;
+	timerRunning = false;
 }
 
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
@@ -313,4 +337,22 @@ void __fastcall ServerDLL::HOOKED_PlayerRunCommand_Func(void* thisptr, int edx, 
 	ORIG_PlayerRunCommand(thisptr, edx, ucmd, moveHelper);
 
 	lastVelocity = *(Vector*)((uintptr_t)thisptr + offM_vecAbsVelocity);
+
+	if (timerRunning)
+		ticksPassed++;
+}
+
+int __fastcall ServerDLL::HOOKED_CheckStuck_Func(void* thisptr, int edx)
+{
+	auto ret = ORIG_CheckStuck(thisptr, edx);
+
+	if (ret && y_spt_stucksave.GetString()[0] != '\0')
+	{
+		std::ostringstream oss;
+		oss << "save " << y_spt_stucksave.GetString();
+		EngineConCmd(oss.str().c_str());
+		y_spt_stucksave.SetValue("");
+	}
+
+	return ret;
 }
