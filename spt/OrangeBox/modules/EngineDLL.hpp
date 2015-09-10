@@ -40,6 +40,13 @@ public:
 	float GetTickrate() const;
 	void SetTickrate(float value);
 
+	// Timer variables
+	float timer_TotalTime;
+	int timer_Hours;
+	int timer_Minutes;
+	int timer_Seconds;
+	int timer_Milliseconds;
+	
 protected:
 	_SV_ActivateServer ORIG_SV_ActivateServer;
 	_FinishRestore ORIG_FinishRestore;
