@@ -470,5 +470,11 @@ CON_COMMAND(y_spt_timer_reset, "Stops and resets the SPT timer.")
 
 CON_COMMAND(y_spt_timer_print, "Prints the current time of the SPT timer.")
 {
-	Warning("Current time (in ticks): %u\n", serverDLL.GetTicksPassed());
+	ConColorMsg( Color(0, 255, 0, 255), "Current time (in ticks): %u\n", serverDLL.GetTicksPassed());
+	float timer_Totaltime = serverDLL.GetTicksPassed() * 0.015;
+	int timer_Hours = (timer_Totaltime / 3600.0);
+	int timer_Minutes = (((timer_Totaltime / 3600.0) - timer_Hours) * 60.0));
+	int timer_Seconds = (((((timer_Totaltime / 3600.0) - timer_Hours) * 60.0f) - timer_Minutes) * 60.0);
+	int timer_Milliseconds = (((((((timer_Totaltime / 3600.0) - timer_Hours) * 60.0) - timer_Minutes) * 60.0) - timer_Seconds) * 10000.0);
+	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Your total time is: %02d:%02d:%02d:%02d\n", timer_Hours, timer_Minutes, timer_Seconds, timer_Milliseconds);
 }
