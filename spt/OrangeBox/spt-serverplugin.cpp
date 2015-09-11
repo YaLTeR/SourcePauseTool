@@ -455,26 +455,23 @@ CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [t
 CON_COMMAND(y_spt_timer_start, "Starts the SPT timer.")
 {
 	serverDLL.StartTimer();
+	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Starting Timer";
 }
 
 CON_COMMAND(y_spt_timer_stop, "Stops the SPT timer and prints the current time.")
 {
 	serverDLL.StopTimer();
-	Warning("Current time (in ticks): %u\n", serverDLL.GetTicksPassed());
+	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Timer has been stopped");
+	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Current time (in ticks): %u\n", serverDLL.GetTicksPassed());
 }
 
 CON_COMMAND(y_spt_timer_reset, "Stops and resets the SPT timer.")
 {
 	serverDLL.ResetTimer();
+	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Timer has been reset");
 }
 
 CON_COMMAND(y_spt_timer_print, "Prints the current time of the SPT timer.")
 {
-	ConColorMsg( Color(0, 255, 0, 255), "Current time (in ticks): %u\n", serverDLL.GetTicksPassed());
-	float timer_Totaltime = serverDLL.GetTicksPassed() * 0.015;
-	int timer_Hours = (timer_Totaltime / 3600.0);
-	int timer_Minutes = (((timer_Totaltime / 3600.0) - timer_Hours) * 60.0));
-	int timer_Seconds = (((((timer_Totaltime / 3600.0) - timer_Hours) * 60.0f) - timer_Minutes) * 60.0);
-	int timer_Milliseconds = (((((((timer_Totaltime / 3600.0) - timer_Hours) * 60.0) - timer_Minutes) * 60.0) - timer_Seconds) * 10000.0);
-	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Your total time is: %02d:%02d:%02d:%02d\n", timer_Hours, timer_Minutes, timer_Seconds, timer_Milliseconds);
+	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Current time (in ticks): %u\n", serverDLL.GetTicksPassed());
 }
