@@ -455,23 +455,23 @@ CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [t
 CON_COMMAND(y_spt_timer_start, "Starts the SPT timer.")
 {
 	serverDLL.StartTimer();
-	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Starting Timer";
+	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Starting timer." );
 }
 
 CON_COMMAND(y_spt_timer_stop, "Stops the SPT timer and prints the current time.")
 {
 	serverDLL.StopTimer();
-	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Timer has been stopped");
-	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Current time (in ticks): %u\n", serverDLL.GetTicksPassed());
+	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Timer has been stopped" );
+	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Current time (in ticks): %u\n", serverDLL.GetTicksPassed() );
 }
 
 CON_COMMAND(y_spt_timer_reset, "Stops and resets the SPT timer.")
 {
 	serverDLL.ResetTimer();
-	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Timer has been reset");
+	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Timer has been reset." );
 }
 
 CON_COMMAND(y_spt_timer_print, "Prints the current time of the SPT timer.")
 {
-	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Current time (in ticks): %u\n", serverDLL.GetTicksPassed());
+	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Current time (in ticks): %u\n", serverDLL.GetTicksPassed() );
 }
