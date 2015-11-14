@@ -454,24 +454,64 @@ CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [t
 
 CON_COMMAND(y_spt_timer_start, "Starts the SPT timer.")
 {
-	serverDLL.StartTimer();
-	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Starting timer." );
+	if (!engine)
+		return;
+	if (engine)
+		serverDLL.StartTimer();
+		ConColorMsg( Color(0, 255, 0, 255), "[SPT] Starting timer." );
 }
 
 CON_COMMAND(y_spt_timer_stop, "Stops the SPT timer and prints the current time.")
 {
-	serverDLL.StopTimer();
-	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Timer has been stopped" );
-	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Current time (in ticks): %u\n", serverDLL.GetTicksPassed() );
+	if (!engine)
+		return;
+	if (engine)
+		serverDLL.StopTimer();
+		ConColorMsg( Color(0, 255, 0, 255), "[SPT] Timer has been stopped" );
+		ConColorMsg( Color(0, 255, 0, 255), "[SPT] Current time (in ticks): %u\n", serverDLL.GetTicksPassed() );
 }
 
 CON_COMMAND(y_spt_timer_reset, "Stops and resets the SPT timer.")
 {
-	serverDLL.ResetTimer();
-	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Timer has been reset." );
+	if (!engine)
+		return;
+	if (engine)
+		serverDLL.ResetTimer();
+		ConColorMsg( Color(0, 255, 0, 255), "[SPT] Timer has been reset." );
 }
 
 CON_COMMAND(y_spt_timer_print, "Prints the current time of the SPT timer.")
 {
-	ConColorMsg( Color(0, 255, 0, 255), "[SPT] Current time (in ticks): %u\n", serverDLL.GetTicksPassed() );
+	if (!engine)
+		return;
+	if (engine)
+		ConColorMsg( Color(0, 255, 0, 255), "[SPT] Current time (in ticks): %u\n", serverDLL.GetTicksPassed() );
+}
+
+CON_COMMAND(ps_help_abh, "Prints a short explanation of ABH.")
+{	
+	if (!engine)
+		return;
+	if (engine)
+		ConColorMsg( Color(128, 255,128, 255), "Accelerated Back Hopping (ABH for short) is a Glitch, and it's the main method of transportation on OrangeBox Engine-based games.\n");
+		ConColorMsg( Color(255, 255, 255, 255), "ABH replaces Bunnyhopping, which was fixed in the OrangeBox Engine.\n");
+		ConColorMsg( Color(255, 255, 255, 255), "It is also significantly faster than bunnyhopping.\n");
+		ConColorMsg( Color(255, 255, 255, 255), "\n");
+		ConColorMsg( Color(255, 255, 255, 255), "To perform this trick, jump forward, turn around in the air and jump right as you land.\n");
+		ConColorMsg( Color(255, 255, 255, 255), "It's generally recommended not to hold S or W(or your respective keys for moving forwards and back) while ABHing. Binding jump to mouse wheel or using a jumping script is recommended as it makes timing jumps a lot easier.\n");
+		ConColorMsg( Color(128, 255, 128, 255), "See Variants : AFH or ASH");
+}
+
+CON_COMMAND(ps_help_sg, "Prints a short explanation of Save Glitch.")
+{
+	if (!engine)
+		return;
+	if (engine)
+		ConColorMsg( Color(128, 255, 128, 255), "The Save Glitch is a Glitch in Portal which moves your collision and the point from where you shoot portals to a different location than your view. Simplified you can say that the Save Glitch is a permanent form of the Edge Glitch.\n");
+		ConColorMsg( Color(255, 255, 255, 255), "\n");
+		ConColorMsg( Color(255, 255, 255, 255), "It is performed by saving and loading while being Edge Glitched. Then you can walk away from the portal, you are now in the Save Glitched state.\n");
+		ConColorMsg( Color(255, 255, 255, 255), "Your camera will only collide with certain objects, it will not collide with the ground. Instead the collision is detected from a location relative to your current position and the portals.\n");
+		ConColorMsg( Color(255, 255, 255, 255), "You will have to follow a certain path to not fall through the floor. Also, you have to follow some rules if you want the Save Glitch to not be cancelled.\n");
+		ConColorMsg( Color(255, 255, 255, 255), "\n");
+		ConColorMsg( Color(255, 255, 255, 255), "After the load your camera still remains at the point where you were before. However, the point from where your portalgun shoots the portals (your ghost body) is at the other portal. If you move your camera, your ghost body will move relative to the other portal. Also it will collide with the ground, while your camera will not. This means that you can walk through walls and doors with your camera, but you will also fall through the floor if your ghost body will loose contact with the ground. However, your camera will still collide with some objects like door frames or cube dispensers.\n");
 }
