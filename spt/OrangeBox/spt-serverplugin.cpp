@@ -21,6 +21,7 @@ inline bool FStrEq( const char *sz1, const char *sz2 )
 
 // Interfaces from the engine
 IVEngineClient *engine = nullptr;
+void *gm = nullptr;
 
 // For OE CVar and ConCommand registering.
 #if defined( OE )
@@ -96,6 +97,10 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 
 	ConnectTier1Libraries(&interfaceFactory, 1);
 
+	gm = gameServerFactory(INTERFACENAME_GAMEMOVEMENT, NULL);
+	if (gm)
+		DevMsg("Found IGameMovement at %p.\n", gm);
+
 	if (!g_pCVar)
 	{
 		DevWarning("SPT: Failed to get the ICvar interface.\n");
@@ -115,6 +120,15 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		}
 	}
 #else
+	else
+	{
+		_sv_airaccelerate = icvar->FindVar("sv_airaccelerate");
+		_sv_accelerate = icvar->FindVar("sv_accelerate");
+		_sv_friction = icvar->FindVar("sv_friction");
+		_sv_maxspeed = icvar->FindVar("sv_maxspeed");
+		_sv_stopspeed = icvar->FindVar("sv_stopspeed");
+	}
+
 	ConVar_Register(0);
 #endif
 

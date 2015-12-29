@@ -3,6 +3,7 @@
 #include "..\cvars.hpp"
 #include "..\modules.hpp"
 #include "..\patterns.hpp"
+#include "..\..\strafestuff.hpp"
 #include "..\..\sptlib-wrapper.hpp"
 #include <SPTLib\memutils.hpp>
 #include <SPTLib\detoursutils.hpp>
@@ -37,6 +38,11 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles(void* thisptr, int edx, float fra
 	return clientDLL.HOOKED_AdjustAngles_Func(thisptr, edx, frametime);
 }
 
+void __fastcall ClientDLL::HOOKED_CreateMove(void* thisptr, int edx, int sequence_number, float input_sample_frametime, bool active)
+{
+	return clientDLL.HOOKED_CreateMove_Func(thisptr, edx, sequence_number, input_sample_frametime, active);
+}
+
 void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart(void* thisptr, int edx)
 {
 	return clientDLL.HOOKED_CViewRender__OnRenderStart_Func(thisptr, edx);
@@ -56,12 +62,20 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	uintptr_t pHudUpdate,
 		pGetButtonBits,
 		pAdjustAngles,
-		pCViewRender__OnRenderStart;
+		pCreateMove,
+		pCViewRender__OnRenderStart,
+		pMiddleOfCAM_Think,
+		pGetGroundEntity,
+		pCalcAbsoluteVelocity;
 
 	auto fHudUpdate = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsHudUpdate, &pHudUpdate);
 	auto fGetButtonBits = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsGetButtonBits, &pGetButtonBits);
 	auto fAdjustAngles = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsAdjustAngles, &pAdjustAngles);
+	auto fCreateMove = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCreateMove, &pCreateMove);
 	auto fCViewRender__OnRenderStart = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__OnRenderStart, &pCViewRender__OnRenderStart);
+	auto fMiddleOfCAM_Think = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsMiddleOfCAM_Think, &pMiddleOfCAM_Think);
+	auto fGetGroundEntity = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsGetGroundEntity, &pGetGroundEntity);
+	auto fCalcAbsoluteVelocity = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCalcAbsoluteVelocity, &pCalcAbsoluteVelocity);
 
 	// DoImageSpaceMotionBlur
 	uintptr_t pDoImageSpaceMotionBlur = NULL;
@@ -184,6 +198,61 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("_y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
 	}
 
+	// CreateMove
+	ptnNumber = fCreateMove.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_CreateMove = (_CreateMove)pCreateMove;
+		EngineDevMsg("[client dll] Found CInput::CreateMove at %p (using the build %s pattern).\n", pCreateMove, Patterns::ptnsCreateMove[ptnNumber].build.c_str());
+
+		switch (ptnNumber) {
+		case 0:
+			offM_pCommands = 180;
+			offForwardmove = 24;
+			offSidemove = 28;
+			break;
+		}
+	}
+	else
+	{
+		EngineWarning("[client dll] Could not find CInput::CreateMove.\n");
+		EngineWarning("Full game no tas.\n");
+	}
+
+	// GetGroundEntity
+	ptnNumber = fGetGroundEntity.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		GetGroundEntity = (_GetGroundEntity)pGetGroundEntity;
+		EngineDevMsg("[client dll] Found GetGroundEntity at %p (using the build %s pattern).\n", pGetGroundEntity, Patterns::ptnsGetGroundEntity[ptnNumber].build.c_str());
+
+		switch (ptnNumber) {
+		case 0:
+			offMaxspeed = 4136;
+			offFlags = 736;
+			offAbsVelocity = 248;
+			offDucking = 3545;
+			offDuckJumpTime = 3552;
+			break;
+		}
+	} else
+	{
+		EngineWarning("[client dll] Could not find GetGroundEntity.\n");
+		EngineWarning("Full game no tas.\n");
+	}
+
+	// CalcAbsoluteVelocity
+	ptnNumber = fCalcAbsoluteVelocity.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		CalcAbsoluteVelocity = (_CalcAbsoluteVelocity)pCalcAbsoluteVelocity;
+		EngineDevMsg("[client dll] Found CalcAbsoluteVelocity at %p (using the build %s pattern).\n", pCalcAbsoluteVelocity, Patterns::ptnsCalcAbsoluteVelocity[ptnNumber].build.c_str());
+	} else
+	{
+		EngineWarning("[client dll] Could not find CalcAbsoluteVelocity.\n");
+		EngineWarning("Full game no tas.\n");
+	}
+
 	// CViewRender::OnRenderStart
 	ptnNumber = fCViewRender__OnRenderStart.get();
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
@@ -197,12 +266,31 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("_y_spt_force_90fov has no effect.\n");
 	}
 
+	// Middle of CAM_Think
+	ptnNumber = fMiddleOfCAM_Think.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 29) + pMiddleOfCAM_Think + 33);
+		EngineDevMsg("[client dll] Found the GetLocalPlayer pattern at %p (using the build %s pattern).\n", pMiddleOfCAM_Think, Patterns::ptnsMiddleOfCAM_Think[ptnNumber].build.c_str());
+		EngineDevMsg("[client dll] Found GetLocalPlayerat %p.\n", GetLocalPlayer);
+
+		switch (ptnNumber) {
+		case 0:
+			break;
+		}
+	} else
+	{
+		EngineWarning("[client dll] Could not find the GetLocalPlayer pattern.\n");
+		EngineWarning("Full game no tas.\n");
+	}
+
 	DetoursUtils::AttachDetours(moduleName, {
 		{ (PVOID *) (&ORIG_DoImageSpaceMorionBlur), HOOKED_DoImageSpaceMotionBlur },
 		//{ (PVOID *) (&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
 		{ (PVOID *) (&ORIG_HudUpdate), HOOKED_HudUpdate },
 		{ (PVOID *) (&ORIG_GetButtonBits), HOOKED_GetButtonBits },
 		{ (PVOID *)(&ORIG_AdjustAngles), HOOKED_AdjustAngles },
+		{ (PVOID *)(&ORIG_CreateMove), HOOKED_CreateMove },
 		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart }
 	});
 }
@@ -215,6 +303,7 @@ void ClientDLL::Unhook()
 		{ (PVOID *)(&ORIG_HudUpdate), HOOKED_HudUpdate },
 		{ (PVOID *)(&ORIG_GetButtonBits), HOOKED_GetButtonBits },
 		{ (PVOID *)(&ORIG_AdjustAngles), HOOKED_AdjustAngles },
+		{ (PVOID *)(&ORIG_CreateMove), HOOKED_CreateMove },
 		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart }
 	});
 
@@ -229,14 +318,28 @@ void ClientDLL::Clear()
 	ORIG_HudUpdate = nullptr;
 	ORIG_GetButtonBits = nullptr;
 	ORIG_AdjustAngles = nullptr;
+	ORIG_CreateMove = nullptr;
+	GetLocalPlayer = nullptr;
+	GetGroundEntity = nullptr;
+	CalcAbsoluteVelocity = nullptr;
 
 	pgpGlobals = nullptr;
+	offM_pCommands = 0;
+	offForwardmove = 0;
+	offSidemove = 0;
+	offMaxspeed = 0;
+	offFlags = 0;
+	offAbsVelocity = 0;
+	offDucking = 0;
+	offDuckJumpTime = 0;
+	pCmd = 0;
 
 	afterframesQueue.clear();
 	duckspam = false;
 
 	setPitch.set = false;
 	setYaw.set = false;
+	forceJump = false;
 	//off1M_nOldButtons = NULL;
 	//off2M_nOldButtons = NULL;
 	//cantJumpNextTime = false;
@@ -392,6 +495,11 @@ int __fastcall ClientDLL::HOOKED_GetButtonBits_Func(void* thisptr, int edx, int 
 		}
 		else
 			duckPressed = false;
+
+		if (forceJump) {
+			forceJump = false;
+			rv |= (1 << 1); // IN_JUMP
+		}
 	}
 
 	return rv;
@@ -401,33 +509,141 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 {
 	ORIG_AdjustAngles(thisptr, edx, frametime);
 
+	if (!pCmd)
+		return;
+
+	float va[3];
+	EngineGetViewAngles(va);
+
 	double pitchSpeed = atof(_y_spt_pitchspeed.GetString()),
 		yawSpeed = atof(_y_spt_yawspeed.GetString());
 
-	if (setPitch.set || setYaw.set
-		|| (pitchSpeed != 0.0)
-		|| (yawSpeed != 0.0))
+	if (pitchSpeed != 0.0f)
+		va[PITCH] += pitchSpeed;
+	if (setPitch.set)
 	{
-		float va[3];
-		EngineGetViewAngles(va);
-
-		va[0] += pitchSpeed;
-		va[1] += yawSpeed;
-
-		if (setPitch.set)
-		{
-			setPitch.set = false;
-			va[0] = setPitch.angle;
-		}
-
-		if (setYaw.set)
-		{
-			setYaw.set = false;
-			va[1] = setYaw.angle;
-		}
-
-		EngineSetViewAngles(va);
+		setPitch.set = false;
+		va[PITCH] = setPitch.angle;
 	}
+
+	if (yawSpeed != 0.0f)
+		va[YAW] += yawSpeed;
+	if (setYaw.set)
+	{
+		setYaw.set = false;
+		va[YAW] = setYaw.angle;
+	}
+	else if (yawSpeed == 0.0f && tas_strafe.GetBool())
+	{
+		auto player = GetLocalPlayer();
+		auto onground = (GetGroundEntity(player, 0) != NULL);
+		auto maxspeed = *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offMaxspeed);
+
+		auto vars = MovementVars();
+		vars.Accelerate = _sv_accelerate->GetFloat();
+		//vars.Airaccelerate = _sv_airaccelerate->GetFloat();
+		vars.Airaccelerate = 15;
+		vars.EntFriction = 1;
+		vars.Frametime = 0.015f;
+		vars.Friction = _sv_friction->GetFloat();
+		vars.Maxspeed = (maxspeed > 0) ? min(maxspeed, _sv_maxspeed->GetFloat()) : _sv_maxspeed->GetFloat();
+		vars.Stopspeed = _sv_stopspeed->GetFloat();
+		//vars.WishspeedCap = 30;
+		vars.WishspeedCap = 60;
+
+		//auto curState = CurrentState();
+		//curState.LgagstMinSpeed = tas_strafe_lgagst_minspeed.GetFloat();
+		//curState.LgagstFullMaxspeed = tas_strafe_lgagst_fullmaxspeed.GetBool();
+
+		auto pl = PlayerData();
+		CalcAbsoluteVelocity(player, 0);
+		float *vel = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offAbsVelocity);
+		pl.Velocity = Vector(vel[0], vel[1], vel[2]);
+		//DevMsg("[Strafing] speed pre-friction = %.8f\n", pl.Velocity.Length2D());
+		//DevMsg("[Strafing] velocity pre-friction: %.8f %.8f %.8f\n", pl.Velocity.x, pl.Velocity.y, pl.Velocity.z);
+		//EngineConCmd("getpos");
+
+		bool reduceWishspeed = onground && ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING);
+		bool jumped = false;
+		const int IN_JUMP = (1 << 1);
+		if (!onground && pl.Velocity.z <= 140.f) {
+			vars.EntFriction = 0.25;
+		}
+
+		auto btns = StrafeButtons();
+		bool usingButtons = (sscanf(tas_strafe_buttons.GetString(), "%hhu %hhu %hhu %hhu", &btns.AirLeft, &btns.AirRight, &btns.GroundLeft, &btns.GroundRight) == 4);
+
+		ProcessedFrame out;
+		out.Jump = false;
+		{
+			bool cantjump = false;
+			// This will report air on the first frame of unducking and report ground on the last one.
+			if ((*reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(player) + offDucking)) && ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING)) {
+				cantjump = true;
+			}
+
+			auto djt = (*reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offDuckJumpTime));
+			djt -= vars.Frametime * 1000;
+			djt = std::max(0.f, djt);
+			float flDuckMilliseconds = std::max(0.0f, 1000.f - djt);
+			float flDuckSeconds = flDuckMilliseconds * 0.001f;
+			if (flDuckSeconds > 0.2) {
+				djt = 0;
+			}
+			if (djt > 0) {
+				cantjump = true;
+			}
+
+			if (!cantjump && onground) {
+				//if (tas_strafe_lgagst.GetBool()) {
+				//	LgagstJump(pl, vars, curState, onground, ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING), tas_strafe_yaw.GetFloat(), va[YAW] * M_DEG2RAD, out, reduceWishspeed, btns, false);
+				//	if (out.Jump) {
+				//		onground = false;
+				//		jumped = true;
+				//	}
+				//}
+
+				if (ORIG_GetButtonBits(thisptr, 0, 0) & IN_JUMP) {
+					onground = false;
+					jumped = true;
+				}
+			}
+		}
+
+		Friction(pl, onground, vars);
+		Strafe(pl, vars, onground, jumped, ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING), tas_strafe_yaw.GetFloat(), va[YAW] * M_DEG2RAD, out, reduceWishspeed, btns, usingButtons);
+
+		//EngineDevMsg("[Strafing] Yaw = %.8f\n", out.Yaw);
+
+		va[YAW] = out.Yaw;
+		if (out.Forward) {
+			*reinterpret_cast<float*>(pCmd + offForwardmove) += vars.Maxspeed;
+		}
+		if (out.Back) {
+			*reinterpret_cast<float*>(pCmd + offForwardmove) -= vars.Maxspeed;
+		}
+		if (out.Right) {
+			*reinterpret_cast<float*>(pCmd + offSidemove) += vars.Maxspeed;
+		}
+		if (out.Left) {
+			*reinterpret_cast<float*>(pCmd + offSidemove) -= vars.Maxspeed;
+		}
+		if (out.Jump) {
+			forceJump = true;
+		}
+	}
+
+	EngineSetViewAngles(va);
+}
+
+void __fastcall ClientDLL::HOOKED_CreateMove_Func(void* thisptr, int edx, int sequence_number, float input_sample_frametime, bool active)
+{
+	auto m_pCommands = *reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(thisptr) + offM_pCommands);
+	pCmd = m_pCommands + 84 * (sequence_number % 90);
+
+	ORIG_CreateMove(thisptr, edx, sequence_number, input_sample_frametime, active);
+
+	pCmd = 0;
 }
 
 void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart_Func(void* thisptr, int edx)
