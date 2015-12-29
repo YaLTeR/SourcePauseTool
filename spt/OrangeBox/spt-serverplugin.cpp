@@ -43,6 +43,9 @@ public:
 };
 
 CPluginConVarAccessor g_ConVarAccessor;
+
+// OE: For correct linking in VS 2015.
+int (WINAPIV * __vsnprintf) (char*, size_t, const char*, va_list) = _vsnprintf;
 #endif
 
 void CallServerCommand(const char* cmd)
