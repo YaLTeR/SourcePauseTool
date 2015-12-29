@@ -168,6 +168,9 @@
     <ClInclude Include="SPTLib\IHookableDirFilter.hpp">
       <Filter>SPTLib</Filter>
     </ClInclude>
+    <ClInclude Include="spt\strafestuff.hpp">
+      <Filter>spt</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">

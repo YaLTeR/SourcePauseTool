@@ -32,6 +32,11 @@ int __fastcall ServerDLL::HOOKED_CheckStuck(void* thisptr, int edx)
 	return serverDLL.HOOKED_CheckStuck_Func(thisptr, edx);
 }
 
+void __fastcall ServerDLL::HOOKED_AirAccelerate(void* thisptr, int edx, Vector* wishdir, float wishspeed, float accel)
+{
+	return serverDLL.HOOKED_AirAccelerate_Func(thisptr, edx, wishdir, wishspeed, accel);
+}
+
 void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.
@@ -198,6 +203,12 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("y_spt_stucksave has no effect.\n");
 	}
 
+	//extern void* gm;
+	//if (gm) {
+	//	auto vftable = *reinterpret_cast<uintptr_t**>(gm);
+	//	ORIG_AirAccelerate = reinterpret_cast<_AirAccelerate>(MemUtils::HookVTable(vftable, 17, reinterpret_cast<uintptr_t>(HOOKED_AirAccelerate)));
+	//}
+
 	DetoursUtils::AttachDetours(moduleName, {
 		{ (PVOID *)(&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
 		{ (PVOID *)(&ORIG_FinishGravity), HOOKED_FinishGravity },
@@ -225,6 +236,7 @@ void ServerDLL::Clear()
 	ORIG_FinishGravity = nullptr;
 	ORIG_PlayerRunCommand = nullptr;
 	ORIG_CheckStuck = nullptr;
+	ORIG_AirAccelerate = nullptr;
 	off1M_nOldButtons = 0;
 	off2M_nOldButtons = 0;
 	cantJumpNextTime = false;
@@ -290,6 +302,9 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 
 	//EngineDevMsg( "Engine call: [server dll] CheckJumpButton() => %s\n", (rv ? "true" : "false") );
 
+	//CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
+	//DevMsg("[CJB] maxspeed = %.8f; speed = %.8f; yaw = %.8f; fmove = %.8f; smove = %.8f\n", mv->m_flMaxSpeed, mv->m_vecVelocity.Length2D(), mv->m_vecViewAngles[YAW], mv->m_flForwardMove, mv->m_flSideMove);
+
 	return rv;
 }
 
@@ -336,7 +351,9 @@ void __fastcall ServerDLL::HOOKED_PlayerRunCommand_Func(void* thisptr, int edx, 
 {
 	ORIG_PlayerRunCommand(thisptr, edx, ucmd, moveHelper);
 
+	auto prevVelocity = lastVelocity;
 	lastVelocity = *(Vector*)((uintptr_t)thisptr + offM_vecAbsVelocity);
+	//DevMsg("Gain: %.8f\n", lastVelocity.Length2D() - prevVelocity.Length2D());
 
 	if (timerRunning)
 		ticksPassed++;
@@ -355,4 +372,17 @@ int __fastcall ServerDLL::HOOKED_CheckStuck_Func(void* thisptr, int edx)
 	}
 
 	return ret;
+}
+
+void __fastcall ServerDLL::HOOKED_AirAccelerate_Func(void* thisptr, int edx, Vector* wishdir, float wishspeed, float accel)
+{
+	const double M_RAD2DEG = 180 / M_PI;
+
+	CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
+	DevMsg("[AA Pre ] velocity: %.8f %.8f\n", mv->m_vecVelocity.x, mv->m_vecVelocity.y);
+	DevMsg("[AA Pre ] speed = %.8f; wishspeed = %.8f; accel = %.8f; wishdir = %.8f; surface friction = %.8f\n", mv->m_vecVelocity.Length2D(), wishspeed, accel, atan2(wishdir->y, wishdir->x) * M_RAD2DEG, *(float*)(*(uintptr_t*)((uintptr_t)thisptr + 4) + 3812));
+
+	ORIG_AirAccelerate(thisptr, edx, wishdir, wishspeed, accel);
+
+	DevMsg("[AA Post] speed = %.8f\n", mv->m_vecVelocity.Length2D());
 }

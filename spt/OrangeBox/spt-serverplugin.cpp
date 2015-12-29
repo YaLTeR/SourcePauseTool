@@ -22,6 +22,7 @@ inline bool FStrEq( const char *sz1, const char *sz2 )
 // Interfaces from the engine
 IVEngineClient *engine = nullptr;
 ICvar *icvar = nullptr;
+void *gm = nullptr;
 
 // For OE CVar and ConCommand registering.
 #if defined( OE )
@@ -107,6 +108,12 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		Warning("SPT: _y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
 	}
 
+	gm = gameServerFactory(INTERFACENAME_GAMEMOVEMENT, NULL);
+	if (gm)
+	{
+		DevMsg("Found IGameMovement at %p.\n", gm);
+	}
+
 #if defined( OE )
 	icvar = (ICvar*)interfaceFactory(VENGINE_CVAR_INTERFACE_VERSION, NULL);
 #else
@@ -119,9 +126,9 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		Warning("SPT: Could not register any CVars and ConCommands.\n");
 		Warning("SPT: y_spt_cvar has no effect.\n");
 	}
-#if defined( OE )
 	else
 	{
+#if defined( OE )
 		ConCommandBaseMgr::OneTimeInit(&g_ConVarAccessor);
 
 		//auto c = icvar->FindVar("default_fov");
@@ -140,8 +147,14 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 			DevWarning("SPT: Could not find viewmodel_fov.\n");
 			Warning("SPT: _y_spt_force_90fov has no effect.\n");
 		}
-	}
 #endif
+
+		_sv_airaccelerate = icvar->FindVar("sv_airaccelerate");
+		_sv_accelerate = icvar->FindVar("sv_accelerate");
+		_sv_friction = icvar->FindVar("sv_friction");
+		_sv_maxspeed = icvar->FindVar("sv_maxspeed");
+		_sv_stopspeed = icvar->FindVar("sv_stopspeed");
+	}
 
 	EngineConCmd = CallServerCommand;
 	EngineGetViewAngles = GetViewAngles;
