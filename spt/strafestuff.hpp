@@ -2,6 +2,10 @@
 #include <sstream>
 #include <iomanip>
 
+// This code is a messed up version of hlstrafe,
+// go take a look at that instead:
+// https://github.com/HLTAS/hlstrafe
+
 struct MovementVars {
 	float Accelerate;
 	float Airaccelerate;

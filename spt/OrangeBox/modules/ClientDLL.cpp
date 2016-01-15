@@ -551,6 +551,8 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		//vars.WishspeedCap = 30;
 		vars.WishspeedCap = 60;
 
+		// Lgagst requires more prediction that is done here for correct operation, so it's commented out.
+
 		//auto curState = CurrentState();
 		//curState.LgagstMinSpeed = tas_strafe_lgagst_minspeed.GetFloat();
 		//curState.LgagstFullMaxspeed = tas_strafe_lgagst_fullmaxspeed.GetBool();
