@@ -9,6 +9,7 @@ ConVar tas_strafe("tas_strafe", "0");
 ConVar tas_strafe_yaw("tas_strafe_yaw", "");
 ConVar tas_strafe_buttons("tas_strafe_buttons", "", 0, "Sets the strafing buttons. The format is 4 digits: \"<AirLeft> <AirRight> <GroundLeft> <GroundRight>\". The default (auto-detect) is empty string: \"\".\n"
 															   "Table of buttons:\n\t0 - W\n\t1 - WA\n\t2 - A\n\t3 - SA\n\t4 - S\n\t5 - SD\n\t6 - D\n\t7 - WD\n");
+ConVar tas_log("tas_log", "0", 0, "If enabled, dumps a whole bunch of different stuff into the console.\n");
 //ConVar tas_strafe_lgagst("tas_strafe_lgagst", "1");
 //ConVar tas_strafe_lgagst_minspeed("tas_strafe_lgagst_minspeed", "30");
 //ConVar tas_strafe_lgagst_fullmaxspeed("tas_strafe_lgagst_fullmaxspeed", "0");

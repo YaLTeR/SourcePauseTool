@@ -15,6 +15,7 @@ typedef void(__fastcall *_FinishGravity) (void* thisptr, int edx);
 typedef void(__fastcall *_PlayerRunCommand) (void* thisptr, int edx, void* ucmd, void* moveHelper);
 typedef int(__fastcall *_CheckStuck) (void* thisptr, int edx);
 typedef void(__fastcall *_AirAccelerate) (void* thisptr, int edx, Vector* wishdir, float wishspeed, float accel);
+typedef void(__fastcall *_ProcessMovement) (void* thisptr, int edx, void* pPlayer, void* pMove);
 
 class ServerDLL : public IHookableNameFilter
 {
@@ -29,11 +30,13 @@ public:
 	static void __fastcall HOOKED_PlayerRunCommand(void* thisptr, int edx, void* ucmd, void* moveHelper);
 	static int __fastcall HOOKED_CheckStuck(void* thisptr, int edx);
 	static void __fastcall HOOKED_AirAccelerate(void* thisptr, int edx, Vector* wishdir, float wishspeed, float accel);
+	static void __fastcall HOOKED_ProcessMovement(void* thisptr, int edx, void* pPlayer, void* pMove);
 	bool __fastcall HOOKED_CheckJumpButton_Func(void* thisptr, int edx);
 	void __fastcall HOOKED_FinishGravity_Func(void* thisptr, int edx);
 	void __fastcall HOOKED_PlayerRunCommand_Func(void* thisptr, int edx, void* ucmd, void* moveHelper);
 	int __fastcall HOOKED_CheckStuck_Func(void* thisptr, int edx);
 	void __fastcall HOOKED_AirAccelerate_Func(void* thisptr, int edx, Vector* wishdir, float wishspeed, float accel);
+	void __fastcall HOOKED_ProcessMovement_Func(void* thisptr, int edx, void* pPlayer, void* pMove);
 
 	const Vector& GetLastVelocity() const { return lastVelocity; }
 
@@ -48,6 +51,7 @@ protected:
 	_PlayerRunCommand ORIG_PlayerRunCommand;
 	_CheckStuck ORIG_CheckStuck;
 	_AirAccelerate ORIG_AirAccelerate;
+	_ProcessMovement ORIG_ProcessMovement;
 
 	ptrdiff_t off1M_nOldButtons;
 	ptrdiff_t off2M_nOldButtons;
