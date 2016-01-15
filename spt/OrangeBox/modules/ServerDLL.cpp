@@ -37,6 +37,11 @@ void __fastcall ServerDLL::HOOKED_AirAccelerate(void* thisptr, int edx, Vector* 
 	return serverDLL.HOOKED_AirAccelerate_Func(thisptr, edx, wishdir, wishspeed, accel);
 }
 
+void __fastcall ServerDLL::HOOKED_ProcessMovement(void* thisptr, int edx, void* pPlayer, void* pMove)
+{
+	return serverDLL.HOOKED_ProcessMovement_Func(thisptr, edx, pPlayer, pMove);
+}
+
 void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.
@@ -203,11 +208,12 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("y_spt_stucksave has no effect.\n");
 	}
 
-	//extern void* gm;
-	//if (gm) {
-	//	auto vftable = *reinterpret_cast<uintptr_t**>(gm);
-	//	ORIG_AirAccelerate = reinterpret_cast<_AirAccelerate>(MemUtils::HookVTable(vftable, 17, reinterpret_cast<uintptr_t>(HOOKED_AirAccelerate)));
-	//}
+	extern void* gm;
+	if (gm) {
+		auto vftable = *reinterpret_cast<uintptr_t**>(gm);
+		//ORIG_AirAccelerate = reinterpret_cast<_AirAccelerate>(MemUtils::HookVTable(vftable, 17, reinterpret_cast<uintptr_t>(HOOKED_AirAccelerate)));
+		ORIG_ProcessMovement = reinterpret_cast<_ProcessMovement>(MemUtils::HookVTable(vftable, 1, reinterpret_cast<uintptr_t>(HOOKED_ProcessMovement)));
+	}
 
 	DetoursUtils::AttachDetours(moduleName, {
 		{ (PVOID *)(&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
@@ -256,8 +262,11 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 	int *pM_nOldButtons = NULL;
 	int origM_nOldButtons = 0;
 
-	//CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
-	//EngineDevMsg("(x, y, z) %.8f %.8f %.8f\n", mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z);
+	CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
+	if (tas_log.GetBool())
+		EngineDevMsg("[CheckJumpButton PRE ] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
+			mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z,
+			mv->m_vecVelocity.x, mv->m_vecVelocity.y, mv->m_vecVelocity.z);
 
 	if (y_spt_autojump.GetBool())
 	{
@@ -304,6 +313,11 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 
 	//CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
 	//DevMsg("[CJB] maxspeed = %.8f; speed = %.8f; yaw = %.8f; fmove = %.8f; smove = %.8f\n", mv->m_flMaxSpeed, mv->m_vecVelocity.Length2D(), mv->m_vecViewAngles[YAW], mv->m_flForwardMove, mv->m_flSideMove);
+
+	if (tas_log.GetBool())
+		EngineDevMsg("[CheckJumpButton POST] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
+			mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z,
+			mv->m_vecVelocity.x, mv->m_vecVelocity.y, mv->m_vecVelocity.z);
 
 	return rv;
 }
@@ -385,4 +399,20 @@ void __fastcall ServerDLL::HOOKED_AirAccelerate_Func(void* thisptr, int edx, Vec
 	ORIG_AirAccelerate(thisptr, edx, wishdir, wishspeed, accel);
 
 	DevMsg("[AA Post] speed = %.8f\n", mv->m_vecVelocity.Length2D());
+}
+
+void __fastcall ServerDLL::HOOKED_ProcessMovement_Func(void* thisptr, int edx, void* pPlayer, void* pMove)
+{
+	CHLMoveData *mv = reinterpret_cast<CHLMoveData*>(pMove);
+	if (tas_log.GetBool())
+		EngineDevMsg("[ProcessMovement PRE ] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
+			mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z,
+			mv->m_vecVelocity.x, mv->m_vecVelocity.y, mv->m_vecVelocity.z);
+
+	ORIG_ProcessMovement(thisptr, edx, pPlayer, pMove);
+
+	if (tas_log.GetBool())
+		EngineDevMsg("[ProcessMovement POST] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
+			mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z,
+			mv->m_vecVelocity.x, mv->m_vecVelocity.y, mv->m_vecVelocity.z);
 }

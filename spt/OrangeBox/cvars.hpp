@@ -12,6 +12,7 @@ extern ConVar y_spt_pause_demo_on_tick;
 extern ConVar tas_strafe;
 extern ConVar tas_strafe_yaw;
 extern ConVar tas_strafe_buttons;
+extern ConVar tas_log;
 //extern ConVar tas_strafe_lgagst;
 //extern ConVar tas_strafe_lgagst_minspeed;
 //extern ConVar tas_strafe_lgagst_fullmaxspeed;
