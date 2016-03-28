@@ -59,8 +59,8 @@
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
-    <IncludePath>D:\Tools\Source\Detours\include;.;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Tools\Source\Detours\lib.X86;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\Source\Detours\include;.;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Source\Detours\lib.X86;$(LibraryPath)</LibraryPath>
     <TargetName>spt</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -71,8 +71,8 @@
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
-    <IncludePath>D:\Tools\Source\Detours\include;.;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Tools\Source\Detours\lib.X86;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\Source\Detours\include;.;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Source\Detours\lib.X86;$(LibraryPath)</LibraryPath>
     <TargetName>spt</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">
@@ -83,8 +83,8 @@
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
-    <IncludePath>D:\Tools\Source\Detours\include;.;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Tools\Source\Detours\lib.X86;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\Source\Detours\include;.;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Source\Detours\lib.X86;$(LibraryPath)</LibraryPath>
     <TargetName>spt-oe</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -292,7 +292,7 @@
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>copy "$(TargetPath)" "D:\Games\HL2OE\bin\"</Command>
+      <Command>copy "$(TargetPath)" "D:\Games\HL2 Old Engine\bin\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

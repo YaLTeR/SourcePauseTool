@@ -64,7 +64,8 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		pSetPaused = NULL,
 		pMiddleOfSV_InitGameDLL = NULL,
 		p_Host_RunFrame = NULL,
-		pSV_Frame = NULL;
+		pSV_Frame = NULL,
+		pRecord = NULL;
 
 	auto fActivateServer = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSV_ActivateServer, &pSV_ActivateServer);
 	auto fFinishRestore = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsFinishRestore, &pFinishRestore);
@@ -72,6 +73,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	auto fMiddleOfSV_InitGameDLL = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsMiddleOfSV_InitGameDLL, &pMiddleOfSV_InitGameDLL);
 	auto f_Host_RunFrame = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptns_Host_RunFrame, &p_Host_RunFrame);
 	auto fSV_Frame = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSV_Frame, &pSV_Frame);
+	auto fRecord = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsRecord, &pRecord);
 
 	// m_bLoadgame and pGameServer (&sv)
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsSpawnPlayer, &pSpawnPlayer);
@@ -220,6 +222,19 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineDevWarning("Could not find _Host_RunFrame!\n");
 	}
 
+	ptnNumber = fRecord.get();
+	if (pRecord)
+	{
+		pDemoplayer = *reinterpret_cast<void***>(pRecord + 132);
+
+		EngineDevMsg("Found record at %p (using the build %s pattern).\n", pRecord, Patterns::ptnsRecord[ptnNumber].build.c_str());
+		EngineDevMsg("Found demoplayer at %p.\n", pDemoplayer);
+	}
+	else
+	{
+		EngineDevWarning("Could not find record!\n");
+	}
+
 	DetoursUtils::AttachDetours(moduleName, {
 		{ (PVOID *)(&ORIG_SV_ActivateServer), HOOKED_SV_ActivateServer },
 		{ (PVOID *)(&ORIG_FinishRestore), HOOKED_FinishRestore },
@@ -263,6 +278,7 @@ void EngineDLL::Clear()
 	pHost_Frametime = nullptr;
 	pM_State = nullptr;
 	pM_nSignonState = nullptr;
+	pDemoplayer = nullptr;
 }
 
 float EngineDLL::GetTickrate() const
@@ -277,6 +293,38 @@ void EngineDLL::SetTickrate(float value)
 {
 	if (pIntervalPerTick)
 		*pIntervalPerTick = value;
+}
+
+int EngineDLL::Demo_GetPlaybackTick() const
+{
+	if (!pDemoplayer)
+		return 0;
+	auto demoplayer = *pDemoplayer;
+	return (*reinterpret_cast<int(__fastcall ***)(void*)>(demoplayer))[2](demoplayer);
+}
+
+int EngineDLL::Demo_GetTotalTicks() const
+{
+	if (!pDemoplayer)
+		return 0;
+	auto demoplayer = *pDemoplayer;
+	return (*reinterpret_cast<int(__fastcall ***)(void*)>(demoplayer))[3](demoplayer);
+}
+
+bool EngineDLL::Demo_IsPlayingBack() const
+{
+	if (!pDemoplayer)
+		return false;
+	auto demoplayer = *pDemoplayer;
+	return (*reinterpret_cast<bool(__fastcall ***)(void*)>(demoplayer))[5](demoplayer);
+}
+
+bool EngineDLL::Demo_IsPlaybackPaused() const
+{
+	if (!pDemoplayer)
+		return false;
+	auto demoplayer = *pDemoplayer;
+	return (*reinterpret_cast<bool(__fastcall ***)(void*)>(demoplayer))[6](demoplayer);
 }
 
 bool __cdecl EngineDLL::HOOKED_SV_ActivateServer_Func()
