@@ -57,6 +57,10 @@ public:
 	void AddIntoAfterframesQueue(const afterframes_entry_t& entry);
 	void ResetAfterframesQueue();
 
+	void PauseAfterframesQueue() { afterframesPaused = true; }
+	void ResumeAfterframesQueue() { afterframesPaused = false; }
+	//bool IsAfterframesQueuePaused() { return afterframesPaused; }
+
 	void EnableDuckspam()  { duckspam = true; }
 	void DisableDuckspam() { duckspam = false; }
 
@@ -87,6 +91,8 @@ protected:
 	uintptr_t pCmd;
 
 	std::vector<afterframes_entry_t> afterframesQueue;
+	bool afterframesPaused = false;
+
 	bool duckspam;
 	angset_command_t setPitch, setYaw;
 	bool forceJump;

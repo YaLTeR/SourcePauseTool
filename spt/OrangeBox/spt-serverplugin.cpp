@@ -243,6 +243,11 @@ CON_COMMAND(_y_spt_afterframes2, "Add everything after count as a command into t
 }
 #endif
 
+CON_COMMAND(_y_spt_afterframes_await_load, "Pause reading from the afterframes queue until the next load or changelevel. Useful for writing scripts spanning multiple maps or save-load segments.")
+{
+	clientDLL.PauseAfterframesQueue();
+}
+
 CON_COMMAND(_y_spt_afterframes_reset, "Reset the afterframes queue.")
 {
 	clientDLL.ResetAfterframesQueue();
