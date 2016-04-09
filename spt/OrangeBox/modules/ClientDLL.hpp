@@ -59,7 +59,6 @@ public:
 
 	void PauseAfterframesQueue() { afterframesPaused = true; }
 	void ResumeAfterframesQueue() { afterframesPaused = false; }
-	//bool IsAfterframesQueuePaused() { return afterframesPaused; }
 
 	void EnableDuckspam()  { duckspam = true; }
 	void DisableDuckspam() { duckspam = false; }

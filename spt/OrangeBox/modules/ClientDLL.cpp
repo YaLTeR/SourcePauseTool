@@ -359,7 +359,8 @@ void ClientDLL::ResetAfterframesQueue()
 
 void ClientDLL::OnFrame()
 {
-	if (afterframesPaused) {
+	if (afterframesPaused)
+	{
 		return;
 	}
 
