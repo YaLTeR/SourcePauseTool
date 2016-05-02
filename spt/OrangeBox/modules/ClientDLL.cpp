@@ -335,6 +335,8 @@ void ClientDLL::Clear()
 	pCmd = 0;
 
 	afterframesQueue.clear();
+	afterframesPaused = false;
+
 	duckspam = false;
 
 	setPitch.set = false;
@@ -357,6 +359,11 @@ void ClientDLL::ResetAfterframesQueue()
 
 void ClientDLL::OnFrame()
 {
+	if (afterframesPaused)
+	{
+		return;
+	}
+
 	for (auto it = afterframesQueue.begin(); it != afterframesQueue.end(); )
 	{
 		it->framesLeft--;

@@ -122,11 +122,11 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 #else
 	else
 	{
-		_sv_airaccelerate = icvar->FindVar("sv_airaccelerate");
-		_sv_accelerate = icvar->FindVar("sv_accelerate");
-		_sv_friction = icvar->FindVar("sv_friction");
-		_sv_maxspeed = icvar->FindVar("sv_maxspeed");
-		_sv_stopspeed = icvar->FindVar("sv_stopspeed");
+		_sv_airaccelerate = g_pCVar->FindVar("sv_airaccelerate");
+		_sv_accelerate = g_pCVar->FindVar("sv_accelerate");
+		_sv_friction = g_pCVar->FindVar("sv_friction");
+		_sv_maxspeed = g_pCVar->FindVar("sv_maxspeed");
+		_sv_stopspeed = g_pCVar->FindVar("sv_stopspeed");
 	}
 
 	ConVar_Register(0);
@@ -227,6 +227,11 @@ CON_COMMAND(_y_spt_afterframes2, "Add everything after count as a command into t
 	clientDLL.AddIntoAfterframesQueue(entry);
 }
 #endif
+
+CON_COMMAND(_y_spt_afterframes_await_load, "Pause reading from the afterframes queue until the next load or changelevel. Useful for writing scripts spanning multiple maps or save-load segments.")
+{
+	clientDLL.PauseAfterframesQueue();
+}
 
 CON_COMMAND(_y_spt_afterframes_reset, "Reset the afterframes queue.")
 {

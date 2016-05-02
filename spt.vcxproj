@@ -70,7 +70,7 @@
     <PreLinkEventUseInBuild>true</PreLinkEventUseInBuild>
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
     <IncludePath>D:\Source\Detours\include;.;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Source\Detours\lib.X86;$(LibraryPath)</LibraryPath>
     <TargetName>spt</TargetName>
@@ -82,7 +82,7 @@
     <PreLinkEventUseInBuild>true</PreLinkEventUseInBuild>
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
     <IncludePath>D:\Source\Detours\include;.;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Source\Detours\lib.X86;$(LibraryPath)</LibraryPath>
     <TargetName>spt</TargetName>
@@ -106,7 +106,7 @@
     <PreLinkEventUseInBuild>true</PreLinkEventUseInBuild>
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
     <IncludePath>D:\Source\Detours\include;.;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Source\Detours\lib.X86;$(LibraryPath)</LibraryPath>
     <TargetName>spt-oe</TargetName>
@@ -320,7 +320,7 @@
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>copy "$(TargetPath)" "D:\Games\Source Unpack\portal\"</Command>
+      <Command>copy "$(TargetPath)" "D:\Games\SteamLibrary\steamapps\common\Black Mesa\bms\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">

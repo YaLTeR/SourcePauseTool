@@ -362,7 +362,9 @@ void __fastcall EngineDLL::HOOKED_FinishRestore_Func(void* thisptr, int edx)
 		shouldPreventNextUnpause = true;
 	}
 
-	return ORIG_FinishRestore(thisptr, edx);
+	ORIG_FinishRestore(thisptr, edx);
+
+	clientDLL.ResumeAfterframesQueue();
 }
 
 void __fastcall EngineDLL::HOOKED_SetPaused_Func(void* thisptr, int edx, bool paused)
