@@ -21,7 +21,6 @@ inline bool FStrEq( const char *sz1, const char *sz2 )
 
 // Interfaces from the engine
 IVEngineClient *engine = nullptr;
-ICvar *icvar = nullptr;
 
 // For OE CVar and ConCommand registering.
 #if defined( OE )
@@ -36,7 +35,7 @@ public:
 		pCommand->SetNext(0);
 
 		// Link to engine's list instead
-		icvar->RegisterConCommandBase(pCommand);
+		g_pCVar->RegisterConCommandBase(pCommand);
 		return true;
 	}
 
@@ -97,7 +96,25 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 
 	ConnectTier1Libraries(&interfaceFactory, 1);
 
-#if !defined( OE )
+	if (!g_pCVar)
+	{
+		DevWarning("SPT: Failed to get the ICvar interface.\n");
+		Warning("SPT: Could not register any CVars and ConCommands.\n");
+		Warning("SPT: y_spt_cvar has no effect.\n");
+	}
+#if defined( OE )
+	else
+	{
+		ConCommandBaseMgr::OneTimeInit(&g_ConVarAccessor);
+
+		_viewmodel_fov = g_pCVar->FindVar("viewmodel_fov");
+		if (!_viewmodel_fov)
+		{
+			DevWarning("SPT: Could not find viewmodel_fov.\n");
+			Warning("SPT: _y_spt_force_90fov has no effect.\n");
+		}
+	}
+#else
 	ConVar_Register(0);
 #endif
 
@@ -109,42 +126,6 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		Warning("SPT: _y_spt_setpitch and _y_spt_setyaw have no effect.\n");
 		Warning("SPT: _y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
 	}
-
-#if defined( OE )
-	icvar = (ICvar*)interfaceFactory(VENGINE_CVAR_INTERFACE_VERSION, NULL);
-#else
-	icvar = (ICvar*)interfaceFactory(CVAR_INTERFACE_VERSION, NULL);
-#endif
-
-	if (!icvar)
-	{
-		DevWarning("SPT: Failed to get the ICvar interface.\n");
-		Warning("SPT: Could not register any CVars and ConCommands.\n");
-		Warning("SPT: y_spt_cvar has no effect.\n");
-	}
-#if defined( OE )
-	else
-	{
-		ConCommandBaseMgr::OneTimeInit(&g_ConVarAccessor);
-
-		//auto c = icvar->FindVar("default_fov");
-		//if (!c)
-		//{
-		//	Warning("SPT: Could not find default_fov.\n");
-		//}
-		//else
-		//{
-		//	c->InstallChangeCallback(DefaultFOVChangeCallback);
-		//}
-
-		_viewmodel_fov = icvar->FindVar("viewmodel_fov");
-		if (!_viewmodel_fov)
-		{
-			DevWarning("SPT: Could not find viewmodel_fov.\n");
-			Warning("SPT: _y_spt_force_90fov has no effect.\n");
-		}
-	}
-#endif
 
 	EngineConCmd = CallServerCommand;
 	EngineGetViewAngles = GetViewAngles;
@@ -240,7 +221,7 @@ CON_COMMAND(_y_spt_afterframes_reset, "Reset the afterframes queue.")
 
 CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 {
-	if (!engine || !icvar)
+	if (!engine || !g_pCVar)
 		return;
 
 #if defined( OE )
@@ -253,7 +234,7 @@ CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 		return;
 	}
 
-	ConVar *cvar = icvar->FindVar(args.Arg(1));
+	ConVar *cvar = g_pCVar->FindVar(args.Arg(1));
 	if (!cvar)
 	{
 		Warning("Couldn't find the cvar: %s\n", args.Arg(1));
@@ -290,7 +271,7 @@ CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 #if !defined( OE )
 CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of the argument string.")
 {
-	if (!engine || !icvar)
+	if (!engine || !g_pCVar)
 		return;
 
 	if (args.ArgC() < 2)
@@ -299,7 +280,7 @@ CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of 
 		return;
 	}
 
-	ConVar *cvar = icvar->FindVar(args.Arg(1));
+	ConVar *cvar = g_pCVar->FindVar(args.Arg(1));
 	if (!cvar)
 	{
 		Warning("Couldn't find the cvar: %s\n", args.Arg(1));
