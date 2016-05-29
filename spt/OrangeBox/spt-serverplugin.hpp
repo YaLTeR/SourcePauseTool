@@ -1,6 +1,6 @@
 #pragma once
 
-#define SPT_VERSION "0.7-beta"
+#define SPT_VERSION __DATE__ " " __TIME__
 
 #if defined( OE )
 #include "cdll_int.h"
