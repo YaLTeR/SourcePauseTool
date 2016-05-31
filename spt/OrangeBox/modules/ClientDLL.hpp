@@ -89,6 +89,8 @@ protected:
 	ptrdiff_t offDuckJumpTime;
 	uintptr_t pCmd;
 
+	bool tasAddressesWereFound;
+
 	std::vector<afterframes_entry_t> afterframesQueue;
 	bool afterframesPaused = false;
 

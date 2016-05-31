@@ -194,8 +194,6 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	else
 	{
 		EngineDevWarning("[client dll] Could not find CInput::AdjustAngles.\n");
-		EngineWarning("_y_spt_setpitch and _y_spt_setyaw have no effect.\n");
-		EngineWarning("_y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
 	}
 
 	// CreateMove
@@ -215,8 +213,14 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 	else
 	{
-		EngineWarning("[client dll] Could not find CInput::CreateMove.\n");
-		EngineWarning("Full game no tas.\n");
+		EngineDevWarning("[client dll] Could not find CInput::CreateMove.\n");
+	}
+
+	if (!ORIG_AdjustAngles || !ORIG_CreateMove)
+	{
+		EngineWarning("_y_spt_setangles has no effect.\n");
+		EngineWarning("_y_spt_setpitch and _y_spt_setyaw have no effect.\n");
+		EngineWarning("_y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
 	}
 
 	// GetGroundEntity
@@ -237,8 +241,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		}
 	} else
 	{
-		EngineWarning("[client dll] Could not find GetGroundEntity.\n");
-		EngineWarning("Full game no tas.\n");
+		EngineDevWarning("[client dll] Could not find GetGroundEntity.\n");
 	}
 
 	// CalcAbsoluteVelocity
@@ -247,10 +250,42 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	{
 		CalcAbsoluteVelocity = (_CalcAbsoluteVelocity)pCalcAbsoluteVelocity;
 		EngineDevMsg("[client dll] Found CalcAbsoluteVelocity at %p (using the build %s pattern).\n", pCalcAbsoluteVelocity, Patterns::ptnsCalcAbsoluteVelocity[ptnNumber].build.c_str());
+	}
+	else
+	{
+		EngineDevWarning("[client dll] Could not find CalcAbsoluteVelocity.\n");
+	}
+
+	// Middle of CAM_Think
+	ptnNumber = fMiddleOfCAM_Think.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 29) + pMiddleOfCAM_Think + 33);
+		EngineDevMsg("[client dll] Found the GetLocalPlayer pattern at %p (using the build %s pattern).\n", pMiddleOfCAM_Think, Patterns::ptnsMiddleOfCAM_Think[ptnNumber].build.c_str());
+		EngineDevMsg("[client dll] Found GetLocalPlayer at %p.\n", GetLocalPlayer);
+
+		switch (ptnNumber) {
+		case 0:
+			break;
+		}
 	} else
 	{
-		EngineWarning("[client dll] Could not find CalcAbsoluteVelocity.\n");
-		EngineWarning("Full game no tas.\n");
+		EngineDevWarning("[client dll] Could not find the GetLocalPlayer pattern.\n");
+	}
+
+	if (ORIG_CreateMove
+		&& GetGroundEntity
+		&& CalcAbsoluteVelocity
+		&& GetLocalPlayer)
+	{
+		tasAddressesWereFound = true;
+
+		EngineWarning("The TAS functionality in this build works correctly only in Portal.\n"
+					  "It may appear to work correctly in other games but this is not the case.\n");
+	}
+	else
+	{
+		EngineWarning("The full game TAS solutions are not available.\n");
 	}
 
 	// CViewRender::OnRenderStart
@@ -264,24 +299,6 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	{
 		EngineDevWarning("[client dll] Could not find CViewRender::OnRenderStart.\n");
 		EngineWarning("_y_spt_force_90fov has no effect.\n");
-	}
-
-	// Middle of CAM_Think
-	ptnNumber = fMiddleOfCAM_Think.get();
-	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
-	{
-		GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 29) + pMiddleOfCAM_Think + 33);
-		EngineDevMsg("[client dll] Found the GetLocalPlayer pattern at %p (using the build %s pattern).\n", pMiddleOfCAM_Think, Patterns::ptnsMiddleOfCAM_Think[ptnNumber].build.c_str());
-		EngineDevMsg("[client dll] Found GetLocalPlayerat %p.\n", GetLocalPlayer);
-
-		switch (ptnNumber) {
-		case 0:
-			break;
-		}
-	} else
-	{
-		EngineWarning("[client dll] Could not find the GetLocalPlayer pattern.\n");
-		EngineWarning("Full game no tas.\n");
 	}
 
 	DetoursUtils::AttachDetours(moduleName, {
@@ -333,6 +350,8 @@ void ClientDLL::Clear()
 	offDucking = 0;
 	offDuckJumpTime = 0;
 	pCmd = 0;
+
+	tasAddressesWereFound = false;
 
 	afterframesQueue.clear();
 	afterframesPaused = false;
@@ -540,7 +559,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		setYaw.set = false;
 		va[YAW] = setYaw.angle;
 	}
-	else if (yawSpeed == 0.0f && tas_strafe.GetBool())
+	else if (tasAddressesWereFound && yawSpeed == 0.0f && tas_strafe.GetBool())
 	{
 		auto player = GetLocalPlayer();
 		auto onground = (GetGroundEntity(player, 0) != NULL);

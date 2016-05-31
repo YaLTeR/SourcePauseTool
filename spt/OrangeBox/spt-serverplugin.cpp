@@ -158,7 +158,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 
 	auto loadTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
 	std::ostringstream out;
-	out << "SourcePauseTool v" SPT_VERSION " was loaded in " << loadTime << "ms.\n";
+	out << "SourcePauseTool version " SPT_VERSION " was loaded in " << loadTime << "ms.\n";
 
 	Msg("%s", std::string(out.str()).c_str());
 
