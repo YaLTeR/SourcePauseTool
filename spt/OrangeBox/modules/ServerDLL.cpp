@@ -213,6 +213,8 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		auto vftable = *reinterpret_cast<uintptr_t**>(gm);
 		//ORIG_AirAccelerate = reinterpret_cast<_AirAccelerate>(MemUtils::HookVTable(vftable, 17, reinterpret_cast<uintptr_t>(HOOKED_AirAccelerate)));
 		ORIG_ProcessMovement = reinterpret_cast<_ProcessMovement>(MemUtils::HookVTable(vftable, 1, reinterpret_cast<uintptr_t>(HOOKED_ProcessMovement)));
+
+		EngineDevMsg("[server dll] Hooked ProcessMovement through the vftable.\n");
 	}
 
 	DetoursUtils::AttachDetours(moduleName, {
@@ -225,6 +227,15 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 void ServerDLL::Unhook()
 {
+	extern void* gm;
+	if (gm) {
+		auto vftable = *reinterpret_cast<uintptr_t**>(gm);
+		//MemUtils::HookVTable(vftable, 17, reinterpret_cast<uintptr_t>(ORIG_AirAccelerate));
+		MemUtils::HookVTable(vftable, 1, reinterpret_cast<uintptr_t>(ORIG_ProcessMovement));
+
+		EngineDevMsg("[server dll] Unhooked ProcessMovement through the vftable.\n");
+	}
+
 	DetoursUtils::DetachDetours(moduleName, {
 		{ (PVOID *)(&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
 		{ (PVOID *)(&ORIG_FinishGravity), HOOKED_FinishGravity },
