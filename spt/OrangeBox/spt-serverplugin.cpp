@@ -143,6 +143,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		Warning("SPT: y_spt_afterframes has no effect.\n");
 		Warning("SPT: _y_spt_setpitch and _y_spt_setyaw have no effect.\n");
 		Warning("SPT: _y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
+		Warning("SPT: y_spt_stucksave has no effect.\n");
 	}
 
 	EngineConCmd = CallServerCommand;
