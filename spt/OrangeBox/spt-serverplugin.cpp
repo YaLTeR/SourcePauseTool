@@ -145,6 +145,18 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		Warning("SPT: _y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
 		Warning("SPT: y_spt_stucksave has no effect.\n");
 	}
+	else
+	{
+		using namespace std::literals;
+
+		if (GetFileName(string_converter.from_bytes(engine->GetGameDirectory())) == L"portal"s)
+		{
+			DevMsg("This game looks like portal. Setting the tas_force* cvars appropriately.\n");
+
+			tas_force_airaccelerate.SetValue(15);
+			tas_force_wishspeed_cap.SetValue(60);
+		}
+	}
 
 	EngineConCmd = CallServerCommand;
 	EngineGetViewAngles = GetViewAngles;

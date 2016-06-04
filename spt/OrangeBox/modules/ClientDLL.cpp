@@ -567,15 +567,22 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 
 		auto vars = MovementVars();
 		vars.Accelerate = _sv_accelerate->GetFloat();
-		//vars.Airaccelerate = _sv_airaccelerate->GetFloat();
-		vars.Airaccelerate = 15;
+
+		if (tas_force_airaccelerate.GetString()[0] != '\0')
+			vars.Airaccelerate = tas_force_airaccelerate.GetFloat();
+		else
+			vars.Airaccelerate = _sv_airaccelerate->GetFloat();
+
 		vars.EntFriction = 1;
 		vars.Frametime = 0.015f;
 		vars.Friction = _sv_friction->GetFloat();
 		vars.Maxspeed = (maxspeed > 0) ? min(maxspeed, _sv_maxspeed->GetFloat()) : _sv_maxspeed->GetFloat();
 		vars.Stopspeed = _sv_stopspeed->GetFloat();
-		//vars.WishspeedCap = 30;
-		vars.WishspeedCap = 60;
+
+		if (tas_force_wishspeed_cap.GetString()[0] != '\0')
+			vars.WishspeedCap = tas_force_wishspeed_cap.GetFloat();
+		else
+			vars.WishspeedCap = 30;
 
 		// Lgagst requires more prediction that is done here for correct operation, so it's commented out.
 
