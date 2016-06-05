@@ -16,11 +16,16 @@ ConVar y_spt_pause_demo_on_tick(
 	"Demos ending with changelevels report incorrect length; you can obtain the correct demo length using listdemo and then set this CVar to <demo length> - 1 manually.");
 
 ConVar tas_strafe("tas_strafe", "0");
-ConVar tas_strafe_yaw("tas_strafe_yaw", "");
+ConVar tas_strafe_type("tas_strafe_type", "0", 0, "TAS strafe types:\n\t0 - Max acceleration strafing,\n\t1 - Max angle strafing.\n");
+ConVar tas_strafe_dir("tas_strafe_dir", "3", 0, "TAS strafe dirs:\n\t0 - to the left,\n\t1 - to the right,\n\t3 - to the yaw given in tas_strafe_yaw.");
+ConVar tas_strafe_yaw("tas_strafe_yaw", "", 0, "Yaw to strafe to with tas_strafe_dir = 3.");
 ConVar tas_strafe_buttons("tas_strafe_buttons", "", 0, "Sets the strafing buttons. The format is 4 digits: \"<AirLeft> <AirRight> <GroundLeft> <GroundRight>\". The default (auto-detect) is empty string: \"\".\n"
 															   "Table of buttons:\n\t0 - W\n\t1 - WA\n\t2 - A\n\t3 - SA\n\t4 - S\n\t5 - SD\n\t6 - D\n\t7 - WD\n");
+
 ConVar tas_force_airaccelerate("tas_force_airaccelerate", "", 0, "Sets the value of airaccelerate used in TAS calculations. If empty, uses the value of sv_airaccelerate.\n\nShould be set to 15 for Portal.\n");
 ConVar tas_force_wishspeed_cap("tas_force_wishspeed_cap", "", 0, "Sets the value of the wishspeed cap used in TAS calculations. If empty, uses the default value: 30.\n\nShould be set to 60 for Portal.\n");
+ConVar tas_reset_surface_friction("tas_reset_surface_friction", "1", 0, "If enabled, the surface friction is assumed to be reset in the beginning of CategorizePosition().\n\nShould be set to 0 for Portal.\n");
+
 ConVar tas_log("tas_log", "0", 0, "If enabled, dumps a whole bunch of different stuff into the console.\n");
 //ConVar tas_strafe_lgagst("tas_strafe_lgagst", "1");
 //ConVar tas_strafe_lgagst_minspeed("tas_strafe_lgagst_minspeed", "30");

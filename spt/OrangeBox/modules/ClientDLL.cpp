@@ -237,6 +237,9 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			offAbsVelocity = 248;
 			offDucking = 3545;
 			offDuckJumpTime = 3552;
+			offServerSurfaceFriction = 3812;
+			offServerPreviouslyPredictedOrigin = 3692;
+			offServerAbsOrigin = 580;
 			break;
 		}
 	} else
@@ -349,6 +352,9 @@ void ClientDLL::Clear()
 	offAbsVelocity = 0;
 	offDucking = 0;
 	offDuckJumpTime = 0;
+	offServerSurfaceFriction = 0;
+	offServerPreviouslyPredictedOrigin = 0;
+	offServerAbsOrigin = 0;
 	pCmd = 0;
 
 	tasAddressesWereFound = false;
@@ -562,7 +568,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 	else if (tasAddressesWereFound && yawSpeed == 0.0f && tas_strafe.GetBool())
 	{
 		auto player = GetLocalPlayer();
-		auto onground = (GetGroundEntity(player, 0) != NULL);
+		auto onground = (GetGroundEntity(player, 0) != NULL); // TODO: This should really be a proper check.
 		auto maxspeed = *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offMaxspeed);
 
 		auto vars = MovementVars();
@@ -585,7 +591,6 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 			vars.WishspeedCap = 30;
 
 		// Lgagst requires more prediction that is done here for correct operation, so it's commented out.
-
 		//auto curState = CurrentState();
 		//curState.LgagstMinSpeed = tas_strafe_lgagst_minspeed.GetFloat();
 		//curState.LgagstFullMaxspeed = tas_strafe_lgagst_fullmaxspeed.GetBool();
@@ -594,6 +599,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		CalcAbsoluteVelocity(player, 0);
 		float *vel = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offAbsVelocity);
 		pl.Velocity = Vector(vel[0], vel[1], vel[2]);
+
 		//DevMsg("[Strafing] speed pre-friction = %.8f\n", pl.Velocity.Length2D());
 		//DevMsg("[Strafing] velocity pre-friction: %.8f %.8f %.8f\n", pl.Velocity.x, pl.Velocity.y, pl.Velocity.z);
 		//EngineConCmd("getpos");
@@ -601,9 +607,32 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		bool reduceWishspeed = onground && ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING);
 		bool jumped = false;
 		const int IN_JUMP = (1 << 1);
-		if (!onground && pl.Velocity.z <= 140.f) {
-			vars.EntFriction = 0.25;
+
+		extern IServerUnknown* GetServerPlayer();
+		auto server_player = GetServerPlayer();
+
+		auto previouslyPredictedOrigin = reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(server_player) + offServerPreviouslyPredictedOrigin);
+		auto absOrigin = reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(server_player) + offServerAbsOrigin);
+		bool gameCodeMovedPlayer = (*previouslyPredictedOrigin != *absOrigin);
+
+		vars.EntFriction = *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(server_player) + offServerSurfaceFriction);
+
+		if (gameCodeMovedPlayer) {
+			if (tas_reset_surface_friction.GetBool()) {
+				vars.EntFriction = 1.0f;
+			}
+
+			if (pl.Velocity.z <= 140.f) {
+				if (onground) {
+					// TODO: This should check the real surface friction.
+					vars.EntFriction = 1.0f;
+				} else if (pl.Velocity.z > 0.f) {
+					vars.EntFriction = 0.25f;
+				}
+			}
 		}
+
+		//DevMsg("[Strafing] EntFriction = %f\n", vars.EntFriction);
 
 		auto btns = StrafeButtons();
 		bool usingButtons = (sscanf(tas_strafe_buttons.GetString(), "%hhu %hhu %hhu %hhu", &btns.AirLeft, &btns.AirRight, &btns.GroundLeft, &btns.GroundRight) == 4);
@@ -646,7 +675,10 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		}
 
 		Friction(pl, onground, vars);
-		Strafe(pl, vars, onground, jumped, ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING), tas_strafe_yaw.GetFloat(), va[YAW] * M_DEG2RAD, out, reduceWishspeed, btns, usingButtons);
+
+		auto type = static_cast<StrafeType>(tas_strafe_type.GetInt());
+		auto dir = static_cast<StrafeDir>(tas_strafe_dir.GetInt());
+		Strafe(pl, vars, onground, jumped, ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, btns, usingButtons);
 
 		//EngineDevMsg("[Strafing] Yaw = %.8f\n", out.Yaw);
 

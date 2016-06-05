@@ -419,7 +419,7 @@ void __fastcall ServerDLL::HOOKED_AirAccelerate_Func(void* thisptr, int edx, Vec
 	const double M_RAD2DEG = 180 / M_PI;
 
 	CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
-	DevMsg("[AA Pre ] velocity: %.8f %.8f\n", mv->m_vecVelocity.x, mv->m_vecVelocity.y);
+	DevMsg("[AA Pre ] velocity: %.8f %.8f %.8f\n", mv->m_vecVelocity.x, mv->m_vecVelocity.y, mv->m_vecVelocity.z);
 	DevMsg("[AA Pre ] speed = %.8f; wishspeed = %.8f; accel = %.8f; wishdir = %.8f; surface friction = %.8f\n", mv->m_vecVelocity.Length2D(), wishspeed, accel, atan2(wishdir->y, wishdir->x) * M_RAD2DEG, *(float*)(*(uintptr_t*)((uintptr_t)thisptr + 4) + 3812));
 
 	ORIG_AirAccelerate(thisptr, edx, wishdir, wishspeed, accel);

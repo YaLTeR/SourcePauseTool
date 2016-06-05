@@ -10,10 +10,15 @@ extern ConVar y_spt_stucksave;
 extern ConVar y_spt_pause_demo_on_tick;
 
 extern ConVar tas_strafe;
+extern ConVar tas_strafe_type;
+extern ConVar tas_strafe_dir;
 extern ConVar tas_strafe_yaw;
 extern ConVar tas_strafe_buttons;
+
 extern ConVar tas_force_airaccelerate;
 extern ConVar tas_force_wishspeed_cap;
+extern ConVar tas_reset_surface_friction;
+
 extern ConVar tas_log;
 //extern ConVar tas_strafe_lgagst;
 //extern ConVar tas_strafe_lgagst_minspeed;

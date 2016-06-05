@@ -9,6 +9,7 @@
 
 #include "cdll_int.h"
 #include "engine\iserverplugin.h"
+#include "eiface.h"
 #include "tier2\tier2.h"
 
 #include "tier0\memdbgoff.h" // YaLTeR - switch off the memory debugging.
@@ -21,6 +22,7 @@ inline bool FStrEq( const char *sz1, const char *sz2 )
 
 // Interfaces from the engine
 IVEngineClient *engine = nullptr;
+IVEngineServer *engine_server = nullptr;
 void *gm = nullptr;
 
 // For OE CVar and ConCommand registering.
@@ -83,6 +85,18 @@ void DefaultFOVChangeCallback(ConVar *var, char const *pOldString)
 		//Msg("Attempted to change default_fov from 90 to 75. Preventing.\n");
 		var->SetValue("90");
 	}
+}
+
+IServerUnknown* GetServerPlayer()
+{
+	if (!engine_server)
+		return nullptr;
+
+	auto edict = engine_server->PEntityOfEntIndex(1);
+	if (!edict)
+		return nullptr;
+
+	return edict->GetUnknown();
 }
 
 //
@@ -151,11 +165,18 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 
 		if (GetFileName(string_converter.from_bytes(engine->GetGameDirectory())) == L"portal"s)
 		{
-			DevMsg("This game looks like portal. Setting the tas_force* cvars appropriately.\n");
+			DevMsg("SPT: This game looks like portal. Setting the tas_* cvars appropriately.\n");
 
 			tas_force_airaccelerate.SetValue(15);
 			tas_force_wishspeed_cap.SetValue(60);
+			tas_reset_surface_friction.SetValue(0);
 		}
+	}
+
+	engine_server = (IVEngineServer*)interfaceFactory(INTERFACEVERSION_VENGINESERVER, NULL);
+	if (!engine_server)
+	{
+		DevWarning("SPT: Failed to get the IVEngineServer interface.\n");
 	}
 
 	EngineConCmd = CallServerCommand;
