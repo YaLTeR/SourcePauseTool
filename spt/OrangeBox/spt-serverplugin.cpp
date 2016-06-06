@@ -118,6 +118,11 @@ bool DoesGameLookLikePortal()
 	return false;
 }
 
+bool FoundEngineServer()
+{
+	return (engine_server != nullptr);
+}
+
 //
 // The plugin is a static singleton that is exported as an interface
 //

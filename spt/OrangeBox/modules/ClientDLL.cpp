@@ -209,6 +209,12 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			offForwardmove = 24;
 			offSidemove = 28;
 			break;
+
+		case 1:
+			offM_pCommands = 196;
+			offForwardmove = 24;
+			offSidemove = 28;
+			break;
 		}
 	}
 	else
@@ -241,6 +247,17 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			offServerPreviouslyPredictedOrigin = 3692;
 			offServerAbsOrigin = 580;
 			break;
+
+		case 1:
+			offMaxspeed = 4076;
+			offFlags = 732;
+			offAbsVelocity = 244;
+			offDucking = 3489;
+			offDuckJumpTime = 3496;
+			offServerSurfaceFriction = 3752;
+			offServerPreviouslyPredictedOrigin = 3628;
+			offServerAbsOrigin = 580;
+			break;
 		}
 	} else
 	{
@@ -263,23 +280,35 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	ptnNumber = fMiddleOfCAM_Think.get();
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
-		GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 29) + pMiddleOfCAM_Think + 33);
-		EngineDevMsg("[client dll] Found the GetLocalPlayer pattern at %p (using the build %s pattern).\n", pMiddleOfCAM_Think, Patterns::ptnsMiddleOfCAM_Think[ptnNumber].build.c_str());
-		EngineDevMsg("[client dll] Found GetLocalPlayer at %p.\n", GetLocalPlayer);
-
 		switch (ptnNumber) {
 		case 0:
+			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 29) + pMiddleOfCAM_Think + 33);
+			break;
+
+		case 1:
+			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 30) + pMiddleOfCAM_Think + 34);
 			break;
 		}
-	} else
+
+		EngineDevMsg("[client dll] Found the GetLocalPlayer pattern at %p (using the build %s pattern).\n", pMiddleOfCAM_Think, Patterns::ptnsMiddleOfCAM_Think[ptnNumber].build.c_str());
+		EngineDevMsg("[client dll] Found GetLocalPlayer at %p.\n", GetLocalPlayer);
+	}
+	else
 	{
 		EngineDevWarning("[client dll] Could not find the GetLocalPlayer pattern.\n");
 	}
 
+	extern bool FoundEngineServer();
 	if (ORIG_CreateMove
 		&& GetGroundEntity
 		&& CalcAbsoluteVelocity
-		&& GetLocalPlayer)
+		&& GetLocalPlayer
+		&& _sv_airaccelerate
+		&& _sv_accelerate
+		&& _sv_friction
+		&& _sv_maxspeed
+		&& _sv_stopspeed
+		&& FoundEngineServer())
 	{
 		tasAddressesWereFound = true;
 
