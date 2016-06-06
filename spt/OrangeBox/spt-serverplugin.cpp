@@ -14,6 +14,8 @@
 
 #include "tier0\memdbgoff.h" // YaLTeR - switch off the memory debugging.
 
+using namespace std::literals;
+
 // useful helper func
 inline bool FStrEq( const char *sz1, const char *sz2 )
 {
@@ -99,6 +101,23 @@ IServerUnknown* GetServerPlayer()
 	return edict->GetUnknown();
 }
 
+bool DoesGameLookLikePortal()
+{
+	if (g_pCVar) {
+		if (g_pCVar->FindCommand("upgrade_portalgun"))
+			return true;
+
+		return false;
+	}
+
+	if (engine) {
+		auto game_dir = engine->GetGameDirectory();
+		return (GetFileName(string_converter.from_bytes(game_dir)) == L"portal"s);
+	}
+
+	return false;
+}
+
 //
 // The plugin is a static singleton that is exported as an interface
 //
@@ -159,18 +178,14 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		Warning("SPT: _y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
 		Warning("SPT: y_spt_stucksave has no effect.\n");
 	}
-	else
+
+	if (DoesGameLookLikePortal())
 	{
-		using namespace std::literals;
+		DevMsg("SPT: This game looks like portal. Setting the tas_* cvars appropriately.\n");
 
-		if (GetFileName(string_converter.from_bytes(engine->GetGameDirectory())) == L"portal"s)
-		{
-			DevMsg("SPT: This game looks like portal. Setting the tas_* cvars appropriately.\n");
-
-			tas_force_airaccelerate.SetValue(15);
-			tas_force_wishspeed_cap.SetValue(60);
-			tas_reset_surface_friction.SetValue(0);
-		}
+		tas_force_airaccelerate.SetValue(15);
+		tas_force_wishspeed_cap.SetValue(60);
+		tas_reset_surface_friction.SetValue(0);
 	}
 
 	engine_server = (IVEngineServer*)interfaceFactory(INTERFACEVERSION_VENGINESERVER, NULL);
