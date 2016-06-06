@@ -132,10 +132,10 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 
 	gm = gameServerFactory(INTERFACENAME_GAMEMOVEMENT, NULL);
 	if (gm) {
-		DevMsg("Found IGameMovement at %p.\n", gm);
+		DevMsg("SPT: Found IGameMovement at %p.\n", gm);
 	} else {
-		DevWarning("Could not find IGameMovement.\n");
-		DevWarning("ProcessMovement logging with tas_log is unavaliable.\n");
+		DevWarning("SPT: Could not find IGameMovement.\n");
+		DevWarning("SPT: ProcessMovement logging with tas_log is unavaliable.\n");
 	}
 
 	if (!g_pCVar)
