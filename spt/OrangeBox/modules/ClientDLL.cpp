@@ -311,9 +311,6 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		&& FoundEngineServer())
 	{
 		tasAddressesWereFound = true;
-
-		EngineWarning("The TAS functionality in this build works correctly only in Portal.\n"
-					  "It may appear to work correctly in other games but this is not the case.\n");
 	}
 	else
 	{
