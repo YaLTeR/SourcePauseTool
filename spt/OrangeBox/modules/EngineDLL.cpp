@@ -349,6 +349,8 @@ bool __cdecl EngineDLL::HOOKED_SV_ActivateServer_Func()
 	if (_y_spt_afterframes_reset_on_server_activate.GetBool())
 		clientDLL.ResetAfterframesQueue();
 
+	clientDLL.DecrementAfterframesPauseState();
+
 	return result;
 }
 
@@ -366,7 +368,7 @@ void __fastcall EngineDLL::HOOKED_FinishRestore_Func(void* thisptr, int edx)
 
 	ORIG_FinishRestore(thisptr, edx);
 
-	clientDLL.ResumeAfterframesQueue();
+	clientDLL.DecrementAfterframesPauseState();
 }
 
 void __fastcall EngineDLL::HOOKED_SetPaused_Func(void* thisptr, int edx, bool paused)

@@ -386,7 +386,7 @@ void ClientDLL::Clear()
 	tasAddressesWereFound = false;
 
 	afterframesQueue.clear();
-	afterframesPaused = false;
+	afterframesPauseState = 0;
 
 	duckspam = false;
 
@@ -410,22 +410,20 @@ void ClientDLL::ResetAfterframesQueue()
 
 void ClientDLL::OnFrame()
 {
-	if (afterframesPaused)
+	if (!afterframesPauseState)
 	{
-		return;
-	}
-
-	for (auto it = afterframesQueue.begin(); it != afterframesQueue.end(); )
-	{
-		it->framesLeft--;
-		if (it->framesLeft <= 0)
+		for (auto it = afterframesQueue.begin(); it != afterframesQueue.end(); )
 		{
-			EngineConCmd(it->command.c_str());
-			it = afterframesQueue.erase(it);
+			it->framesLeft--;
+			if (it->framesLeft <= 0)
+			{
+				EngineConCmd(it->command.c_str());
+				it = afterframesQueue.erase(it);
+			}
+			else
+				++it;
 		}
-		else
-			++it;
-	}
+	}	
 
 	if (engineDLL.Demo_IsPlayingBack() && !engineDLL.Demo_IsPlaybackPaused())
 	{

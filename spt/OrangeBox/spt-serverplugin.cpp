@@ -288,12 +288,18 @@ CON_COMMAND(_y_spt_afterframes2, "Add everything after count as a command into t
 
 CON_COMMAND(_y_spt_afterframes_await_load, "Pause reading from the afterframes queue until the next load or changelevel. Useful for writing scripts spanning multiple maps or save-load segments.")
 {
-	clientDLL.PauseAfterframesQueue();
+	clientDLL.SetAfterframesPauseState(2);
+}
+
+CON_COMMAND(_y_spt_afterframes_await_activate, "Pause reading from the afterframes queue until the next server activation. Similar to await_load except occurs early during the load. May be useful for recording a demo, or for specific rare occasions where early control is required.")
+{
+	clientDLL.SetAfterframesPauseState(1);
 }
 
 CON_COMMAND(_y_spt_afterframes_reset, "Reset the afterframes queue.")
 {
 	clientDLL.ResetAfterframesQueue();
+	clientDLL.SetAfterframesPauseState(0);
 }
 
 CON_COMMAND(y_spt_cvar, "CVar manipulation.")
