@@ -103,6 +103,7 @@ IServerUnknown* GetServerPlayer()
 
 bool DoesGameLookLikePortal()
 {
+#ifndef OE
 	if (g_pCVar) {
 		if (g_pCVar->FindCommand("upgrade_portalgun"))
 			return true;
@@ -114,6 +115,7 @@ bool DoesGameLookLikePortal()
 		auto game_dir = engine->GetGameDirectory();
 		return (GetFileName(string_converter.from_bytes(game_dir)) == L"portal"s);
 	}
+#endif
 
 	return false;
 }
