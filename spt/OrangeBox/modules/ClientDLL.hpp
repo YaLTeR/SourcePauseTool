@@ -89,7 +89,9 @@ protected:
 	ptrdiff_t offDuckJumpTime;
 	ptrdiff_t offServerSurfaceFriction;
 	ptrdiff_t offServerPreviouslyPredictedOrigin;
+public:
 	ptrdiff_t offServerAbsOrigin;
+protected:
 	uintptr_t pCmd;
 
 	bool tasAddressesWereFound;
