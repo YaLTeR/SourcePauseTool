@@ -597,6 +597,9 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		auto onground = (GetGroundEntity(player, 0) != NULL); // TODO: This should really be a proper check.
 		auto maxspeed = *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offMaxspeed);
 
+		if (tas_force_onground.GetBool())
+			onground = true;
+
 		auto vars = MovementVars();
 		vars.Accelerate = _sv_accelerate->GetFloat();
 

@@ -26,6 +26,8 @@ ConVar tas_force_airaccelerate("tas_force_airaccelerate", "", 0, "Sets the value
 ConVar tas_force_wishspeed_cap("tas_force_wishspeed_cap", "", 0, "Sets the value of the wishspeed cap used in TAS calculations. If empty, uses the default value: 30.\n\nShould be set to 60 for Portal.\n");
 ConVar tas_reset_surface_friction("tas_reset_surface_friction", "1", 0, "If enabled, the surface friction is assumed to be reset in the beginning of CategorizePosition().\n\nShould be set to 0 for Portal.\n");
 
+ConVar tas_force_onground("tas_force_onground", "0", 0, "If enabled, strafing assumes the player is on ground regardless of what the prediction indicates. Useful for save glitch in Portal where the prediction always reports the player being in the air.\n");
+
 ConVar tas_log("tas_log", "0", 0, "If enabled, dumps a whole bunch of different stuff into the console.\n");
 //ConVar tas_strafe_lgagst("tas_strafe_lgagst", "1");
 //ConVar tas_strafe_lgagst_minspeed("tas_strafe_lgagst_minspeed", "30");
