@@ -42,6 +42,11 @@ void __fastcall ServerDLL::HOOKED_ProcessMovement(void* thisptr, int edx, void* 
 	return serverDLL.HOOKED_ProcessMovement_Func(thisptr, edx, pPlayer, pMove);
 }
 
+float __fastcall ServerDLL::HOOKED_TraceFirePortal(void* thisptr, int edx, bool bPortal2, const Vector& vTraceStart, const Vector& vDirection, trace_t& tr, Vector& vFinalPosition, QAngle& qFinalAngles, int iPlacedBy, bool bTest)
+{
+	return serverDLL.HOOKED_TraceFirePortal_Func(thisptr, edx, bPortal2, vTraceStart, vDirection, tr, vFinalPosition, qFinalAngles, iPlacedBy, bTest);
+}
+
 void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.
@@ -237,11 +242,18 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineDevMsg("[server dll] Hooked ProcessMovement through the vftable.\n");
 	}
 
+	// TODO: remove fixed offsets.
+	SnapEyeAngles = reinterpret_cast<_SnapEyeAngles>(moduleStart + 0x1B92F0);
+	FirePortal = reinterpret_cast<_FirePortal>(moduleStart + 0x442090);
+	GetActiveWeapon = reinterpret_cast<_GetActiveWeapon>(moduleStart + 0xCCE90);
+	ORIG_TraceFirePortal = reinterpret_cast<_TraceFirePortal>(moduleStart + 0x441730);
+
 	DetoursUtils::AttachDetours(moduleName, {
 		{ (PVOID *)(&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
 		{ (PVOID *)(&ORIG_FinishGravity), HOOKED_FinishGravity },
 		{ (PVOID *)(&ORIG_PlayerRunCommand), HOOKED_PlayerRunCommand },
-		{ (PVOID *)(&ORIG_CheckStuck), HOOKED_CheckStuck }
+		{ (PVOID *)(&ORIG_CheckStuck), HOOKED_CheckStuck },
+		{ (PVOID *)(&ORIG_TraceFirePortal), HOOKED_TraceFirePortal }
 	});
 }
 
@@ -260,7 +272,8 @@ void ServerDLL::Unhook()
 		{ (PVOID *)(&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
 		{ (PVOID *)(&ORIG_FinishGravity), HOOKED_FinishGravity },
 		{ (PVOID *)(&ORIG_PlayerRunCommand), HOOKED_PlayerRunCommand },
-		{ (PVOID *)(&ORIG_CheckStuck), HOOKED_CheckStuck }
+		{ (PVOID *)(&ORIG_CheckStuck), HOOKED_CheckStuck },
+		{ (PVOID *)(&ORIG_TraceFirePortal), HOOKED_TraceFirePortal }
 	});
 
 	Clear();
@@ -446,4 +459,14 @@ void __fastcall ServerDLL::HOOKED_ProcessMovement_Func(void* thisptr, int edx, v
 		EngineDevMsg("[ProcessMovement POST] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
 			mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z,
 			mv->m_vecVelocity.x, mv->m_vecVelocity.y, mv->m_vecVelocity.z);
+}
+
+float __fastcall ServerDLL::HOOKED_TraceFirePortal_Func(void* thisptr, int edx, bool bPortal2, const Vector& vTraceStart, const Vector& vDirection, trace_t& tr, Vector& vFinalPosition, QAngle& qFinalAngles, int iPlacedBy, bool bTest)
+{
+	const auto rv = ORIG_TraceFirePortal(thisptr, edx, bPortal2, vTraceStart, vDirection, tr, vFinalPosition, qFinalAngles, iPlacedBy, bTest);
+
+	lastTraceFirePortalDistanceSq = (vFinalPosition - vTraceStart).LengthSqr();
+	lastTraceFirePortalNormal = tr.plane.normal;
+
+	return rv;
 }

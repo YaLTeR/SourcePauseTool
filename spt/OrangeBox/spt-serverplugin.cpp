@@ -541,6 +541,8 @@ CON_COMMAND(y_spt_timer_print, "Prints the current time of the SPT timer.")
 }
 
 #if !OE && !SSDK2013
+// TODO: remove fixed offsets.
+
 #undef GetClassName
 CON_COMMAND(y_spt_find_portals, "Yes")
 {
@@ -649,5 +651,98 @@ CON_COMMAND(y_spt_calc_relative_position, "y_spt_calc_relative_position <index o
 
 		engine->ClientCmd(buf);
 	}
+}
+
+#undef max
+void setang_exact(const QAngle& angles)
+{
+	auto player = GetServerPlayer();
+	auto teleport = reinterpret_cast<void (__fastcall *)(void*, int, const Vector*, const QAngle*, const Vector*)>((*reinterpret_cast<uintptr_t**>(player))[105]);
+
+	teleport(player, 0, nullptr, &angles, nullptr);
+	serverDLL.SnapEyeAngles(player, 0, angles);
+}
+
+// Trace as if we were firing a Portal with the given viewangles, return the squared distance to the resulting point and the normal.
+double trace_fire_portal(QAngle angles, Vector& normal)
+{
+	setang_exact(angles);
+
+	serverDLL.FirePortal(serverDLL.GetActiveWeapon(GetServerPlayer()), 0, false, nullptr, true);
+
+	normal = serverDLL.lastTraceFirePortalNormal;
+	return serverDLL.lastTraceFirePortalDistanceSq;
+}
+
+QAngle firstAngle;
+bool firstInvocation = true;
+
+CON_COMMAND(y_spt_find_seam_shot, "y_spt_find_seam_shot [<pitch1> <yaw1> <pitch2> <yaw2> <epsilon>] - tries to find a seam shot on a \"line\" between viewangles (pitch1; yaw1) and (pitch2; yaw2) with binary search. Decreasing epsilon will result in more viewangles checked. A default value is 0.00001. If no arguments are given, first invocation selects the first point, second invocation selects the second point and searches between them.")
+{
+	QAngle a, b;
+	double eps = 0.00001 * 0.00001;
+
+	if (args.ArgC() == 1) {
+		if (firstInvocation) {
+			engine->GetViewAngles(firstAngle);
+			firstInvocation = !firstInvocation;
+
+			Msg("First point set.\n");
+			return;
+		} else {
+			firstInvocation = !firstInvocation;
+
+			a = firstAngle;
+			engine->GetViewAngles(b);
+		}
+	} else {
+		if (args.ArgC() != 5 && args.ArgC() != 6) {
+			Msg("Usage: y_spt_find_seam_shot <pitch1> <yaw1> <pitch2> <yaw2> <epsilon> - tries to find a seam shot on a \"line\" between viewangles (pitch1; yaw1) and (pitch2; yaw2) with binary search. Decreasing epsilon will result in more viewangles checked. A default value is 0.00001. If no arguments are given, first invocation selects the first point, second invocation selects the second point and searches between them.\n");
+			return;
+		}
+
+		a = QAngle(atof(args.Arg(1)), atof(args.Arg(2)), 0);
+		b = QAngle(atof(args.Arg(3)), atof(args.Arg(4)), 0);
+		eps = (args.ArgC() == 5) ? eps : std::pow(atof(args.Arg(5)), 2);
+	}
+
+	if (!serverDLL.GetActiveWeapon(GetServerPlayer())) {
+		Msg("You need to be holding a portal gun.\n");
+		return;
+	}
+
+	Vector a_normal;
+	const auto distance = std::max(trace_fire_portal(a, a_normal), trace_fire_portal(b, Vector()));
+
+	// If our trace had a distance greater than the a or b distance by this amount, treat it as a seam shot.
+	constexpr double GOOD_DISTANCE_DIFFERENCE = 50.0 * 50.0;
+
+	QAngle test = a + (b - a) / 2;
+	double difference;
+
+	do {
+		Vector test_normal;
+
+		if (trace_fire_portal(test, test_normal) - distance > GOOD_DISTANCE_DIFFERENCE) {
+			Msg("Found a seam shot at setang %.8f %.8f 0\n", test.x, test.y);
+			return;
+		}
+
+		if (test_normal == a_normal) {
+			a = test;
+			test += (b - a) / 2;
+
+			difference = (test - a).LengthSqr();
+		} else {
+			b = test;
+			test += (a - b) / 2;
+
+			difference = (test - b).LengthSqr();
+		}
+
+		Msg("Difference: %.8f\n", std::sqrt(difference));
+	} while (difference > eps);
+
+	Msg("Could not find a seam shot. Best guess: setang %.8f %.8f 0\n", test.x, test.y);
 }
 #endif
