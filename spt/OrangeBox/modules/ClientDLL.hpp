@@ -57,8 +57,11 @@ public:
 	void AddIntoAfterframesQueue(const afterframes_entry_t& entry);
 	void ResetAfterframesQueue();
 
-	void PauseAfterframesQueue() { afterframesPaused = true; }
-	void ResumeAfterframesQueue() { afterframesPaused = false; }
+	// The pause state is decremented at each loading stage. It must reach 0 for the afterframes queue to resume.
+	// Therefore, we set the state to 1 to unpause on ActivateServer, and 2 to unpause on FinishRestore
+	// (as FinishRestore comes last so requires the highest starting value).
+	void SetAfterframesPauseState(int state) { afterframesPauseState = state; }
+	void DecrementAfterframesPauseState() { if (afterframesPauseState > 0) afterframesPauseState--; }
 
 	void EnableDuckspam()  { duckspam = true; }
 	void DisableDuckspam() { duckspam = false; }
@@ -97,7 +100,7 @@ protected:
 	bool tasAddressesWereFound;
 
 	std::vector<afterframes_entry_t> afterframesQueue;
-	bool afterframesPaused = false;
+	unsigned int afterframesPauseState = 0;
 
 	bool duckspam;
 	angset_command_t setPitch, setYaw;
