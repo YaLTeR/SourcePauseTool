@@ -180,7 +180,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	ConVar_Register(0);
 #endif
 
-	engine = (IVEngineClient*)interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION_13, NULL);
+	engine = (IVEngineClient*)interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION, NULL);
 	if (!engine)
 	{
 		DevWarning("SPT: Failed to get the IVEngineClient interface.\n");
