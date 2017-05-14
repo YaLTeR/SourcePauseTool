@@ -180,7 +180,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	ConVar_Register(0);
 #endif
 
-	engine = (IVEngineClient*)interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION, NULL);
+	engine = (IVEngineClient*)interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION_13, NULL);
 	if (!engine)
 	{
 		DevWarning("SPT: Failed to get the IVEngineClient interface.\n");
@@ -243,6 +243,22 @@ void CSourcePauseTool::Unload( void )
 const char *CSourcePauseTool::GetPluginDescription( void )
 {
 	return "SourcePauseTool v" SPT_VERSION ", Ivan \"YaLTeR\" Molodetskikh";
+}
+
+CON_COMMAND(_y_spt_afterframes_wait, "Delays the afterframes queue. Usage: _y_spt_afterframes_wait <delay>")
+{
+	if (!engine)
+		return;
+
+	if (args.ArgC() != 2)
+	{
+		Msg("Usage: _y_spt_afterframes_wait <delay>\n");
+		return;
+	}
+
+	int delay = std::stoi(args.Arg(1));
+
+	clientDLL.DelayAfterframesQueue(delay);
 }
 
 CON_COMMAND(_y_spt_afterframes, "Add a command into an afterframes queue. Usage: _y_spt_afterframes <count> <command>")
