@@ -245,6 +245,22 @@ const char *CSourcePauseTool::GetPluginDescription( void )
 	return "SourcePauseTool v" SPT_VERSION ", Ivan \"YaLTeR\" Molodetskikh";
 }
 
+CON_COMMAND(_y_spt_afterframes_wait, "Delays the afterframes queue. Usage: _y_spt_afterframes_wait <delay>")
+{
+	if (!engine)
+		return;
+
+	if (args.ArgC() != 2)
+	{
+		Msg("Usage: _y_spt_afterframes_wait <delay>\n");
+		return;
+	}
+
+	int delay = std::stoi(args.Arg(1));
+
+	clientDLL.DelayAfterframesQueue(delay);
+}
+
 CON_COMMAND(_y_spt_afterframes, "Add a command into an afterframes queue. Usage: _y_spt_afterframes <count> <command>")
 {
 	if (!engine)

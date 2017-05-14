@@ -54,6 +54,7 @@ public:
 	void __fastcall HOOKED_CreateMove_Func(void* thisptr, int edx, int sequence_number, float input_sample_frametime, bool active);
 	void __fastcall HOOKED_CViewRender__OnRenderStart_Func(void* thisptr, int edx);
 
+	void DelayAfterframesQueue(int delay);
 	void AddIntoAfterframesQueue(const afterframes_entry_t& entry);
 	void ResetAfterframesQueue();
 
@@ -104,4 +105,6 @@ protected:
 	bool forceJump;
 
 	void OnFrame();
+
+	int afterframesDelay;
 };
