@@ -398,6 +398,11 @@ void ClientDLL::Clear()
 	//cantJumpNextTime = false;
 }
 
+void ClientDLL::DelayAfterframesQueue(int delay)
+{
+	afterframesDelay = delay;
+}
+
 void ClientDLL::AddIntoAfterframesQueue(const afterframes_entry_t& entry)
 {
 	afterframesQueue.push_back(entry);
@@ -411,6 +416,11 @@ void ClientDLL::ResetAfterframesQueue()
 void ClientDLL::OnFrame()
 {
 	if (afterframesPaused)
+	{
+		return;
+	}
+
+	if (afterframesDelay-- > 0)
 	{
 		return;
 	}
