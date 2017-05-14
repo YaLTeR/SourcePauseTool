@@ -21,9 +21,9 @@
 using namespace std::literals;
 
 // useful helper func
-inline bool FStrEq( const char *sz1, const char *sz2 )
+inline bool FStrEq(const char *sz1, const char *sz2)
 {
-	return(Q_stricmp( sz1, sz2 ) == 0);
+	return(Q_stricmp(sz1, sz2) == 0);
 }
 
 // Interfaces from the engine
@@ -133,9 +133,9 @@ bool FoundEngineServer()
 // The plugin is a static singleton that is exported as an interface
 //
 CSourcePauseTool g_SourcePauseTool;
-EXPOSE_SINGLE_INTERFACE_GLOBALVAR( CSourcePauseTool, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, g_SourcePauseTool );
+EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CSourcePauseTool, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, g_SourcePauseTool);
 
-bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory )
+bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory)
 {
 	auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -144,7 +144,8 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	gm = gameServerFactory(INTERFACENAME_GAMEMOVEMENT, NULL);
 	if (gm) {
 		DevMsg("SPT: Found IGameMovement at %p.\n", gm);
-	} else {
+	}
+	else {
 		DevWarning("SPT: Could not find IGameMovement.\n");
 		DevWarning("SPT: ProcessMovement logging with tas_log is unavaliable.\n");
 	}
@@ -229,7 +230,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	return true;
 }
 
-void CSourcePauseTool::Unload( void )
+void CSourcePauseTool::Unload(void)
 {
 	Hooks::getInstance().Free();
 
@@ -240,7 +241,7 @@ void CSourcePauseTool::Unload( void )
 	DisconnectTier1Libraries();
 }
 
-const char *CSourcePauseTool::GetPluginDescription( void )
+const char *CSourcePauseTool::GetPluginDescription(void)
 {
 	return "SourcePauseTool v" SPT_VERSION ", Ivan \"YaLTeR\" Molodetskikh";
 }
@@ -355,7 +356,7 @@ CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 		{
 			Msg("Max: %f\n", val);
 		}
-		
+
 		const char *helpText = cvar->GetHelpText();
 		if (helpText[0] != '\0')
 			Msg("- %s\n", cvar->GetHelpText());
@@ -401,7 +402,7 @@ CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of 
 		{
 			Msg("Max: %f\n", val);
 		}
-		
+
 		const char *helpText = cvar->GetHelpText();
 		if (helpText[0] != '\0')
 			Msg("- %s\n", cvar->GetHelpText());
@@ -449,7 +450,7 @@ CON_COMMAND(_y_spt_setpitch, "Sets the pitch. Usage: _y_spt_setpitch <pitch>")
 		return;
 	}
 
-	clientDLL.SetPitch( atof(args.Arg(1)) );
+	clientDLL.SetPitch(atof(args.Arg(1)));
 }
 
 CON_COMMAND(_y_spt_setyaw, "Sets the yaw. Usage: _y_spt_setyaw <yaw>")
@@ -467,7 +468,7 @@ CON_COMMAND(_y_spt_setyaw, "Sets the yaw. Usage: _y_spt_setyaw <yaw>")
 		return;
 	}
 
-	clientDLL.SetYaw( atof(args.Arg(1)) );
+	clientDLL.SetYaw(atof(args.Arg(1)));
 }
 
 CON_COMMAND(_y_spt_setangles, "Sets the angles. Usage: _y_spt_setangles <pitch> <yaw>")
@@ -484,9 +485,9 @@ CON_COMMAND(_y_spt_setangles, "Sets the angles. Usage: _y_spt_setangles <pitch> 
 		Msg("Usage: _y_spt_setangles <pitch> <yaw>\n");
 		return;
 	}
-	
-	clientDLL.SetPitch( atof(args.Arg(1)) );
-	clientDLL.SetYaw( atof(args.Arg(2)) );
+
+	clientDLL.SetPitch(atof(args.Arg(1)));
+	clientDLL.SetYaw(atof(args.Arg(2)));
 }
 
 CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
@@ -504,7 +505,7 @@ CON_COMMAND(_y_spt_getangles, "Gets the view angles of the player.")
 
 	QAngle va;
 	engine->GetViewAngles(va);
-	
+
 	Warning("View Angle (x): %f\n", va.x);
 	Warning("View Angle (y): %f\n", va.y);
 	Warning("View Angle (z): %f\n", va.z);
@@ -527,7 +528,7 @@ CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [t
 		break;
 
 	case 2:
-		engineDLL.SetTickrate( atof(args.Arg(1)) );
+		engineDLL.SetTickrate(atof(args.Arg(1)));
 		break;
 
 	default:
@@ -634,10 +635,12 @@ CON_COMMAND(y_spt_calc_relative_position, "y_spt_calc_relative_position <index o
 			}
 
 			return;
-		} else if (indices.size() == 0) {
+		}
+		else if (indices.size() == 0) {
 			Msg("There are no %s portals.\n", args.Arg(1));
 			return;
-		} else {
+		}
+		else {
 			portal_index = indices[0];
 		}
 	}
@@ -658,7 +661,8 @@ CON_COMMAND(y_spt_calc_relative_position, "y_spt_calc_relative_position <index o
 			new_player_origin.x, new_player_origin.y, new_player_origin.z,
 			new_player_angles.x, new_player_angles.y, new_player_angles.z
 		);
-	} else {
+	}
+	else {
 		char buf[256];
 		snprintf(buf, ARRAYSIZE(buf), "setpos %.8f %.8f %.8f;setang %.8f %.8f %.8f\n",
 			new_player_origin.x, new_player_origin.y, new_player_origin.z,
@@ -673,7 +677,7 @@ CON_COMMAND(y_spt_calc_relative_position, "y_spt_calc_relative_position <index o
 void setang_exact(const QAngle& angles)
 {
 	auto player = GetServerPlayer();
-	auto teleport = reinterpret_cast<void (__fastcall *)(void*, int, const Vector*, const QAngle*, const Vector*)>((*reinterpret_cast<uintptr_t**>(player))[105]);
+	auto teleport = reinterpret_cast<void(__fastcall *)(void*, int, const Vector*, const QAngle*, const Vector*)>((*reinterpret_cast<uintptr_t**>(player))[105]);
 
 	teleport(player, 0, nullptr, &angles, nullptr);
 	serverDLL.SnapEyeAngles(player, 0, angles);
@@ -705,13 +709,15 @@ CON_COMMAND(y_spt_find_seam_shot, "y_spt_find_seam_shot [<pitch1> <yaw1> <pitch2
 
 			Msg("First point set.\n");
 			return;
-		} else {
+		}
+		else {
 			firstInvocation = !firstInvocation;
 
 			a = firstAngle;
 			engine->GetViewAngles(b);
 		}
-	} else {
+	}
+	else {
 		if (args.ArgC() != 5 && args.ArgC() != 6) {
 			Msg("Usage: y_spt_find_seam_shot <pitch1> <yaw1> <pitch2> <yaw2> <epsilon> - tries to find a seam shot on a \"line\" between viewangles (pitch1; yaw1) and (pitch2; yaw2) with binary search. Decreasing epsilon will result in more viewangles checked. A default value is 0.00001. If no arguments are given, first invocation selects the first point, second invocation selects the second point and searches between them.\n");
 			return;
@@ -749,7 +755,8 @@ CON_COMMAND(y_spt_find_seam_shot, "y_spt_find_seam_shot [<pitch1> <yaw1> <pitch2
 			test += (b - a) / 2;
 
 			difference = (test - a).LengthSqr();
-		} else {
+		}
+		else {
 			b = test;
 			test += (a - b) / 2;
 
