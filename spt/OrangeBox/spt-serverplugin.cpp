@@ -21,8 +21,6 @@
 
 using namespace std::literals;
 
-
-
 // useful helper func
 inline bool FStrEq( const char *sz1, const char *sz2 )
 {
