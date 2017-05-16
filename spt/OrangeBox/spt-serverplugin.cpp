@@ -6,6 +6,7 @@
 #include "cvars.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include <SPTLib\Hooks.hpp>
+#include "vstdlib\random.h"
 
 #include "cdll_int.h"
 #include "engine\iserverplugin.h"
@@ -29,6 +30,7 @@ inline bool FStrEq( const char *sz1, const char *sz2 )
 // Interfaces from the engine
 IVEngineClient *engine = nullptr;
 IVEngineServer *engine_server = nullptr;
+IUniformRandomStream* random = nullptr;
 void *gm = nullptr;
 
 // For OE CVar and ConCommand registering.
@@ -205,6 +207,12 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		DevWarning("SPT: Failed to get the IVEngineServer interface.\n");
 	}
 
+	random = (IUniformRandomStream*)interfaceFactory(VENGINE_CLIENT_RANDOM_INTERFACE_VERSION, NULL);
+	if (!random)
+	{
+		DevWarning("SPT: Failed to get the IUniformRandomStream interface.\n");
+	}
+
 	EngineConCmd = CallServerCommand;
 	EngineGetViewAngles = GetViewAngles;
 	EngineSetViewAngles = SetViewAngles;
@@ -365,6 +373,37 @@ CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 
 	const char *value = args.Arg(2);
 	cvar->SetValue(value);
+}
+
+CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
+{
+	if (!engine || !g_pCVar)
+		return;
+
+#if defined( OE )
+	ArgsWrapper args(engine);
+#endif
+
+	if (args.ArgC() != 4)
+	{
+		Msg("Usage: y_spt_cvar_random <name> <min> <max>\n");
+		return;
+	}
+
+	ConVar *cvar = g_pCVar->FindVar(args.Arg(1));
+	if (!cvar)
+	{
+		Warning("Couldn't find the cvar: %s\n", args.Arg(1));
+		return;
+	}
+
+	float min = std::stof(args.Arg(2));
+	float max = std::stof(args.Arg(3));
+
+	float r = random->RandomFloat(min, max);
+
+	const char *value = args.Arg(2);
+	cvar->SetValue(r);
 }
 
 #if !defined( OE )
