@@ -250,6 +250,10 @@ CON_COMMAND(_y_spt_afterframes_wait, "Delays the afterframes queue. Usage: _y_sp
 	if (!engine)
 		return;
 
+#if defined( OE )
+	ArgsWrapper args(engine);
+#endif
+
 	if (args.ArgC() != 2)
 	{
 		Msg("Usage: _y_spt_afterframes_wait <delay>\n");
