@@ -5,6 +5,7 @@ ConVar y_spt_motion_blur_fix("y_spt_motion_blur_fix", "0");
 ConVar y_spt_autojump("y_spt_autojump", "0", FCVAR_ARCHIVE);
 ConVar y_spt_additional_abh("y_spt_additional_abh", "0", FCVAR_ARCHIVE);
 ConVar y_spt_stucksave("y_spt_stucksave", "");
+ConVar y_spt_piwsave("y_spt_piwsave", "");
 ConVar y_spt_pause_demo_on_tick(
 	"y_spt_pause_demo_on_tick",
 	"0",

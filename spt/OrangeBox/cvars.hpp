@@ -7,6 +7,7 @@ extern ConVar y_spt_motion_blur_fix;
 extern ConVar y_spt_autojump;
 extern ConVar y_spt_additional_abh;
 extern ConVar y_spt_stucksave;
+extern ConVar y_spt_piwsave;
 extern ConVar y_spt_pause_demo_on_tick;
 
 extern ConVar tas_strafe;

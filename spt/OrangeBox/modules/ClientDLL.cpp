@@ -10,6 +10,12 @@
 #include <SPTLib\hooks.hpp>
 #include "ClientDLL.hpp"
 
+#if !defined(OE)
+using std::max;
+#define GAME_DLL
+#include "cbase.h"
+#endif
+
 using std::uintptr_t;
 using std::size_t;
 
@@ -415,6 +421,36 @@ void ClientDLL::ResetAfterframesQueue()
 
 void ClientDLL::OnFrame()
 {
+#if !defined(OE)
+	extern int GetEntityCount();
+	extern CBaseEntity* GetEntity(int);
+
+	if (y_spt_piwsave.GetString()[0] != '\0')
+	{
+		int count = GetEntityCount();
+		for (int i = 0; i < count; ++i)
+		{
+			auto ent = GetEntity(i);
+			if (!ent)
+				continue;
+
+			auto phys = ent->VPhysicsGetObject();
+			if (!phys)
+				continue;
+
+			const auto mask = FVPHYSICS_PLAYER_HELD | FVPHYSICS_PENETRATING;
+
+			if ((phys->GetGameFlags() & mask) == mask)
+			{
+				std::ostringstream oss;
+				oss << "save " << y_spt_piwsave.GetString();
+				EngineConCmd(oss.str().c_str());
+				y_spt_piwsave.SetValue("");
+			}
+		}
+	}
+#endif
+
 	if (afterframesPaused)
 	{
 		return;
