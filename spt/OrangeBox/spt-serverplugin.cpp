@@ -1,5 +1,6 @@
 #include <chrono>
 #include <sstream>
+#include <time.h>
 
 #include "spt-serverplugin.hpp"
 #include "modules.hpp"
@@ -427,6 +428,8 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 
 	float min = std::stof(args.Arg(2));
 	float max = std::stof(args.Arg(3));
+
+	random->SetSeed(time(NULL));
 
 	float r = random->RandomFloat(min, max);
 
