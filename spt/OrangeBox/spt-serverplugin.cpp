@@ -22,6 +22,8 @@
 
 using namespace std::literals;
 
+int lastSeed = 0;
+
 // useful helper func
 inline bool FStrEq( const char *sz1, const char *sz2 )
 {
@@ -429,7 +431,13 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 	float min = std::stof(args.Arg(2));
 	float max = std::stof(args.Arg(3));
 
-	random->SetSeed(time(NULL));
+	int t = time(NULL);
+
+	if (lastSeed != t)
+	{
+		random->SetSeed(t);
+		lastSeed = t;
+	}
 
 	float r = random->RandomFloat(min, max);
 

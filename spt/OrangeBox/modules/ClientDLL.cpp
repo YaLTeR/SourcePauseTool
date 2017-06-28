@@ -424,28 +424,43 @@ void ClientDLL::OnFrame()
 #if !defined(OE)
 	extern int GetEntityCount();
 	extern CBaseEntity* GetEntity(int);
-
+	
 	if (y_spt_piwsave.GetString()[0] != '\0')
 	{
-		int count = GetEntityCount();
-		for (int i = 0; i < count; ++i)
+		bool skip = false;
+		auto ply = GetEntity(1);
+		if (ply)
 		{
-			auto ent = GetEntity(i);
-			if (!ent)
-				continue;
+			auto phys = ply->VPhysicsGetObject();
 
-			auto phys = ent->VPhysicsGetObject();
-			if (!phys)
-				continue;
-
-			const auto mask = FVPHYSICS_PLAYER_HELD | FVPHYSICS_PENETRATING;
-
-			if ((phys->GetGameFlags() & mask) == mask)
+			if (phys && phys->GetGameFlags() & FVPHYSICS_PENETRATING)
 			{
-				std::ostringstream oss;
-				oss << "save " << y_spt_piwsave.GetString();
-				EngineConCmd(oss.str().c_str());
-				y_spt_piwsave.SetValue("");
+				skip = true;
+			}
+		}
+		
+		if (!skip)
+		{
+			int count = GetEntityCount();
+			for (int i = 2; i < count; ++i)
+			{
+				auto ent = GetEntity(i);
+				if (!ent)
+					continue;
+
+				auto phys = ent->VPhysicsGetObject();
+				if (!phys)
+					continue;
+
+				const auto mask = FVPHYSICS_PLAYER_HELD | FVPHYSICS_PENETRATING;
+
+				if ((phys->GetGameFlags() & mask) == mask)
+				{
+					std::ostringstream oss;
+					oss << "save " << y_spt_piwsave.GetString();
+					EngineConCmd(oss.str().c_str());
+					y_spt_piwsave.SetValue("");
+				}
 			}
 		}
 	}
