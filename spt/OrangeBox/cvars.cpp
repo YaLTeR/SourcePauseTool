@@ -29,7 +29,7 @@ ConVar tas_reset_surface_friction("tas_reset_surface_friction", "1", 0, "If enab
 ConVar tas_force_onground("tas_force_onground", "0", 0, "If enabled, strafing assumes the player is on ground regardless of what the prediction indicates. Useful for save glitch in Portal where the prediction always reports the player being in the air.\n");
 
 ConVar tas_log("tas_log", "0", 0, "If enabled, dumps a whole bunch of different stuff into the console.\n");
-ConVar tas_strafe_lgagst("tas_strafe_lgagst", "0", 0, "If enabled, only jumped from the ground when it's faster to move in the air. Only recommended in OrangeBox Engine games when _y_spt_glitchless_bhop_enabled = 1.");
+ConVar tas_strafe_lgagst("tas_strafe_lgagst", "0", 0, "If enabled, only jumped from the ground when it's faster to move in the air. Only recommended in OrangeBox Engine games when _y_spt_glitchless_bhop_enabled = 1. /n");
 //ConVar tas_strafe_lgagst_minspeed("tas_strafe_lgagst_minspeed", "30");
 //ConVar tas_strafe_lgagst_fullmaxspeed("tas_strafe_lgagst_fullmaxspeed", "0");
 
