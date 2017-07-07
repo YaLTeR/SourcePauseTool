@@ -22,7 +22,7 @@ extern ConVar tas_reset_surface_friction;
 extern ConVar tas_force_onground;
 
 extern ConVar tas_log;
-//extern ConVar tas_strafe_lgagst;
+extern ConVar tas_strafe_lgagst;
 //extern ConVar tas_strafe_lgagst_minspeed;
 //extern ConVar tas_strafe_lgagst_fullmaxspeed;
 
