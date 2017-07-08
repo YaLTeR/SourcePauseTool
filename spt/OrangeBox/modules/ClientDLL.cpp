@@ -629,10 +629,10 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		else
 			vars.WishspeedCap = 30;
 
-		// Lgagst requires more prediction that is done here for correct operation, so it's commented out.
-		//auto curState = CurrentState();
-		//curState.LgagstMinSpeed = tas_strafe_lgagst_minspeed.GetFloat();
-		//curState.LgagstFullMaxspeed = tas_strafe_lgagst_fullmaxspeed.GetBool();
+		// Lgagst requires more prediction that is done here for correct operation.
+		auto curState = CurrentState();
+		curState.LgagstMinSpeed = tas_strafe_lgagst_minspeed.GetFloat();
+		curState.LgagstFullMaxspeed = tas_strafe_lgagst_fullmaxspeed.GetBool();
 
 		auto pl = PlayerData();
 		CalcAbsoluteVelocity(player, 0);
@@ -698,13 +698,13 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 			}
 
 			if (!cantjump && onground) {
-				//if (tas_strafe_lgagst.GetBool()) {
-				//	LgagstJump(pl, vars, curState, onground, ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING), tas_strafe_yaw.GetFloat(), va[YAW] * M_DEG2RAD, out, reduceWishspeed, btns, false);
-				//	if (out.Jump) {
-				//		onground = false;
-				//		jumped = true;
-				//	}
-				//}
+				if (tas_strafe_lgagst.GetBool()) {
+					LgagstJump(pl, vars, curState, onground, ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING), tas_strafe_yaw.GetFloat(), va[YAW] * M_DEG2RAD, out, reduceWishspeed, btns, false);
+					if (out.Jump) {
+						onground = false;
+						jumped = true;
+					}
+				}
 
 				if (ORIG_GetButtonBits(thisptr, 0, 0) & IN_JUMP) {
 					onground = false;
