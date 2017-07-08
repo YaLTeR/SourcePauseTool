@@ -30,12 +30,10 @@ ConVar tas_force_onground("tas_force_onground", "0", 0, "If enabled, strafing as
 
 ConVar tas_log("tas_log", "0", 0, "If enabled, dumps a whole bunch of different stuff into the console.\n");
 ConVar tas_strafe_lgagst("tas_strafe_lgagst", "0", 0, "If enabled, only jumped from the ground when it's faster to move in the air. Only recommended in OrangeBox Engine games when _y_spt_glitchless_bhop_enabled = 1. /n");
-if (DoesGameLookLikePortal()) {
+if (DoesGameLookLikePortal())
 	ConVar tas_strafe_lgagst_minspeed("tas_strafe_lgagst_minspeed", "50", 0, "Prevents lgagst from operating if your horizontal speed is below this number. Default value is 50, 63.33 for HL2. /n");
-	else {
+	else
 		ConVar tas_strafe_lgagst_minspeed("tas_strafe_lgagst_minspeed", "63.33", 0, "Prevents lgagst from operating if your horizontal speed is below this number. Default value is 63.33, 50 for Portal. /n");
-	}
-}
 ConVar tas_strafe_lgagst_fullmaxspeed("tas_strafe_lgagst_fullmaxspeed", "0", 0, "When enabled, uses the maxspeed to determine if the player is touching the ground. Useful for areas where you land ducked but want to unduck and continue groundstrafing while still standing. /n");
 
 ConVar _y_spt_autojump_ensure_legit("_y_spt_autojump_ensure_legit", "1", FCVAR_ARCHIVE);
