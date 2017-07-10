@@ -42,7 +42,7 @@ ConVar _y_spt_afterframes_reset_on_server_activate("_y_spt_afterframes_reset_on_
 ConVar _y_spt_pitchspeed("_y_spt_pitchspeed", "0");
 ConVar _y_spt_yawspeed("_y_spt_yawspeed", "0");
 ConVar _y_spt_force_90fov("_y_spt_force_90fov", "0");
-ConVar _y_spt_glitchless_bhop_enabled("_y_spt_glitchless_bhop_enabled", "0");
+ConVar _y_spt_glitchless_bhop("_y_spt_glitchless_bhop", "0");
 
 ConVar *_viewmodel_fov = nullptr;
 ConVar *_sv_accelerate = nullptr;
