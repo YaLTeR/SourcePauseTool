@@ -322,7 +322,9 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 {
 	//DevMsg("[Strafing] ducking = %d\n", (int)ducking);
 	if (jumped && player.Velocity.Length2D() >= vars.Maxspeed * ((ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5)) {
-		out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
+		if y_spt_glitchless_bhop_enabled = 1;
+			const Vector vel = serverDLL.GetLastVelocity();
+			out.Yaw = NormalizeDeg(vel.Length2D());
 		out.Forward = false;
 		out.Back = false;
 		out.Right = false;
