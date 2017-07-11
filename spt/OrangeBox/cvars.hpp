@@ -25,13 +25,13 @@ extern ConVar tas_log;
 extern ConVar tas_strafe_lgagst;
 extern ConVar tas_strafe_lgagst_minspeed;
 extern ConVar tas_strafe_lgagst_fullmaxspeed;
+extern ConVar tas_strafe_glitchless;
 
 extern ConVar _y_spt_autojump_ensure_legit;
 extern ConVar _y_spt_afterframes_reset_on_server_activate;
 extern ConVar _y_spt_pitchspeed;
 extern ConVar _y_spt_yawspeed;
 extern ConVar _y_spt_force_90fov;
-extern ConVar _y_spt_glitchless_bhop;
 
 extern ConVar *_viewmodel_fov;
 extern ConVar *_sv_accelerate;
