@@ -36,13 +36,13 @@ else {
 	ConVar tas_strafe_lgagst_minspeed("tas_strafe_lgagst_minspeed", "63.33", 0, "Prevents lgagst from operating if your horizontal speed is below this number. Default value is 63.33, 50 for Portal. /n");
 }
 ConVar tas_strafe_lgagst_fullmaxspeed("tas_strafe_lgagst_fullmaxspeed", "0", 0, "When enabled, uses the maxspeed to determine if the player is touching the ground. Useful for areas where you land ducked but want to unduck and continue groundstrafing while still standing. /n");
-
+ConVar tas_strafe_glitchless("tas_strafe_glitchless", "0", 0, "When set to 1, disables ABH and looks in the exact direction of velocity to prevent any accidental speed gain. Only recommended for use in OrangeBox engine games. /n");
+	
 ConVar _y_spt_autojump_ensure_legit("_y_spt_autojump_ensure_legit", "1", FCVAR_ARCHIVE);
 ConVar _y_spt_afterframes_reset_on_server_activate("_y_spt_afterframes_reset_on_server_activate", "1", FCVAR_ARCHIVE);
 ConVar _y_spt_pitchspeed("_y_spt_pitchspeed", "0");
 ConVar _y_spt_yawspeed("_y_spt_yawspeed", "0");
 ConVar _y_spt_force_90fov("_y_spt_force_90fov", "0");
-ConVar _y_spt_glitchless_bhop("_y_spt_glitchless_bhop", "0");
 
 ConVar *_viewmodel_fov = nullptr;
 ConVar *_sv_accelerate = nullptr;
