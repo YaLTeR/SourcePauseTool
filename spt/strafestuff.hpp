@@ -327,7 +327,7 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 			out.Yaw = NormalizeDeg(double atan2(double vel.y/vel.x));
 		}
 		else {
-			#nif defined ( OE ) {
+			if defined ( OE ) {
 				out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat());
 			}
 			else {
