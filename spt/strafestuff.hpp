@@ -322,23 +322,18 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 {
 	//DevMsg("[Strafing] ducking = %d\n", (int)ducking);
 	if (jumped && player.Velocity.Length2D() >= vars.Maxspeed * ((ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5)) {
-		if y_spt_glitchless_bhop_enabled = 1 {
-			const Vector vel = serverDLL.GetLastVelocity();
-			if vel.x >= 0 and vel.y >= 0 {
-				out.Yaw = NormalizeDeg(double atan(double vel.y/vel.x));
+		if tas_strafe_glitchless.GetBool() == 1 {
+			const Vector vel = player.Velocity();
+			out.Yaw = NormalizeDeg(double atan2(double vel.y/vel.x));
+		}
+		else {
+			#nif defined ( OE ) {
+				out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat());
 			}
-			if vel.x <= 0 and vel.y >= 0 {
-				out.Yaw = NormalizeDeg(double atan(double vel.y/-vel.x)+90);
-			}
-			if vel.x <= 0 and vel.y <= 0 {
-				out.Yaw = NormalizeDeg(double atan(double -vel.y/-vel.x)+180);
-			}
-			if vel.x >= 0 and vel.y <= 0 {
-				out.Yaw = NormalizeDeg(double atan(double -vel.y/vel.x)-90);
+			else {
+				out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
 			}
 		}
-		else if y_spt_glitchless_bhop_enabled = 0 {
-			out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
 		out.Forward = false;
 		out.Back = false;
 		out.Right = false;
