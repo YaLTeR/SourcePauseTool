@@ -324,7 +324,7 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 	if (jumped && player.Velocity.Length2D() >= vars.Maxspeed * ((ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5)) {
 		if (tas_strafe_glitchless.GetBool()) {
 			const Vector vel = player.Velocity;
-			out.Yaw = NormalizeDeg(atan2(vel.y, vel.x)-90);
+			out.Yaw = NormalizeRad(atan2(vel.y, vel.x));
 		}
 		else {
 			out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
