@@ -29,10 +29,10 @@ ConVar tas_reset_surface_friction("tas_reset_surface_friction", "1", 0, "If enab
 ConVar tas_force_onground("tas_force_onground", "0", 0, "If enabled, strafing assumes the player is on ground regardless of what the prediction indicates. Useful for save glitch in Portal where the prediction always reports the player being in the air.\n");
 
 ConVar tas_log("tas_log", "0", 0, "If enabled, dumps a whole bunch of different stuff into the console.\n");
-ConVar tas_strafe_lgagst("tas_strafe_lgagst", "0", 0, "If enabled, only jumped from the ground when it's faster to move in the air. Only recommended in OrangeBox Engine games when _y_spt_glitchless_bhop_enabled = 1.\n");
-ConVar tas_strafe_lgagst_minspeed("tas_strafe_lgagst_minspeed", "30", 0, "Prevents lgagst from calculating below this speed. Not reccommended to change beyond the player's crouching speed.\n");
-ConVar tas_strafe_lgagst_fullmaxspeed("tas_strafe_lgagst_fullmaxspeed", "0", 0, "When enabled, uses the maxspeed to determine if the player is touching the ground. Useful for areas where you land ducked but want to unduck and continue groundstrafing while still standing.\n");
-ConVar tas_strafe_glitchless("tas_strafe_glitchless", "0", 0, "When set to 1, disables ABH and looks in the exact direction of velocity to prevent any accidental speed gain. Only recommended for use in OrangeBox engine games.\n");
+ConVar tas_strafe_lgagst("tas_strafe_lgagst", "0", 0, "If enabled, jumps automatically when it's faster to move in the air than on ground. Incomplete, intended use is for tas_strafe_glitchless only.\n");
+ConVar tas_strafe_lgagst_minspeed("tas_strafe_lgagst_minspeed", "30", 0, "Prevents LGAGST from triggering when the player speed is below this value. The default should be fine.");
+ConVar tas_strafe_lgagst_fullmaxspeed("tas_strafe_lgagst_fullmaxspeed", "0", 0, "If enabled, LGAGST assumes the player is standing regardless of the actual ducking state. Useful for when you land while crouching but intend to stand up immediately.\n");
+ConVar tas_strafe_glitchless("tas_strafe_glitchless", "0", 0, "If enabled, replaces the automatic ABH with glitchless bhop: forces the player to look at the direction of velocity when jumping.\n");
 	
 ConVar _y_spt_autojump_ensure_legit("_y_spt_autojump_ensure_legit", "1", FCVAR_ARCHIVE);
 ConVar _y_spt_afterframes_reset_on_server_activate("_y_spt_afterframes_reset_on_server_activate", "1", FCVAR_ARCHIVE);
