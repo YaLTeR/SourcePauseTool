@@ -110,6 +110,30 @@ IServerUnknown* GetServerPlayer()
 	return edict->GetUnknown();
 }
 
+int GetEntityCount()
+{
+	if (!engine_server)
+		return 0;
+
+	return engine_server->GetEntityCount();
+}
+
+CBaseEntity* GetEntity(int index)
+{
+	if (!engine_server)
+		return nullptr;
+
+	auto edict = engine_server->PEntityOfEntIndex(index);
+	if (!edict)
+		return nullptr;
+
+	auto unknown = edict->GetUnknown();
+	if (!unknown)
+		return nullptr;
+
+	return unknown->GetBaseEntity();
+}
+
 bool DoesGameLookLikePortal()
 {
 #ifndef OE
