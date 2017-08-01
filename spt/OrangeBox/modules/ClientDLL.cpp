@@ -629,10 +629,10 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		else
 			vars.WishspeedCap = 30;
 
-		// Lgagst requires more prediction that is done here for correct operation, so it's commented out.
-		//auto curState = CurrentState();
-		//curState.LgagstMinSpeed = tas_strafe_lgagst_minspeed.GetFloat();
-		//curState.LgagstFullMaxspeed = tas_strafe_lgagst_fullmaxspeed.GetBool();
+		// Lgagst requires more prediction that is done here for correct operation.
+		auto curState = CurrentState();
+		curState.LgagstMinSpeed = tas_strafe_lgagst_minspeed.GetFloat();
+		curState.LgagstFullMaxspeed = tas_strafe_lgagst_fullmaxspeed.GetBool();
 
 		auto pl = PlayerData();
 		CalcAbsoluteVelocity(player, 0);
@@ -675,7 +675,9 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 
 		auto btns = StrafeButtons();
 		bool usingButtons = (sscanf(tas_strafe_buttons.GetString(), "%hhu %hhu %hhu %hhu", &btns.AirLeft, &btns.AirRight, &btns.GroundLeft, &btns.GroundRight) == 4);
-
+		auto type = static_cast<StrafeType>(tas_strafe_type.GetInt());
+		auto dir = static_cast<StrafeDir>(tas_strafe_dir.GetInt());
+		
 		ProcessedFrame out;
 		out.Jump = false;
 		{
@@ -698,13 +700,13 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 			}
 
 			if (!cantjump && onground) {
-				//if (tas_strafe_lgagst.GetBool()) {
-				//	LgagstJump(pl, vars, curState, onground, ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING), tas_strafe_yaw.GetFloat(), va[YAW] * M_DEG2RAD, out, reduceWishspeed, btns, false);
-				//	if (out.Jump) {
-				//		onground = false;
-				//		jumped = true;
-				//	}
-				//}
+				if (tas_strafe_lgagst.GetBool()) {
+					LgagstJump(pl, vars, curState, onground, ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING), type, dir, tas_strafe_yaw.GetFloat(), va[YAW] * M_DEG2RAD, out, reduceWishspeed, btns, false);
+					if (out.Jump) {
+						onground = false;
+						jumped = true;
+					}
+				}
 
 				if (ORIG_GetButtonBits(thisptr, 0, 0) & IN_JUMP) {
 					onground = false;
@@ -714,9 +716,6 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		}
 
 		Friction(pl, onground, vars);
-
-		auto type = static_cast<StrafeType>(tas_strafe_type.GetInt());
-		auto dir = static_cast<StrafeDir>(tas_strafe_dir.GetInt());
 		Strafe(pl, vars, onground, jumped, ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, btns, usingButtons);
 
 		//EngineDevMsg("[Strafing] Yaw = %.8f\n", out.Yaw);

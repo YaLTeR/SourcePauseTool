@@ -322,7 +322,13 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 {
 	//DevMsg("[Strafing] ducking = %d\n", (int)ducking);
 	if (jumped && player.Velocity.Length2D() >= vars.Maxspeed * ((ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5)) {
-		out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
+		if (tas_strafe_glitchless.GetBool()) {
+			const Vector vel = player.Velocity;
+			out.Yaw = NormalizeRad(atan2(vel.y, vel.x));
+		}
+		else {
+			out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
+		}
 		out.Forward = false;
 		out.Back = false;
 		out.Right = false;
@@ -471,25 +477,25 @@ void Friction(PlayerData& player, bool onground, const MovementVars& vars)
 	player.Velocity *= (newspeed / speed);
 }
 
-//void LgagstJump(const PlayerData& player, const MovementVars& vars, const CurrentState& curState, bool onground, bool ducking, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons)
-//{
-//	if (player.Velocity.Length2D() < curState.LgagstMinSpeed)
-//		return;
-//
-//	auto ground = PlayerData(player);
-//	Friction(ground, onground, vars);
-//	auto out_temp = ProcessedFrame(out);
-//	Strafe(ground, vars, onground, false, ducking, target_yaw, vel_yaw, out_temp, reduceWishspeed && !curState.LgagstFullMaxspeed, strafeButtons, useGivenButtons);
-//
-//	auto air = PlayerData(player);
-//	out_temp = ProcessedFrame(out);
-//	out_temp.Jump = true;
-//	onground = false;
-//	Strafe(air, vars, onground, true, ducking, target_yaw, vel_yaw, out_temp, reduceWishspeed && !curState.LgagstFullMaxspeed, strafeButtons, useGivenButtons);
-//
-//	auto l_gr = ground.Velocity.Length2D();
-//	auto l_air = air.Velocity.Length2D();
-//	if (l_air > l_gr) {
-//		out.Jump = true;
-//	}
-//}
+void LgagstJump(const PlayerData& player, const MovementVars& vars, const CurrentState& curState, bool onground, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons)
+{
+	if (player.Velocity.Length2D() < curState.LgagstMinSpeed)
+		return;
+
+	auto ground = PlayerData(player);
+	Friction(ground, onground, vars);
+	auto out_temp = ProcessedFrame(out);
+	Strafe(ground, vars, onground, false, ducking, type, dir, target_yaw, vel_yaw, out_temp, reduceWishspeed && !curState.LgagstFullMaxspeed, strafeButtons, useGivenButtons);
+
+	auto air = PlayerData(player);
+	out_temp = ProcessedFrame(out);
+	out_temp.Jump = true;
+	onground = false;
+	Strafe(air, vars, onground, true, ducking, type, dir, target_yaw, vel_yaw, out_temp, reduceWishspeed && !curState.LgagstFullMaxspeed, strafeButtons, useGivenButtons);
+
+	auto l_gr = ground.Velocity.Length2D();
+	auto l_air = air.Velocity.Length2D();
+	if (l_air > l_gr) {
+		out.Jump = true;
+	}
+}
