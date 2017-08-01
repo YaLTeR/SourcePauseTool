@@ -1,5 +1,6 @@
 #include <chrono>
 #include <sstream>
+#include <time.h>
 
 #include "spt-serverplugin.hpp"
 #include "modules.hpp"
@@ -32,6 +33,8 @@ IVEngineClient *engine = nullptr;
 IVEngineServer *engine_server = nullptr;
 IUniformRandomStream* random = nullptr;
 void *gm = nullptr;
+
+int lastSeed = 0;
 
 // For OE CVar and ConCommand registering.
 #if defined( OE )
@@ -403,6 +406,14 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 
 	float min = std::stof(args.Arg(2));
 	float max = std::stof(args.Arg(3));
+
+	int t = time(NULL);
+	
+	if (lastSeed != t)
+	{
+		random->SetSeed(t);
+		lastSeed = t;
+	}
 
 	float r = random->RandomFloat(min, max);
 
