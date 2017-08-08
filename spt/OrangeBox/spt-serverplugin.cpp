@@ -14,7 +14,7 @@
 #include "eiface.h"
 #include "tier2\tier2.h"
 
-#if !OE && !SSDK2013
+#if SSDK2007
 #include "mathlib\vmatrix.h"
 #endif
 
@@ -98,6 +98,7 @@ void DefaultFOVChangeCallback(ConVar *var, char const *pOldString)
 	}
 }
 
+#ifndef P2
 IServerUnknown* GetServerPlayer()
 {
 	if (!engine_server)
@@ -109,6 +110,14 @@ IServerUnknown* GetServerPlayer()
 
 	return edict->GetUnknown();
 }
+#else
+// TODO
+IServerUnknown* GetServerPlayer()
+{
+	assert(false);
+	return nullptr;
+}
+#endif
 
 bool DoesGameLookLikePortal()
 {
@@ -610,7 +619,7 @@ CON_COMMAND(y_spt_timer_print, "Prints the current time of the SPT timer.")
 	Warning("Current time (in ticks): %u\n", serverDLL.GetTicksPassed());
 }
 
-#if !OE && !SSDK2013
+#if SSDK2007
 // TODO: remove fixed offsets.
 
 #undef GetClassName

@@ -10,6 +10,14 @@
 #include <SPTLib\hooks.hpp>
 #include "ClientDLL.hpp"
 
+#ifdef max
+#undef max
+#endif
+#ifdef min
+#undef min
+#endif
+#include <algorithm>
+
 using std::uintptr_t;
 using std::size_t;
 
@@ -621,7 +629,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		vars.EntFriction = 1;
 		vars.Frametime = 0.015f;
 		vars.Friction = _sv_friction->GetFloat();
-		vars.Maxspeed = (maxspeed > 0) ? min(maxspeed, _sv_maxspeed->GetFloat()) : _sv_maxspeed->GetFloat();
+		vars.Maxspeed = (maxspeed > 0) ? std::min(maxspeed, _sv_maxspeed->GetFloat()) : _sv_maxspeed->GetFloat();
 		vars.Stopspeed = _sv_stopspeed->GetFloat();
 
 		if (tas_force_wishspeed_cap.GetString()[0] != '\0')

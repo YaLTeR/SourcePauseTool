@@ -49,6 +49,9 @@
     <ClCompile Include="SPTLib\IHookableDirFilter.cpp">
       <Filter>SPTLib</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\hl2sdk\utils\SourcePauseTool\spt\strafestuff.cpp">
+      <Filter>spt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">

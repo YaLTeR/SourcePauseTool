@@ -34,9 +34,9 @@ public:
 	virtual void            ClientSettingsChanged( edict_t *pEdict ) {};
 
 #if defined( OE )
-	virtual PLUGIN_RESULT	ClientConnect( bool *bAllowConnect, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen ) { return PLUGIN_CONTINUE; };
-	virtual PLUGIN_RESULT	ClientCommand( edict_t *pEntity ) { return PLUGIN_CONTINUE; };
-	virtual PLUGIN_RESULT	NetworkIDValidated( const char *pszUserName, const char *pszNetworkID ) { return PLUGIN_CONTINUE; };
+	virtual PLUGIN_RESULT   ClientConnect( bool *bAllowConnect, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen ) { return PLUGIN_CONTINUE; };
+	virtual PLUGIN_RESULT   ClientCommand( edict_t *pEntity ) { return PLUGIN_CONTINUE; };
+	virtual PLUGIN_RESULT   NetworkIDValidated( const char *pszUserName, const char *pszNetworkID ) { return PLUGIN_CONTINUE; };
 #else
 	virtual PLUGIN_RESULT   ClientConnect( bool *bAllowConnect, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen ) { return PLUGIN_CONTINUE; };
 	virtual PLUGIN_RESULT   ClientCommand( edict_t *pEntity, const CCommand &args ) { return PLUGIN_CONTINUE; };
@@ -46,6 +46,10 @@ public:
 	// added with version 3 of the interface.
 	virtual void            OnEdictAllocated( edict_t *edict ) {};
 	virtual void            OnEdictFreed( const edict_t *edict ) {};
+#endif
+
+#ifdef P2
+	virtual void            ClientFullyConnect( edict_t *pEntity ) {};
 #endif
 };
 
