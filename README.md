@@ -7,7 +7,13 @@ A plugin for all your pausing needs.
 Place the compiled `spt.dll` into your mod directory (for example: `hl2`, `portal`, `ep2`), launch the game and type `plugin_load spt` into the developer console. For older engines you will need to place `spt.dll` into the topmost `bin` directory (the one with a lot of different DLL files including `engine.dll`, *not* the one with `client.dll` and `server.dll`).
 
 ## Building
-You will need Detours v3.0 (the Express version will do), the Source SDK and Visual Studio 2015 or above. Clone the repository into a folder under `src\utils\`, where `src` is the folder with the mod source code. Do `git submodule update --init --recursive`. Configure VC++ Directories so that you have your Detours `includes` and `libs` directories listed appropriately. Chose the build configuration:
-- Release OE for Source SDK 2006
-- Release for Source SDK 2007
-- Release 2013 for Source SDK 2013
+You will need Visual Studio 2017 or above.
+1. Get and build Detours v3.0 Express. This one is pretty annoying because it requires Visual Studio 2010. Copy the files from the resulting `include` and `lib.X86` folders into the respective folders in the `Detours` directory.
+2. Get the Source SDK code that you wish to build SPT for.
+3. Clone this repository into a folder under `src\utils`, where `src` is the folder with the Source SDK source code. The files from this repository should end up inside `src\utils\SourcePauseTool`.
+4. Inside the `SourcePauseTool` folder do `git submodule update --init --recursive`.
+5. Open `spt.sln` in Visual Studio and build the correct build configuration:
+   - Release OE for Source SDK 2006
+   - Release for Source SDK 2007
+   - Release 2013 for Source SDK 2013
+   - Release P2 for the Portal 2 SDK from alliedmodders.
