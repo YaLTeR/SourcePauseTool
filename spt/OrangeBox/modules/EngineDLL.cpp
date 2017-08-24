@@ -413,6 +413,7 @@ void __fastcall EngineDLL::HOOKED_SetPaused_Func(void* thisptr, int edx, bool pa
 	{
 		Cbuf_AddText(Cbuf_GetCommandBuffer(), "setpause\n", 0);
 		shouldPreventNextUnpause = false;
+		return ORIG_SetPaused(thisptr, edx, paused);
 		return;
 	}
 
