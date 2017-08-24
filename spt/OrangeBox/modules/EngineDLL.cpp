@@ -65,6 +65,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		pMiddleOfSV_InitGameDLL = NULL,
 		//p_Host_RunFrame = NULL,
 		//pSV_Frame = NULL,
+		pSomeDemoFunction = NULL,
 		pRecord = NULL;
 
 	auto fActivateServer = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSV_ActivateServer, &pSV_ActivateServer);
@@ -74,6 +75,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	//auto f_Host_RunFrame = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptns_Host_RunFrame, &p_Host_RunFrame);
 	//auto fSV_Frame = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSV_Frame, &pSV_Frame);
 	auto fRecord = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsRecord, &pRecord);
+	auto fSomeDemoFunction = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSomeDemoFunction, &pSomeDemoFunction);
 
 	// m_bLoadgame and pGameServer (&sv)
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsSpawnPlayer, &pSpawnPlayer);
@@ -272,6 +274,15 @@ void EngineDLL::Clear()
 	IHookableNameFilter::Clear();
 	ORIG_SV_ActivateServer = nullptr;
 	ORIG_FinishRestore = nullptr;
+	ptnNumber = fSetPaused.get();
+	if (pSomeDemoFunction)
+	{
+		Cbuf_GetCommandBuffer = (_Cbuf_GetCommandBuffer)(*(uintptr_t*)(pSomeDemoFunction + 121) + pSomeDemoFunction + 125);
+		Cbuf_AddText = (_Cbuf_AddText)(*(uintptr_t*)(pSomeDemoFunction + 127) + pSomeDemoFunction + 131);
+		Cbuf_GetCommandBuffer = nullptr;
+		Cbuf_AddText = nullptr;
+		EngineDevMsg("Found SetPaused at %p (using the build %s pattern).\n", pSetPaused, Patterns::ptnsSetPaused[ptnNumber].build.c_str());
+	}
 	ORIG_SetPaused = nullptr;
 	ORIG__Host_RunFrame = nullptr;
 	ORIG__Host_RunFrame_Input = nullptr;
@@ -375,7 +386,7 @@ void __fastcall EngineDLL::HOOKED_FinishRestore_Func(void* thisptr, int edx)
 
 void __fastcall EngineDLL::HOOKED_SetPaused_Func(void* thisptr, int edx, bool paused)
 {
-	#ifndef P2
+#ifndef P2
 	if (pM_bLoadgame)
 	{
 		EngineDevMsg("Engine call: SetPaused( %s ); m_bLoadgame = %s\n", (paused ? "true" : "false"), (*pM_bLoadgame ? "true" : "false"));
@@ -399,14 +410,14 @@ void __fastcall EngineDLL::HOOKED_SetPaused_Func(void* thisptr, int edx, bool pa
 	return ORIG_SetPaused(thisptr, edx, paused);
 	#else
 	if (shouldPreventNextUnpause)
-		{
-			Cbuf_AddText(Cbuf_GetCommandBuffer(), "setpause\n", 0);
-			shouldPreventNextUnpause = false;
-			return;
-		}
+	{
+		Cbuf_AddText(Cbuf_GetCommandBuffer(), "setpause\n", 0);
+		shouldPreventNextUnpause = false;
+		return;
+	}
 
-	shouldPreventNextUnpause = false;
-	#endif
+shouldPreventNextUnpause = false;
+#endif
 }
 
 void __cdecl EngineDLL::HOOKED__Host_RunFrame_Func(float time)
