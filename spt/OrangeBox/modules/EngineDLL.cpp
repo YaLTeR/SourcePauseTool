@@ -404,7 +404,6 @@ void __fastcall EngineDLL::HOOKED_SetPaused_Func(void* thisptr, int edx, bool pa
 			shouldPreventNextUnpause = false;
 			return;
 		}
-	}
 
 	shouldPreventNextUnpause = false;
 	#endif
