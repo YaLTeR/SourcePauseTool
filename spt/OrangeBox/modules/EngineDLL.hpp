@@ -13,6 +13,8 @@ typedef void(__cdecl *__Host_RunFrame) (float time);
 typedef void(__cdecl *__Host_RunFrame_Input) (float accumulated_extra_samples, int bFinalTick);
 typedef void(__cdecl *__Host_RunFrame_Server) (int bFinalTick);
 typedef void(__cdecl *_Cbuf_Execute) ();
+typedef void*(__cdecl *_Cbuf_GetCommandBuffer) ();
+typedef void(__cdecl *_Cbuf_AddText)(void* command_buffer, const char* text, int unknown);
 
 class EngineDLL : public IHookableNameFilter
 {
@@ -51,6 +53,8 @@ protected:
 	_SetPaused ORIG_SetPaused;
 	__Host_RunFrame ORIG__Host_RunFrame;
 	__Host_RunFrame_Input ORIG__Host_RunFrame_Input;
+	_Cbuf_GetCommandBuffer Cbuf_GetCommandBuffer;
+	_Cbuf_AddText Cbuf_AddText;
 	__Host_RunFrame_Server ORIG__Host_RunFrame_Server;
 	_Cbuf_Execute ORIG_Cbuf_Execute;
 
