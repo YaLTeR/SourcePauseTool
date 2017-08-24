@@ -169,7 +169,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	else
 	{
 		EngineDevWarning("Could not find SetPaused!\n");
-		#ifndef(P2)
+		#ifndef P2
 		EngineWarning("y_spt_pause has no effect.\n");
 		#else
 		//This is for the time being replaced with the setpause command.
@@ -375,7 +375,7 @@ void __fastcall EngineDLL::HOOKED_FinishRestore_Func(void* thisptr, int edx)
 
 void __fastcall EngineDLL::HOOKED_SetPaused_Func(void* thisptr, int edx, bool paused)
 {
-	#ifndef(P2)
+	#ifndef P2
 	if (pM_bLoadgame)
 	{
 		EngineDevMsg("Engine call: SetPaused( %s ); m_bLoadgame = %s\n", (paused ? "true" : "false"), (*pM_bLoadgame ? "true" : "false"));
