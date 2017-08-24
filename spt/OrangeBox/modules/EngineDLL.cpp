@@ -407,6 +407,7 @@ void __fastcall EngineDLL::HOOKED_SetPaused_Func(void* thisptr, int edx, bool pa
 	}
 
 	shouldPreventNextUnpause = false;
+	#endif
 }
 
 void __cdecl EngineDLL::HOOKED__Host_RunFrame_Func(float time)
