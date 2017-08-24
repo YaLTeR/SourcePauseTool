@@ -174,7 +174,10 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		#ifndef P2
 		EngineWarning("y_spt_pause has no effect.\n");
 		#else
-		//This is for the time being replaced with the setpause command.
+		if (pSomeDemoFunction)
+	{
+		Cbuf_GetCommandBuffer = (_Cbuf_GetCommandBuffer)(*(uintptr_t*)(pSomeDemoFunction + 121) + pSomeDemoFunction + 125);
+		Cbuf_AddText = (_Cbuf_AddText)(*(uintptr_t*)(pSomeDemoFunction + 127) + pSomeDemoFunction + 131);
 		#endif
 	}
 
@@ -275,14 +278,8 @@ void EngineDLL::Clear()
 	ORIG_SV_ActivateServer = nullptr;
 	ORIG_FinishRestore = nullptr;
 	ptnNumber = fSetPaused.get();
-	if (pSomeDemoFunction)
-	{
-		Cbuf_GetCommandBuffer = (_Cbuf_GetCommandBuffer)(*(uintptr_t*)(pSomeDemoFunction + 121) + pSomeDemoFunction + 125);
-		Cbuf_AddText = (_Cbuf_AddText)(*(uintptr_t*)(pSomeDemoFunction + 127) + pSomeDemoFunction + 131);
-		Cbuf_GetCommandBuffer = nullptr;
-		Cbuf_AddText = nullptr;
-		EngineDevMsg("Found SetPaused at %p (using the build %s pattern).\n", pSetPaused, Patterns::ptnsSetPaused[ptnNumber].build.c_str());
-	}
+	Cbuf_GetCommandBuffer = nullptr;
+	Cbuf_AddText = nullptr;
 	ORIG_SetPaused = nullptr;
 	ORIG__Host_RunFrame = nullptr;
 	ORIG__Host_RunFrame_Input = nullptr;
