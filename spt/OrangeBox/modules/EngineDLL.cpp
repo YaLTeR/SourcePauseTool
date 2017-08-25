@@ -174,10 +174,11 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		#ifndef P2
 		EngineWarning("y_spt_pause has no effect.\n");
 		#else
-		if (pSomeDemoFunction)
-	{
-		Cbuf_GetCommandBuffer = (_Cbuf_GetCommandBuffer)(*(uintptr_t*)(pSomeDemoFunction + 121) + pSomeDemoFunction + 125);
-		Cbuf_AddText = (_Cbuf_AddText)(*(uintptr_t*)(pSomeDemoFunction + 127) + pSomeDemoFunction + 131);
+		ptnNumber = fSomeDemoFunction.get();
+		if (pSomeDemoFunction) {
+			Cbuf_GetCommandBuffer = (_Cbuf_GetCommandBuffer)(*(uintptr_t*)(pSomeDemoFunction + 121) + pSomeDemoFunction + 125);
+			Cbuf_AddText = (_Cbuf_AddText)(*(uintptr_t*)(pSomeDemoFunction + 127) + pSomeDemoFunction + 131);
+		}
 		#endif
 	}
 
@@ -277,7 +278,6 @@ void EngineDLL::Clear()
 	IHookableNameFilter::Clear();
 	ORIG_SV_ActivateServer = nullptr;
 	ORIG_FinishRestore = nullptr;
-	ptnNumber = fSetPaused.get();
 	Cbuf_GetCommandBuffer = nullptr;
 	Cbuf_AddText = nullptr;
 	ORIG_SetPaused = nullptr;
