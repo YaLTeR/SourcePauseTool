@@ -180,10 +180,10 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			Cbuf_GetCommandBuffer = (_Cbuf_GetCommandBuffer)(*(uintptr_t*)(pSomeDemoFunction + 121) + pSomeDemoFunction + 125);
 			Cbuf_AddText = (_Cbuf_AddText)(*(uintptr_t*)(pSomeDemoFunction + 127) + pSomeDemoFunction + 131);
 		}
-		else {
-			EngineDevWarning("Could not find SomeDemoFunction!\n");
-	#endif
+			else {
+		EngineDevWarning("Could not find SomeDemoFunction!\n");
 	}
+#endif
 
 	// interval_per_tick
 	ptnNumber = fMiddleOfSV_InitGameDLL.get();
