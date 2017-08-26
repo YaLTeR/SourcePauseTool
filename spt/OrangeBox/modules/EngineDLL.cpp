@@ -162,6 +162,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 
 	// SetPaused
+	#ifndef P2
 	ptnNumber = fSetPaused.get();
 	if (pSetPaused)
 	{
@@ -171,15 +172,17 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	else
 	{
 		EngineDevWarning("Could not find SetPaused!\n");
-		#ifndef P2
 		EngineWarning("y_spt_pause has no effect.\n");
-		#else
+	#else
 		ptnNumber = fSomeDemoFunction.get();
 		if (pSomeDemoFunction) {
+			EngineDevMsg("Found SomeDemoFunction at %p (using the build %s pattern).\n", pSomeDemoFunction, Patterns::ptnsSomeDemoFunction[ptnNumber].build.c_str());
 			Cbuf_GetCommandBuffer = (_Cbuf_GetCommandBuffer)(*(uintptr_t*)(pSomeDemoFunction + 121) + pSomeDemoFunction + 125);
 			Cbuf_AddText = (_Cbuf_AddText)(*(uintptr_t*)(pSomeDemoFunction + 127) + pSomeDemoFunction + 131);
 		}
-		#endif
+		else {
+			EngineDevWarning("Could not find SomeDemoFunction!\n");
+	#endif
 	}
 
 	// interval_per_tick
@@ -405,7 +408,7 @@ void __fastcall EngineDLL::HOOKED_SetPaused_Func(void* thisptr, int edx, bool pa
 
 	shouldPreventNextUnpause = false;
 	return ORIG_SetPaused(thisptr, edx, paused);
-	#else
+#else
 	if (shouldPreventNextUnpause)
 	{
 		Cbuf_AddText(Cbuf_GetCommandBuffer(), "setpause\n", 0);
@@ -414,7 +417,7 @@ void __fastcall EngineDLL::HOOKED_SetPaused_Func(void* thisptr, int edx, bool pa
 		return;
 	}
 
-shouldPreventNextUnpause = false;
+	shouldPreventNextUnpause = false;
 #endif
 }
 
