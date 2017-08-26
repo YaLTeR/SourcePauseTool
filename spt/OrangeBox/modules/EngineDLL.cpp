@@ -173,6 +173,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	{
 		EngineDevWarning("Could not find SetPaused!\n");
 		EngineWarning("y_spt_pause has no effect.\n");
+	}
 	#else
 		ptnNumber = fSomeDemoFunction.get();
 		if (pSomeDemoFunction) {
