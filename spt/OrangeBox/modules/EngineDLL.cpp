@@ -183,6 +183,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		}
 			else {
 		EngineDevWarning("Could not find SomeDemoFunction!\n");
+		EngineWarning("y_spt_pause has no effect.\n");
 	}
 #endif
 
