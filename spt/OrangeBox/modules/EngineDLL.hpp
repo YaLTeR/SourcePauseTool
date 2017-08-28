@@ -15,6 +15,7 @@ typedef void(__cdecl *__Host_RunFrame_Server) (int bFinalTick);
 typedef void(__cdecl *_Cbuf_Execute) ();
 typedef void*(__cdecl *_Cbuf_GetCommandBuffer) ();
 typedef void(__cdecl *_Cbuf_AddText)(void* command_buffer, const char* text, int unknown);
+typedef void(__cdecl *_SetSignonState)(void* thisptr, int edx, int state, int spawncount);
 
 class EngineDLL : public IHookableNameFilter
 {
@@ -38,6 +39,8 @@ public:
 	void __cdecl HOOKED__Host_RunFrame_Input_Func(float accumulated_extra_samples, int bFinalTick);
 	void __cdecl HOOKED__Host_RunFrame_Server_Func(int bFinalTick);
 	void __cdecl HOOKED_Cbuf_Execute_Func();
+	void __cdecl HOOKED_SetSignonState(void* thisptr, int edx, int state, int spawncount);
+	void __cdecl HOOKED_SetSignonState_Func(void* thisptr, int edx, int state, int spawncount);
 
 	float GetTickrate() const;
 	void SetTickrate(float value);
