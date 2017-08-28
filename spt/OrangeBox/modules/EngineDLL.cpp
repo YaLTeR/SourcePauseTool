@@ -47,7 +47,7 @@ void __cdecl EngineDLL::HOOKED_Cbuf_Execute()
 	return engineDLL.HOOKED_Cbuf_Execute_Func();
 }
 
-void __cdecl EngineDLL::HOOKED_SetSignonState(void* thisptr, int edx, int state, int spawncount)
+bool __fastcall EngineDLL::HOOKED_SetSignonState(void* thisptr, int edx, int state, int spawncount)
 {
 	return EngineDLL::HOOKED_SetSignonState_Func(thisptr, edx, state, spawncount);
 }
@@ -167,6 +167,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 
 	// FinishRestore
+#ifndef P2
 	ptnNumber = fFinishRestore.get();
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
@@ -178,6 +179,20 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineDevWarning("Could not find FinishRestore!\n");
 		EngineWarning("y_spt_pause 1 has no effect.\n");
 	}
+#else
+	ptnNumber = fSetSignonState.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_SetSignonState = (_SetSignonState)pSetSignonState;
+		EngineDevMsg("Found SetSignonState at %p (using the build %s pattern).\n", pSetSignonState, Patterns::ptnsSetSignonState[ptnNumber].build.c_str());
+	}
+	else
+	{
+		EngineDevWarning("Could not find SetSignonState!\n");
+		EngineWarning("y_spt_pause 1 has no effect.\n");
+	}
+#endif
+
 
 	// SetPaused
 #ifndef P2
@@ -277,7 +292,8 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		{ (PVOID *)(&ORIG__Host_RunFrame), HOOKED__Host_RunFrame },
 		{ (PVOID *)(&ORIG__Host_RunFrame_Input), HOOKED__Host_RunFrame_Input },
 		{ (PVOID *)(&ORIG__Host_RunFrame_Server), HOOKED__Host_RunFrame_Server },
-		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute }
+		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute },
+		{ (PVOID *){&ORIG_SetSignonState), HOOKED_SetPaused  }
 	});
 	}
 
@@ -290,7 +306,8 @@ void EngineDLL::Unhook()
 		{ (PVOID *)(&ORIG__Host_RunFrame), HOOKED__Host_RunFrame },
 		{ (PVOID *)(&ORIG__Host_RunFrame_Input), HOOKED__Host_RunFrame_Input },
 		{ (PVOID *)(&ORIG__Host_RunFrame_Server), HOOKED__Host_RunFrame_Server },
-		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute }
+		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute },
+		{ (PVOID *){&ORIG_SetSignonState), HOOKED_SetPaused  }
 	});
 
 	Clear();
@@ -301,7 +318,7 @@ void EngineDLL::Clear()
 	IHookableNameFilter::Clear();
 	ORIG_SV_ActivateServer = nullptr;
 	ORIG_FinishRestore = nullptr;
-	SetSignonState = nullptr;
+	ORIG_SetSignonState = nullptr;
 	Cbuf_GetCommandBuffer = nullptr;
 	Cbuf_AddText = nullptr;
 	ORIG_SetPaused = nullptr;
@@ -309,6 +326,7 @@ void EngineDLL::Clear()
 	ORIG__Host_RunFrame_Input = nullptr;
 	ORIG__Host_RunFrame_Server = nullptr;
 	ORIG_Cbuf_Execute = nullptr;
+
 	pGameServer = nullptr;
 	pM_bLoadgame = nullptr;
 	shouldPreventNextUnpause = false;
@@ -490,3 +508,19 @@ void __cdecl EngineDLL::HOOKED_Cbuf_Execute_Func()
 	EngineDevMsg("Cbuf_Execute() end.\n");
 }
 
+bool __fastcall EngineDLL::HOOKED_SetSignonState_Func(void* thisptr, int edx, int state, int spawncount)
+{
+	EngineDevMsg("Engine call: SetSignonState();\n");
+
+	if (ORIG_SetPaused && (y_spt_pause.GetInt() == 1))
+	{
+		ORIG_SetPaused(thisptr, 0, true);
+		EngineDevMsg("Pausing...\n");
+
+		shouldPreventNextUnpause = true;
+	}
+
+	ORIG_SetSignonStaet(thisptr, edx, state, spawncount);
+
+	clientDLL.ResumeAfterframesQueue();
+}
