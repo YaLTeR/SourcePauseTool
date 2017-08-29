@@ -280,7 +280,7 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 			}
 			else {
 				const Vector vel = player.Velocity;
-				out.yaw = NormalizeDeg(NormalizeRad(atan2(vel.y, vel.x)) + (90 - (asin2((((sin (NormalizeRad(atan2(vel.y, vel.x)))*(player.Velocity+flSpeedBoostPerc))/sin 90)*sin 90)/(((sin (NormalizeRad(atan2(vel.y, vel.x)))*(player.Velocity+flSpeedBoostPerc))/sin 90) + flSpeedBoostPerc))))
+				out.yaw = NormalizeDeg(NormalizeRad(atan2(vel.y, vel.x)) + (90 - (asin2((((sin (NormalizeRad(atan2(vel.y, vel.x)))*(player.Velocity+flSpeedBoostPerc.GetFloat()))/sin 90)*sin 90)/(((sin (NormalizeRad(atan2(vel.y, vel.x)))*(player.Velocity+flSpeedBoostPerc.GetFloat()))/sin 90) + flSpeedBoostPerc.GetFloat()))))
 			#endif
 		}
 		out.Forward = false;
