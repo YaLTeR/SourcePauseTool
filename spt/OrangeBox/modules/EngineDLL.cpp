@@ -71,7 +71,8 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		//p_Host_RunFrame = NULL,
 		//pSV_Frame = NULL,
 		pSomeDemoFunction = NULL,
-		pRecord = NULL;
+		pRecord = NULL,
+		pSetSignonState = NULL;
 
 	auto fActivateServer = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSV_ActivateServer, &pSV_ActivateServer);
 	auto fFinishRestore = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsFinishRestore, &pFinishRestore);
@@ -91,6 +92,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 			++i;
 		}
+	auto fSetSignonState = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSetSignonState, &pSetSignonState);
 
 		return MemUtils::INVALID_SEQUENCE_INDEX;
 	});
@@ -293,8 +295,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		{ (PVOID *)(&ORIG__Host_RunFrame_Input), HOOKED__Host_RunFrame_Input },
 		{ (PVOID *)(&ORIG__Host_RunFrame_Server), HOOKED__Host_RunFrame_Server },
 		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute },
-		{ (PVOID *){&ORIG_SetSignonState), HOOKED_SetPaused  }
-	});
+		{ (PVOID *)(&ORIG_SetSignonState), HOOKED_SetSignonState  }
 	}
 
 void EngineDLL::Unhook()
@@ -307,7 +308,7 @@ void EngineDLL::Unhook()
 		{ (PVOID *)(&ORIG__Host_RunFrame_Input), HOOKED__Host_RunFrame_Input },
 		{ (PVOID *)(&ORIG__Host_RunFrame_Server), HOOKED__Host_RunFrame_Server },
 		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute },
-		{ (PVOID *){&ORIG_SetSignonState), HOOKED_SetPaused  }
+		{ (PVOID *){&ORIG_SetSignonState), HOOKED_SetSignonState  };
 	});
 
 	Clear();
@@ -326,6 +327,7 @@ void EngineDLL::Clear()
 	ORIG__Host_RunFrame_Input = nullptr;
 	ORIG__Host_RunFrame_Server = nullptr;
 	ORIG_Cbuf_Execute = nullptr;
+	ORIG_SetSignonState = nullptr;
 
 	pGameServer = nullptr;
 	pM_bLoadgame = nullptr;
@@ -520,7 +522,7 @@ bool __fastcall EngineDLL::HOOKED_SetSignonState_Func(void* thisptr, int edx, in
 		shouldPreventNextUnpause = true;
 	}
 
-	ORIG_SetSignonStaet(thisptr, edx, state, spawncount);
+	ORIG_SetSignonState(thisptr, edx, state, spawncount);
 
 	clientDLL.ResumeAfterframesQueue();
 }
