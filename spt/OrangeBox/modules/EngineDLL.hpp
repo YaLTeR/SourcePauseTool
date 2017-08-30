@@ -1,4 +1,4 @@
-#include "..\..\stdafx.hpp"
+include "..\..\stdafx.hpp"
 #pragma once
 
 #include <SPTLib\IHookableNameFilter.hpp>
