@@ -68,7 +68,7 @@ public:
 	void SetYaw(float yaw)     { setYaw.angle   = yaw;   setYaw.set   = true; }
 
 protected:
-	_DoImageSpaceMotionBlur ORIG_DoImageSpaceMorionBlur;
+	_DoImageSpaceMotionBlur ORIG_DoImageSpaceMotionBlur;
 	_CheckJumpButton ORIG_CheckJumpButton;
 	_HudUpdate ORIG_HudUpdate;
 	_GetButtonBits ORIG_GetButtonBits;
