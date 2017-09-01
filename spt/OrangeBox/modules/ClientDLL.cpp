@@ -338,8 +338,8 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 
 	DetoursUtils::AttachDetours(moduleName, {
-		{ (PVOID *) (&ORIG_DoImageSpaceMorionBlur), HOOKED_DoImageSpaceMotionBlur },
-		//{ (PVOID *) (&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
+		{ (PVOID *) (&ORIG_DoImageSpaceMotionBlur), HOOKED_DoImageSpaceMotionBlur },
+		{ (PVOID *) (&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
 		{ (PVOID *) (&ORIG_HudUpdate), HOOKED_HudUpdate },
 		{ (PVOID *) (&ORIG_GetButtonBits), HOOKED_GetButtonBits },
 		{ (PVOID *)(&ORIG_AdjustAngles), HOOKED_AdjustAngles },
@@ -351,8 +351,8 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 void ClientDLL::Unhook()
 {
 	DetoursUtils::DetachDetours(moduleName, {
-		{ (PVOID *)(&ORIG_DoImageSpaceMorionBlur), HOOKED_DoImageSpaceMotionBlur },
-		//{ (PVOID *) (&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
+		{ (PVOID *)(&ORIG_DoImageSpaceMotionBlur), HOOKED_DoImageSpaceMotionBlur },
+		{ (PVOID *) (&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
 		{ (PVOID *)(&ORIG_HudUpdate), HOOKED_HudUpdate },
 		{ (PVOID *)(&ORIG_GetButtonBits), HOOKED_GetButtonBits },
 		{ (PVOID *)(&ORIG_AdjustAngles), HOOKED_AdjustAngles },
@@ -366,7 +366,7 @@ void ClientDLL::Unhook()
 void ClientDLL::Clear()
 {
 	IHookableNameFilter::Clear();
-	ORIG_DoImageSpaceMorionBlur = nullptr;
+	ORIG_DoImageSpaceMotionBlur = nullptr;
 	ORIG_CheckJumpButton = nullptr;
 	ORIG_HudUpdate = nullptr;
 	ORIG_GetButtonBits = nullptr;
