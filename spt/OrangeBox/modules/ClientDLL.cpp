@@ -28,7 +28,7 @@ void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur(void* view, int x, int y, 
 
 bool __fastcall ClientDLL::HOOKED_CheckJumpButton(void* thisptr, int edx)
 {
-	return Hooks::getInstance().clientDLL.HOOKED_CheckJumpButton_Func(thisptr, edx);
+	return clientDLL.HOOKED_CheckJumpButton_Func(thisptr, edx);
 }
 
 void __stdcall ClientDLL::HOOKED_HudUpdate(bool bActive)
@@ -90,7 +90,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsDoImageSpaceMotionBlur, &pDoImageSpaceMotionBlur);
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
-		ORIG_DoImageSpaceMorionBlur = (_DoImageSpaceMotionBlur)pDoImageSpaceMotionBlur;
+		auto ORIG_DoImageSpaceMorionBlur = (_DoImageSpaceMotionBlur)pDoImageSpaceMotionBlur;
 		EngineDevMsg("[client dll] Found DoImageSpaceMotionBlur at %p (using the build %s pattern).\n", pDoImageSpaceMotionBlur, Patterns::ptnsDoImageSpaceMotionBlur[ptnNumber].build.c_str());
 
 		switch (ptnNumber)
@@ -478,7 +478,7 @@ void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, in
 		}
 	}
 
-	ORIG_DoImageSpaceMorionBlur(view, x, y, w, h);
+	ORIG_DoImageSpaceMotionBlur(view, x, y, w, h);
 
 	if (pgpGlobals)
 	{

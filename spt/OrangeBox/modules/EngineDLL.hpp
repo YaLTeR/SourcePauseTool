@@ -1,10 +1,11 @@
-include "..\..\stdafx.hpp"
+#include "..\..\stdafx.hpp"
 #pragma once
 
 #include <SPTLib\IHookableNameFilter.hpp>
 
 using std::uintptr_t;
 using std::size_t;
+using std::ptrdiff_t;
 
 typedef bool(__cdecl *_SV_ActivateServer) ();
 typedef void(__fastcall *_FinishRestore) (void* thisptr, int edx);
@@ -32,6 +33,7 @@ public:
 	static void __cdecl HOOKED__Host_RunFrame_Input(float accumulated_extra_samples, int bFinalTick);
 	static void __cdecl HOOKED__Host_RunFrame_Server(int bFinalTick);
 	static void __cdecl HOOKED_Cbuf_Execute();
+	static bool __fastcall HOOKED_SetSignonState(void* thisptr, int edx, int state, int spawncount);
 	bool __cdecl HOOKED_SV_ActivateServer_Func();
 	void __fastcall HOOKED_FinishRestore_Func(void* thisptr, int edx);
 	void __fastcall HOOKED_SetPaused_Func(void* thisptr, int edx, bool paused);
@@ -39,7 +41,6 @@ public:
 	void __cdecl HOOKED__Host_RunFrame_Input_Func(float accumulated_extra_samples, int bFinalTick);
 	void __cdecl HOOKED__Host_RunFrame_Server_Func(int bFinalTick);
 	void __cdecl HOOKED_Cbuf_Execute_Func();
-	bool __fastcall HOOKED_SetSignonState(void* thisptr, int edx, int state, int spawncount);
 	bool __fastcall HOOKED_SetSignonState_Func(void* thisptr, int edx, int state, int spawncount);
 
 	float GetTickrate() const;

@@ -103,8 +103,11 @@ protected:
 	bool duckspam;
 	angset_command_t setPitch, setYaw;
 	bool forceJump;
+	bool cantJumpNextTime;
 
 	void OnFrame();
 
 	int afterframesDelay;
+	int off1M_nOldButtons;
+	int off2M_nOldButtons;
 };

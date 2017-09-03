@@ -49,7 +49,7 @@ void __cdecl EngineDLL::HOOKED_Cbuf_Execute()
 
 bool __fastcall EngineDLL::HOOKED_SetSignonState(void* thisptr, int edx, int state, int spawncount)
 {
-	return EngineDLL::HOOKED_SetSignonState_Func(thisptr, edx, state, spawncount);
+	return engineDLL.HOOKED_SetSignonState_Func(thisptr, edx, state, spawncount);
 }
 
 void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
@@ -92,10 +92,10 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 			++i;
 		}
-	auto fSetSignonState = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSetSignonState, &pSetSignonState);
 
 		return MemUtils::INVALID_SEQUENCE_INDEX;
 	});
+	auto fSetSignonState = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSetSignonState, &pSetSignonState);
 
 	// m_bLoadgame and pGameServer (&sv)
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsSpawnPlayer, &pSpawnPlayer);
@@ -296,20 +296,34 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		{ (PVOID *)(&ORIG__Host_RunFrame_Server), HOOKED__Host_RunFrame_Server },
 		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute },
 		{ (PVOID *)(&ORIG_SetSignonState), HOOKED_SetSignonState  }
-	}
+	});
+}
 
 void EngineDLL::Unhook()
 {
-	DetoursUtils::DetachDetours(moduleName, {
-		{ (PVOID *)(&ORIG_SV_ActivateServer), HOOKED_SV_ActivateServer },
-		{ (PVOID *)(&ORIG_FinishRestore), HOOKED_FinishRestore },
-		{ (PVOID *)(&ORIG_SetPaused), HOOKED_SetPaused },
-		{ (PVOID *)(&ORIG__Host_RunFrame), HOOKED__Host_RunFrame },
-		{ (PVOID *)(&ORIG__Host_RunFrame_Input), HOOKED__Host_RunFrame_Input },
-		{ (PVOID *)(&ORIG__Host_RunFrame_Server), HOOKED__Host_RunFrame_Server },
-		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute },
-		{ (PVOID *){&ORIG_SetSignonState), HOOKED_SetSignonState  };
-	});
+	std::pair<PVOID*, PVOID> activateServerPair = { (PVOID *)(&ORIG_SV_ActivateServer), HOOKED_SV_ActivateServer };
+	std::pair<PVOID*, PVOID> finishRestorePair = { (PVOID *)(&ORIG_FinishRestore), HOOKED_FinishRestore };
+	std::pair<PVOID*, PVOID> setPausedPair = { (PVOID *)(&ORIG_SetPaused), HOOKED_SetPaused };
+	std::pair<PVOID*, PVOID> host_runframePair = { (PVOID *)(&ORIG__Host_RunFrame), HOOKED__Host_RunFrame };
+	std::pair<PVOID*, PVOID> host_runframe_inputPair = { (PVOID *)(&ORIG__Host_RunFrame_Input), HOOKED__Host_RunFrame_Input };
+	std::pair<PVOID*, PVOID> host_runframe_serverPair = { (PVOID *)(&ORIG__Host_RunFrame_Server), HOOKED__Host_RunFrame_Server };
+	PVOID cbufPvoid = HOOKED_Cbuf_Execute;
+	std::pair<PVOID*, PVOID> cbuf_executePair = { (PVOID *)(&ORIG_Cbuf_Execute),  cbufPvoid};
+	PVOID signonStatePvoid = HOOKED_SetSignonState;
+	std::pair<PVOID*, PVOID> setSignonStatePair = { (PVOID *)(&ORIG_SetSignonState),  signonStatePvoid};
+
+	const std::vector<std::pair<PVOID*, PVOID>>& functions = {
+		activateServerPair,
+		finishRestorePair,
+		setPausedPair,
+		host_runframePair,
+		host_runframe_inputPair,
+		host_runframe_serverPair,
+		cbuf_executePair,
+		setSignonStatePair
+	};
+
+	DetoursUtils::DetachDetours(moduleName, functions);
 
 	Clear();
 }
@@ -510,9 +524,22 @@ void __cdecl EngineDLL::HOOKED_Cbuf_Execute_Func()
 	EngineDevMsg("Cbuf_Execute() end.\n");
 }
 
+inline const char * const BoolToString(bool b)
+{
+	return b ? "true" : "false";
+}
+
 bool __fastcall EngineDLL::HOOKED_SetSignonState_Func(void* thisptr, int edx, int state, int spawncount)
 {
 	EngineDevMsg("Engine call: SetSignonState();\n");
+
+	EngineDevMsg("Orig_SetPaused value: %p \n", ORIG_SetPaused);
+
+	std::stringstream sspauseint;
+
+	sspauseint << "y_spt_pause value: " << std::to_string(y_spt_pause.GetInt()) << "\n";
+
+	EngineDevMsg("y_spt_pause value: %p \n", std::to_string(y_spt_pause.GetInt()));
 
 	if (ORIG_SetPaused && (y_spt_pause.GetInt() == 1))
 	{
@@ -525,4 +552,5 @@ bool __fastcall EngineDLL::HOOKED_SetSignonState_Func(void* thisptr, int edx, in
 	ORIG_SetSignonState(thisptr, edx, state, spawncount);
 
 	clientDLL.ResumeAfterframesQueue();
+	return true;
 }
