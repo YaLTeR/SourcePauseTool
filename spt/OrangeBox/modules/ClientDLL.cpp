@@ -90,7 +90,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsDoImageSpaceMotionBlur, &pDoImageSpaceMotionBlur);
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
-		auto ORIG_DoImageSpaceMorionBlur = (_DoImageSpaceMotionBlur)pDoImageSpaceMotionBlur;
+		auto ORIG_DoImageSpaceMotionBlur = (_DoImageSpaceMotionBlur)pDoImageSpaceMotionBlur;
 		EngineDevMsg("[client dll] Found DoImageSpaceMotionBlur at %p (using the build %s pattern).\n", pDoImageSpaceMotionBlur, Patterns::ptnsDoImageSpaceMotionBlur[ptnNumber].build.c_str());
 
 		switch (ptnNumber)
