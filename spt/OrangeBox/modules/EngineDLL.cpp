@@ -70,7 +70,6 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		pMiddleOfSV_InitGameDLL = NULL,
 		//p_Host_RunFrame = NULL,
 		//pSV_Frame = NULL,
-		pSomeDemoFunction = NULL,
 		pRecord = NULL,
 		pSetSignonState = NULL;
 
@@ -81,20 +80,6 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	//auto f_Host_RunFrame = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptns_Host_RunFrame, &p_Host_RunFrame);
 	//auto fSV_Frame = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSV_Frame, &pSV_Frame);
 	auto fRecord = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsRecord, &pRecord);
-	// HACK due to old SPTLib.
-	auto fSomeDemoFunction = std::async(std::launch::async, [&]() {
-		size_t i = 0;
-		for (const auto& pattern : Patterns::ptnsSomeDemoFunction)
-		{
-			pSomeDemoFunction = MemUtils::FindPattern(moduleStart, moduleLength, pattern.pattern.data(), pattern.mask.c_str());
-			if (pSomeDemoFunction)
-				return i;
-
-			++i;
-		}
-
-		return MemUtils::INVALID_SEQUENCE_INDEX;
-	});
 	auto fSetSignonState = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSetSignonState, &pSetSignonState);
 
 	// m_bLoadgame and pGameServer (&sv)
@@ -197,7 +182,6 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 
 	// SetPaused
-#ifndef P2
 	ptnNumber = fSetPaused.get();
 	if (pSetPaused)
 	{
@@ -209,18 +193,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineDevWarning("Could not find SetPaused!\n");
 		EngineWarning("y_spt_pause has no effect.\n");
 	}
-#else
-	ptnNumber = fSomeDemoFunction.get();
-	if (pSomeDemoFunction) {
-		EngineDevMsg("Found SomeDemoFunction at %p (using the build %s pattern).\n", pSomeDemoFunction, Patterns::ptnsSomeDemoFunction[ptnNumber].build.c_str());
-		Cbuf_GetCommandBuffer = (_Cbuf_GetCommandBuffer)(*(uintptr_t*)(pSomeDemoFunction + 121) + pSomeDemoFunction + 125);
-		Cbuf_AddText = (_Cbuf_AddText)(*(uintptr_t*)(pSomeDemoFunction + 127) + pSomeDemoFunction + 131);
-	}
-	else {
-		EngineDevWarning("Could not find SomeDemoFunction!\n");
-		EngineWarning("y_spt_pause has no effect.\n");
-	}
-#endif
+	
 
 	// interval_per_tick
 	ptnNumber = fMiddleOfSV_InitGameDLL.get();
@@ -441,7 +414,6 @@ void __fastcall EngineDLL::HOOKED_FinishRestore_Func(void* thisptr, int edx)
 
 void __fastcall EngineDLL::HOOKED_SetPaused_Func(void* thisptr, int edx, bool paused)
 {
-#ifndef P2
 	if (pM_bLoadgame)
 	{
 		EngineDevMsg("Engine call: SetPaused( %s ); m_bLoadgame = %s\n", (paused ? "true" : "false"), (*pM_bLoadgame ? "true" : "false"));
@@ -463,17 +435,6 @@ void __fastcall EngineDLL::HOOKED_SetPaused_Func(void* thisptr, int edx, bool pa
 
 	shouldPreventNextUnpause = false;
 	return ORIG_SetPaused(thisptr, edx, paused);
-#else
-	if (shouldPreventNextUnpause)
-	{
-		Cbuf_AddText(Cbuf_GetCommandBuffer(), "setpause\n", 0);
-		shouldPreventNextUnpause = false;
-		return ORIG_SetPaused(thisptr, edx, paused);
-		return;
-	}
-
-	shouldPreventNextUnpause = false;
-#endif
 }
 
 void __cdecl EngineDLL::HOOKED__Host_RunFrame_Func(float time)
