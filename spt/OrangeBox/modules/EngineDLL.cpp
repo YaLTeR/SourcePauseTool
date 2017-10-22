@@ -47,11 +47,6 @@ void __cdecl EngineDLL::HOOKED_Cbuf_Execute()
 	return engineDLL.HOOKED_Cbuf_Execute_Func();
 }
 
-bool __fastcall EngineDLL::HOOKED_SetSignonState(void* thisptr, int edx, int state, int spawncount)
-{
-	return engineDLL.HOOKED_SetSignonState_Func(thisptr, edx, state, spawncount);
-}
-
 void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.
@@ -70,8 +65,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		pMiddleOfSV_InitGameDLL = NULL,
 		//p_Host_RunFrame = NULL,
 		//pSV_Frame = NULL,
-		pRecord = NULL,
-		pSetSignonState = NULL;
+		pRecord = NULL;
 
 	auto fActivateServer = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSV_ActivateServer, &pSV_ActivateServer);
 	auto fFinishRestore = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsFinishRestore, &pFinishRestore);
@@ -80,7 +74,6 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	//auto f_Host_RunFrame = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptns_Host_RunFrame, &p_Host_RunFrame);
 	//auto fSV_Frame = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSV_Frame, &pSV_Frame);
 	auto fRecord = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsRecord, &pRecord);
-	auto fSetSignonState = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSetSignonState, &pSetSignonState);
 
 	// m_bLoadgame and pGameServer (&sv)
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsSpawnPlayer, &pSpawnPlayer);
@@ -90,16 +83,16 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 		switch (ptnNumber)
 		{
-				
 		case 0:
 			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 26));
 			//pGameServer = (*(void **)(pSpawnPlayer + 21)); - We get this one from SV_ActivateServer in OE.
 			break;
+
 		case 1:
 			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 5));
 			pGameServer = (*(void **)(pSpawnPlayer + 18));
 			break;
-				
+
 		case 2: // 5135 is the same as 4104 here.
 			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 5));
 			pGameServer = (*(void **)(pSpawnPlayer + 18));
@@ -111,6 +104,11 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			break;
 
 		case 4: // 2257546 is the same as 5339 here.
+			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 8));
+			pGameServer = (*(void **)(pSpawnPlayer + 21));
+			break;
+
+		case 5:
 			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 8));
 			pGameServer = (*(void **)(pSpawnPlayer + 21));
 			break;
@@ -154,7 +152,6 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 
 	// FinishRestore
-#ifndef P2
 	ptnNumber = fFinishRestore.get();
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
@@ -166,20 +163,6 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineDevWarning("Could not find FinishRestore!\n");
 		EngineWarning("y_spt_pause 1 has no effect.\n");
 	}
-#else
-	ptnNumber = fSetSignonState.get();
-	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
-	{
-		ORIG_SetSignonState = (_SetSignonState)pSetSignonState;
-		EngineDevMsg("Found SetSignonState at %p (using the build %s pattern).\n", pSetSignonState, Patterns::ptnsSetSignonState[ptnNumber].build.c_str());
-	}
-	else
-	{
-		EngineDevWarning("Could not find SetSignonState!\n");
-		EngineWarning("y_spt_pause 1 has no effect.\n");
-	}
-#endif
-
 
 	// SetPaused
 	ptnNumber = fSetPaused.get();
@@ -193,7 +176,6 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineDevWarning("Could not find SetPaused!\n");
 		EngineWarning("y_spt_pause has no effect.\n");
 	}
-	
 
 	// interval_per_tick
 	ptnNumber = fMiddleOfSV_InitGameDLL.get();
@@ -267,36 +249,21 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		{ (PVOID *)(&ORIG__Host_RunFrame), HOOKED__Host_RunFrame },
 		{ (PVOID *)(&ORIG__Host_RunFrame_Input), HOOKED__Host_RunFrame_Input },
 		{ (PVOID *)(&ORIG__Host_RunFrame_Server), HOOKED__Host_RunFrame_Server },
-		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute },
-		{ (PVOID *)(&ORIG_SetSignonState), HOOKED_SetSignonState  }
+		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute }
 	});
 }
 
 void EngineDLL::Unhook()
 {
-	std::pair<PVOID*, PVOID> activateServerPair = { (PVOID *)(&ORIG_SV_ActivateServer), HOOKED_SV_ActivateServer };
-	std::pair<PVOID*, PVOID> finishRestorePair = { (PVOID *)(&ORIG_FinishRestore), HOOKED_FinishRestore };
-	std::pair<PVOID*, PVOID> setPausedPair = { (PVOID *)(&ORIG_SetPaused), HOOKED_SetPaused };
-	std::pair<PVOID*, PVOID> host_runframePair = { (PVOID *)(&ORIG__Host_RunFrame), HOOKED__Host_RunFrame };
-	std::pair<PVOID*, PVOID> host_runframe_inputPair = { (PVOID *)(&ORIG__Host_RunFrame_Input), HOOKED__Host_RunFrame_Input };
-	std::pair<PVOID*, PVOID> host_runframe_serverPair = { (PVOID *)(&ORIG__Host_RunFrame_Server), HOOKED__Host_RunFrame_Server };
-	PVOID cbufPvoid = HOOKED_Cbuf_Execute;
-	std::pair<PVOID*, PVOID> cbuf_executePair = { (PVOID *)(&ORIG_Cbuf_Execute),  cbufPvoid};
-	PVOID signonStatePvoid = HOOKED_SetSignonState;
-	std::pair<PVOID*, PVOID> setSignonStatePair = { (PVOID *)(&ORIG_SetSignonState),  signonStatePvoid};
-
-	const std::vector<std::pair<PVOID*, PVOID>>& functions = {
-		activateServerPair,
-		finishRestorePair,
-		setPausedPair,
-		host_runframePair,
-		host_runframe_inputPair,
-		host_runframe_serverPair,
-		cbuf_executePair,
-		setSignonStatePair
-	};
-
-	DetoursUtils::DetachDetours(moduleName, functions);
+	DetoursUtils::DetachDetours(moduleName, {
+		{ (PVOID *)(&ORIG_SV_ActivateServer), HOOKED_SV_ActivateServer },
+		{ (PVOID *)(&ORIG_FinishRestore), HOOKED_FinishRestore },
+		{ (PVOID *)(&ORIG_SetPaused), HOOKED_SetPaused },
+		{ (PVOID *)(&ORIG__Host_RunFrame), HOOKED__Host_RunFrame },
+		{ (PVOID *)(&ORIG__Host_RunFrame_Input), HOOKED__Host_RunFrame_Input },
+		{ (PVOID *)(&ORIG__Host_RunFrame_Server), HOOKED__Host_RunFrame_Server },
+		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute }
+	});
 
 	Clear();
 }
@@ -306,16 +273,11 @@ void EngineDLL::Clear()
 	IHookableNameFilter::Clear();
 	ORIG_SV_ActivateServer = nullptr;
 	ORIG_FinishRestore = nullptr;
-	ORIG_SetSignonState = nullptr;
-	Cbuf_GetCommandBuffer = nullptr;
-	Cbuf_AddText = nullptr;
 	ORIG_SetPaused = nullptr;
 	ORIG__Host_RunFrame = nullptr;
 	ORIG__Host_RunFrame_Input = nullptr;
 	ORIG__Host_RunFrame_Server = nullptr;
 	ORIG_Cbuf_Execute = nullptr;
-	ORIG_SetSignonState = nullptr;
-
 	pGameServer = nullptr;
 	pM_bLoadgame = nullptr;
 	shouldPreventNextUnpause = false;
@@ -483,35 +445,4 @@ void __cdecl EngineDLL::HOOKED_Cbuf_Execute_Func()
 	ORIG_Cbuf_Execute();
 
 	EngineDevMsg("Cbuf_Execute() end.\n");
-}
-
-inline const char * const BoolToString(bool b)
-{
-	return b ? "true" : "false";
-}
-
-bool __fastcall EngineDLL::HOOKED_SetSignonState_Func(void* thisptr, int edx, int state, int spawncount)
-{
-	EngineDevMsg("Engine call: SetSignonState();\n");
-
-	EngineDevMsg("Orig_SetPaused value: %p \n", ORIG_SetPaused);
-
-	std::stringstream sspauseint;
-
-	sspauseint << "y_spt_pause value: " << std::to_string(y_spt_pause.GetInt()) << "\n";
-
-	EngineDevMsg("y_spt_pause value: %p \n", std::to_string(y_spt_pause.GetInt()));
-
-	if (ORIG_SetPaused && (y_spt_pause.GetInt() == 1))
-	{
-		ORIG_SetPaused(thisptr, 0, true);
-		EngineDevMsg("Pausing...\n");
-
-		shouldPreventNextUnpause = true;
-	}
-
-	ORIG_SetSignonState(thisptr, edx, state, spawncount);
-
-	clientDLL.ResumeAfterframesQueue();
-	return true;
 }
