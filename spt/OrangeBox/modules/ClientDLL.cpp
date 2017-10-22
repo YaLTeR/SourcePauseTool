@@ -96,15 +96,15 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		switch (ptnNumber)
 		{
 		case 0:
-			pgpGlobals = *(uintptr_t **)(pDoImageSpaceMotionBlur + 129);
-			break;
-
-		case 1:
 			pgpGlobals = *(uintptr_t **)(pDoImageSpaceMotionBlur + 132);
 			break;
 
-		case 2:
+		case 1:
 			pgpGlobals = *(uintptr_t **)(pDoImageSpaceMotionBlur + 153);
+			break;
+
+		case 2:
+			pgpGlobals = *(uintptr_t **)(pDoImageSpaceMotionBlur + 129);
 			break;
 
 		case 3:
@@ -135,11 +135,11 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		switch (ptnNumber)
 		{
 		case 0:
-			off1M_nOldButtons = 1;
+			off1M_nOldButtons = 2;
 			off2M_nOldButtons = 40;
 			break;
 		case 1:
-			off1M_nOldButtons = 2;
+			off1M_nOldButtons = 1;
 			off2M_nOldButtons = 40;
 			break;
 
@@ -211,13 +211,13 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 		switch (ptnNumber) {
 		case 0:
-			offM_pCommands = 196;
+			offM_pCommands = 180;
 			offForwardmove = 24;
 			offSidemove = 28;
 			break;
 
 		case 1:
-			offM_pCommands = 180;
+			offM_pCommands = 196;
 			offForwardmove = 24;
 			offSidemove = 28;
 			break;
@@ -244,17 +244,6 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 		switch (ptnNumber) {
 		case 0:
-			offMaxspeed = 4076;
-			offFlags = 732;
-			offAbsVelocity = 244;
-			offDucking = 3489;
-			offDuckJumpTime = 3496;
-			offServerSurfaceFriction = 3752;
-			offServerPreviouslyPredictedOrigin = 3628;
-			offServerAbsOrigin = 580;
-			break;
-				
-		case 1:
 			offMaxspeed = 4136;
 			offFlags = 736;
 			offAbsVelocity = 248;
@@ -262,6 +251,17 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			offDuckJumpTime = 3552;
 			offServerSurfaceFriction = 3812;
 			offServerPreviouslyPredictedOrigin = 3692;
+			offServerAbsOrigin = 580;
+			break;
+
+		case 1:
+			offMaxspeed = 4076;
+			offFlags = 732;
+			offAbsVelocity = 244;
+			offDucking = 3489;
+			offDuckJumpTime = 3496;
+			offServerSurfaceFriction = 3752;
+			offServerPreviouslyPredictedOrigin = 3628;
 			offServerAbsOrigin = 580;
 			break;
 		}
@@ -288,11 +288,11 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	{
 		switch (ptnNumber) {
 		case 0:
-			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 30) + pMiddleOfCAM_Think + 34);
+			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 29) + pMiddleOfCAM_Think + 33);
 			break;
 
 		case 1:
-			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 29) + pMiddleOfCAM_Think + 33);
+			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 30) + pMiddleOfCAM_Think + 34);
 			break;
 		}
 
