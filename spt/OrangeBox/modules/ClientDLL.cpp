@@ -215,7 +215,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			offForwardmove = 24;
 			offSidemove = 28;
 			break;
-				
+
 		case 1:
 			offM_pCommands = 180;
 			offForwardmove = 24;
@@ -290,7 +290,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		case 0:
 			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 30) + pMiddleOfCAM_Think + 34);
 			break;
-				
+
 		case 1:
 			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 29) + pMiddleOfCAM_Think + 33);
 			break;
