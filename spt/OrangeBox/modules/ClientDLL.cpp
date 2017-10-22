@@ -90,11 +90,11 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsDoImageSpaceMotionBlur, &pDoImageSpaceMotionBlur);
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
-		auto ORIG_DoImageSpaceMotionBlur = (_DoImageSpaceMotionBlur)pDoImageSpaceMotionBlur;
+		ORIG_DoImageSpaceMotionBlur = (_DoImageSpaceMotionBlur)pDoImageSpaceMotionBlur;
 		EngineDevMsg("[client dll] Found DoImageSpaceMotionBlur at %p (using the build %s pattern).\n", pDoImageSpaceMotionBlur, Patterns::ptnsDoImageSpaceMotionBlur[ptnNumber].build.c_str());
 
 		switch (ptnNumber)
-		{		
+		{
 		case 0:
 			pgpGlobals = *(uintptr_t **)(pDoImageSpaceMotionBlur + 129);
 			break;
@@ -376,6 +376,8 @@ void ClientDLL::Clear()
 	CalcAbsoluteVelocity = nullptr;
 
 	pgpGlobals = nullptr;
+	off1M_nOldButtons = 0;
+	off2M_nOldButtons = 0;
 	offM_pCommands = 0;
 	offForwardmove = 0;
 	offSidemove = 0;
@@ -399,8 +401,6 @@ void ClientDLL::Clear()
 	setPitch.set = false;
 	setYaw.set = false;
 	forceJump = false;
-	off1M_nOldButtons = NULL;
-	off2M_nOldButtons = NULL;
 	cantJumpNextTime = false;
 }
 
