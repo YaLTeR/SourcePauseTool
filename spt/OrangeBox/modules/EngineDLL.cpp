@@ -84,28 +84,28 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		switch (ptnNumber)
 		{
 		case 0:
-			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 26));
-			//pGameServer = (*(void **)(pSpawnPlayer + 21)); - We get this one from SV_ActivateServer in OE.
+			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 5));
+			pGameServer = (*(void **)(pSpawnPlayer + 18));
 			break;
 
 		case 1:
-			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 5));
-			pGameServer = (*(void **)(pSpawnPlayer + 18));
-			break;
-
-		case 2: // 5135 is the same as 4104 here.
-			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 5));
-			pGameServer = (*(void **)(pSpawnPlayer + 18));
-			break;
-
-		case 3:
 			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 8));
 			pGameServer = (*(void **)(pSpawnPlayer + 21));
 			break;
 
-		case 4: // 2257546 is the same as 5339 here.
+		case 2: // 4104 is the same as 5135 here.
+			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 5));
+			pGameServer = (*(void **)(pSpawnPlayer + 18));
+			break;
+
+		case 3: // 2257546 is the same as 5339 here.
 			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 8));
 			pGameServer = (*(void **)(pSpawnPlayer + 21));
+			break;
+
+		case 4:
+			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 26));
+			//pGameServer = (*(void **)(pSpawnPlayer + 21)); - We get this one from SV_ActivateServer in OE.
 			break;
 
 		case 5:
