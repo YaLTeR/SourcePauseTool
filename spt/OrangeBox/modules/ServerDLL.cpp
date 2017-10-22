@@ -87,10 +87,10 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			break;
 
 		case 2:
-			off1M_nOldButtons = 1;
+			off1M_nOldButtons = 2;
 			off2M_nOldButtons = 40;
 			break;
-				
+
 		case 3:
 			off1M_nOldButtons = 2;
 			off2M_nOldButtons = 40;
@@ -112,7 +112,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			break;
 
 		case 7:
-			off1M_nOldButtons = 2;
+			off1M_nOldButtons = 1;
 			off2M_nOldButtons = 40;
 			break;
 
@@ -122,7 +122,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			break;
 
 		case 9:
-			off1M_nOldButtons = 1;
+			off1M_nOldButtons = 2;
 			off2M_nOldButtons = 40;
 			break;
 
@@ -132,7 +132,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			break;
 
 		case 11:
-			off1M_nOldButtons = 2;
+			off1M_nOldButtons = 1;
 			off2M_nOldButtons = 40;
 			break;
 		}
@@ -179,15 +179,15 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		switch (ptnNumber)
 		{
 		case 0:
-			offM_vecAbsVelocity = 592;
+			offM_vecAbsVelocity = 476;
 			break;
 
 		case 1:
 			offM_vecAbsVelocity = 476;
 			break;
-				
+
 		case 2:
-			offM_vecAbsVelocity = 476;
+			offM_vecAbsVelocity = 532;
 			break;
 
 		case 3:
@@ -199,11 +199,11 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			break;
 
 		case 5:
-			offM_vecAbsVelocity = 532;
+			offM_vecAbsVelocity = 476;
 			break;
 
 		case 6:
-			offM_vecAbsVelocity = 476;
+			offM_vecAbsVelocity = 532;
 			break;
 
 		case 7:
@@ -211,7 +211,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			break;
 
 		case 8:
-			offM_vecAbsVelocity = 532;
+			offM_vecAbsVelocity = 592;
 			break;
 		}
 	}
