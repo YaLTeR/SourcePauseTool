@@ -81,6 +81,8 @@ protected:
 
 	uintptr_t* pgpGlobals;
 	ptrdiff_t offM_pCommands;
+	ptrdiff_t off1M_nOldButtons;
+	ptrdiff_t off2M_nOldButtons;
 	ptrdiff_t offForwardmove;
 	ptrdiff_t offSidemove;
 	ptrdiff_t offMaxspeed;
@@ -108,6 +110,4 @@ protected:
 	void OnFrame();
 
 	int afterframesDelay;
-	int off1M_nOldButtons;
-	int off2M_nOldButtons;
 };
