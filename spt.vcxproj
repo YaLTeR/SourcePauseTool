@@ -104,7 +104,7 @@
     <PreLinkEventUseInBuild>true</PreLinkEventUseInBuild>
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
     <TargetName>spt-oe</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -144,7 +144,7 @@
     <PreLinkEventUseInBuild>true</PreLinkEventUseInBuild>
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
     <TargetName>spt-oe</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -813,6 +813,7 @@
     <ClInclude Include="sptlib\memutils.hpp" />
     <ClInclude Include="sptlib\sptlib.hpp" />
     <ClInclude Include="sptlib\sptlib-stdafx.hpp" />
+    <ClInclude Include="spt\OrangeBox\custom_interfaces.hpp" />
     <ClInclude Include="spt\OrangeBox\cvars.hpp" />
     <ClInclude Include="spt\OrangeBox\modules.hpp" />
     <ClInclude Include="spt\OrangeBox\modules\ClientDLL.hpp" />

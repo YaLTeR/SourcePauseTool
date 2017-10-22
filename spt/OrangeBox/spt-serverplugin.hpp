@@ -7,6 +7,7 @@
 #endif
 
 #include "engine\iserverplugin.h"
+#include "custom_interfaces.hpp"
 
 //---------------------------------------------------------------------------------
 // Purpose: a sample 3rd party plugin class
@@ -56,9 +57,9 @@ public:
 #if defined( OE )
 struct ArgsWrapper
 {
-	IVEngineClient *engine;
+	EngineClientWrapper *engine;
 
-	ArgsWrapper(IVEngineClient* engine)
+	ArgsWrapper(EngineClientWrapper* engine)
 	{
 		this->engine = engine;
 	};
