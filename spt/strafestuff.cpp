@@ -264,25 +264,7 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 			const Vector vel = player.Velocity;
 			out.Yaw = NormalizeRad(atan2(vel.y, vel.x));
 		}
-		else {
-			#ifndef OE && P2
-			out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
-			#elif P2
-			if (y_spt_additional_abh.GetBool()) {
-				out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180)
-			}
-			else {
-				//Do nothing, since Portal 2 doesn't give any horizontal speed boost whatsoever upon jumping
-			}
-			#else
-			if (y_spt_additional_abh.GetBool()) {
-				out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180)
-			}
-			else {
-				const Vector vel = player.Velocity;
-				out.yaw = NormalizeDeg(NormalizeRad(atan2(vel.y, vel.x)) + (90 - (asin2((((sin (NormalizeRad(atan2(vel.y, vel.x)))*(player.Velocity+flSpeedBoostPerc.GetFloat()))/sin 90)*sin 90)/flSpeedBoostPerc.GetFloat()))))
-			#endif
-		}
+		
 		out.Forward = false;
 		out.Back = false;
 		out.Right = false;
