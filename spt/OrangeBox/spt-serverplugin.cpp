@@ -7,6 +7,7 @@
 #include "cvars.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include <SPTLib\Hooks.hpp>
+#include "custom_interfaces.hpp"
 #include "vstdlib\random.h"
 
 #include "cdll_int.h"
@@ -29,7 +30,7 @@ inline bool FStrEq( const char *sz1, const char *sz2 )
 }
 
 // Interfaces from the engine
-IVEngineClient *engine = nullptr;
+std::unique_ptr<EngineClientWrapper> engine;
 IVEngineServer *engine_server = nullptr;
 IUniformRandomStream* random = nullptr;
 void *gm = nullptr;
@@ -138,6 +139,18 @@ bool DoesGameLookLikePortal()
 	return false;
 }
 
+bool DoesGameLookLikeDMoMM()
+{
+#ifdef OE
+	if (g_pCVar) {
+		if (g_pCVar->FindVar("mm_xana_fov"))
+			return true;
+	}
+#endif
+
+	return false;
+}
+
 bool FoundEngineServer()
 {
 	return (engine_server != nullptr);
@@ -194,7 +207,18 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	ConVar_Register(0);
 #endif
 
-	engine = (IVEngineClient*)interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION, NULL);
+	auto ptr = interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION, NULL);
+	if (ptr) {
+#ifdef OE
+		if (DoesGameLookLikeDMoMM())
+			engine = std::make_unique<IVEngineClientWrapper<IVEngineClientDMoMM>>(reinterpret_cast<IVEngineClientDMoMM*>(ptr));
+#endif
+
+		// Check if we assigned it in the ifdef above.
+		if (!engine)
+			engine = std::make_unique<IVEngineClientWrapper<IVEngineClient>>(reinterpret_cast<IVEngineClient*>(ptr));
+	}
+
 	if (!engine)
 	{
 		DevWarning("SPT: Failed to get the IVEngineClient interface.\n");
@@ -271,7 +295,7 @@ CON_COMMAND(_y_spt_afterframes_wait, "Delays the afterframes queue. Usage: _y_sp
 		return;
 
 #if defined( OE )
-	ArgsWrapper args(engine);
+	ArgsWrapper args(engine.get());
 #endif
 
 	if (args.ArgC() != 2)
@@ -291,7 +315,7 @@ CON_COMMAND(_y_spt_afterframes, "Add a command into an afterframes queue. Usage:
 		return;
 
 #if defined( OE )
-	ArgsWrapper args(engine);
+	ArgsWrapper args(engine.get());
 #endif
 
 	if (args.ArgC() != 3)
@@ -348,7 +372,7 @@ CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 		return;
 
 #if defined( OE )
-	ArgsWrapper args(engine);
+	ArgsWrapper args(engine.get());
 #endif
 
 	if (args.ArgC() < 2)
@@ -397,7 +421,7 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 		return;
 
 #if defined( OE )
-	ArgsWrapper args(engine);
+	ArgsWrapper args(engine.get());
 #endif
 
 	if (args.ArgC() != 4)
@@ -503,7 +527,7 @@ CON_COMMAND(_y_spt_setpitch, "Sets the pitch. Usage: _y_spt_setpitch <pitch>")
 		return;
 
 #if defined( OE )
-	ArgsWrapper args(engine);
+	ArgsWrapper args(engine.get());
 #endif
 
 	if (args.ArgC() != 2)
@@ -521,7 +545,7 @@ CON_COMMAND(_y_spt_setyaw, "Sets the yaw. Usage: _y_spt_setyaw <yaw>")
 		return;
 
 #if defined( OE )
-	ArgsWrapper args(engine);
+	ArgsWrapper args(engine.get());
 #endif
 
 	if (args.ArgC() != 2)
@@ -539,7 +563,7 @@ CON_COMMAND(_y_spt_setangles, "Sets the angles. Usage: _y_spt_setangles <pitch> 
 		return;
 
 #if defined( OE )
-	ArgsWrapper args(engine);
+	ArgsWrapper args(engine.get());
 #endif
 
 	if (args.ArgC() != 3)
@@ -580,7 +604,7 @@ CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [t
 		return;
 
 #if defined( OE )
-	ArgsWrapper args(engine);
+	ArgsWrapper args(engine.get());
 #endif
 
 	switch (args.ArgC())

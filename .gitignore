@@ -4,6 +4,7 @@ Detours/lib.X86/*.lib
 Detours/lib.X86/*.pdb
 
 # Build files
+Debug OE/
 Release OE/
 Release 2013/
 Release P2/
