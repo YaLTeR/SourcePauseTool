@@ -108,7 +108,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			//pGameServer = (*(void **)(pSpawnPlayer + 21)); - We get this one from SV_ActivateServer in OE.
 			break;
 
-		case 5:
+		case 5: // 6879 is the same as 5339 here.
 			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 8));
 			pGameServer = (*(void **)(pSpawnPlayer + 21));
 			break;
@@ -135,7 +135,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 		switch (ptnNumber)
 		{
-		case 0:
+		case 3:
 			pGameServer = (*(void **)(pSV_ActivateServer + 223));
 			break;
 		}
