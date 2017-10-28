@@ -259,22 +259,37 @@ double YawStrafeMaxAngle(PlayerData& player, const MovementVars& vars, bool ongr
 bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons)
 {
 	//DevMsg("[Strafing] ducking = %d\n", (int)ducking);
-	if (jumped && player.Velocity.Length2D() >= vars.Maxspeed * ((ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5)) {
-		if (tas_strafe_jumptype.GetInt == 1)
-			out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
-		else if (tas_strafe_jumptype.GetInt == 2)
-			out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat());
-		else if (tas_strafe_jumptype.GetInt == 3) {
-			const Vector vel = player.Velocity;
-			out.Yaw = NormalizeRad(atan2(vel.y, vel.x));
-		}
-		else
-			// Do nothing, since there's no need to look in a different direction to that which strafing would present in games with a speed boost upon jumping.
-		
-		out.Forward = false;
-		out.Back = false;
-		out.Right = false;
-		out.Left = false;
+	if (jumped) {
+    if (tas_strafe_jumptype.GetInt() == 2) {
+        // OE bhop
+        out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat());
+        out.Forward = false;
+        out.Back = false;
+        out.Right = false;
+        out.Left = false;
+        return onground;
+    } else if (player.Velocity.Length2D() >= vars.Maxspeed * ((ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5)) {
+        if (tas_strafe_jumptype.GetInt() == 1) {
+            // ABH
+            out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
+            out.Forward = false;
+            out.Back = false;
+            out.Right = false;
+            out.Left = false;
+            return onground;
+        } else if (tas_strafe_jumptype.GetInt() == 3) {
+            // Glitchless bhop
+            const Vector vel = player.Velocity;
+            out.Yaw = NormalizeRad(atan2(vel.y, vel.x));
+            out.Forward = false;
+            out.Back = false;
+            out.Right = false;
+            out.Left = false;
+            return onground;
+        }
+    }
+}
+ 
 
 		//Vector vecForward;
 		//AngleVectors(QAngle(0, out.Yaw, 0), &vecForward);
