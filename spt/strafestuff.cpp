@@ -260,37 +260,33 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 {
 	//DevMsg("[Strafing] ducking = %d\n", (int)ducking);
 	if (jumped) {
-    if (tas_strafe_jumptype.GetInt() == 2) {
-        // OE bhop
-        out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat());
-        out.Forward = false;
-        out.Back = false;
-        out.Right = false;
-        out.Left = false;
-        return onground;
-    } else if (player.Velocity.Length2D() >= vars.Maxspeed * ((ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5)) {
-        if (tas_strafe_jumptype.GetInt() == 1) {
-            // ABH
-            out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
-            out.Forward = false;
-            out.Back = false;
-            out.Right = false;
-            out.Left = false;
-            return onground;
-        } else if (tas_strafe_jumptype.GetInt() == 3) {
-            // Glitchless bhop
-            const Vector vel = player.Velocity;
-            out.Yaw = NormalizeRad(atan2(vel.y, vel.x));
-            out.Forward = false;
-            out.Back = false;
-            out.Right = false;
-            out.Left = false;
-            return onground;
-        }
-    }
-}
- 
-
+		if (tas_strafe_jumptype.GetInt() == 2) {
+			// OE bhop
+			out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat());
+			out.Forward = false;
+			out.Back = false;
+			out.Right = false;
+			out.Left = false;
+			return onground;
+		} else if (player.Velocity.Length2D() >= vars.Maxspeed * ((ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5)) {
+			if (tas_strafe_jumptype.GetInt() == 1) {
+				// ABH
+				out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
+				out.Forward = false;
+				out.Back = false;
+				out.Right = false;
+				out.Left = false;
+				return onground;
+			} else if (tas_strafe_jumptype.GetInt() == 3) {
+				// Glitchless bhop
+				const Vector vel = player.Velocity;
+				out.Yaw = NormalizeRad(atan2(vel.y, vel.x));
+				out.Forward = false;
+				out.Back = false;
+				out.Right = false;
+				out.Left = false;
+				return onground;
+			}
 		//Vector vecForward;
 		//AngleVectors(QAngle(0, out.Yaw, 0), &vecForward);
 		//vecForward.z = 0;
@@ -314,8 +310,7 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 
 		//// Add it on
 		//VectorAdd((vecForward*flSpeedAddition), player.Velocity, player.Velocity);
-
-		return onground;
+		}
 	}
 
 	double wishspeed = vars.Maxspeed;
