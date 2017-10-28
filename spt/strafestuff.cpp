@@ -260,10 +260,16 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 {
 	//DevMsg("[Strafing] ducking = %d\n", (int)ducking);
 	if (jumped && player.Velocity.Length2D() >= vars.Maxspeed * ((ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5)) {
-		if (tas_strafe_glitchless.GetBool()) {
+		if (tas_strafe_jumptype.GetInt == 1)
+			out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
+		elif (tas_strafe_jumptype.GetInt == 2)
+			out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat());
+		elif (tas_strafe_jumptype.GetInt == 3) {
 			const Vector vel = player.Velocity;
 			out.Yaw = NormalizeRad(atan2(vel.y, vel.x));
 		}
+		else
+			// Do nothing, since there's no need to look in a different direction to that which strafing would present in games with a speed boost upon jumping.
 		
 		out.Forward = false;
 		out.Back = false;
