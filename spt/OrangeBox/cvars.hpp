@@ -25,7 +25,7 @@ extern ConVar tas_log;
 extern ConVar tas_strafe_lgagst;
 extern ConVar tas_strafe_lgagst_minspeed;
 extern ConVar tas_strafe_lgagst_fullmaxspeed;
-extern ConVar tas_strafe_glitchless;
+extern ConVar tas_strafe_jumptype;
 
 extern ConVar _y_spt_autojump_ensure_legit;
 extern ConVar _y_spt_afterframes_reset_on_server_activate;

@@ -259,44 +259,35 @@ double YawStrafeMaxAngle(PlayerData& player, const MovementVars& vars, bool ongr
 bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons)
 {
 	//DevMsg("[Strafing] ducking = %d\n", (int)ducking);
-	if (jumped && player.Velocity.Length2D() >= vars.Maxspeed * ((ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5)) {
-		if (tas_strafe_glitchless.GetBool()) {
-			const Vector vel = player.Velocity;
-			out.Yaw = NormalizeRad(atan2(vel.y, vel.x));
+	if (jumped) {
+		if (tas_strafe_jumptype.GetInt() == 2) {
+			// OE bhop
+			out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat());
+			out.Forward = false;
+			out.Back = false;
+			out.Right = false;
+			out.Left = false;
+			return onground;
+		} else if (player.Velocity.Length2D() >= vars.Maxspeed * ((ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5)) {
+			if (tas_strafe_jumptype.GetInt() == 1) {
+				// ABH
+				out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
+				out.Forward = false;
+				out.Back = false;
+				out.Right = false;
+				out.Left = false;
+				return onground;
+			} else if (tas_strafe_jumptype.GetInt() == 3) {
+				// Glitchless bhop
+				const Vector vel = player.Velocity;
+				out.Yaw = NormalizeRad(atan2(vel.y, vel.x)) * M_RAD2DEG;
+				out.Forward = false;
+				out.Back = false;
+				out.Right = false;
+				out.Left = false;
+				return onground;
+			}
 		}
-		else {
-			out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
-		}
-		out.Forward = false;
-		out.Back = false;
-		out.Right = false;
-		out.Left = false;
-
-		//Vector vecForward;
-		//AngleVectors(QAngle(0, out.Yaw, 0), &vecForward);
-		//vecForward.z = 0;
-		//VectorNormalize(vecForward);
-
-		//// We give a certain percentage of the current forward movement as a bonus to the jump speed.  That bonus is clipped
-		//// to not accumulate over time.
-		//float flSpeedBoostPerc = ((vars.Maxspeed != 320) && !ducking) ? 0.5f : 0.1f;
-		//float flSpeedAddition = fabs(0 * flSpeedBoostPerc);
-		//float flMaxSpeed = vars.Maxspeed + (vars.Maxspeed * flSpeedBoostPerc);
-		//float flNewSpeed = (flSpeedAddition + player.Velocity.Length2D());
-
-		//// If we're over the maximum, we want to only boost as much as will get us to the goal speed
-		//if (flNewSpeed > flMaxSpeed)
-		//{
-		//	flSpeedAddition -= flNewSpeed - flMaxSpeed;
-		//}
-
-		//if (0 < 0.0f)
-		//	flSpeedAddition *= -1.0f;
-
-		//// Add it on
-		//VectorAdd((vecForward*flSpeedAddition), player.Velocity, player.Velocity);
-
-		return onground;
 	}
 
 	double wishspeed = vars.Maxspeed;

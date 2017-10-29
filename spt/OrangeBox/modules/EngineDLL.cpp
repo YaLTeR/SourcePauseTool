@@ -107,6 +107,11 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 26));
 			//pGameServer = (*(void **)(pSpawnPlayer + 21)); - We get this one from SV_ActivateServer in OE.
 			break;
+
+		case 5: // 6879 is the same as 5339 here.
+			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 8));
+			pGameServer = (*(void **)(pSpawnPlayer + 21));
+			break;
 		}
 
 		EngineDevMsg("m_bLoadGame is situated at %p.\n", pM_bLoadgame);

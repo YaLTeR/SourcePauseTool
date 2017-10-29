@@ -17,7 +17,7 @@ typedef void(__cdecl *_Cbuf_Execute) ();
 class EngineDLL : public IHookableNameFilter
 {
 public:
-	EngineDLL() : IHookableNameFilter( { L"engine.dll" } ) {};
+	EngineDLL() : IHookableNameFilter({ L"engine.dll" }) {};
 	virtual void Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength);
 	virtual void Unhook();
 	virtual void Clear();

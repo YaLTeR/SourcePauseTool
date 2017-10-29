@@ -32,7 +32,7 @@ ConVar tas_log("tas_log", "0", 0, "If enabled, dumps a whole bunch of different 
 ConVar tas_strafe_lgagst("tas_strafe_lgagst", "0", 0, "If enabled, jumps automatically when it's faster to move in the air than on ground. Incomplete, intended use is for tas_strafe_glitchless only.\n");
 ConVar tas_strafe_lgagst_minspeed("tas_strafe_lgagst_minspeed", "30", 0, "Prevents LGAGST from triggering when the player speed is below this value. The default should be fine.");
 ConVar tas_strafe_lgagst_fullmaxspeed("tas_strafe_lgagst_fullmaxspeed", "0", 0, "If enabled, LGAGST assumes the player is standing regardless of the actual ducking state. Useful for when you land while crouching but intend to stand up immediately.\n");
-ConVar tas_strafe_glitchless("tas_strafe_glitchless", "0", 0, "If enabled, replaces the automatic ABH with glitchless bhop: forces the player to look at the direction of velocity when jumping.\n");
+ConVar tas_strafe_jumptype("tas_strafe_jumptype", "1", 0, "TAS jump strafe types:\n\t0 - Does nothing,\n\t1 - Looks directly opposite to desired direction (for games with ABH),\n\t2 - Looks in desired direction (games with speed boost upon jumping but no ABH),\n\t3 - Looks in direction that results in greatest speed loss (for glitchless TASes on game with ABH).\n");
 	
 ConVar _y_spt_autojump_ensure_legit("_y_spt_autojump_ensure_legit", "1", FCVAR_ARCHIVE);
 ConVar _y_spt_afterframes_reset_on_server_activate("_y_spt_afterframes_reset_on_server_activate", "1", FCVAR_ARCHIVE);
