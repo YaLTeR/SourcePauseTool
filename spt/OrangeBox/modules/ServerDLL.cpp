@@ -283,7 +283,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	else
 	{
 		EngineDevWarning("[server dll] Could not find the sliding code!\n");
-		EngineWarning("TODO REPLACE\n"); // TODO
+		EngineWarning("y_spt_on_slide_pause_for has no effect.\n");
 	}
 
 	extern void* gm;
