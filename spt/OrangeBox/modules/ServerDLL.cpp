@@ -47,6 +47,37 @@ float __fastcall ServerDLL::HOOKED_TraceFirePortal(void* thisptr, int edx, bool 
 	return serverDLL.HOOKED_TraceFirePortal_Func(thisptr, edx, bPortal2, vTraceStart, vDirection, tr, vFinalPosition, qFinalAngles, iPlacedBy, bTest);
 }
 
+void __fastcall ServerDLL::HOOKED_SlidingAndOtherStuff(void* thisptr, int edx, void* a, void* b)
+{
+	return serverDLL.HOOKED_SlidingAndOtherStuff_Func(thisptr, edx, a, b);
+}
+
+__declspec(naked) void ServerDLL::HOOKED_MiddleOfSlidingFunction()
+{
+	/**
+	 * This is a hook in the middle of a function.
+	 * Save all registers and EFLAGS to restore right before jumping out.
+	 * Don't use local variables as they will corrupt the stack.
+	 */
+	__asm {
+		pushad;
+		pushfd;
+	}
+
+	serverDLL.HOOKED_MiddleOfSlidingFunction_Func();
+
+	__asm {
+		popfd;
+		popad;
+		/**
+		 * It's important that nothing modifies the registers, the EFLAGS or the stack past this point,
+		 * or the game won't be able to continue normally.
+		 */
+
+		jmp serverDLL.ORIG_MiddleOfSlidingFunction;
+	}
+}
+
 void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.
@@ -61,11 +92,13 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	uintptr_t pCheckJumpButton = NULL,
 		pFinishGravity = NULL,
 		pPlayerRunCommand = NULL,
-		pCheckStuck = NULL;
+		pCheckStuck = NULL,
+		pMiddleOfSlidingFunction = NULL;
 
 	auto fFinishGravity = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsFinishGravity, &pFinishGravity);
 	auto fPlayerRunCommand = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsPlayerRunCommand, &pPlayerRunCommand);
 	auto fCheckStuck = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCheckStuck, &pCheckStuck);
+	auto fMiddleOfSlidingFunction = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsMiddleOfSlidingFunction, &pMiddleOfSlidingFunction);
 
 	// Server-side CheckJumpButton
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsServerCheckJumpButton, &pCheckJumpButton);
@@ -231,10 +264,26 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	{
 		ORIG_CheckStuck = (_CheckStuck)pCheckStuck;
 		EngineDevMsg("[server dll] Found CheckStuck at %p (using the build %s pattern).\n", pCheckStuck, Patterns::ptnsCheckStuck[ptnNumber].build.c_str());
-	} else
+	}
+	else
 	{
 		EngineDevWarning("[server dll] Could not find CheckStuck!\n");
 		EngineWarning("y_spt_stucksave has no effect.\n");
+	}
+
+	// Middle of DMoMM sliding function.
+	ptnNumber = fMiddleOfSlidingFunction.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_MiddleOfSlidingFunction = (void*)pMiddleOfSlidingFunction;
+		ORIG_SlidingAndOtherStuff = (_SlidingAndOtherStuff)(pMiddleOfSlidingFunction - 0x4bb);
+		EngineDevMsg("[server dll] Found the sliding code at %p (using the build %s pattern).\n", pMiddleOfSlidingFunction, Patterns::ptnsMiddleOfSlidingFunction[ptnNumber].build.c_str());
+		EngineDevMsg("[server dll] Found the sliding function at %p.\n", ORIG_SlidingAndOtherStuff);
+	}
+	else
+	{
+		EngineDevWarning("[server dll] Could not find the sliding code!\n");
+		EngineWarning("TODO REPLACE\n"); // TODO
 	}
 
 	extern void* gm;
@@ -257,7 +306,9 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		{ (PVOID *)(&ORIG_FinishGravity), HOOKED_FinishGravity },
 		{ (PVOID *)(&ORIG_PlayerRunCommand), HOOKED_PlayerRunCommand },
 		{ (PVOID *)(&ORIG_CheckStuck), HOOKED_CheckStuck },
-		{ (PVOID *)(&ORIG_TraceFirePortal), HOOKED_TraceFirePortal }
+		{ (PVOID *)(&ORIG_TraceFirePortal), HOOKED_TraceFirePortal },
+		{ (PVOID *)(&ORIG_SlidingAndOtherStuff), HOOKED_SlidingAndOtherStuff },
+		{ &ORIG_MiddleOfSlidingFunction, HOOKED_MiddleOfSlidingFunction }
 	});
 }
 
@@ -277,7 +328,9 @@ void ServerDLL::Unhook()
 		{ (PVOID *)(&ORIG_FinishGravity), HOOKED_FinishGravity },
 		{ (PVOID *)(&ORIG_PlayerRunCommand), HOOKED_PlayerRunCommand },
 		{ (PVOID *)(&ORIG_CheckStuck), HOOKED_CheckStuck },
-		{ (PVOID *)(&ORIG_TraceFirePortal), HOOKED_TraceFirePortal }
+		{ (PVOID *)(&ORIG_TraceFirePortal), HOOKED_TraceFirePortal },
+		{ (PVOID *)(&ORIG_SlidingAndOtherStuff), HOOKED_SlidingAndOtherStuff },
+		{ &ORIG_MiddleOfSlidingFunction, HOOKED_MiddleOfSlidingFunction }
 	});
 
 	Clear();
@@ -291,6 +344,8 @@ void ServerDLL::Clear()
 	ORIG_PlayerRunCommand = nullptr;
 	ORIG_CheckStuck = nullptr;
 	ORIG_AirAccelerate = nullptr;
+	ORIG_SlidingAndOtherStuff = nullptr;
+	ORIG_MiddleOfSlidingFunction = nullptr;
 	off1M_nOldButtons = 0;
 	off2M_nOldButtons = 0;
 	cantJumpNextTime = false;
@@ -301,6 +356,8 @@ void ServerDLL::Clear()
 	lastVelocity.Init();
 	ticksPassed = 0;
 	timerRunning = false;
+	sliding = false;
+	wasSliding = false;
 }
 
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
@@ -473,4 +530,35 @@ float __fastcall ServerDLL::HOOKED_TraceFirePortal_Func(void* thisptr, int edx, 
 	lastTraceFirePortalNormal = tr.plane.normal;
 
 	return rv;
+}
+
+void __fastcall ServerDLL::HOOKED_SlidingAndOtherStuff_Func(void* thisptr, int edx, void* a, void* b)
+{
+	if (sliding) {
+		sliding = false;
+		wasSliding = true;
+	} else {
+		wasSliding = false;
+	}
+
+	return ORIG_SlidingAndOtherStuff(thisptr, edx, a, b);
+}
+
+void ServerDLL::HOOKED_MiddleOfSlidingFunction_Func()
+{
+	//EngineDevMsg("Sliding!\n");
+
+	sliding = true;
+
+	if (!wasSliding) {
+		const auto pauseFor = y_spt_on_slide_pause_for.GetInt();
+		if (pauseFor > 0) {
+			EngineConCmd("setpause");
+
+			afterframes_entry_t entry;
+			entry.framesLeft = pauseFor;
+			entry.command = "unpause";
+			clientDLL.AddIntoAfterframesQueue(entry);
+		}
+	}
 }

@@ -20,6 +20,7 @@ typedef void(__fastcall *_SnapEyeAngles) (void* thisptr, int edx, const QAngle& 
 typedef float(__fastcall *_FirePortal) (void* thisptr, int edx, bool bPortal2, Vector* pVector, bool bTest);
 typedef float(__fastcall *_TraceFirePortal) (void* thisptr, int edx, bool bPortal2, const Vector& vTraceStart, const Vector& vDirection, trace_t& tr, Vector& vFinalPosition, QAngle& qFinalAngles, int iPlacedBy, bool bTest);
 typedef void*(__fastcall *_GetActiveWeapon) (void* thisptr);
+typedef void(__fastcall *_SlidingAndOtherStuff) (void* thisptr, int edx, void* a, void* b);
 
 class ServerDLL : public IHookableNameFilter
 {
@@ -36,6 +37,8 @@ public:
 	static void __fastcall HOOKED_AirAccelerate(void* thisptr, int edx, Vector* wishdir, float wishspeed, float accel);
 	static void __fastcall HOOKED_ProcessMovement(void* thisptr, int edx, void* pPlayer, void* pMove);
 	static float __fastcall HOOKED_TraceFirePortal(void* thisptr, int edx, bool bPortal2, const Vector& vTraceStart, const Vector& vDirection, trace_t& tr, Vector& vFinalPosition, QAngle& qFinalAngles, int iPlacedBy, bool bTest);
+	static void __fastcall HOOKED_SlidingAndOtherStuff(void* thisptr, int edx, void* a, void* b);
+	static void HOOKED_MiddleOfSlidingFunction();
 	bool __fastcall HOOKED_CheckJumpButton_Func(void* thisptr, int edx);
 	void __fastcall HOOKED_FinishGravity_Func(void* thisptr, int edx);
 	void __fastcall HOOKED_PlayerRunCommand_Func(void* thisptr, int edx, void* ucmd, void* moveHelper);
@@ -43,6 +46,8 @@ public:
 	void __fastcall HOOKED_AirAccelerate_Func(void* thisptr, int edx, Vector* wishdir, float wishspeed, float accel);
 	void __fastcall HOOKED_ProcessMovement_Func(void* thisptr, int edx, void* pPlayer, void* pMove);
 	float __fastcall HOOKED_TraceFirePortal_Func(void* thisptr, int edx, bool bPortal2, const Vector& vTraceStart, const Vector& vDirection, trace_t& tr, Vector& vFinalPosition, QAngle& qFinalAngles, int iPlacedBy, bool bTest);
+	void __fastcall HOOKED_SlidingAndOtherStuff_Func(void* thisptr, int edx, void* a, void* b);
+	void HOOKED_MiddleOfSlidingFunction_Func();
 
 	const Vector& GetLastVelocity() const { return lastVelocity; }
 
@@ -65,6 +70,8 @@ protected:
 	_AirAccelerate ORIG_AirAccelerate;
 	_ProcessMovement ORIG_ProcessMovement;
 	_TraceFirePortal ORIG_TraceFirePortal;
+	_SlidingAndOtherStuff ORIG_SlidingAndOtherStuff;
+	void* ORIG_MiddleOfSlidingFunction;
 
 	ptrdiff_t off1M_nOldButtons;
 	ptrdiff_t off2M_nOldButtons;
@@ -78,4 +85,7 @@ protected:
 
 	unsigned ticksPassed;
 	bool timerRunning;
+
+	bool sliding;
+	bool wasSliding;
 };
