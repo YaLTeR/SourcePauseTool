@@ -183,7 +183,17 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	{
 		EngineDevMsg("Found the interval_per_tick pattern at %p (using the build %s pattern).\n", pMiddleOfSV_InitGameDLL, Patterns::ptnsMiddleOfSV_InitGameDLL[ptnNumber].build.c_str());
 
-		pIntervalPerTick = *reinterpret_cast<float**>(pMiddleOfSV_InitGameDLL + 18);
+		switch (ptnNumber)
+		{
+		case 0:
+			pIntervalPerTick = *reinterpret_cast<float**>(pMiddleOfSV_InitGameDLL + 18);
+			break;
+
+		case 1:
+			pIntervalPerTick = *reinterpret_cast<float**>(pMiddleOfSV_InitGameDLL + 16);
+			break;
+		}
+		
 		EngineDevMsg("Found interval_per_tick at %p.\n", pIntervalPerTick);
 	}
 	else
