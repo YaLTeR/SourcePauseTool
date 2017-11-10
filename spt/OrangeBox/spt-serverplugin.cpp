@@ -600,10 +600,10 @@ CON_COMMAND(_y_spt_getangles, "Gets the view angles of the player.")
 
 CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [tickrate]")
 {
+#if defined( OE )
 	if (!engine)
 		return;
-
-#if defined( OE )
+	
 	ArgsWrapper args(engine.get());
 #endif
 
