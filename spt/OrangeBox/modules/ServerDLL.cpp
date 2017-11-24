@@ -187,7 +187,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 	else
 	{
-		EngineDevWarning("[server dll] Could not find CheckJumpButton!\n");
+		EngineDevWarning("[server dll] Could not find Server-side CheckJumpButton!\n");
 		EngineWarning("y_spt_autojump has no effect.\n");
 	}
 

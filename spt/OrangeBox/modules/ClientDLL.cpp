@@ -123,8 +123,6 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	//Client-side CheckJumpButton
 	//Only for client prediction, when we're playing on a server.
 
-	EngineDevMsg("[client dll] Searching for CheckJumpButton...\n");
-
 	uintptr_t pCheckJumpButton = NULL;
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsClientCheckJumpButton, &pCheckJumpButton);
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
@@ -157,11 +155,32 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			off1M_nOldButtons = 2;
 			off2M_nOldButtons = 40;
 			break;
+
+		case 5:
+			off1M_nOldButtons = 1;
+			off2M_nOldButtons = 40;
+			break;
+
+		case 6:
+			off1M_nOldButtons = 1;
+			off2M_nOldButtons = 40;
+			break;
+
+		case 7:
+			off1M_nOldButtons = 2;
+			off2M_nOldButtons = 40;
+			break;
+
+		case 8:
+			off1M_nOldButtons = 2;
+			off2M_nOldButtons = 40;
+			break;
 		}
 	}
 	else
 	{
-		EngineDevWarning("[client dll] Could not find CheckJumpButton.\n");
+		EngineDevWarning("[client dll] Could not find Client-side CheckJumpButton!\n");
+		EngineWarning("y_spt_autojump has no effect in multiplayer.\n");
 	}
 
 	// HudUpdate
