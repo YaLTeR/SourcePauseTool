@@ -110,6 +110,10 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		case 3:
 			pgpGlobals = *(uintptr_t **)(pDoImageSpaceMotionBlur + 171);
 			break;
+
+		case 4:
+			pgpGlobals = *(uintptr_t **)(pDoImageSpaceMotionBlur + 177);
+			break;
 		}
 
 		EngineDevMsg("[client dll] pgpGlobals is %p.\n", pgpGlobals);
