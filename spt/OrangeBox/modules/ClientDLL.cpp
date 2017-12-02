@@ -110,6 +110,10 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		case 3:
 			pgpGlobals = *(uintptr_t **)(pDoImageSpaceMotionBlur + 171);
 			break;
+
+		case 4:
+			pgpGlobals = *(uintptr_t **)(pDoImageSpaceMotionBlur + 177);
+			break;
 		}
 
 		EngineDevMsg("[client dll] pgpGlobals is %p.\n", pgpGlobals);
@@ -122,8 +126,6 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 	//Client-side CheckJumpButton
 	//Only for client prediction, when we're playing on a server.
-
-	EngineDevMsg("[client dll] Searching for CheckJumpButton...\n");
 
 	uintptr_t pCheckJumpButton = NULL;
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsClientCheckJumpButton, &pCheckJumpButton);
@@ -157,11 +159,32 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			off1M_nOldButtons = 2;
 			off2M_nOldButtons = 40;
 			break;
+
+		case 5:
+			off1M_nOldButtons = 1;
+			off2M_nOldButtons = 40;
+			break;
+
+		case 6:
+			off1M_nOldButtons = 1;
+			off2M_nOldButtons = 40;
+			break;
+
+		case 7:
+			off1M_nOldButtons = 2;
+			off2M_nOldButtons = 40;
+			break;
+
+		case 8:
+			off1M_nOldButtons = 2;
+			off2M_nOldButtons = 40;
+			break;
 		}
 	}
 	else
 	{
-		EngineDevWarning("[client dll] Could not find CheckJumpButton.\n");
+		EngineDevWarning("[client dll] Could not find CheckJumpButton!\n");
+		EngineWarning("y_spt_autojump has no effect in multiplayer.\n");
 	}
 
 	// HudUpdate

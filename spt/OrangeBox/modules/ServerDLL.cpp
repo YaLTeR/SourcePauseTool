@@ -150,7 +150,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			break;
 
 		case 8:
-			off1M_nOldButtons = 2;
+			off1M_nOldButtons = 1;
 			off2M_nOldButtons = 40;
 			break;
 
@@ -172,6 +172,17 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		case 12:
 			off1M_nOldButtons = 3;
 			off2M_nOldButtons = 40;
+			break;
+
+		case 13:
+			off1M_nOldButtons = 1;
+			off2M_nOldButtons = 40;
+			break;
+
+		case 14:
+			off1M_nOldButtons = 2;
+			off2M_nOldButtons = 40;
+			break;
 		}
 	}
 	else

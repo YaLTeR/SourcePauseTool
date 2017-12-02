@@ -207,7 +207,12 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	ConVar_Register(0);
 #endif
 
+#ifndef P2
 	auto ptr = interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION, NULL);
+#else
+	auto ptr = interfaceFactory("VEngineClient015", NULL);
+#endif
+
 	if (ptr) {
 #ifdef OE
 		if (DoesGameLookLikeDMoMM())
