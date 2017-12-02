@@ -183,7 +183,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 	else
 	{
-		EngineDevWarning("[client dll] Could not find Client-side CheckJumpButton!\n");
+		EngineDevWarning("[client dll] Could not find CheckJumpButton!\n");
 		EngineWarning("y_spt_autojump has no effect in multiplayer.\n");
 	}
 
