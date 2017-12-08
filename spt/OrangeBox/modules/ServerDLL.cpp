@@ -206,15 +206,40 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			break;
 
 		case 1:
+			off1M_bDucked = 2;
+			off2M_bDucked = 3120;
+			break;
+			
+		case 2:
+			off1M_bDucked = 2;
+			off2M_bDucked = 3184;
+			break;
+			
+		case 3:
+			off1M_bDucked = 2;
+			off2M_bDucked = 3376;
+			break;
+			
+		case 4:
 			off1M_bDucked = 1;
-			off2M_bDucked = 2284;
+			off2M_bDucked = 3440;
+			break;
+			
+		case 5:
+			off1M_bDucked = 1;
+			off2M_bDucked = 3500;
+			break;
+			
+		case 6:
+			off1M_bDucked = 1;
+			off2M_bDucked = 3724;
 			break;
 		}
 	}
 	else
 	{
 		EngineDevWarning("[server dll] Could not find FinishGravity!\n");
-		EngineWarning("y_spt_additional_abh has no effect.\n");
+		EngineWarning("y_spt_additional_jumpboost has no effect.\n");
 	}
 
 	// PlayerRunCommand
@@ -260,6 +285,14 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 		case 8:
 			offM_vecAbsVelocity = 592;
+			break;
+			
+		case 9:
+			offM_vecAbsVelocity = 556;
+			break;
+			
+		case 10:
+			offM_vecAbsVelocity = 364;
 			break;
 		}
 	}
@@ -440,7 +473,7 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 
 void __fastcall ServerDLL::HOOKED_FinishGravity_Func(void* thisptr, int edx)
 {
-	if (insideCheckJumpButton && y_spt_additional_abh.GetBool())
+	if (insideCheckJumpButton && y_spt_additional_jumpboost.GetInt())
 	{
 		CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
 		bool ducked = *(bool*)(*((uintptr_t *)thisptr + off1M_bDucked) + off2M_bDucked);
@@ -451,7 +484,7 @@ void __fastcall ServerDLL::HOOKED_FinishGravity_Func(void* thisptr, int edx)
 			AngleVectors(mv->m_vecViewAngles, &vecForward);
 			vecForward.z = 0;
 			VectorNormalize(vecForward);
-
+			
 			// We give a certain percentage of the current forward movement as a bonus to the jump speed.  That bonus is clipped
 			// to not accumulate over time.
 			float flSpeedBoostPerc = (!mv->m_bIsSprinting && !ducked) ? 0.5f : 0.1f;
@@ -460,13 +493,16 @@ void __fastcall ServerDLL::HOOKED_FinishGravity_Func(void* thisptr, int edx)
 			float flNewSpeed = (flSpeedAddition + mv->m_vecVelocity.Length2D());
 
 			// If we're over the maximum, we want to only boost as much as will get us to the goal speed
-			if (flNewSpeed > flMaxSpeed)
+			if (y_spt_additional_jumpboost.GetInt() == 1)
 			{
-				flSpeedAddition -= flNewSpeed - flMaxSpeed;
-			}
+				if (flNewSpeed > flMaxSpeed)
+				{
+					flSpeedAddition -= flNewSpeed - flMaxSpeed;
+				}
 
-			if (mv->m_flForwardMove < 0.0f)
-				flSpeedAddition *= -1.0f;
+				if (mv->m_flForwardMove < 0.0f)
+					flSpeedAddition *= -1.0f;
+			}
 
 			// Add it on
 			VectorAdd((vecForward*flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity);

@@ -5,7 +5,7 @@
 extern ConVar y_spt_pause;
 extern ConVar y_spt_motion_blur_fix;
 extern ConVar y_spt_autojump;
-extern ConVar y_spt_additional_abh;
+extern ConVar y_spt_additional_jumpboost;
 extern ConVar y_spt_stucksave;
 extern ConVar y_spt_pause_demo_on_tick;
 extern ConVar y_spt_on_slide_pause_for;
