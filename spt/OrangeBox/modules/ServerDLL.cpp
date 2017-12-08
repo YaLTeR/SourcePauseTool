@@ -473,7 +473,7 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 
 void __fastcall ServerDLL::HOOKED_FinishGravity_Func(void* thisptr, int edx)
 {
-	if (insideCheckJumpButton && y_spt_additional_jumpboost.GetInt())
+	if (insideCheckJumpButton && y_spt_additional_jumpboost.GetBool())
 	{
 		CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
 		bool ducked = *(bool*)(*((uintptr_t *)thisptr + off1M_bDucked) + off2M_bDucked);
@@ -484,7 +484,7 @@ void __fastcall ServerDLL::HOOKED_FinishGravity_Func(void* thisptr, int edx)
 			AngleVectors(mv->m_vecViewAngles, &vecForward);
 			vecForward.z = 0;
 			VectorNormalize(vecForward);
-			
+
 			// We give a certain percentage of the current forward movement as a bonus to the jump speed.  That bonus is clipped
 			// to not accumulate over time.
 			float flSpeedBoostPerc = (!mv->m_bIsSprinting && !ducked) ? 0.5f : 0.1f;
