@@ -114,6 +114,10 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		case 4:
 			pgpGlobals = *(uintptr_t **)(pDoImageSpaceMotionBlur + 177);
 			break;
+			
+		case 5:
+			pgpGlobals = *(uintptr_t **)(pDoImageSpaceMotionBlur + 128);
+			break;
 		}
 
 		EngineDevMsg("[client dll] pgpGlobals is %p.\n", pgpGlobals);
@@ -179,6 +183,15 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			off1M_nOldButtons = 2;
 			off2M_nOldButtons = 40;
 			break;
+			
+		case 9:
+			off1M_nOldButtons = 1;
+			off2M_nOldButtons = 40;
+			break;
+			
+		case 10:
+			off1M_nOldButtons = 2;
+			off2M_nOldButtons = 40;
 		}
 	}
 	else
@@ -244,6 +257,24 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			offForwardmove = 24;
 			offSidemove = 28;
 			break;
+			
+		case 2:
+			offM_pCommands = 196;
+			offForwardmove = 24;
+			offSidemove = 28;
+			break;
+			
+		case 3:
+			offM_pCommands = 196;
+			offForwardmove = 24;
+			offSidemove = 28;
+			break;
+			
+		case 4:
+			offM_pCommands = 196;
+			offForwardmove = 24;
+			offSidemove = 28;
+			break;
 		}
 	}
 	else
@@ -287,6 +318,28 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			offServerPreviouslyPredictedOrigin = 3628;
 			offServerAbsOrigin = 580;
 			break;
+			
+		case 2:
+			offMaxspeed = 4312;
+			offFlags = 844;
+			offAbsVelocity = 300;
+			offDucking = 3713;
+			offDuckJumpTime = 3720;
+			offServerSurfaceFriction = 3872;
+			offServerPreviouslyPredictedOrigin = 3752;
+			offServerAbsOrigin = 636;
+			break;
+			
+		case 3:
+			offMaxspeed = 4320;
+			offFlags = 844;
+			offAbsVelocity = 300;
+			offDucking = 3721;
+			offDuckJumpTime = 3728;
+			offServerSurfaceFriction = 3872;
+			offServerPreviouslyPredictedOrigin = 3752;
+			offServerAbsOrigin = 636;
+			break;
 		}
 	} else
 	{
@@ -316,6 +369,14 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 		case 1:
 			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 30) + pMiddleOfCAM_Think + 34);
+			break;
+			
+		case 2:
+			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 21) + pMiddleOfCAM_Think + 25);
+			break;
+			
+		case 3:
+			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 23) + pMiddleOfCAM_Think + 27);
 			break;
 		}
 
