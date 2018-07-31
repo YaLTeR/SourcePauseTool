@@ -16,6 +16,11 @@ extern ConVar tas_strafe_dir;
 extern ConVar tas_strafe_yaw;
 extern ConVar tas_strafe_buttons;
 
+extern ConVar tas_strafe_vectorial;
+extern ConVar tas_strafe_vectorial_increment;
+extern ConVar tas_strafe_vectorial_offset;
+extern ConVar tas_strafe_vectorial_snap;
+
 extern ConVar tas_force_airaccelerate;
 extern ConVar tas_force_wishspeed_cap;
 extern ConVar tas_reset_surface_friction;

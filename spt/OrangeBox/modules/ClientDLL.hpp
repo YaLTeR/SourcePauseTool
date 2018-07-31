@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <SPTLib\IHookableNameFilter.hpp>
+#include "..\spt-serverplugin.hpp"
 
 using std::uintptr_t;
 using std::size_t;
@@ -18,6 +19,7 @@ typedef void(__fastcall *_CViewRender__OnRenderStart) (void* thisptr, int edx);
 typedef void*(__cdecl *_GetLocalPlayer) ();
 typedef void*(__fastcall *_GetGroundEntity) (void* thisptr, int edx);
 typedef void(__fastcall *_CalcAbsoluteVelocity) (void* thisptr, int edx);
+class Vector;
 
 typedef struct
 {
@@ -66,6 +68,9 @@ public:
 
 	void SetPitch(float pitch) { setPitch.angle = pitch; setPitch.set = true; }
 	void SetYaw(float yaw)     { setYaw.angle   = yaw;   setYaw.set   = true; }
+	Vector GetPlayerVelocity();
+	Vector GetPlayerEyePos();
+	bool GetFlagsDucking();
 
 protected:
 	_DoImageSpaceMotionBlur ORIG_DoImageSpaceMotionBlur;
