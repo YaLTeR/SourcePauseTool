@@ -282,8 +282,7 @@ bool StrafeJump(PlayerData& player, const MovementVars& vars, bool ducking, Proc
 		out.Right = false;
 		out.Left = false;
 		return true;
-	}
-	else if (player.Velocity.Length2D() >= vars.Maxspeed * ((ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5)) {
+	} else if (player.Velocity.Length2D() >= vars.Maxspeed * ((ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5)) {
 		if (tas_strafe_jumptype.GetInt() == 1) {
 			// ABH
 			out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
@@ -292,8 +291,7 @@ bool StrafeJump(PlayerData& player, const MovementVars& vars, bool ducking, Proc
 			out.Right = false;
 			out.Left = false;
 			return true;
-		}
-		else if (tas_strafe_jumptype.GetInt() == 3) {
+		} else if (tas_strafe_jumptype.GetInt() == 3) {
 			// Glitchless bhop
 			const Vector vel = player.Velocity;
 			out.Yaw = NormalizeRad(atan2(vel.y, vel.x)) * M_RAD2DEG;
@@ -325,13 +323,12 @@ void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground
 		// Calculate updated yaw
 		double normalizedDiff = NormalizeDeg(target_yaw - vel_yaw + tas_strafe_vectorial_offset.GetFloat());
 		double additionAbs = std::min(static_cast<double>(tas_strafe_vectorial_increment.GetFloat()), std::abs(normalizedDiff));
-		double additionSign = (normalizedDiff > 0) ? 1 : -1;
 
 		// Snap to target if difference too large(likely due to an ABH)
 		if (std::abs(normalizedDiff) > tas_strafe_vectorial_snap.GetFloat() && tas_strafe_vectorial_increment.GetFloat() > 0)
 			out.Yaw = target_yaw;
 		else
-			out.Yaw = vel_yaw + additionAbs * additionSign;
+			out.Yaw = vel_yaw + std::copysign(additionAbs, normalizedDiff);
 
 		// Set move speeds to match the current yaw to produce the acceleration in direction thetaDeg
 		double thetaDeg = dummy.Yaw;

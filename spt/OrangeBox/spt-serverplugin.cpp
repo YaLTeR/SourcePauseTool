@@ -513,22 +513,22 @@ void TestCanJb(float height)
 
 	constexpr float gravity = 600;
 	constexpr float groundThreshold = 2.0f;
-	constexpr float frametime = 0.015f;
+	constexpr float ticktime = 0.015f;
 	constexpr int maxIterations = 1000;
 
 	for (int i = 0; i < maxIterations && (vel.z > 0 || player_origin.z >= height); ++i)
 	{
 		if (vel.z < 0 && player_origin.z - height <= groundThreshold)
 		{
-			Msg("Yes, projected landing height %.6f\n", player_origin.z);
+			Msg("Yes, projected landing height %.6f in %d ticks\n", player_origin.z, i);
 			return;
 		}
 
-		vel.z -= (gravity * frametime / 2);
-		player_origin.z += vel.z * frametime;
-		vel.z -= (gravity * frametime / 2);
+		vel.z -= (gravity * ticktime / 2);
+		player_origin.z += vel.z * ticktime;
+		vel.z -= (gravity * ticktime / 2);
 	}
-	Msg("No\n");
+	Msg("Jumpbug impossible\n");
 }
 
 CON_COMMAND(y_spt_canjb, "Tests if player can jumpbug on a given height, with the current position and speed.")

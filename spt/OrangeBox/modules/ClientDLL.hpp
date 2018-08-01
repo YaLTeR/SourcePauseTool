@@ -5,6 +5,7 @@
 
 #include <SPTLib\IHookableNameFilter.hpp>
 #include "..\spt-serverplugin.hpp"
+#include "..\..\SDK\igamemovement.h"
 
 using std::uintptr_t;
 using std::size_t;
@@ -19,7 +20,6 @@ typedef void(__fastcall *_CViewRender__OnRenderStart) (void* thisptr, int edx);
 typedef void*(__cdecl *_GetLocalPlayer) ();
 typedef void*(__fastcall *_GetGroundEntity) (void* thisptr, int edx);
 typedef void(__fastcall *_CalcAbsoluteVelocity) (void* thisptr, int edx);
-class Vector;
 
 typedef struct
 {
