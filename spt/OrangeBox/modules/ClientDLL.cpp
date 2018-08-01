@@ -503,6 +503,39 @@ void ClientDLL::ResetAfterframesQueue()
 	afterframesQueue.clear();
 }
 
+Vector ClientDLL::GetPlayerVelocity()
+{
+	auto player = GetLocalPlayer();
+	CalcAbsoluteVelocity(player, 0);
+	float *vel = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offAbsVelocity);
+
+	return Vector(vel[0], vel[1], vel[2]);
+}
+
+Vector ClientDLL::GetPlayerEyePos()
+{
+	Vector rval = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + offServerAbsOrigin);
+	constexpr float duckOffset = 28;
+	constexpr float standingOffset = 64;
+
+	if (GetFlagsDucking())
+	{
+		rval.z += duckOffset;
+	}
+	else
+	{
+		rval.z += standingOffset;
+	}
+	
+	return rval;
+}
+
+
+bool ClientDLL::GetFlagsDucking()
+{
+	return (*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(GetLocalPlayer()) + offFlags)) & FL_DUCKING;
+}
+
 void ClientDLL::OnFrame()
 {
 	if (afterframesPaused)
@@ -725,9 +758,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		curState.LgagstFullMaxspeed = tas_strafe_lgagst_fullmaxspeed.GetBool();
 
 		auto pl = PlayerData();
-		CalcAbsoluteVelocity(player, 0);
-		float *vel = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offAbsVelocity);
-		pl.Velocity = Vector(vel[0], vel[1], vel[2]);
+		pl.Velocity = GetPlayerVelocity();
 
 		//DevMsg("[Strafing] speed pre-friction = %.8f\n", pl.Velocity.Length2D());
 		//DevMsg("[Strafing] velocity pre-friction: %.8f %.8f %.8f\n", pl.Velocity.x, pl.Velocity.y, pl.Velocity.z);
@@ -773,7 +804,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		{
 			bool cantjump = false;
 			// This will report air on the first frame of unducking and report ground on the last one.
-			if ((*reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(player) + offDucking)) && ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING)) {
+			if ((*reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(player) + offDucking)) && GetFlagsDucking()) {
 				cantjump = true;
 			}
 
@@ -791,7 +822,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 
 			if (!cantjump && onground) {
 				if (tas_strafe_lgagst.GetBool()) {
-					LgagstJump(pl, vars, curState, onground, ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING), type, dir, tas_strafe_yaw.GetFloat(), va[YAW] * M_DEG2RAD, out, reduceWishspeed, btns, false);
+					LgagstJump(pl, vars, curState, onground, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW] * M_DEG2RAD, out, reduceWishspeed, btns, false);
 					if (out.Jump) {
 						onground = false;
 						jumped = true;
@@ -806,26 +837,16 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		}
 
 		Friction(pl, onground, vars);
-		Strafe(pl, vars, onground, jumped, ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, btns, usingButtons);
 
-		//EngineDevMsg("[Strafing] Yaw = %.8f\n", out.Yaw);
+		if (tas_strafe_vectorial.GetBool())
+			StrafeVectorial(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed);
+		else
+			Strafe(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, btns, usingButtons);
 
-		va[YAW] = out.Yaw;
-		if (out.Forward) {
-			*reinterpret_cast<float*>(pCmd + offForwardmove) += vars.Maxspeed;
-		}
-		if (out.Back) {
-			*reinterpret_cast<float*>(pCmd + offForwardmove) -= vars.Maxspeed;
-		}
-		if (out.Right) {
-			*reinterpret_cast<float*>(pCmd + offSidemove) += vars.Maxspeed;
-		}
-		if (out.Left) {
-			*reinterpret_cast<float*>(pCmd + offSidemove) -= vars.Maxspeed;
-		}
-		if (out.Jump) {
-			forceJump = true;
-		}
+		forceJump = out.Jump;
+		*reinterpret_cast<float*>(pCmd + offForwardmove) = out.ForwardSpeed;
+		*reinterpret_cast<float*>(pCmd + offSidemove) = out.SideSpeed;
+		va[YAW] = static_cast<float>(out.Yaw);
 	}
 
 	EngineSetViewAngles(va);

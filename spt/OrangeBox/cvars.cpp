@@ -22,6 +22,10 @@ ConVar tas_strafe_dir("tas_strafe_dir", "3", 0, "TAS strafe dirs:\n\t0 - to the 
 ConVar tas_strafe_yaw("tas_strafe_yaw", "", 0, "Yaw to strafe to with tas_strafe_dir = 3.");
 ConVar tas_strafe_buttons("tas_strafe_buttons", "", 0, "Sets the strafing buttons. The format is 4 digits: \"<AirLeft> <AirRight> <GroundLeft> <GroundRight>\". The default (auto-detect) is empty string: \"\".\n"
 															   "Table of buttons:\n\t0 - W\n\t1 - WA\n\t2 - A\n\t3 - SA\n\t4 - S\n\t5 - SD\n\t6 - D\n\t7 - WD\n");
+ConVar tas_strafe_vectorial("tas_strafe_vectorial", "0", 0, "Determines if strafing uses vectorial strafing\n");
+ConVar tas_strafe_vectorial_increment("tas_strafe_vectorial_increment", "2.5", 0, "Determines how fast the player yaw angle moves towards the target yaw angle. 0 for no movement, 180 for instant snapping. Has no effect on strafing speed.\n");
+ConVar tas_strafe_vectorial_offset("tas_strafe_vectorial_offset", "0", 0, "Determines the target view angle offset from tas_strafe_yaw\n");
+ConVar tas_strafe_vectorial_snap("tas_strafe_vectorial_snap", "170", 0, "Determines when the yaw angle snaps to the target yaw. Mainly used to prevent ABHing from resetting the yaw angle to the back on every jump.\n");
 
 ConVar tas_force_airaccelerate("tas_force_airaccelerate", "", 0, "Sets the value of airaccelerate used in TAS calculations. If empty, uses the value of sv_airaccelerate.\n\nShould be set to 15 for Portal.\n");
 ConVar tas_force_wishspeed_cap("tas_force_wishspeed_cap", "", 0, "Sets the value of the wishspeed cap used in TAS calculations. If empty, uses the default value: 30.\n\nShould be set to 60 for Portal.\n");

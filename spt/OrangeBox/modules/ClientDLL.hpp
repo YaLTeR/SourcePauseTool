@@ -4,6 +4,8 @@
 #include <vector>
 
 #include <SPTLib\IHookableNameFilter.hpp>
+#include "..\spt-serverplugin.hpp"
+#include "..\..\SDK\igamemovement.h"
 
 using std::uintptr_t;
 using std::size_t;
@@ -66,6 +68,9 @@ public:
 
 	void SetPitch(float pitch) { setPitch.angle = pitch; setPitch.set = true; }
 	void SetYaw(float yaw)     { setYaw.angle   = yaw;   setYaw.set   = true; }
+	Vector GetPlayerVelocity();
+	Vector GetPlayerEyePos();
+	bool GetFlagsDucking();
 
 protected:
 	_DoImageSpaceMotionBlur ORIG_DoImageSpaceMotionBlur;

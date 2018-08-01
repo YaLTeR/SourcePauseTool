@@ -506,6 +506,46 @@ CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of 
 }
 #endif
 
+void TestCanJb(float height)
+{
+	Vector player_origin = clientDLL.GetPlayerEyePos();
+	Vector vel = serverDLL.GetLastVelocity();
+
+	constexpr float gravity = 600;
+	constexpr float groundThreshold = 2.0f;
+	constexpr float ticktime = 0.015f;
+	constexpr int maxIterations = 1000;
+
+	for (int i = 0; i < maxIterations && (vel.z > 0 || player_origin.z >= height); ++i)
+	{
+		if (vel.z < 0 && player_origin.z - height <= groundThreshold)
+		{
+			Msg("Yes, projected landing height %.6f in %d ticks\n", player_origin.z, i);
+			return;
+		}
+
+		vel.z -= (gravity * ticktime / 2);
+		player_origin.z += vel.z * ticktime;
+		vel.z -= (gravity * ticktime / 2);
+	}
+	Msg("Jumpbug impossible\n");
+}
+
+CON_COMMAND(y_spt_canjb, "Tests if player can jumpbug on a given height, with the current position and speed.")
+{
+	if (!engine || !g_pCVar)
+		return;
+
+	if (args.ArgC() < 2)
+	{
+		Msg("Usage: y_spt_canjb [height]\n");
+		return;
+	}
+
+	float height = std::stof(args.Arg(1));
+	TestCanJb(height);
+}
+
 #if defined( OE )
 static void DuckspamDown()
 #else

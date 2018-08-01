@@ -54,6 +54,8 @@ public:
 #endif
 };
 
+IServerUnknown* GetServerPlayer();
+
 #if defined( OE )
 struct ArgsWrapper
 {
