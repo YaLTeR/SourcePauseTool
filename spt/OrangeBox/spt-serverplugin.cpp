@@ -533,8 +533,12 @@ void TestCanJb(float height)
 
 CON_COMMAND(y_spt_canjb, "Tests if player can jumpbug on a given height, with the current position and speed.")
 {
-	if (!engine || !g_pCVar)
+	if (!engine)
 		return;
+
+#if defined( OE )
+	ArgsWrapper args(engine.get());
+#endif
 
 	if (args.ArgC() < 2)
 	{
