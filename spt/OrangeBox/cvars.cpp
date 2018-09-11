@@ -44,6 +44,8 @@ ConVar _y_spt_afterframes_reset_on_server_activate("_y_spt_afterframes_reset_on_
 ConVar _y_spt_pitchspeed("_y_spt_pitchspeed", "0");
 ConVar _y_spt_yawspeed("_y_spt_yawspeed", "0");
 ConVar _y_spt_force_90fov("_y_spt_force_90fov", "0");
+ConVar _y_spt_camera_sg("_y_spt_camera_sg", "0", 0, "Enables the save glitch camera in the top left of the screen.\n");
+ConVar _y_spt_camera_portal("_y_spt_camera_portal", "blue", 0, "Chooses the portal for the camera. Valid options are blue/orange/portal index\n");
 
 ConVar *_viewmodel_fov = nullptr;
 ConVar *_sv_accelerate = nullptr;

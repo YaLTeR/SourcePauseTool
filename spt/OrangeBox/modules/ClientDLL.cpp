@@ -650,8 +650,6 @@ bool ClientDLL::GetFlagsDucking()
 
 void ClientDLL::OnFrame()
 {
-	EngineDevMsg("frame\n");
-
 	if (afterframesPaused)
 	{
 		return;
@@ -996,6 +994,7 @@ bool ClientDLL::HOOKED_CViewRender__DrawOneMonitor_Func(void * thisptr, int edx,
 
 void ClientDLL::HOOKED_CViewRender__ViewDrawScene_Func(void * thisptr, int edx, bool bDrew3dSkybox, int skyboxVis, void * view, int nClearFlags, int viewID, bool drawViewModel, int baseDrawFlags, void * customVis)
 {
+	clientCViewRender = thisptr;
 	ORIG_CViewRender__ViewDrawScene(thisptr, edx, bDrew3dSkybox, skyboxVis, view, nClearFlags, viewID, drawViewModel, baseDrawFlags, customVis);
 }
 

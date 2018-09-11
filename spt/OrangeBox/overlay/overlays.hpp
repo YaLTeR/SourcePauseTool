@@ -2,4 +2,5 @@
 
 #include "overlay-renderer.hpp"
 
-CameraInformation dummyOverlay();
+CameraInformation rearViewMirrorOverlay();
+CameraInformation sgOverlay();

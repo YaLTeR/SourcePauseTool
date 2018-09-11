@@ -19,9 +19,10 @@
 #include "mathlib\vmatrix.h"
 #endif
 
-#include "tier0\memdbgoff.h" // YaLTeR - switch off the memory debugging.
 #include "overlay/overlay-renderer.hpp"
 #include "overlay/overlays.hpp"
+#include "tier0\memdbgoff.h" // YaLTeR - switch off the memory debugging.
+
 
 using namespace std::literals;
 
@@ -112,6 +113,10 @@ IServerUnknown* GetServerPlayer()
 		return nullptr;
 
 	return edict->GetUnknown();
+}
+IVEngineServer * GetEngine()
+{
+	return engine_server;
 }
 #else
 // TODO
@@ -270,7 +275,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	Hooks::getInstance().AddToHookedModules(&serverDLL);
 
 	Hooks::getInstance().Init();
-	g_OverlayRenderer.setupOverlay(dummyOverlay);
+	g_OverlayRenderer.setupOverlay(sgOverlay);
 
 	auto loadTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
 	std::ostringstream out;

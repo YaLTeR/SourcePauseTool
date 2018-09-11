@@ -2,15 +2,36 @@
 #include "overlays.hpp"
 #include "..\modules\ClientDLL.hpp"
 #include "..\modules.hpp"
+#include "..\..\sptlib-wrapper.hpp"
+#include "..\..\strafestuff.hpp"
+#include "portal_camera.hpp"
 
-CameraInformation dummyOverlay()
+CameraInformation rearViewMirrorOverlay()
 {
 	auto pos = clientDLL.GetPlayerEyePos();
+	float va[3];
+	EngineGetViewAngles(va);
 	CameraInformation info;
 	info.x = pos.x;
 	info.y = pos.y;
 	info.z = pos.z;
-	info.pitch = 0;
-	info.yaw = 0;
+	info.pitch = va[PITCH];
+	info.yaw = NormalizeDeg(va[YAW] + 180);
+	return info;
+}
+
+CameraInformation sgOverlay()
+{
+	CameraInformation info;
+	Vector pos;
+	QAngle va;
+
+	calculate_sg_position(pos, va);
+	info.x = pos.x;
+	info.y = pos.y;
+	info.z = pos.z;
+	info.pitch = va[PITCH];
+	info.yaw = NormalizeDeg(va[YAW]);
+
 	return info;
 }

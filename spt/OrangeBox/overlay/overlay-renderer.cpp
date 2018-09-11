@@ -12,6 +12,7 @@
 const int VIEW_MONITOR = 2;
 OverlayRenderer g_OverlayRenderer;
 
+
 void OverlayRenderer::setupOverlay(_CameraCallback callback)
 {
 	overlayOn = true;
@@ -24,8 +25,9 @@ void OverlayRenderer::disableOverlay()
 }
 
 // Called by the client DLL
-void OverlayRenderer::renderOverlay(void * CVRenderView, void * pRenderTarget)
+void OverlayRenderer::pushOverlay(void * view, void * pRenderTarget)
 {
+	CVRenderView = view;
 	if (overlayOn)
 	{
 		CViewSetup setup;
@@ -35,16 +37,23 @@ void OverlayRenderer::renderOverlay(void * CVRenderView, void * pRenderTarget)
 
 		setup.x = 20;
 		setup.y = 20;
-		setup.width = 320;
-		setup.height = 180;
+		setup.width = 480;
+		setup.height = 270;
 		setup.fov = 90;
 		setup.m_bOrtho = false;
 		setup.m_flAspectRatio = 16.0f / 9.0f;
 
-
 		Frustum frustum;
+		engineDLL.CVRenderView__Push3DView_Func(CVRenderView, (void*)&setup, VIEW_CLEAR_COLOR, pRenderTarget, (void*)&frustum);
+		engineDLL.CVRenderView__PopView_Func(CVRenderView, (void*)&frustum);
+
 		engineDLL.CVRenderView__Push3DView_Func(CVRenderView, (void*)&setup, 34, pRenderTarget, (void*)&frustum);
-		//clientDLL.ViewDrawScene(false, true, (void*)&setup, VIEW_MONITOR);
+		clientDLL.ViewDrawScene(false, true, (void*)&setup, 0);
 		engineDLL.CVRenderView__PopView_Func(CVRenderView, (void*)&frustum);
 	}
+}
+
+void OverlayRenderer::pop()
+{
+	
 }

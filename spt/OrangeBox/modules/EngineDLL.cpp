@@ -507,31 +507,29 @@ void __cdecl EngineDLL::HOOKED_Cbuf_Execute_Func()
 void EngineDLL::HOOKED_CVRenderView__Push3DView_Func(void * thisptr, int edx, void * view, int nFlags, void * pRenderTarget, void * frustumPlanes)
 {
 	renderTarget = pRenderTarget;
-
-	//EngineDevMsg("push 3d cvrenderview %d view %d frustum %d\n", thisptr, view, frustumPlanes);
 	is3DStack = true;
 	++onStack;
 
 	ORIG_CVRenderView__Push3DView(thisptr, edx, view, nFlags, pRenderTarget, frustumPlanes);
-	EngineDevMsg("push 3d %d\n", onStack);
+	//EngineDevMsg("push 3d %d\n", onStack);
 }
 
 void EngineDLL::HOOKED_CVRenderView__Push2DView_Func(void * thisptr, int edx, void * view, int nFlags, void * pRenderTarget, void * frustumPlanes)
 {
-	++onStack;
 	is3DStack = false;
-	//EngineDevMsg("push 2d cvrenderview %d view %d frustum %d\n", thisptr, view, frustumPlanes);
 	ORIG_CVRenderView__Push2DView(thisptr, edx, view, nFlags, pRenderTarget, frustumPlanes);
 
-	EngineDevMsg("push 2d %d\n", onStack);
+	//EngineDevMsg("push 2d %d\n", onStack);
 }
 
 void EngineDLL::HOOKED_CVRenderView__PopView_Func(void * thisptr, int edx, void * frustumPlanes)
-{
-	g_OverlayRenderer.renderOverlay(thisptr, renderTarget);
+{	
+	g_OverlayRenderer.pushOverlay(thisptr, renderTarget);
+	g_OverlayRenderer.pop();
 	ORIG_CVRenderView__PopView(thisptr, edx, frustumPlanes);
-	--onStack;		
-	EngineDevMsg("pop %d, is 3d %d \n", onStack, is3DStack);
+	--onStack;
+
+	//EngineDevMsg("pop %d, is 3d %d \n", onStack, is3DStack);
 }
 
 void EngineDLL::CVRenderView__Push3DView_Func(void * thisptr, void * view, int nFlags, void * pRenderTarget, void * frustumPlanes)
