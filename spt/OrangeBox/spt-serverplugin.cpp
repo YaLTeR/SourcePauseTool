@@ -20,6 +20,8 @@
 #endif
 
 #include "tier0\memdbgoff.h" // YaLTeR - switch off the memory debugging.
+#include "overlay/overlay-renderer.hpp"
+#include "overlay/overlays.hpp"
 
 using namespace std::literals;
 
@@ -268,6 +270,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	Hooks::getInstance().AddToHookedModules(&serverDLL);
 
 	Hooks::getInstance().Init();
+	g_OverlayRenderer.setupOverlay(dummyOverlay);
 
 	auto loadTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
 	std::ostringstream out;

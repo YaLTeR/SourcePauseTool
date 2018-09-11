@@ -9,6 +9,7 @@
 #include <SPTLib\detoursutils.hpp>
 #include <SPTLib\hooks.hpp>
 #include "ClientDLL.hpp"
+#include "..\overlay\overlay-renderer.hpp"
 
 #ifdef max
 #undef max
@@ -56,6 +57,31 @@ void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart(void* thisptr, int 
 	return clientDLL.HOOKED_CViewRender__OnRenderStart_Func(thisptr, edx);
 }
 
+bool ClientDLL::HOOKED_CViewRender__DrawOneMonitor(void * thisptr, int edx, void * pRenderTarget, int cameraNum, void * cameraEnt, void * cameraView, void * localPlayer, int x, int y, int width, int height)
+{
+	return clientDLL.HOOKED_CViewRender__DrawOneMonitor_Func(thisptr, edx, pRenderTarget, cameraNum, cameraEnt, cameraView, localPlayer, x, y, width, height);
+}
+
+void ClientDLL::HOOKED_CViewRender__ViewDrawScene(void * thisptr, int edx, bool bDrew3dSkybox, int skyboxVis, void * view, int nClearFlags, int viewID, bool drawViewModel, int baseDrawFlags, void * customVis)
+{
+	clientDLL.HOOKED_CViewRender__ViewDrawScene_Func(thisptr, edx, bDrew3dSkybox, skyboxVis, view, nClearFlags, viewID, drawViewModel, baseDrawFlags, customVis);
+}
+
+void ClientDLL::HOOKED_CViewRender__DrawMonitors(void * thisptr, int edx, void * cameraView)
+{
+	clientDLL.HOOKED_CViewRender__DrawMonitors_Func(thisptr, edx, cameraView);
+}
+
+void ClientDLL::HOOKED_CPortalRenderable_FlatBasic__RenderPortalViewToTexture(void * thisptr, int edx, void * cviewrender, void * cameraView)
+{
+	clientDLL.HOOKED_CPortalRenderable_FlatBasic__RenderPortalViewToTexture_Func(thisptr, edx, cviewrender, cameraView);
+}
+
+void ClientDLL::HOOKED_CViewRender__QueueOverlayRenderView(void * thisptr, int edx, void * view, int nClearFlags, int whatToDraw)
+{
+	clientDLL.HOOKED_CViewRender__QueueOverlayRenderView(thisptr, edx, view, nClearFlags, whatToDraw);
+}
+
 void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.
@@ -74,7 +100,12 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		pCViewRender__OnRenderStart,
 		pMiddleOfCAM_Think,
 		pGetGroundEntity,
-		pCalcAbsoluteVelocity;
+		pCalcAbsoluteVelocity,
+		pCViewRender__ViewDrawScene,
+		pCViewRender__DrawOneMonitor,
+		pCViewRender__DrawMonitors,
+		pCPortalRenderable_FlatBasic__RenderPortalViewToTexture,
+		pCViewRender__QueueOverlayRenderView;
 
 	auto fHudUpdate = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsHudUpdate, &pHudUpdate);
 	auto fGetButtonBits = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsGetButtonBits, &pGetButtonBits);
@@ -84,6 +115,11 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	auto fMiddleOfCAM_Think = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsMiddleOfCAM_Think, &pMiddleOfCAM_Think);
 	auto fGetGroundEntity = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsGetGroundEntity, &pGetGroundEntity);
 	auto fCalcAbsoluteVelocity = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCalcAbsoluteVelocity, &pCalcAbsoluteVelocity);
+	auto fCViewRender__ViewDrawScene = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__ViewDrawScene, &pCViewRender__ViewDrawScene);
+	auto fCViewRender__DrawOneMonitor = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__DrawOneMonitor, &pCViewRender__DrawOneMonitor);
+	auto fCViewRender__DrawMonitors = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__DrawMonitors, &pCViewRender__DrawMonitors);
+	auto fCPortalRenderable_FlatBasic__RenderPortalViewToTexture = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCPortalRenderable_FlatBasic__RenderPortalViewToTexture, &pCPortalRenderable_FlatBasic__RenderPortalViewToTexture);
+	auto fCViewRender__QueueOverlayRenderView = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__QueueOverlayRenderView, &pCViewRender__QueueOverlayRenderView);
 
 	// DoImageSpaceMotionBlur
 	uintptr_t pDoImageSpaceMotionBlur = NULL;
@@ -420,6 +456,67 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("_y_spt_force_90fov has no effect.\n");
 	}
 
+	ptnNumber = fCViewRender__ViewDrawScene.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_CViewRender__ViewDrawScene = (_CViewRender__ViewDrawScene)pCViewRender__ViewDrawScene;
+		EngineDevMsg("[client dll] Found CViewRender::ViewDrawScene; at %p (using the build %s pattern).\n", pCViewRender__ViewDrawScene, Patterns::ptnsCViewRender__ViewDrawScene[ptnNumber].build.c_str());
+	}
+	else
+	{
+		EngineDevWarning("[client dll] Could not find CViewRender::ViewDrawScene;.\n");
+		EngineWarning("Overlay cameras have no effect.\n");
+	}
+
+	ptnNumber = fCViewRender__DrawOneMonitor.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_CViewRender__DrawOneMonitor = (_CViewRender__DrawOneMonitor)pCViewRender__DrawOneMonitor;
+		EngineDevMsg("[client dll] Found CViewRender::DrawOneMonitor at %p (using the build %s pattern).\n", pCViewRender__DrawOneMonitor, Patterns::ptnsCViewRender__DrawOneMonitor[ptnNumber].build.c_str());
+	}
+	else
+	{
+		EngineDevWarning("[client dll] Could not find CViewRender::DrawOneMonitor.\n");
+		EngineWarning("Overlay cameras have no effect.\n");
+	}
+
+	ptnNumber = fCViewRender__DrawMonitors.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_CViewRender__DrawMonitors = (_CViewRender__DrawMonitors)pCViewRender__DrawMonitors;
+		EngineDevMsg("[client dll] Found CViewRender::DrawMonitors at %p (using the build %s pattern).\n", pCViewRender__DrawMonitors, Patterns::ptnsCViewRender__DrawMonitors[ptnNumber].build.c_str());
+	}
+	else
+	{
+		EngineDevWarning("[client dll] Could not find CViewRender::DrawMonitors.\n");
+		EngineWarning("Overlay cameras have no effect.\n");
+	}
+
+	ptnNumber = fCPortalRenderable_FlatBasic__RenderPortalViewToTexture.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_CPortalRenderable_FlatBasic__RenderPortalViewToTexture = (_CPortalRenderable_FlatBasic__RenderPortalViewToTexture)pCPortalRenderable_FlatBasic__RenderPortalViewToTexture;
+		EngineDevMsg("[client dll] Found CPortalRenderable_FlatBasic::RenderPortalViewToTexture at %p (using the build %s pattern).\n", pCPortalRenderable_FlatBasic__RenderPortalViewToTexture, Patterns::ptnsCPortalRenderable_FlatBasic__RenderPortalViewToTexture[ptnNumber].build.c_str());
+	}
+	else
+	{
+		EngineDevWarning("[client dll] Could not find CPortalRenderable_FlatBasic::RenderPortalViewToTexture.\n");
+		EngineWarning("Overlay cameras have no effect.\n");
+	}
+
+	ptnNumber = fCViewRender__QueueOverlayRenderView.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_CViewRender__QueueOverlayRenderView = (_CViewRender__QueueOverlayRenderView)pCViewRender__QueueOverlayRenderView;
+		EngineDevMsg("[client dll] Found CViewRender::QueueOverlayRenderView at %p (using the build %s pattern).\n", pCViewRender__QueueOverlayRenderView, Patterns::ptnsCViewRender__QueueOverlayRenderView[ptnNumber].build.c_str());
+	}
+	else
+	{
+		EngineDevWarning("[client dll] Could not find CViewRender::QueueOverlayRenderView.\n");
+		EngineWarning("Overlay cameras have no effect.\n");
+	}
+
+
 	DetoursUtils::AttachDetours(moduleName, {
 		{ (PVOID *) (&ORIG_DoImageSpaceMotionBlur), HOOKED_DoImageSpaceMotionBlur },
 		{ (PVOID *) (&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
@@ -427,7 +524,12 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		{ (PVOID *) (&ORIG_GetButtonBits), HOOKED_GetButtonBits },
 		{ (PVOID *)(&ORIG_AdjustAngles), HOOKED_AdjustAngles },
 		{ (PVOID *)(&ORIG_CreateMove), HOOKED_CreateMove },
-		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart }
+		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart },
+		{ (PVOID *)(&ORIG_CViewRender__DrawOneMonitor), HOOKED_CViewRender__DrawOneMonitor },
+		{ (PVOID *)(&ORIG_CViewRender__ViewDrawScene), HOOKED_CViewRender__ViewDrawScene },
+		{ (PVOID *)(&ORIG_CViewRender__DrawOneMonitor), HOOKED_CViewRender__DrawMonitors },
+		{ (PVOID *)(&ORIG_CPortalRenderable_FlatBasic__RenderPortalViewToTexture), HOOKED_CPortalRenderable_FlatBasic__RenderPortalViewToTexture },
+		{ (PVOID *)(&ORIG_CViewRender__QueueOverlayRenderView), HOOKED_CViewRender__QueueOverlayRenderView }
 	});
 }
 
@@ -440,7 +542,12 @@ void ClientDLL::Unhook()
 		{ (PVOID *)(&ORIG_GetButtonBits), HOOKED_GetButtonBits },
 		{ (PVOID *)(&ORIG_AdjustAngles), HOOKED_AdjustAngles },
 		{ (PVOID *)(&ORIG_CreateMove), HOOKED_CreateMove },
-		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart }
+		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart },
+		{ (PVOID *)(&ORIG_CViewRender__DrawOneMonitor), HOOKED_CViewRender__DrawOneMonitor },
+		{ (PVOID *)(&ORIG_CViewRender__ViewDrawScene), HOOKED_CViewRender__ViewDrawScene },
+		{ (PVOID *)(&ORIG_CViewRender__DrawOneMonitor), HOOKED_CViewRender__DrawMonitors },
+		{ (PVOID *)(&ORIG_CPortalRenderable_FlatBasic__RenderPortalViewToTexture), HOOKED_CPortalRenderable_FlatBasic__RenderPortalViewToTexture },
+		{ (PVOID *)(&ORIG_CViewRender__QueueOverlayRenderView), HOOKED_CViewRender__QueueOverlayRenderView }
 	});
 
 	Clear();
@@ -458,6 +565,11 @@ void ClientDLL::Clear()
 	GetLocalPlayer = nullptr;
 	GetGroundEntity = nullptr;
 	CalcAbsoluteVelocity = nullptr;
+	ORIG_CViewRender__DrawOneMonitor = nullptr;
+	ORIG_CViewRender__ViewDrawScene = nullptr;
+	ORIG_CViewRender__DrawMonitors = nullptr;
+	ORIG_CPortalRenderable_FlatBasic__RenderPortalViewToTexture = nullptr;
+	ORIG_CViewRender__QueueOverlayRenderView = nullptr;
 
 	pgpGlobals = nullptr;
 	off1M_nOldButtons = 0;
@@ -538,6 +650,8 @@ bool ClientDLL::GetFlagsDucking()
 
 void ClientDLL::OnFrame()
 {
+	EngineDevMsg("frame\n");
+
 	if (afterframesPaused)
 	{
 		return;
@@ -873,4 +987,34 @@ void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart_Func(void* thisptr,
 	float *fovViewmodel = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(thisptr) + 56);
 	*fov = 90;
 	*fovViewmodel = _viewmodel_fov->GetFloat();
+}
+
+bool ClientDLL::HOOKED_CViewRender__DrawOneMonitor_Func(void * thisptr, int edx, void * pRenderTarget, int cameraNum, void * cameraEnt, void * cameraView, void * localPlayer, int x, int y, int width, int height)
+{
+	return ORIG_CViewRender__DrawOneMonitor(thisptr, edx, pRenderTarget, cameraNum, cameraEnt, cameraView, localPlayer, x, y, width, height);
+}
+
+void ClientDLL::HOOKED_CViewRender__ViewDrawScene_Func(void * thisptr, int edx, bool bDrew3dSkybox, int skyboxVis, void * view, int nClearFlags, int viewID, bool drawViewModel, int baseDrawFlags, void * customVis)
+{
+	ORIG_CViewRender__ViewDrawScene(thisptr, edx, bDrew3dSkybox, skyboxVis, view, nClearFlags, viewID, drawViewModel, baseDrawFlags, customVis);
+}
+
+void ClientDLL::HOOKED_CViewRender__DrawMonitors_Func(void * thisptr, int edx, void * cameraView)
+{
+	ORIG_CViewRender__DrawMonitors(thisptr, edx, cameraView);
+}
+
+void ClientDLL::HOOKED_CPortalRenderable_FlatBasic__RenderPortalViewToTexture_Func(void * thisptr, int edx, void * cviewrender, void * cameraView)
+{
+	ORIG_CPortalRenderable_FlatBasic__RenderPortalViewToTexture(thisptr, edx, cviewrender, cameraView);
+}
+
+void ClientDLL::HOOKED_CViewRender__QueueOverlayRenderView_Func(void * thisptr, int edx, void * view, int nClearFlags, int whatToDraw)
+{
+	ORIG_CViewRender__QueueOverlayRenderView(thisptr, edx, view, nClearFlags, whatToDraw);
+}
+
+void ClientDLL::ViewDrawScene(bool bDrew3dSkybox, int skyboxVis, void * view, int nClearFlags)
+{
+	ORIG_CViewRender__ViewDrawScene(clientCViewRender, nClearFlags, bDrew3dSkybox, skyboxVis, view, nClearFlags, 2, 0, 0, 0);
 }
