@@ -14,11 +14,14 @@
 #include "mathlib\vmatrix.h"
 #endif
 
+const int PORTAL_ORIGIN_OFFSET = 1180;
+const int PORTAL_ANGLE_OFFSET = 1192;
 
-void calculate_sg_position(Vector & new_player_origin, QAngle & new_player_angles)
+
+bool get_portal_index(edict_t ** portal_edict, Vector & new_player_origin, QAngle & new_player_angles)
 {
-	int portal_index = getPortal(_y_spt_camera_portal.GetString(), false);
-	
+	int portal_index = getPortal(_y_spt_overlay_portal.GetString(), false);
+
 	if (portal_index == -1)
 	{
 		auto& player_origin = clientDLL.GetPlayerEyePos();
@@ -26,7 +29,7 @@ void calculate_sg_position(Vector & new_player_origin, QAngle & new_player_angle
 
 		new_player_origin = player_origin;
 		new_player_angles = player_angles;
-		return;
+		return false;
 	}
 
 	auto engine_server = GetEngine();
@@ -38,18 +41,45 @@ void calculate_sg_position(Vector & new_player_origin, QAngle & new_player_angle
 		new_player_origin = player_origin;
 		new_player_angles = player_angles;
 
-		return;
+		return false;
 	}
 
-	calculate_offset_player(portal, new_player_origin, new_player_angles);
+	*portal_edict = portal;
+	return true;
 }
 
-void calculate_offset_player(edict_t* saveglitch_portal, Vector& new_player_origin, QAngle& new_player_angles)
+void calculate_ag_position(Vector & new_player_origin, QAngle & new_player_angles)
+{
+	edict_t * portal;
+	if (get_portal_index(&portal, new_player_origin, new_player_angles))
+		calculate_offset_portal(portal, new_player_origin, new_player_angles);
+}
+
+void calculate_sg_position(Vector & new_player_origin, QAngle & new_player_angles)
+{
+	edict_t * portal;
+	if(get_portal_index(&portal, new_player_origin, new_player_angles))
+		calculate_offset_player(portal, new_player_origin, new_player_angles);
+}
+
+bool is_infront_of_portal(edict_t* saveglitch_portal, const Vector& player_origin)
+{
+	auto& portal_origin = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(saveglitch_portal->GetUnknown()) + PORTAL_ORIGIN_OFFSET);
+	auto& portal_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(saveglitch_portal->GetUnknown()) + PORTAL_ANGLE_OFFSET);
+
+	Vector delta = player_origin - portal_origin;
+	Vector normal;
+	AngleVectors(portal_angles, &normal);
+	float dot = DotProduct(normal, delta);
+
+	return dot >= 0;
+}
+
+void calculate_offset_portal(edict_t* saveglitch_portal, Vector& new_player_origin, QAngle& new_player_angles)
 {
 	// Here we make sure that the eye position and the eye angles match up.
-	auto& player_origin = clientDLL.GetPlayerEyePos();
+	auto& player_origin = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(saveglitch_portal->GetUnknown()) + PORTAL_ORIGIN_OFFSET);
 	auto& player_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + 2568);
-
 	auto& matrix = *reinterpret_cast<VMatrix*>(reinterpret_cast<uintptr_t>(saveglitch_portal->GetUnknown()) + 1072);
 
 	auto eye_origin = player_origin;
@@ -60,6 +90,34 @@ void calculate_offset_player(edict_t* saveglitch_portal, Vector& new_player_orig
 	new_player_angles.x = AngleNormalizePositive(new_player_angles.x);
 	new_player_angles.y = AngleNormalizePositive(new_player_angles.y);
 	new_player_angles.z = AngleNormalizePositive(new_player_angles.z);
+
+}
+
+void calculate_offset_player(edict_t* saveglitch_portal, Vector& new_player_origin, QAngle& new_player_angles)
+{
+	// Here we make sure that the eye position and the eye angles match up.
+	auto& player_origin = clientDLL.GetPlayerEyePos();
+	auto& player_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + 2568);
+
+	if (is_infront_of_portal(saveglitch_portal, player_origin))
+	{
+		new_player_origin = player_origin;
+		new_player_angles = player_angles;
+	}
+	else
+	{
+		auto& matrix = *reinterpret_cast<VMatrix*>(reinterpret_cast<uintptr_t>(saveglitch_portal->GetUnknown()) + 1072);
+
+		auto eye_origin = player_origin;
+		auto new_eye_origin = matrix * eye_origin;
+		new_player_origin = new_eye_origin;
+
+		new_player_angles = TransformAnglesToWorldSpace(player_angles, matrix.As3x4());
+		new_player_angles.x = AngleNormalizePositive(new_player_angles.x);
+		new_player_angles.y = AngleNormalizePositive(new_player_angles.y);
+		new_player_angles.z = AngleNormalizePositive(new_player_angles.z);
+	}
+
 }
 
 int getPortal(const char * Arg, bool verbose)

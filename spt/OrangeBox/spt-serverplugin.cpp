@@ -275,7 +275,6 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	Hooks::getInstance().AddToHookedModules(&serverDLL);
 
 	Hooks::getInstance().Init();
-	g_OverlayRenderer.setupOverlay(sgOverlay);
 
 	auto loadTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
 	std::ostringstream out;

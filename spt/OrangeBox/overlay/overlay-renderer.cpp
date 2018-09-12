@@ -8,52 +8,60 @@
 #include "..\modules\EngineDLL.hpp"
 #include "..\modules.hpp"
 #include <SDK\hl_movedata.h>
+#include "..\cvars.hpp"
+#include "overlays.hpp"
 
-const int VIEW_MONITOR = 2;
 OverlayRenderer g_OverlayRenderer;
 
-
-void OverlayRenderer::setupOverlay(_CameraCallback callback)
+bool OverlayRenderer::shouldRenderOverlay()
 {
-	overlayOn = true;
-	currentCallback = callback;
+	return _y_spt_overlay.GetBool();
 }
 
-void OverlayRenderer::disableOverlay()
+void OverlayRenderer::modifyView(void * view, int & clearFlags, int & drawFlags)
 {
-	overlayOn = false;
-}
+	CViewSetup * casted = (CViewSetup *)view;
 
-// Called by the client DLL
-void OverlayRenderer::pushOverlay(void * view, void * pRenderTarget)
-{
-	CVRenderView = view;
-	if (overlayOn)
+	CameraInformation data;
+
+	switch (_y_spt_overlay_type.GetInt())
 	{
-		CViewSetup setup;
-		auto data = currentCallback();
-		setup.origin = Vector(data.x, data.y, data.z);
-		setup.angles = QAngle(data.pitch, data.yaw, 0);
-
-		setup.x = 20;
-		setup.y = 20;
-		setup.width = 480;
-		setup.height = 270;
-		setup.fov = 90;
-		setup.m_bOrtho = false;
-		setup.m_flAspectRatio = 16.0f / 9.0f;
-
-		Frustum frustum;
-		engineDLL.CVRenderView__Push3DView_Func(CVRenderView, (void*)&setup, VIEW_CLEAR_COLOR, pRenderTarget, (void*)&frustum);
-		engineDLL.CVRenderView__PopView_Func(CVRenderView, (void*)&frustum);
-
-		engineDLL.CVRenderView__Push3DView_Func(CVRenderView, (void*)&setup, 34, pRenderTarget, (void*)&frustum);
-		clientDLL.ViewDrawScene(false, true, (void*)&setup, 0);
-		engineDLL.CVRenderView__PopView_Func(CVRenderView, (void*)&frustum);
+	case 0:
+		data = sgOverlay();
+		break;
+	case 1:
+		data = sgOverlay();
+		break;
+	default:
+		data = rearViewMirrorOverlay();
+		break;
 	}
+
+	casted->origin = Vector(data.x, data.y, data.z);
+	casted->angles = QAngle(data.pitch, data.yaw, 0);
+
+	int width = _y_spt_overlay_width.GetFloat();
+	int height = static_cast<int>((width / 16.0f) * 9.0f);
+
+	casted->x = 0;
+	casted->y = 0;
+	casted->width = width;
+	casted->height = height;
+	casted->fov = _y_spt_overlay_fov.GetFloat() * 1.18f; // hack: fix to be accurate later
+	casted->m_flAspectRatio = 16.0f / 9.0f;
+	drawFlags = 0;
 }
 
-void OverlayRenderer::pop()
+Rect_t OverlayRenderer::getRect()
 {
-	
+	int width = _y_spt_overlay_width.GetFloat();
+	int height = static_cast<int>((width / 16.0f) * 9.0f);
+
+	Rect_t rect;
+	rect.x = 0;
+	rect.y = 0;
+	rect.width = width;
+	rect.height = height;
+
+	return rect;
 }

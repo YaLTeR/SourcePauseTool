@@ -1,4 +1,5 @@
 #pragma once
+#include "tier0\basetypes.h"
 
 
 struct CameraInformation
@@ -14,17 +15,10 @@ class ITexture;
 class OverlayRenderer
 {
 public:
-	OverlayRenderer() : overlayOn(false), currentCallback(nullptr) {}
-	void setupOverlay(_CameraCallback callback);
-	void disableOverlay();
-	void pushOverlay(void * CVRenderView, void * pRenderTarget);
-	void pop();
-	void newFrame() { shouldRender = true; }
-private:
-	bool shouldRender;
-	bool overlayOn;
-	_CameraCallback currentCallback;
-	void * CVRenderView;
+	OverlayRenderer() {}
+	bool shouldRenderOverlay();
+	void modifyView(void * view, int & clearFlags, int &drawflags);
+	Rect_t getRect();
 };
 
 extern OverlayRenderer g_OverlayRenderer;

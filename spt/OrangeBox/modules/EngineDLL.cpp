@@ -48,21 +48,6 @@ void __cdecl EngineDLL::HOOKED_Cbuf_Execute()
 	return engineDLL.HOOKED_Cbuf_Execute_Func();
 }
 
-void EngineDLL::HOOKED_CVRenderView__Push3DView(void * thisptr, int edx, void * view, int nFlags, void * pRenderTarget, void * frustumPlanes)
-{
-	engineDLL.HOOKED_CVRenderView__Push3DView_Func(thisptr, edx, view, nFlags, pRenderTarget, frustumPlanes);
-}
-
-void EngineDLL::HOOKED_CVRenderView__Push2DView(void * thisptr, int edx, void * view, int nFlags, void * pRenderTarget, void * frustumPlanes)
-{
-	engineDLL.HOOKED_CVRenderView__Push2DView_Func(thisptr, edx, view, nFlags, pRenderTarget, frustumPlanes);
-}
-
-void EngineDLL::HOOKED_CVRenderView__PopView(void * thisptr, int edx, void * frustumPlanes)
-{
-	engineDLL.HOOKED_CVRenderView__PopView_Func(thisptr, edx, frustumPlanes);
-}
-
 void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.
@@ -81,8 +66,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		pMiddleOfSV_InitGameDLL = NULL,
 		//p_Host_RunFrame = NULL,
 		//pSV_Frame = NULL,
-		pRecord = NULL,
-		pCVRenderView__Push3DView;
+		pRecord = NULL;
 
 	auto fActivateServer = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSV_ActivateServer, &pSV_ActivateServer);
 	auto fFinishRestore = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsFinishRestore, &pFinishRestore);
@@ -91,7 +75,6 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	//auto f_Host_RunFrame = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptns_Host_RunFrame, &p_Host_RunFrame);
 	//auto fSV_Frame = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSV_Frame, &pSV_Frame);
 	auto fRecord = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsRecord, &pRecord);
-	auto fCVRenderView__Push3DView = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCVRenderView__Push3DView, &pCVRenderView__Push3DView);
 
 	// m_bLoadgame and pGameServer (&sv)
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsSpawnPlayer, &pSpawnPlayer);
@@ -270,22 +253,6 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("y_spt_pause_demo_on_tick is not available.\n");
 	}
 
-	ptnNumber = fCVRenderView__Push3DView.get();
-	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
-	{
-		ORIG_CVRenderView__Push3DView = (_CVRenderView__PushView)pCVRenderView__Push3DView;
-		ORIG_CVRenderView__Push2DView = (_CVRenderView__PushView)(pCVRenderView__Push3DView + 0x30);
-		ORIG_CVRenderView__PopView = (_CVRenderView__PopView)(pCVRenderView__Push3DView + 0x40);
-
-
-		EngineDevMsg("Found CVRenderView__Push3DView at %p (using the build %s pattern).\n", pCVRenderView__Push3DView, Patterns::ptnsCVRenderView__Push3DView[ptnNumber].build.c_str());
-	}
-	else
-	{
-		EngineDevWarning("Could not find CVRenderView__Push3DView!\n");
-		EngineWarning("Overlay solutions are not available.\n");
-	}
-
 	DetoursUtils::AttachDetours(moduleName, {
 		{ (PVOID *)(&ORIG_SV_ActivateServer), HOOKED_SV_ActivateServer },
 		{ (PVOID *)(&ORIG_FinishRestore), HOOKED_FinishRestore },
@@ -293,10 +260,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		{ (PVOID *)(&ORIG__Host_RunFrame), HOOKED__Host_RunFrame },
 		{ (PVOID *)(&ORIG__Host_RunFrame_Input), HOOKED__Host_RunFrame_Input },
 		{ (PVOID *)(&ORIG__Host_RunFrame_Server), HOOKED__Host_RunFrame_Server },
-		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute },
-		{ (PVOID *)(&ORIG_CVRenderView__Push3DView), HOOKED_CVRenderView__Push3DView },
-		{ (PVOID *)(&ORIG_CVRenderView__Push2DView), HOOKED_CVRenderView__Push2DView },
-		{ (PVOID *)(&ORIG_CVRenderView__PopView), HOOKED_CVRenderView__PopView }
+		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute }
 	});
 }
 
@@ -309,10 +273,7 @@ void EngineDLL::Unhook()
 		{ (PVOID *)(&ORIG__Host_RunFrame), HOOKED__Host_RunFrame },
 		{ (PVOID *)(&ORIG__Host_RunFrame_Input), HOOKED__Host_RunFrame_Input },
 		{ (PVOID *)(&ORIG__Host_RunFrame_Server), HOOKED__Host_RunFrame_Server },
-		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute },
-		{ (PVOID *)(&ORIG_CVRenderView__Push3DView), HOOKED_CVRenderView__Push3DView },
-		{ (PVOID *)(&ORIG_CVRenderView__Push2DView), HOOKED_CVRenderView__Push2DView },
-		{ (PVOID *)(&ORIG_CVRenderView__PopView), HOOKED_CVRenderView__PopView }
+		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute }
 	});
 
 	Clear();
@@ -328,9 +289,6 @@ void EngineDLL::Clear()
 	ORIG__Host_RunFrame_Input = nullptr;
 	ORIG__Host_RunFrame_Server = nullptr;
 	ORIG_Cbuf_Execute = nullptr;
-	ORIG_CVRenderView__PopView = nullptr;
-	ORIG_CVRenderView__Push3DView = nullptr;
-	ORIG_CVRenderView__Push2DView = nullptr;
 
 	pGameServer = nullptr;
 	pM_bLoadgame = nullptr;
@@ -340,9 +298,6 @@ void EngineDLL::Clear()
 	pM_State = nullptr;
 	pM_nSignonState = nullptr;
 	pDemoplayer = nullptr;
-	renderTarget = nullptr;
-	is3DStack = false;
-	onStack = 0;
 }
 
 float EngineDLL::GetTickrate() const
@@ -502,42 +457,4 @@ void __cdecl EngineDLL::HOOKED_Cbuf_Execute_Func()
 	ORIG_Cbuf_Execute();
 
 	EngineDevMsg("Cbuf_Execute() end.\n");
-}
-
-void EngineDLL::HOOKED_CVRenderView__Push3DView_Func(void * thisptr, int edx, void * view, int nFlags, void * pRenderTarget, void * frustumPlanes)
-{
-	renderTarget = pRenderTarget;
-	is3DStack = true;
-	++onStack;
-
-	ORIG_CVRenderView__Push3DView(thisptr, edx, view, nFlags, pRenderTarget, frustumPlanes);
-	//EngineDevMsg("push 3d %d\n", onStack);
-}
-
-void EngineDLL::HOOKED_CVRenderView__Push2DView_Func(void * thisptr, int edx, void * view, int nFlags, void * pRenderTarget, void * frustumPlanes)
-{
-	is3DStack = false;
-	ORIG_CVRenderView__Push2DView(thisptr, edx, view, nFlags, pRenderTarget, frustumPlanes);
-
-	//EngineDevMsg("push 2d %d\n", onStack);
-}
-
-void EngineDLL::HOOKED_CVRenderView__PopView_Func(void * thisptr, int edx, void * frustumPlanes)
-{	
-	g_OverlayRenderer.pushOverlay(thisptr, renderTarget);
-	g_OverlayRenderer.pop();
-	ORIG_CVRenderView__PopView(thisptr, edx, frustumPlanes);
-	--onStack;
-
-	//EngineDevMsg("pop %d, is 3d %d \n", onStack, is3DStack);
-}
-
-void EngineDLL::CVRenderView__Push3DView_Func(void * thisptr, void * view, int nFlags, void * pRenderTarget, void * frustumPlanes)
-{
-	ORIG_CVRenderView__Push3DView(thisptr, 0, view, nFlags, pRenderTarget, frustumPlanes);
-}
-
-void EngineDLL::CVRenderView__PopView_Func(void * thisptr, void * frustumPlanes)
-{
-	ORIG_CVRenderView__PopView(thisptr, 0, frustumPlanes);
 }

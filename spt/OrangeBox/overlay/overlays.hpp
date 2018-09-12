@@ -4,3 +4,4 @@
 
 CameraInformation rearViewMirrorOverlay();
 CameraInformation sgOverlay();
+CameraInformation agOverlay();

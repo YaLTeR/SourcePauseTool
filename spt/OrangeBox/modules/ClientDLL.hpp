@@ -21,13 +21,9 @@ typedef void(__fastcall *_CViewRender__OnRenderStart) (void* thisptr, int edx);
 typedef void*(__cdecl *_GetLocalPlayer) ();
 typedef void*(__fastcall *_GetGroundEntity) (void* thisptr, int edx);
 typedef void(__fastcall *_CalcAbsoluteVelocity) (void* thisptr, int edx);
+typedef void(__fastcall * _CViewRender__RenderView) (void * thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw);
+typedef void(__fastcall * _CViewRender__Render) (void * thisptr, int edx, void * rect);
 
-
-typedef void(__fastcall * _CViewRender__ViewDrawScene) (void * thisptr, int edx, int bDrew3dSkybox, int skyboxVis, void * view, int nClearFlags, int viewID, int drawViewModel, int baseDrawFlags, void * customVis);
-typedef bool(__fastcall * _CViewRender__DrawOneMonitor) (void * thisptr, int edx, void * pRenderTarget, int cameraNum, void * cameraEnt, void * cameraView, void * localPlayer, int x, int y, int width, int height);
-typedef void(__fastcall * _CViewRender__DrawMonitors) (void * thisptr, int edx, void * cameraView);
-typedef void(__fastcall * _CPortalRenderable_FlatBasic__RenderPortalViewToTexture) (void * thisptr, int edx, void * cviewrender, void * cameraView);
-typedef void(__fastcall * _CViewRender__QueueOverlayRenderView) (void * thisptr, int edx, void * view, int nClearFlags, int whatToDraw);
 
 typedef struct
 {
@@ -56,11 +52,8 @@ public:
 	static void __fastcall HOOKED_AdjustAngles(void* thisptr, int edx, float frametime);
 	static void __fastcall HOOKED_CreateMove (void* thisptr, int edx, int sequence_number, float input_sample_frametime, bool active);
 	static void __fastcall HOOKED_CViewRender__OnRenderStart(void* thisptr, int edx);
-	static bool __fastcall HOOKED_CViewRender__DrawOneMonitor(void * thisptr, int edx, void * pRenderTarget, int cameraNum, void * cameraEnt, void * cameraView, void * localPlayer, int x, int y, int width, int height);
-	static void __fastcall HOOKED_CViewRender__ViewDrawScene(void * thisptr, int edx, bool bDrew3dSkybox, int skyboxVis, void * view, int nClearFlags, int viewID, bool drawViewModel, int baseDrawFlags, void * customVis);
-	static void __fastcall HOOKED_CViewRender__DrawMonitors(void * thisptr, int edx, void * cameraView);
-	static void __fastcall HOOKED_CPortalRenderable_FlatBasic__RenderPortalViewToTexture(void * thisptr, int edx, void * cviewrender, void * cameraView);
-	static void __fastcall HOOKED_CViewRender__QueueOverlayRenderView(void * thisptr, int edx, void * view, int nClearFlags, int whatToDraw);
+	static void __fastcall HOOKED_CViewRender__RenderView(void * thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw);
+	static void __fastcall HOOKED_CViewRender__Render(void * thisptr, int edx, void * rect);
 
 	void __cdecl HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, int y, int w, int h);
 	bool __fastcall HOOKED_CheckJumpButton_Func(void* thisptr, int edx);
@@ -69,13 +62,9 @@ public:
 	void __fastcall HOOKED_AdjustAngles_Func(void* thisptr, int edx, float frametime);
 	void __fastcall HOOKED_CreateMove_Func(void* thisptr, int edx, int sequence_number, float input_sample_frametime, bool active);
 	void __fastcall HOOKED_CViewRender__OnRenderStart_Func(void* thisptr, int edx);
-	bool __fastcall HOOKED_CViewRender__DrawOneMonitor_Func(void * thisptr, int edx, void * pRenderTarget, int cameraNum, void * cameraEnt, void * cameraView, void * localPlayer, int x, int y, int width, int height);
-	void __fastcall HOOKED_CViewRender__ViewDrawScene_Func(void * thisptr, int edx, bool bDrew3dSkybox, int skyboxVis, void * view, int nClearFlags, int viewID, bool drawViewModel, int baseDrawFlags, void * customVis);
-	void __fastcall HOOKED_CViewRender__DrawMonitors_Func(void * thisptr, int edx, void * cameraView);
-	void __fastcall HOOKED_CPortalRenderable_FlatBasic__RenderPortalViewToTexture_Func(void * thisptr, int edx, void * cviewrender, void * cameraView);
-	void __fastcall HOOKED_CViewRender__QueueOverlayRenderView_Func(void * thisptr, int edx, void * view, int nClearFlags, int whatToDraw);
+	void __fastcall HOOKED_CViewRender__RenderView_Func(void * thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw);
+	void __fastcall HOOKED_CViewRender__Render_Func(void * thisptr, int edx, void * rect);
 
-	void ViewDrawScene(bool bDrew3dSkybox, int skyboxVis, void * view, int nClearFlags);
 	void DelayAfterframesQueue(int delay);
 	void AddIntoAfterframesQueue(const afterframes_entry_t& entry);
 	void ResetAfterframesQueue();
@@ -103,11 +92,8 @@ protected:
 	_GetLocalPlayer GetLocalPlayer;
 	_GetGroundEntity GetGroundEntity;
 	_CalcAbsoluteVelocity CalcAbsoluteVelocity;
-	_CViewRender__DrawOneMonitor ORIG_CViewRender__DrawOneMonitor;
-	_CViewRender__ViewDrawScene ORIG_CViewRender__ViewDrawScene;
-	_CViewRender__DrawMonitors ORIG_CViewRender__DrawMonitors;
-	_CPortalRenderable_FlatBasic__RenderPortalViewToTexture ORIG_CPortalRenderable_FlatBasic__RenderPortalViewToTexture;
-	_CViewRender__QueueOverlayRenderView ORIG_CViewRender__QueueOverlayRenderView;
+	_CViewRender__RenderView ORIG_CViewRender__RenderView;
+	_CViewRender__Render ORIG_CViewRender__Render;
 
 	uintptr_t* pgpGlobals;
 	ptrdiff_t offM_pCommands;
@@ -141,4 +127,5 @@ protected:
 
 	int afterframesDelay;
 	void * clientCViewRender;
+	bool renderingOverlay;
 };

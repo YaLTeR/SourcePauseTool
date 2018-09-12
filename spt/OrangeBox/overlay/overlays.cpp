@@ -35,3 +35,19 @@ CameraInformation sgOverlay()
 
 	return info;
 }
+
+CameraInformation agOverlay()
+{
+	CameraInformation info;
+	Vector pos;
+	QAngle va;
+
+	calculate_ag_position(pos, va);
+	info.x = pos.x;
+	info.y = pos.y;
+	info.z = pos.z;
+	info.pitch = va[PITCH];
+	info.yaw = NormalizeDeg(va[YAW]);
+
+	return info;
+}
