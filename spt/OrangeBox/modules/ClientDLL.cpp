@@ -9,6 +9,7 @@
 #include <SPTLib\detoursutils.hpp>
 #include <SPTLib\hooks.hpp>
 #include "ClientDLL.hpp"
+#include "..\overlay\overlay-renderer.hpp"
 
 #ifdef max
 #undef max
@@ -56,6 +57,22 @@ void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart(void* thisptr, int 
 	return clientDLL.HOOKED_CViewRender__OnRenderStart_Func(thisptr, edx);
 }
 
+void ClientDLL::HOOKED_CViewRender__RenderView(void * thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw)
+{
+	clientDLL.HOOKED_CViewRender__RenderView_Func(thisptr, edx, cameraView, nClearFlags, whatToDraw);
+}
+
+void ClientDLL::HOOKED_CViewRender__Render(void * thisptr, int edx, void * rect)
+{
+	clientDLL.HOOKED_CViewRender__Render_Func(thisptr, edx, rect);
+}
+
+void ClientDLL::HOOKED_CHUDCrosshair__Paint(void * thisptr, int edx)
+{
+	clientDLL.HOOKED_CHUDCrosshair__Paint_Func(thisptr, edx);
+}
+
+
 void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.
@@ -74,7 +91,16 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		pCViewRender__OnRenderStart,
 		pMiddleOfCAM_Think,
 		pGetGroundEntity,
-		pCalcAbsoluteVelocity;
+		pCalcAbsoluteVelocity,
+		pCViewRender__ViewDrawScene,
+		pCViewRender__DrawOneMonitor,
+		pCViewRender__DrawMonitors,
+		pCPortalRenderable_FlatBasic__RenderPortalViewToTexture,
+		pCViewRender__QueueOverlayRenderView,
+		pReleaseRenderTargets,
+		pCViewRender__RenderView,
+		pCViewRender__Render,
+		pCHUDCrosshair__Paint;
 
 	auto fHudUpdate = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsHudUpdate, &pHudUpdate);
 	auto fGetButtonBits = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsGetButtonBits, &pGetButtonBits);
@@ -84,6 +110,15 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	auto fMiddleOfCAM_Think = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsMiddleOfCAM_Think, &pMiddleOfCAM_Think);
 	auto fGetGroundEntity = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsGetGroundEntity, &pGetGroundEntity);
 	auto fCalcAbsoluteVelocity = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCalcAbsoluteVelocity, &pCalcAbsoluteVelocity);
+	auto fCViewRender__ViewDrawScene = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__ViewDrawScene, &pCViewRender__ViewDrawScene);
+	auto fCViewRender__DrawOneMonitor = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__DrawOneMonitor, &pCViewRender__DrawOneMonitor);
+	auto fCViewRender__DrawMonitors = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__DrawMonitors, &pCViewRender__DrawMonitors);
+	auto fCPortalRenderable_FlatBasic__RenderPortalViewToTexture = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCPortalRenderable_FlatBasic__RenderPortalViewToTexture, &pCPortalRenderable_FlatBasic__RenderPortalViewToTexture);
+	auto fCViewRender__QueueOverlayRenderView = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__QueueOverlayRenderView, &pCViewRender__QueueOverlayRenderView);
+	auto fReleaseRenderTargets = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsReleaseRenderTargets, &pReleaseRenderTargets);
+	auto fCViewRender__RenderView = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__RenderView, &pCViewRender__RenderView);
+	auto fCViewRender__Render = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__Render, &pCViewRender__Render);
+	auto fCHUDCrosshair__Paint = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCHUDCrosshair__Paint, &pCHUDCrosshair__Paint);
 
 	// DoImageSpaceMotionBlur
 	uintptr_t pDoImageSpaceMotionBlur = NULL;
@@ -420,6 +455,43 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("_y_spt_force_90fov has no effect.\n");
 	}
 
+	ptnNumber = fCViewRender__RenderView.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_CViewRender__RenderView = (_CViewRender__RenderView)(pCViewRender__RenderView);
+		EngineDevMsg("[client dll] Found CViewRender__RenderView at %p (using the build %s pattern).\n", pCViewRender__RenderView, Patterns::ptnsCViewRender__RenderView[ptnNumber].build.c_str());
+	}
+	else
+	{
+		EngineDevWarning("[client dll] Could not find CViewRender__RenderView\n");
+		EngineWarning("Overlay cameras have no effect.\n");
+	}
+
+	ptnNumber = fCViewRender__Render.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_CViewRender__Render = (_CViewRender__Render)(pCViewRender__Render);
+		EngineDevMsg("[client dll] Found CViewRender__Render at %p (using the build %s pattern).\n", pCViewRender__Render, Patterns::ptnsCViewRender__Render[ptnNumber].build.c_str());
+	}
+	else
+	{
+		EngineDevWarning("[client dll] Could not find CViewRender__Render\n");
+		EngineWarning("Overlay cameras have no effect.\n");
+	}
+
+	ptnNumber = fCHUDCrosshair__Paint.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_CHUDCrosshair__Paint = (_CHUDCrosshair__Paint)(pCHUDCrosshair__Paint);
+		EngineDevMsg("[client dll] Found CHUDCrosshair__Paint at %p (using the build %s pattern).\n", pCHUDCrosshair__Paint, Patterns::ptnsCHUDCrosshair__Paint[ptnNumber].build.c_str());
+	}
+	else
+	{
+		EngineDevWarning("[client dll] Could not find CHUDCrosshair__Paint\n");
+		EngineWarning("Overlay crosshairs have no effect.\n");
+	}
+
+
 	DetoursUtils::AttachDetours(moduleName, {
 		{ (PVOID *) (&ORIG_DoImageSpaceMotionBlur), HOOKED_DoImageSpaceMotionBlur },
 		{ (PVOID *) (&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
@@ -427,7 +499,10 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		{ (PVOID *) (&ORIG_GetButtonBits), HOOKED_GetButtonBits },
 		{ (PVOID *)(&ORIG_AdjustAngles), HOOKED_AdjustAngles },
 		{ (PVOID *)(&ORIG_CreateMove), HOOKED_CreateMove },
-		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart }
+		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart },
+		{ (PVOID *)(&ORIG_CViewRender__RenderView), HOOKED_CViewRender__RenderView },
+		{ (PVOID *)(&ORIG_CViewRender__Render), HOOKED_CViewRender__Render },
+		{ (PVOID *)(&ORIG_CHUDCrosshair__Paint), HOOKED_CHUDCrosshair__Paint }
 	});
 }
 
@@ -440,7 +515,10 @@ void ClientDLL::Unhook()
 		{ (PVOID *)(&ORIG_GetButtonBits), HOOKED_GetButtonBits },
 		{ (PVOID *)(&ORIG_AdjustAngles), HOOKED_AdjustAngles },
 		{ (PVOID *)(&ORIG_CreateMove), HOOKED_CreateMove },
-		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart }
+		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart },
+		{ (PVOID *)(&ORIG_CViewRender__RenderView), HOOKED_CViewRender__RenderView },
+		{ (PVOID *)(&ORIG_CViewRender__Render), HOOKED_CViewRender__Render },
+		{ (PVOID *)(&ORIG_CHUDCrosshair__Paint), HOOKED_CHUDCrosshair__Paint }
 	});
 
 	Clear();
@@ -458,6 +536,9 @@ void ClientDLL::Clear()
 	GetLocalPlayer = nullptr;
 	GetGroundEntity = nullptr;
 	CalcAbsoluteVelocity = nullptr;
+	ORIG_CViewRender__RenderView = nullptr;
+	ORIG_CViewRender__Render = nullptr;
+	ORIG_CHUDCrosshair__Paint = nullptr;
 
 	pgpGlobals = nullptr;
 	off1M_nOldButtons = 0;
@@ -873,4 +954,33 @@ void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart_Func(void* thisptr,
 	float *fovViewmodel = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(thisptr) + 56);
 	*fov = 90;
 	*fovViewmodel = _viewmodel_fov->GetFloat();
+}
+
+void ClientDLL::HOOKED_CViewRender__RenderView_Func(void * thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw)
+{
+	if (renderingOverlay)
+		g_OverlayRenderer.modifyView(cameraView, nClearFlags, whatToDraw);
+
+	ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags | 1, whatToDraw);
+}
+
+void ClientDLL::HOOKED_CViewRender__Render_Func(void * thisptr, int edx, void * rect)
+{
+	renderingOverlay = false;
+	ORIG_CViewRender__Render(thisptr, edx, rect);
+
+	if (g_OverlayRenderer.shouldRenderOverlay())
+	{
+		renderingOverlay = true;
+		Rect_t rec = g_OverlayRenderer.getRect();
+		ORIG_CViewRender__Render(thisptr, edx, &rec);
+		renderingOverlay = false;
+	}
+
+}
+
+void ClientDLL::HOOKED_CHUDCrosshair__Paint_Func(void * thisptr, int edx)
+{
+	EngineMsg("painting crosshair\n");
+	ORIG_CHUDCrosshair__Paint(thisptr, edx);
 }

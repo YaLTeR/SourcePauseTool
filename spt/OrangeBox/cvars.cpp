@@ -44,6 +44,11 @@ ConVar _y_spt_afterframes_reset_on_server_activate("_y_spt_afterframes_reset_on_
 ConVar _y_spt_pitchspeed("_y_spt_pitchspeed", "0");
 ConVar _y_spt_yawspeed("_y_spt_yawspeed", "0");
 ConVar _y_spt_force_90fov("_y_spt_force_90fov", "0");
+ConVar _y_spt_overlay("_y_spt_overlay", "0", FCVAR_CHEAT, "Enables the overlay camera in the top left of the screen.\n");
+ConVar _y_spt_overlay_type("_y_spt_overlay_type", "0", FCVAR_CHEAT, "Overlay type. 0 = save glitch body, 1 = angle glitch simulation(WIP), 2 = rear view mirror\n");
+ConVar _y_spt_overlay_portal("_y_spt_overlay_portal", "blue", FCVAR_CHEAT, "Chooses the portal for the overlay camera. Valid options are blue/orange/portal index\n");
+ConVar _y_spt_overlay_width("_y_spt_overlay_width", "480", FCVAR_CHEAT, "Determines the width of the overlay. Height is determined automatically from width.\n", true, 20.0f, true, 1024.0f);
+ConVar _y_spt_overlay_fov("_y_spt_overlay_fov", "90", FCVAR_CHEAT, "Determines the FOV of the overlay\n", true, 5.0f, true, 140.0f);
 
 ConVar *_viewmodel_fov = nullptr;
 ConVar *_sv_accelerate = nullptr;
