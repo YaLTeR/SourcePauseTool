@@ -23,7 +23,6 @@ typedef void*(__fastcall *_GetGroundEntity) (void* thisptr, int edx);
 typedef void(__fastcall *_CalcAbsoluteVelocity) (void* thisptr, int edx);
 typedef void(__fastcall * _CViewRender__RenderView) (void * thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw);
 typedef void(__fastcall * _CViewRender__Render) (void * thisptr, int edx, void * rect);
-typedef void(__fastcall * _CHUDCrosshair__Paint) (void * thisptr, int edx);
 
 
 typedef struct
@@ -55,7 +54,6 @@ public:
 	static void __fastcall HOOKED_CViewRender__OnRenderStart(void* thisptr, int edx);
 	static void __fastcall HOOKED_CViewRender__RenderView(void * thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw);
 	static void __fastcall HOOKED_CViewRender__Render(void * thisptr, int edx, void * rect);
-	static void __fastcall HOOKED_CHUDCrosshair__Paint(void * thisptr, int edx);
 
 	void __cdecl HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, int y, int w, int h);
 	bool __fastcall HOOKED_CheckJumpButton_Func(void* thisptr, int edx);
@@ -66,7 +64,6 @@ public:
 	void __fastcall HOOKED_CViewRender__OnRenderStart_Func(void* thisptr, int edx);
 	void __fastcall HOOKED_CViewRender__RenderView_Func(void * thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw);
 	void __fastcall HOOKED_CViewRender__Render_Func(void * thisptr, int edx, void * rect);
-	void __fastcall HOOKED_CHUDCrosshair__Paint_Func(void * thisptr, int edx);
 
 	void DelayAfterframesQueue(int delay);
 	void AddIntoAfterframesQueue(const afterframes_entry_t& entry);
@@ -97,7 +94,6 @@ protected:
 	_CalcAbsoluteVelocity CalcAbsoluteVelocity;
 	_CViewRender__RenderView ORIG_CViewRender__RenderView;
 	_CViewRender__Render ORIG_CViewRender__Render;
-	_CHUDCrosshair__Paint ORIG_CHUDCrosshair__Paint;
 
 	uintptr_t* pgpGlobals;
 	ptrdiff_t offM_pCommands;

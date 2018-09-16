@@ -67,11 +67,6 @@ void ClientDLL::HOOKED_CViewRender__Render(void * thisptr, int edx, void * rect)
 	clientDLL.HOOKED_CViewRender__Render_Func(thisptr, edx, rect);
 }
 
-void ClientDLL::HOOKED_CHUDCrosshair__Paint(void * thisptr, int edx)
-{
-	clientDLL.HOOKED_CHUDCrosshair__Paint_Func(thisptr, edx);
-}
-
 
 void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
@@ -99,8 +94,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		pCViewRender__QueueOverlayRenderView,
 		pReleaseRenderTargets,
 		pCViewRender__RenderView,
-		pCViewRender__Render,
-		pCHUDCrosshair__Paint;
+		pCViewRender__Render;
 
 	auto fHudUpdate = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsHudUpdate, &pHudUpdate);
 	auto fGetButtonBits = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsGetButtonBits, &pGetButtonBits);
@@ -118,7 +112,6 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	auto fReleaseRenderTargets = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsReleaseRenderTargets, &pReleaseRenderTargets);
 	auto fCViewRender__RenderView = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__RenderView, &pCViewRender__RenderView);
 	auto fCViewRender__Render = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__Render, &pCViewRender__Render);
-	auto fCHUDCrosshair__Paint = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCHUDCrosshair__Paint, &pCHUDCrosshair__Paint);
 
 	// DoImageSpaceMotionBlur
 	uintptr_t pDoImageSpaceMotionBlur = NULL;
@@ -479,18 +472,6 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("Overlay cameras have no effect.\n");
 	}
 
-	ptnNumber = fCHUDCrosshair__Paint.get();
-	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
-	{
-		ORIG_CHUDCrosshair__Paint = (_CHUDCrosshair__Paint)(pCHUDCrosshair__Paint);
-		EngineDevMsg("[client dll] Found CHUDCrosshair__Paint at %p (using the build %s pattern).\n", pCHUDCrosshair__Paint, Patterns::ptnsCHUDCrosshair__Paint[ptnNumber].build.c_str());
-	}
-	else
-	{
-		EngineDevWarning("[client dll] Could not find CHUDCrosshair__Paint\n");
-		EngineWarning("Overlay crosshairs have no effect.\n");
-	}
-
 
 	DetoursUtils::AttachDetours(moduleName, {
 		{ (PVOID *) (&ORIG_DoImageSpaceMotionBlur), HOOKED_DoImageSpaceMotionBlur },
@@ -501,8 +482,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		{ (PVOID *)(&ORIG_CreateMove), HOOKED_CreateMove },
 		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart },
 		{ (PVOID *)(&ORIG_CViewRender__RenderView), HOOKED_CViewRender__RenderView },
-		{ (PVOID *)(&ORIG_CViewRender__Render), HOOKED_CViewRender__Render },
-		{ (PVOID *)(&ORIG_CHUDCrosshair__Paint), HOOKED_CHUDCrosshair__Paint }
+		{ (PVOID *)(&ORIG_CViewRender__Render), HOOKED_CViewRender__Render }
 	});
 }
 
@@ -517,8 +497,7 @@ void ClientDLL::Unhook()
 		{ (PVOID *)(&ORIG_CreateMove), HOOKED_CreateMove },
 		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart },
 		{ (PVOID *)(&ORIG_CViewRender__RenderView), HOOKED_CViewRender__RenderView },
-		{ (PVOID *)(&ORIG_CViewRender__Render), HOOKED_CViewRender__Render },
-		{ (PVOID *)(&ORIG_CHUDCrosshair__Paint), HOOKED_CHUDCrosshair__Paint }
+		{ (PVOID *)(&ORIG_CViewRender__Render), HOOKED_CViewRender__Render }
 	});
 
 	Clear();
@@ -538,7 +517,6 @@ void ClientDLL::Clear()
 	CalcAbsoluteVelocity = nullptr;
 	ORIG_CViewRender__RenderView = nullptr;
 	ORIG_CViewRender__Render = nullptr;
-	ORIG_CHUDCrosshair__Paint = nullptr;
 
 	pgpGlobals = nullptr;
 	off1M_nOldButtons = 0;
@@ -977,10 +955,4 @@ void ClientDLL::HOOKED_CViewRender__Render_Func(void * thisptr, int edx, void * 
 		renderingOverlay = false;
 	}
 
-}
-
-void ClientDLL::HOOKED_CHUDCrosshair__Paint_Func(void * thisptr, int edx)
-{
-	EngineMsg("painting crosshair\n");
-	ORIG_CHUDCrosshair__Paint(thisptr, edx);
 }
