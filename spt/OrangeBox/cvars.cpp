@@ -49,7 +49,7 @@ ConVar _y_spt_overlay_type("_y_spt_overlay_type", "0", FCVAR_CHEAT, "Overlay typ
 ConVar _y_spt_overlay_portal("_y_spt_overlay_portal", "blue", FCVAR_CHEAT, "Chooses the portal for the overlay camera. Valid options are blue/orange/portal index. For the SG camera this is the portal you save glitch on, for angle glitch simulation this is the portal you enter.\n");
 ConVar _y_spt_overlay_width("_y_spt_overlay_width", "480", FCVAR_CHEAT, "Determines the width of the overlay. Height is determined automatically from width.\n", true, 20.0f, true, 1024.0f);
 ConVar _y_spt_overlay_fov("_y_spt_overlay_fov", "90", FCVAR_CHEAT, "Determines the FOV of the overlay\n", true, 5.0f, true, 140.0f);
-ConVar _y_spt_overlay_flip("_y_spt_overlay_flip", "0", FCVAR_CHEAT, "Flip alternate view and main screen?\n");
+ConVar _y_spt_overlay_swap("_y_spt_overlay_swap", "0", FCVAR_CHEAT, "Swap alternate view and main screen?\n");
 
 ConVar *_viewmodel_fov = nullptr;
 ConVar *_sv_accelerate = nullptr;

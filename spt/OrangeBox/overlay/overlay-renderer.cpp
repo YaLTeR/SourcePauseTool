@@ -25,7 +25,7 @@ bool OverlayRenderer::shouldRenderOverlay()
 
 bool OverlayRenderer::shouldFlipScreens()
 {
-	return _y_spt_overlay_flip.GetBool();
+	return _y_spt_overlay_swap.GetBool();
 }
 
 void OverlayRenderer::modifyBigScreenFlags(int & clearFlags, int & drawFlags)

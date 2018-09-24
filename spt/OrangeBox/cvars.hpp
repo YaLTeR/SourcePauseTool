@@ -43,7 +43,7 @@ extern ConVar _y_spt_overlay_type;
 extern ConVar _y_spt_overlay_portal;
 extern ConVar _y_spt_overlay_width;
 extern ConVar _y_spt_overlay_fov;
-extern ConVar _y_spt_overlay_flip;
+extern ConVar _y_spt_overlay_swap;
 
 extern ConVar *_viewmodel_fov;
 extern ConVar *_sv_accelerate;
