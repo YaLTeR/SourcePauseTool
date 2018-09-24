@@ -6,7 +6,7 @@
 #include <SPTLib\IHookableNameFilter.hpp>
 #include "..\spt-serverplugin.hpp"
 #include "..\..\SDK\igamemovement.h"
-#include "SDK/../../public/cdll_int.h"
+#include "..\public\cdll_int.h"
 
 using std::uintptr_t;
 using std::size_t;
@@ -21,8 +21,8 @@ typedef void(__fastcall *_CViewRender__OnRenderStart) (void* thisptr, int edx);
 typedef void*(__cdecl *_GetLocalPlayer) ();
 typedef void*(__fastcall *_GetGroundEntity) (void* thisptr, int edx);
 typedef void(__fastcall *_CalcAbsoluteVelocity) (void* thisptr, int edx);
-typedef void(__fastcall * _CViewRender__RenderView) (void * thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw);
-typedef void(__fastcall * _CViewRender__Render) (void * thisptr, int edx, void * rect);
+typedef void(__fastcall *_CViewRender__RenderView) (void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw);
+typedef void(__fastcall *_CViewRender__Render) (void* thisptr, int edx, void* rect);
 
 
 typedef struct
@@ -52,8 +52,8 @@ public:
 	static void __fastcall HOOKED_AdjustAngles(void* thisptr, int edx, float frametime);
 	static void __fastcall HOOKED_CreateMove (void* thisptr, int edx, int sequence_number, float input_sample_frametime, bool active);
 	static void __fastcall HOOKED_CViewRender__OnRenderStart(void* thisptr, int edx);
-	static void __fastcall HOOKED_CViewRender__RenderView(void * thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw);
-	static void __fastcall HOOKED_CViewRender__Render(void * thisptr, int edx, void * rect);
+	static void __fastcall HOOKED_CViewRender__RenderView(void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw);
+	static void __fastcall HOOKED_CViewRender__Render(void* thisptr, int edx, void* rect);
 
 	void __cdecl HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, int y, int w, int h);
 	bool __fastcall HOOKED_CheckJumpButton_Func(void* thisptr, int edx);
@@ -62,8 +62,8 @@ public:
 	void __fastcall HOOKED_AdjustAngles_Func(void* thisptr, int edx, float frametime);
 	void __fastcall HOOKED_CreateMove_Func(void* thisptr, int edx, int sequence_number, float input_sample_frametime, bool active);
 	void __fastcall HOOKED_CViewRender__OnRenderStart_Func(void* thisptr, int edx);
-	void __fastcall HOOKED_CViewRender__RenderView_Func(void * thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw);
-	void __fastcall HOOKED_CViewRender__Render_Func(void * thisptr, int edx, void * rect);
+	void __fastcall HOOKED_CViewRender__RenderView_Func(void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw);
+	void __fastcall HOOKED_CViewRender__Render_Func(void* thisptr, int edx, void* rect);
 
 	void DelayAfterframesQueue(int delay);
 	void AddIntoAfterframesQueue(const afterframes_entry_t& entry);
@@ -126,6 +126,5 @@ protected:
 	void OnFrame();
 
 	int afterframesDelay;
-	void * clientCViewRender;
 	bool renderingOverlay;
 };

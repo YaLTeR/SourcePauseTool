@@ -29,7 +29,6 @@ public:
 	static void __cdecl HOOKED__Host_RunFrame_Input(float accumulated_extra_samples, int bFinalTick);
 	static void __cdecl HOOKED__Host_RunFrame_Server(int bFinalTick);
 	static void __cdecl HOOKED_Cbuf_Execute();
-
 	bool __cdecl HOOKED_SV_ActivateServer_Func();
 	void __fastcall HOOKED_FinishRestore_Func(void* thisptr, int edx);
 	void __fastcall HOOKED_SetPaused_Func(void* thisptr, int edx, bool paused);

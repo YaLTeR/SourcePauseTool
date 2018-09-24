@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #ifdef SSDK2007
-
 #include "overlays.hpp"
 #include "..\modules\ClientDLL.hpp"
 #include "..\modules.hpp"
@@ -29,7 +28,7 @@ CameraInformation sgOverlay()
 	Vector pos;
 	QAngle va;
 
-	calculate_sg_position(pos, va);
+	calculateSGPosition(pos, va);
 	info.x = pos.x;
 	info.y = pos.y;
 	info.z = pos.z;
@@ -45,7 +44,7 @@ CameraInformation agOverlay()
 	Vector pos;
 	QAngle va;
 
-	calculate_ag_position(pos, va);
+	calculateAGPosition(pos, va);
 	info.x = pos.x;
 	info.y = pos.y;
 	info.z = pos.z;
@@ -54,5 +53,4 @@ CameraInformation agOverlay()
 
 	return info;
 }
-
 #endif

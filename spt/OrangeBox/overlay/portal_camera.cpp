@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #ifdef SSDK2007
-
 #include "portal_camera.hpp"
 #include "..\modules.hpp"
 #include "..\spt-serverplugin.hpp"
@@ -13,20 +12,21 @@
 #include "..\cvars.hpp"
 #include "mathlib\vmatrix.h"
 
-
 const int PORTAL_ORIGIN_OFFSET = 1180;
 const int PORTAL_ANGLE_OFFSET = 1192;
 const int PORTAL_LINKED_OFFSET = 1068;
+const int PORTAL_TRANSITION_OFFSET = 1072;
+const int PLAYER_ANGLES_OFFSET = 2568;
+const int PORTAL_IS_ORANGE_OFFSET = 1137;
 const int INDEX_MASK = MAX_EDICTS - 1;
 
-
-bool get_portal_index(edict_t ** portal_edict, Vector & new_player_origin, QAngle & new_player_angles)
+bool getPortalIndex(edict_t** portal_edict, Vector& new_player_origin, QAngle& new_player_angles)
 {
 	int portal_index = getPortal(_y_spt_overlay_portal.GetString(), false);
 	if (portal_index == -1)
 	{
 		auto& player_origin = clientDLL.GetPlayerEyePos();
-		auto& player_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + 2568);
+		auto& player_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + PLAYER_ANGLES_OFFSET);
 
 		new_player_origin = player_origin;
 		new_player_angles = player_angles;
@@ -37,7 +37,7 @@ bool get_portal_index(edict_t ** portal_edict, Vector & new_player_origin, QAngl
 	auto portal = engine_server->PEntityOfEntIndex(portal_index);
 	if (!portal || portal->IsFree() || strcmp(portal->GetClassName(), "prop_portal") != 0) {
 		auto& player_origin = clientDLL.GetPlayerEyePos();
-		auto& player_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + 2568);
+		auto& player_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + PLAYER_ANGLES_OFFSET);
 
 		new_player_origin = player_origin;
 		new_player_angles = player_angles;
@@ -49,13 +49,13 @@ bool get_portal_index(edict_t ** portal_edict, Vector & new_player_origin, QAngl
 	return true;
 }
 
-void calculate_ag_position(Vector & new_player_origin, QAngle & new_player_angles)
+void calculateAGPosition(Vector& new_player_origin, QAngle& new_player_angles)
 {
 	edict_t * enter_portal = NULL;
 	edict_t * exit_portal = NULL;
 	auto engine_server = GetEngine();
 
-	if (get_portal_index(&enter_portal, new_player_origin, new_player_angles))
+	if (getPortalIndex(&enter_portal, new_player_origin, new_player_angles))
 	{
 		int exit_portal_ehandle = *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(enter_portal->GetUnknown()) + PORTAL_LINKED_OFFSET);
 		int exit_portal_index = exit_portal_ehandle & INDEX_MASK;
@@ -63,20 +63,20 @@ void calculate_ag_position(Vector & new_player_origin, QAngle & new_player_angle
 		exit_portal = engine_server->PEntityOfEntIndex(exit_portal_index);
 		if (exit_portal && !exit_portal->IsFree() && !strcmp(exit_portal->GetClassName(), "prop_portal"))
 		{
-			calculate_offset_portal(enter_portal, exit_portal, new_player_origin, new_player_angles);
+			calculateOffsetPortal(enter_portal, exit_portal, new_player_origin, new_player_angles);
 		}	
 	}
 		
 }
 
-void calculate_sg_position(Vector & new_player_origin, QAngle & new_player_angles)
+void calculateSGPosition(Vector& new_player_origin, QAngle& new_player_angles)
 {
 	edict_t * portal;
-	if(get_portal_index(&portal, new_player_origin, new_player_angles))
-		calculate_offset_player(portal, new_player_origin, new_player_angles);
+	if (getPortalIndex(&portal, new_player_origin, new_player_angles))
+		calculateOffsetPlayer(portal, new_player_origin, new_player_angles);
 }
 
-bool is_infront_of_portal(edict_t* saveglitch_portal, const Vector& player_origin)
+bool isInfrontOfPortal(edict_t* saveglitch_portal, const Vector& player_origin)
 {
 	auto& portal_origin = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(saveglitch_portal->GetUnknown()) + PORTAL_ORIGIN_OFFSET);
 	auto& portal_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(saveglitch_portal->GetUnknown()) + PORTAL_ANGLE_OFFSET);
@@ -89,14 +89,12 @@ bool is_infront_of_portal(edict_t* saveglitch_portal, const Vector& player_origi
 	return dot >= 0;
 }
 
-void calculate_offset_portal(edict_t* enter_portal, edict_t* exit_portal, Vector& new_player_origin, QAngle& new_player_angles)
+void calculateOffsetPortal(edict_t* enter_portal, edict_t* exit_portal, Vector& new_player_origin, QAngle& new_player_angles)
 {
-	// Here we make sure that the eye position and the eye angles match up.
 	auto& enter_origin = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(enter_portal->GetUnknown()) + PORTAL_ORIGIN_OFFSET);
 	auto& enter_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(enter_portal->GetUnknown()) + PORTAL_ANGLE_OFFSET);
 	auto& exit_origin = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(exit_portal->GetUnknown()) + PORTAL_ORIGIN_OFFSET);
 	auto& exit_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(exit_portal->GetUnknown()) + PORTAL_ANGLE_OFFSET);
-	auto& matrix = *reinterpret_cast<VMatrix*>(reinterpret_cast<uintptr_t>(exit_portal->GetUnknown()) + 1072);
 
 	Vector exitForward, exitRight, exitUp;
 	Vector enterForward, enterRight, enterUp;
@@ -117,23 +115,23 @@ void calculate_offset_portal(edict_t* enter_portal, edict_t* exit_portal, Vector
 
 	auto new_eye_origin = enter_origin + transition;
 	new_player_origin = new_eye_origin;
-	new_player_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + 2568);
+	new_player_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + PLAYER_ANGLES_OFFSET);
 }
 
-void calculate_offset_player(edict_t* saveglitch_portal, Vector& new_player_origin, QAngle& new_player_angles)
+void calculateOffsetPlayer(edict_t* saveglitch_portal, Vector& new_player_origin, QAngle& new_player_angles)
 {
 	// Here we make sure that the eye position and the eye angles match up.
 	auto& player_origin = clientDLL.GetPlayerEyePos();
-	auto& player_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + 2568);
+	auto& player_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + PLAYER_ANGLES_OFFSET);
 
-	if (is_infront_of_portal(saveglitch_portal, player_origin))
+	if (isInfrontOfPortal(saveglitch_portal, player_origin))
 	{
 		new_player_origin = player_origin;
 		new_player_angles = player_angles;
 	}
 	else
 	{
-		auto& matrix = *reinterpret_cast<VMatrix*>(reinterpret_cast<uintptr_t>(saveglitch_portal->GetUnknown()) + 1072);
+		auto& matrix = *reinterpret_cast<VMatrix*>(reinterpret_cast<uintptr_t>(saveglitch_portal->GetUnknown()) + PORTAL_TRANSITION_OFFSET);
 
 		auto eye_origin = player_origin;
 		auto new_eye_origin = matrix * eye_origin;
@@ -147,12 +145,12 @@ void calculate_offset_player(edict_t* saveglitch_portal, Vector& new_player_orig
 
 }
 
-int getPortal(const char * Arg, bool verbose)
+int getPortal(const char* arg, bool verbose)
 {
-	int portal_index = atoi(Arg);
+	int portal_index = atoi(arg);
 	auto engine_server = GetEngine();
 
-	if (!strcmp(Arg, "blue") || !strcmp(Arg, "orange")) {
+	if (!strcmp(arg, "blue") || !strcmp(arg, "orange")) {
 		std::vector<int> indices;
 
 		portal_index = -1;
@@ -161,16 +159,16 @@ int getPortal(const char * Arg, bool verbose)
 			auto ent = engine_server->PEntityOfEntIndex(i);
 
 			if (ent && !ent->IsFree() && !strcmp(ent->GetClassName(), "prop_portal")) {
-				auto is_orange_portal = *reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(ent->GetUnknown()) + 1137);
+				auto is_orange_portal = *reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(ent->GetUnknown()) + PORTAL_IS_ORANGE_OFFSET);
 
-				if (is_orange_portal == (Arg[0] == 'o'))
+				if (is_orange_portal == (arg[0] == 'o'))
 					indices.push_back(i);
 			}
 		}
 
 		if (indices.size() > 1) {
 			if(verbose)
-				Msg("There are multiple %s portals, please use the index:\n", Arg);
+				Msg("There are multiple %s portals, please use the index:\n", arg);
 
 			for (auto i : indices) {
 				auto ent = engine_server->PEntityOfEntIndex(i);
@@ -182,7 +180,7 @@ int getPortal(const char * Arg, bool verbose)
 		}
 		else if (indices.size() == 0) {
 			if (verbose)
-				Msg("There are no %s portals.\n", Arg);
+				Msg("There are no %s portals.\n", arg);
 		}
 		else {
 			portal_index = indices[0];
@@ -191,5 +189,4 @@ int getPortal(const char * Arg, bool verbose)
 
 	return portal_index;
 }
-
 #endif

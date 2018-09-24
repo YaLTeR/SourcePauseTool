@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #ifdef SSDK2007
-
 #include "overlay-renderer.hpp"
 #include "ivrenderview.h"
 #include "..\..\game\client\iviewrender.h"
@@ -28,7 +27,7 @@ bool OverlayRenderer::shouldFlipScreens()
 	return _y_spt_overlay_swap.GetBool();
 }
 
-void OverlayRenderer::modifyBigScreenFlags(int & clearFlags, int & drawFlags)
+void OverlayRenderer::modifyBigScreenFlags(int& clearFlags, int& drawFlags)
 {
 	if (shouldFlipScreens())
 	{
@@ -36,13 +35,13 @@ void OverlayRenderer::modifyBigScreenFlags(int & clearFlags, int & drawFlags)
 	}
 }
 
-void OverlayRenderer::modifySmallScreenFlags(int & clearFlags, int & drawFlags)
+void OverlayRenderer::modifySmallScreenFlags(int& clearFlags, int& drawFlags)
 {
 	drawFlags = 0;
 	clearFlags |= VIEW_CLEAR;
 }
 
-void OverlayRenderer::modifyView(void * view, bool overlay)
+void OverlayRenderer::modifyView(void* view, bool overlay)
 {
 	static CViewSetup backupView;
 	CViewSetup * casted = (CViewSetup *)view;
@@ -90,7 +89,6 @@ void OverlayRenderer::modifyView(void * view, bool overlay)
 			int height = static_cast<int>(width / ASPECT_RATIO);
 			casted->width = width;
 			casted->height = height;
-		
 		}
 
 		casted->fov = getFOV();
@@ -117,6 +115,4 @@ float OverlayRenderer::getFOV()
 {
 	return _y_spt_overlay_fov.GetFloat() * 1.18f; // hack: fix to be accurate later
 }
-
-
-#endif // ! OE
+#endif // SSDK2007

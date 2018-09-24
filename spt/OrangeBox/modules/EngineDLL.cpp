@@ -8,7 +8,6 @@
 #include <SPTLib\detoursutils.hpp>
 #include <SPTLib\hooks.hpp>
 #include "EngineDLL.hpp"
-#include "..\overlay\overlay-renderer.hpp"
 
 using std::uintptr_t;
 using std::size_t;
@@ -289,7 +288,6 @@ void EngineDLL::Clear()
 	ORIG__Host_RunFrame_Input = nullptr;
 	ORIG__Host_RunFrame_Server = nullptr;
 	ORIG_Cbuf_Execute = nullptr;
-
 	pGameServer = nullptr;
 	pM_bLoadgame = nullptr;
 	shouldPreventNextUnpause = false;

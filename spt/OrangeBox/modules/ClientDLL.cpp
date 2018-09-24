@@ -57,12 +57,12 @@ void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart(void* thisptr, int 
 	return clientDLL.HOOKED_CViewRender__OnRenderStart_Func(thisptr, edx);
 }
 
-void ClientDLL::HOOKED_CViewRender__RenderView(void * thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw)
+void ClientDLL::HOOKED_CViewRender__RenderView(void* thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw)
 {
 	clientDLL.HOOKED_CViewRender__RenderView_Func(thisptr, edx, cameraView, nClearFlags, whatToDraw);
 }
 
-void ClientDLL::HOOKED_CViewRender__Render(void * thisptr, int edx, void * rect)
+void ClientDLL::HOOKED_CViewRender__Render(void* thisptr, int edx, void * rect)
 {
 	clientDLL.HOOKED_CViewRender__Render_Func(thisptr, edx, rect);
 }
@@ -441,22 +441,22 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_CViewRender__RenderView = (_CViewRender__RenderView)(pCViewRender__RenderView);
-		EngineDevMsg("[client dll] Found CViewRender__RenderView at %p (using the build %s pattern).\n", pCViewRender__RenderView, Patterns::ptnsCViewRender__RenderView[ptnNumber].build.c_str());
+		EngineDevMsg("[client dll] Found CViewRender::RenderView at %p (using the build %s pattern).\n", pCViewRender__RenderView, Patterns::ptnsCViewRender__RenderView[ptnNumber].build.c_str());
 	}
 	else
 	{
-		EngineDevWarning("[client dll] Could not find CViewRender__RenderView\n");
+		EngineDevWarning("[client dll] Could not find CViewRender::RenderView\n");
 	}
 
 	ptnNumber = fCViewRender__Render.get();
 	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
 	{
 		ORIG_CViewRender__Render = (_CViewRender__Render)(pCViewRender__Render);
-		EngineDevMsg("[client dll] Found CViewRender__Render at %p (using the build %s pattern).\n", pCViewRender__Render, Patterns::ptnsCViewRender__Render[ptnNumber].build.c_str());
+		EngineDevMsg("[client dll] Found CViewRender::Render at %p (using the build %s pattern).\n", pCViewRender__Render, Patterns::ptnsCViewRender__Render[ptnNumber].build.c_str());
 	}
 	else
 	{
-		EngineDevWarning("[client dll] Could not find CViewRender__Render\n");
+		EngineDevWarning("[client dll] Could not find CViewRender::Render\n");
 	}
 
 
@@ -924,10 +924,11 @@ void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart_Func(void* thisptr,
 	*fovViewmodel = _viewmodel_fov->GetFloat();
 }
 
-void ClientDLL::HOOKED_CViewRender__RenderView_Func(void * thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw)
+void ClientDLL::HOOKED_CViewRender__RenderView_Func(void* thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw)
 {
-#ifdef SSDK2007
-
+#ifndef SSDK2007
+	ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
+#else
 	g_OverlayRenderer.modifyView(cameraView, renderingOverlay);
 
 	if (renderingOverlay)
@@ -941,16 +942,15 @@ void ClientDLL::HOOKED_CViewRender__RenderView_Func(void * thisptr, int edx, voi
 		g_OverlayRenderer.modifyBigScreenFlags(nClearFlags, whatToDraw);
 		ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
 	}
-
-#else
-	ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
 #endif
 	
 }
 
 void ClientDLL::HOOKED_CViewRender__Render_Func(void * thisptr, int edx, void * rect)
 {
-#ifdef SSDK2007
+#ifndef SSDK2007
+	ORIG_CViewRender__Render(thisptr, edx, rect);
+#else
 	renderingOverlay = false;
 	if (!g_OverlayRenderer.shouldRenderOverlay())
 	{
@@ -965,10 +965,5 @@ void ClientDLL::HOOKED_CViewRender__Render_Func(void * thisptr, int edx, void * 
 		ORIG_CViewRender__Render(thisptr, edx, &rec);
 		renderingOverlay = false;
 	}
-#else
-	ORIG_CViewRender__Render(thisptr, edx, rect);
 #endif
-
-
-
 }
