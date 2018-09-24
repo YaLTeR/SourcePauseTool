@@ -457,7 +457,6 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	else
 	{
 		EngineDevWarning("[client dll] Could not find CViewRender__RenderView\n");
-		EngineWarning("Overlay cameras have no effect.\n");
 	}
 
 	ptnNumber = fCViewRender__Render.get();
@@ -469,9 +468,11 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	else
 	{
 		EngineDevWarning("[client dll] Could not find CViewRender__Render\n");
-		EngineWarning("Overlay cameras have no effect.\n");
 	}
 
+
+	if (ORIG_CViewRender__RenderView == nullptr || ORIG_CViewRender__Render == nullptr)
+		EngineWarning("Overlay cameras have no effect.");
 
 	DetoursUtils::AttachDetours(moduleName, {
 		{ (PVOID *) (&ORIG_DoImageSpaceMotionBlur), HOOKED_DoImageSpaceMotionBlur },
@@ -936,23 +937,49 @@ void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart_Func(void* thisptr,
 
 void ClientDLL::HOOKED_CViewRender__RenderView_Func(void * thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw)
 {
-	if (renderingOverlay)
-		g_OverlayRenderer.modifyView(cameraView, nClearFlags, whatToDraw);
+#ifdef SSDK2007
 
-	ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags | 1, whatToDraw);
+	g_OverlayRenderer.modifyView(cameraView, renderingOverlay);
+
+	if (renderingOverlay)
+	{
+		g_OverlayRenderer.modifySmallScreenFlags(nClearFlags, whatToDraw);
+		ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
+		return;
+	}
+	else
+	{
+		g_OverlayRenderer.modifyBigScreenFlags(nClearFlags, whatToDraw);
+		ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
+	}
+
+#else
+	ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
+#endif
+	
 }
 
 void ClientDLL::HOOKED_CViewRender__Render_Func(void * thisptr, int edx, void * rect)
 {
+#ifdef SSDK2007
 	renderingOverlay = false;
-	ORIG_CViewRender__Render(thisptr, edx, rect);
-
-	if (g_OverlayRenderer.shouldRenderOverlay())
+	if (!g_OverlayRenderer.shouldRenderOverlay())
 	{
+		ORIG_CViewRender__Render(thisptr, edx, rect);
+	}
+	else
+	{
+		ORIG_CViewRender__Render(thisptr, edx, rect);
+
 		renderingOverlay = true;
 		Rect_t rec = g_OverlayRenderer.getRect();
 		ORIG_CViewRender__Render(thisptr, edx, &rec);
 		renderingOverlay = false;
 	}
+#else
+	ORIG_CViewRender__Render(thisptr, edx, rect);
+#endif
+
+
 
 }

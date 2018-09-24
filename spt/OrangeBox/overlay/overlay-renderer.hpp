@@ -1,4 +1,5 @@
 #pragma once
+#ifdef SSDK2007
 #include "tier0\basetypes.h"
 
 
@@ -17,8 +18,14 @@ class OverlayRenderer
 public:
 	OverlayRenderer() {}
 	bool shouldRenderOverlay();
-	void modifyView(void * view, int & clearFlags, int &drawflags);
+	bool shouldFlipScreens();
+	void modifyBigScreenFlags(int & clearFlags, int & drawFlags);
+	void modifySmallScreenFlags(int & clearFlags, int & drawFlags);
+	void modifyView(void * view, bool overlay);
 	Rect_t getRect();
+private:
+	float getFOV();
 };
 
 extern OverlayRenderer g_OverlayRenderer;
+#endif

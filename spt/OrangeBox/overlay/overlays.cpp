@@ -1,4 +1,7 @@
 #include "stdafx.h"
+
+#ifdef SSDK2007
+
 #include "overlays.hpp"
 #include "..\modules\ClientDLL.hpp"
 #include "..\modules.hpp"
@@ -51,3 +54,5 @@ CameraInformation agOverlay()
 
 	return info;
 }
+
+#endif

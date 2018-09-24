@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#ifdef SSDK2007
+
 #include "portal_camera.hpp"
 #include "..\modules.hpp"
 #include "..\spt-serverplugin.hpp"
@@ -9,10 +11,8 @@
 #include "tier2\tier2.h"
 #include "edict.h"
 #include "..\cvars.hpp"
-
-#if SSDK2007
 #include "mathlib\vmatrix.h"
-#endif
+
 
 const int PORTAL_ORIGIN_OFFSET = 1180;
 const int PORTAL_ANGLE_OFFSET = 1192;
@@ -191,3 +191,5 @@ int getPortal(const char * Arg, bool verbose)
 
 	return portal_index;
 }
+
+#endif
