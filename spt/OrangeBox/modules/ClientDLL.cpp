@@ -87,11 +87,6 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		pMiddleOfCAM_Think,
 		pGetGroundEntity,
 		pCalcAbsoluteVelocity,
-		pCViewRender__ViewDrawScene,
-		pCViewRender__DrawOneMonitor,
-		pCViewRender__DrawMonitors,
-		pCPortalRenderable_FlatBasic__RenderPortalViewToTexture,
-		pCViewRender__QueueOverlayRenderView,
 		pReleaseRenderTargets,
 		pCViewRender__RenderView,
 		pCViewRender__Render;
@@ -104,12 +99,6 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	auto fMiddleOfCAM_Think = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsMiddleOfCAM_Think, &pMiddleOfCAM_Think);
 	auto fGetGroundEntity = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsGetGroundEntity, &pGetGroundEntity);
 	auto fCalcAbsoluteVelocity = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCalcAbsoluteVelocity, &pCalcAbsoluteVelocity);
-	auto fCViewRender__ViewDrawScene = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__ViewDrawScene, &pCViewRender__ViewDrawScene);
-	auto fCViewRender__DrawOneMonitor = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__DrawOneMonitor, &pCViewRender__DrawOneMonitor);
-	auto fCViewRender__DrawMonitors = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__DrawMonitors, &pCViewRender__DrawMonitors);
-	auto fCPortalRenderable_FlatBasic__RenderPortalViewToTexture = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCPortalRenderable_FlatBasic__RenderPortalViewToTexture, &pCPortalRenderable_FlatBasic__RenderPortalViewToTexture);
-	auto fCViewRender__QueueOverlayRenderView = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__QueueOverlayRenderView, &pCViewRender__QueueOverlayRenderView);
-	auto fReleaseRenderTargets = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsReleaseRenderTargets, &pReleaseRenderTargets);
 	auto fCViewRender__RenderView = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__RenderView, &pCViewRender__RenderView);
 	auto fCViewRender__Render = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__Render, &pCViewRender__Render);
 
