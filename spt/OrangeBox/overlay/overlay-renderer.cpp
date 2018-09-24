@@ -113,6 +113,10 @@ Rect_t OverlayRenderer::getRect()
 
 float OverlayRenderer::getFOV()
 {
-	return _y_spt_overlay_fov.GetFloat() * 1.18f; // hack: fix to be accurate later
+	const float ratioRatio = ASPECT_RATIO / (4.0f / 3.0f);
+	float fovRad = DEG2RAD(_y_spt_overlay_fov.GetFloat());
+	float fov = 2 * RAD2DEG(std::atan(std::tan(fovRad / 2) * ratioRatio));
+
+	return fov;
 }
 #endif // SSDK2007
