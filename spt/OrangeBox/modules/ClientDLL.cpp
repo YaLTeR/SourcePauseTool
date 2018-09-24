@@ -57,12 +57,12 @@ void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart(void* thisptr, int 
 	return clientDLL.HOOKED_CViewRender__OnRenderStart_Func(thisptr, edx);
 }
 
-void ClientDLL::HOOKED_CViewRender__RenderView(void* thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw)
+void ClientDLL::HOOKED_CViewRender__RenderView(void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw)
 {
 	clientDLL.HOOKED_CViewRender__RenderView_Func(thisptr, edx, cameraView, nClearFlags, whatToDraw);
 }
 
-void ClientDLL::HOOKED_CViewRender__Render(void* thisptr, int edx, void * rect)
+void ClientDLL::HOOKED_CViewRender__Render(void* thisptr, int edx, void* rect)
 {
 	clientDLL.HOOKED_CViewRender__Render_Func(thisptr, edx, rect);
 }
@@ -924,7 +924,7 @@ void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart_Func(void* thisptr,
 	*fovViewmodel = _viewmodel_fov->GetFloat();
 }
 
-void ClientDLL::HOOKED_CViewRender__RenderView_Func(void* thisptr, int edx, void * cameraView, int nClearFlags, int whatToDraw)
+void ClientDLL::HOOKED_CViewRender__RenderView_Func(void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw)
 {
 #ifndef SSDK2007
 	ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
@@ -946,7 +946,7 @@ void ClientDLL::HOOKED_CViewRender__RenderView_Func(void* thisptr, int edx, void
 	
 }
 
-void ClientDLL::HOOKED_CViewRender__Render_Func(void * thisptr, int edx, void * rect)
+void ClientDLL::HOOKED_CViewRender__Render_Func(void* thisptr, int edx, void* rect)
 {
 #ifndef SSDK2007
 	ORIG_CViewRender__Render(thisptr, edx, rect);
