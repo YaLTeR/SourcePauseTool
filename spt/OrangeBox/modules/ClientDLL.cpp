@@ -67,7 +67,6 @@ void ClientDLL::HOOKED_CViewRender__Render(void* thisptr, int edx, void* rect)
 	clientDLL.HOOKED_CViewRender__Render_Func(thisptr, edx, rect);
 }
 
-
 void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.

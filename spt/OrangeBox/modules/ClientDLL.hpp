@@ -24,7 +24,6 @@ typedef void(__fastcall *_CalcAbsoluteVelocity) (void* thisptr, int edx);
 typedef void(__fastcall *_CViewRender__RenderView) (void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw);
 typedef void(__fastcall *_CViewRender__Render) (void* thisptr, int edx, void* rect);
 
-
 typedef struct
 {
 	long long int framesLeft;
@@ -54,7 +53,6 @@ public:
 	static void __fastcall HOOKED_CViewRender__OnRenderStart(void* thisptr, int edx);
 	static void __fastcall HOOKED_CViewRender__RenderView(void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw);
 	static void __fastcall HOOKED_CViewRender__Render(void* thisptr, int edx, void* rect);
-
 	void __cdecl HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, int y, int w, int h);
 	bool __fastcall HOOKED_CheckJumpButton_Func(void* thisptr, int edx);
 	void __stdcall HOOKED_HudUpdate_Func(bool bActive);

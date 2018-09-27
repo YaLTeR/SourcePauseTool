@@ -90,7 +90,6 @@ void OverlayRenderer::modifyView(CViewSetup* view, bool overlay)
 		view->fov = getFOV();
 		view->m_flAspectRatio = ASPECT_RATIO;
 	}
-
 }
 
 Rect_t OverlayRenderer::getRect()

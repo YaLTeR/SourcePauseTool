@@ -732,7 +732,6 @@ namespace Patterns
 		}
 	};
 
-
 	const MemUtils::ptnvec ptnsCViewRender__RenderView =
 	{
 		{
