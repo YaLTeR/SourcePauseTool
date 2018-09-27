@@ -2,9 +2,6 @@
 
 #ifdef SSDK2007
 #include "overlay-renderer.hpp"
-#include "ivrenderview.h"
-#include "..\..\game\client\iviewrender.h"
-#include "view_shared.h"
 #include "..\modules\ClientDLL.hpp"
 #include "..\modules\EngineDLL.hpp"
 #include "..\modules.hpp"
@@ -41,25 +38,24 @@ void OverlayRenderer::modifySmallScreenFlags(int& clearFlags, int& drawFlags)
 	clearFlags |= VIEW_CLEAR;
 }
 
-void OverlayRenderer::modifyView(void* view, bool overlay)
+void OverlayRenderer::modifyView(CViewSetup* view, bool overlay)
 {
 	static CViewSetup backupView;
-	CViewSetup * casted = (CViewSetup *)view;
 
 	if (overlay == shouldFlipScreens())
 	{
 		if (overlay)
 		{
-			casted->origin = backupView.origin;
-			casted->angles = backupView.angles;
-			casted->fov = getFOV();
+			view->origin = backupView.origin;
+			view->angles = backupView.angles;
+			view->fov = getFOV();
 		}
 
 		return;
 	}
 	else
 	{
-		backupView = *casted;
+		backupView = *view;
 		CameraInformation data;
 
 		switch (_y_spt_overlay_type.GetInt())
@@ -75,24 +71,24 @@ void OverlayRenderer::modifyView(void* view, bool overlay)
 			break;
 		}
 
-		backupView.origin = casted->origin;
-		backupView.angles = casted->angles;
+		backupView.origin = view->origin;
+		backupView.angles = view->angles;
 
-		casted->origin = Vector(data.x, data.y, data.z);
-		casted->angles = QAngle(data.pitch, data.yaw, 0);
-		casted->x = 0;
-		casted->y = 0;
+		view->origin = Vector(data.x, data.y, data.z);
+		view->angles = QAngle(data.pitch, data.yaw, 0);
+		view->x = 0;
+		view->y = 0;
 
 		if (!shouldFlipScreens())
 		{
 			int width = _y_spt_overlay_width.GetFloat();
 			int height = static_cast<int>(width / ASPECT_RATIO);
-			casted->width = width;
-			casted->height = height;
+			view->width = width;
+			view->height = height;
 		}
 
-		casted->fov = getFOV();
-		casted->m_flAspectRatio = ASPECT_RATIO;
+		view->fov = getFOV();
+		view->m_flAspectRatio = ASPECT_RATIO;
 	}
 
 }

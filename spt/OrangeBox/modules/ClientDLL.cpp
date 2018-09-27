@@ -929,8 +929,7 @@ void ClientDLL::HOOKED_CViewRender__RenderView_Func(void* thisptr, int edx, void
 #ifndef SSDK2007
 	ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
 #else
-	g_OverlayRenderer.modifyView(cameraView, renderingOverlay);
-
+	g_OverlayRenderer.modifyView(static_cast<CViewSetup*>(cameraView), renderingOverlay);
 	if (renderingOverlay)
 	{
 		g_OverlayRenderer.modifySmallScreenFlags(nClearFlags, whatToDraw);

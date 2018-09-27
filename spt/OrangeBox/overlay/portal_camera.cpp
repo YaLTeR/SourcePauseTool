@@ -23,18 +23,12 @@ const int INDEX_MASK = MAX_EDICTS - 1;
 bool getPortalIndex(edict_t** portal_edict, Vector& new_player_origin, QAngle& new_player_angles)
 {
 	int portal_index = getPortal(_y_spt_overlay_portal.GetString(), false);
-	if (portal_index == -1)
-	{
-		auto& player_origin = clientDLL.GetPlayerEyePos();
-		auto& player_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + PLAYER_ANGLES_OFFSET);
-
-		new_player_origin = player_origin;
-		new_player_angles = player_angles;
-		return false;
-	}
-
 	auto engine_server = GetEngine();
-	auto portal = engine_server->PEntityOfEntIndex(portal_index);
+	edict_t* portal = nullptr;
+
+	if(portal_index != -1)
+		portal = engine_server->PEntityOfEntIndex(portal_index);
+
 	if (!portal || portal->IsFree() || strcmp(portal->GetClassName(), "prop_portal") != 0) {
 		auto& player_origin = clientDLL.GetPlayerEyePos();
 		auto& player_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + PLAYER_ANGLES_OFFSET);
@@ -120,7 +114,6 @@ void calculateOffsetPortal(edict_t* enter_portal, edict_t* exit_portal, Vector& 
 
 void calculateOffsetPlayer(edict_t* saveglitch_portal, Vector& new_player_origin, QAngle& new_player_angles)
 {
-	// Here we make sure that the eye position and the eye angles match up.
 	auto& player_origin = clientDLL.GetPlayerEyePos();
 	auto& player_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + PLAYER_ANGLES_OFFSET);
 

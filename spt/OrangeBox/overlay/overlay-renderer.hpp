@@ -1,6 +1,7 @@
 #pragma once
 #ifdef SSDK2007
 #include "tier0\basetypes.h"
+#include "view_shared.h"
 
 struct CameraInformation
 {
@@ -20,7 +21,7 @@ public:
 	bool shouldFlipScreens();
 	void modifyBigScreenFlags(int& clearFlags, int& drawFlags);
 	void modifySmallScreenFlags(int& clearFlags, int& drawFlags);
-	void modifyView(void* view, bool overlay);
+	void modifyView(CViewSetup* view, bool overlay);
 	Rect_t getRect();
 private:
 	float getFOV();
