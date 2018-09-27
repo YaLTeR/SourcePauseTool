@@ -20,6 +20,11 @@ const int PLAYER_ANGLES_OFFSET = 2568;
 const int PORTAL_IS_ORANGE_OFFSET = 1137;
 const int INDEX_MASK = MAX_EDICTS - 1;
 
+bool invalidPortal(edict_t* portal)
+{
+	return !portal || portal->IsFree() || strcmp(portal->GetClassName(), "prop_portal") != 0;
+}
+
 bool getPortalIndex(edict_t** portal_edict, Vector& new_player_origin, QAngle& new_player_angles)
 {
 	int portal_index = getPortal(_y_spt_overlay_portal.GetString(), false);
@@ -29,7 +34,7 @@ bool getPortalIndex(edict_t** portal_edict, Vector& new_player_origin, QAngle& n
 	if(portal_index != -1)
 		portal = engine_server->PEntityOfEntIndex(portal_index);
 
-	if (!portal || portal->IsFree() || strcmp(portal->GetClassName(), "prop_portal") != 0) {
+	if (portal_index == -1 || invalidPortal(portal)) {
 		auto& player_origin = clientDLL.GetPlayerEyePos();
 		auto& player_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + PLAYER_ANGLES_OFFSET);
 
@@ -55,7 +60,7 @@ void calculateAGPosition(Vector& new_player_origin, QAngle& new_player_angles)
 		int exit_portal_index = exit_portal_ehandle & INDEX_MASK;
 
 		exit_portal = engine_server->PEntityOfEntIndex(exit_portal_index);
-		if (exit_portal && !exit_portal->IsFree() && !strcmp(exit_portal->GetClassName(), "prop_portal"))
+		if (!invalidPortal(exit_portal))
 		{
 			calculateOffsetPortal(enter_portal, exit_portal, new_player_origin, new_player_angles);
 		}	
