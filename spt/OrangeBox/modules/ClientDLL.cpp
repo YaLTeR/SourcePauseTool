@@ -458,7 +458,6 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineDevWarning("[client dll] Could not find CViewRender::Render\n");
 	}
 
-
 	if (ORIG_CViewRender__RenderView == nullptr || ORIG_CViewRender__Render == nullptr)
 		EngineWarning("Overlay cameras have no effect.");
 
@@ -940,8 +939,7 @@ void ClientDLL::HOOKED_CViewRender__RenderView_Func(void* thisptr, int edx, void
 		g_OverlayRenderer.modifyBigScreenFlags(nClearFlags, whatToDraw);
 		ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
 	}
-#endif
-	
+#endif	
 }
 
 void ClientDLL::HOOKED_CViewRender__Render_Func(void* thisptr, int edx, void* rect)

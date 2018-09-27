@@ -23,7 +23,6 @@
 #include "overlay\overlays.hpp"
 #include "tier0\memdbgoff.h" // YaLTeR - switch off the memory debugging.
 
-
 using namespace std::literals;
 
 // useful helper func

@@ -64,8 +64,7 @@ void calculateAGPosition(Vector& new_player_origin, QAngle& new_player_angles)
 		{
 			calculateOffsetPortal(enter_portal, exit_portal, new_player_origin, new_player_angles);
 		}	
-	}
-		
+	}	
 }
 
 void calculateSGPosition(Vector& new_player_origin, QAngle& new_player_angles)
@@ -140,7 +139,6 @@ void calculateOffsetPlayer(edict_t* saveglitch_portal, Vector& new_player_origin
 		new_player_angles.y = AngleNormalizePositive(new_player_angles.y);
 		new_player_angles.z = AngleNormalizePositive(new_player_angles.z);
 	}
-
 }
 
 int getPortal(const char* arg, bool verbose)
