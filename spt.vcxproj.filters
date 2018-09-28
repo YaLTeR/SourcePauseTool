@@ -52,6 +52,15 @@
     <ClCompile Include="spt\strafestuff.cpp">
       <Filter>spt</Filter>
     </ClCompile>
+    <ClCompile Include="spt\OrangeBox\overlay\portal_camera.cpp">
+      <Filter>spt\OrangeBox\overlay</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\overlay\overlays.cpp">
+      <Filter>spt\OrangeBox\overlay</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\overlay\overlay-renderer.cpp">
+      <Filter>spt\OrangeBox\overlay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -177,6 +186,15 @@
     <ClInclude Include="spt\OrangeBox\custom_interfaces.hpp">
       <Filter>spt\OrangeBox</Filter>
     </ClInclude>
+    <ClInclude Include="spt\OrangeBox\overlay\portal_camera.hpp">
+      <Filter>spt\OrangeBox\overlay</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\overlay\overlays.hpp">
+      <Filter>spt\OrangeBox\overlay</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\overlay\overlay-renderer.hpp">
+      <Filter>spt\OrangeBox\overlay</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">
@@ -213,6 +231,9 @@
     </Filter>
     <Filter Include="SPTLib">
       <UniqueIdentifier>{62068487-8a42-452a-b559-e0253a231434}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\OrangeBox\overlay">
+      <UniqueIdentifier>{7f1270e1-5f6d-4110-9d82-4b2bc2b7400b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

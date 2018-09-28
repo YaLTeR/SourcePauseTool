@@ -6,6 +6,7 @@
 #include <SPTLib\IHookableNameFilter.hpp>
 #include "..\spt-serverplugin.hpp"
 #include "..\..\SDK\igamemovement.h"
+#include "..\public\cdll_int.h"
 
 using std::uintptr_t;
 using std::size_t;
@@ -20,6 +21,8 @@ typedef void(__fastcall *_CViewRender__OnRenderStart) (void* thisptr, int edx);
 typedef void*(__cdecl *_GetLocalPlayer) ();
 typedef void*(__fastcall *_GetGroundEntity) (void* thisptr, int edx);
 typedef void(__fastcall *_CalcAbsoluteVelocity) (void* thisptr, int edx);
+typedef void(__fastcall *_CViewRender__RenderView) (void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw);
+typedef void(__fastcall *_CViewRender__Render) (void* thisptr, int edx, void* rect);
 
 typedef struct
 {
@@ -48,6 +51,8 @@ public:
 	static void __fastcall HOOKED_AdjustAngles(void* thisptr, int edx, float frametime);
 	static void __fastcall HOOKED_CreateMove (void* thisptr, int edx, int sequence_number, float input_sample_frametime, bool active);
 	static void __fastcall HOOKED_CViewRender__OnRenderStart(void* thisptr, int edx);
+	static void __fastcall HOOKED_CViewRender__RenderView(void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw);
+	static void __fastcall HOOKED_CViewRender__Render(void* thisptr, int edx, void* rect);
 	void __cdecl HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, int y, int w, int h);
 	bool __fastcall HOOKED_CheckJumpButton_Func(void* thisptr, int edx);
 	void __stdcall HOOKED_HudUpdate_Func(bool bActive);
@@ -55,6 +60,8 @@ public:
 	void __fastcall HOOKED_AdjustAngles_Func(void* thisptr, int edx, float frametime);
 	void __fastcall HOOKED_CreateMove_Func(void* thisptr, int edx, int sequence_number, float input_sample_frametime, bool active);
 	void __fastcall HOOKED_CViewRender__OnRenderStart_Func(void* thisptr, int edx);
+	void __fastcall HOOKED_CViewRender__RenderView_Func(void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw);
+	void __fastcall HOOKED_CViewRender__Render_Func(void* thisptr, int edx, void* rect);
 
 	void DelayAfterframesQueue(int delay);
 	void AddIntoAfterframesQueue(const afterframes_entry_t& entry);
@@ -83,6 +90,8 @@ protected:
 	_GetLocalPlayer GetLocalPlayer;
 	_GetGroundEntity GetGroundEntity;
 	_CalcAbsoluteVelocity CalcAbsoluteVelocity;
+	_CViewRender__RenderView ORIG_CViewRender__RenderView;
+	_CViewRender__Render ORIG_CViewRender__Render;
 
 	uintptr_t* pgpGlobals;
 	ptrdiff_t offM_pCommands;
@@ -115,4 +124,5 @@ protected:
 	void OnFrame();
 
 	int afterframesDelay;
+	bool renderingOverlay;
 };
