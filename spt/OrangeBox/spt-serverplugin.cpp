@@ -9,6 +9,7 @@
 #include <SPTLib\Hooks.hpp>
 #include "custom_interfaces.hpp"
 #include "vstdlib\random.h"
+#include "scripts\srctas_reader.hpp"
 
 #include "cdll_int.h"
 #include "engine\iserverplugin.h"
@@ -903,5 +904,25 @@ CON_COMMAND(y_spt_find_seam_shot, "y_spt_find_seam_shot [<pitch1> <yaw1> <pitch2
 	} while (difference > eps);
 
 	Msg("Could not find a seam shot. Best guess: setang %.8f %.8f 0\n", test.x, test.y);
+}
+
+
+CON_COMMAND(tas_load_script, "Loads and executes an .stas script. Usage: tas_load_script [script]")
+{
+#if defined( OE )
+	if (!engine)
+		return;
+
+	ArgsWrapper args(engine.get());
+#endif
+
+	if (args.ArgC() > 1)
+	{
+		scripts::g_TASReader.ExecuteScript(args.Arg(1));
+	}
+	else
+		Msg("Loads and executes an .stas script. Usage: tas_load_script [script]\n");
+
+
 }
 #endif
