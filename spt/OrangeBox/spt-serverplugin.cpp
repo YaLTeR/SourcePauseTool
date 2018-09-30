@@ -925,4 +925,42 @@ CON_COMMAND(tas_load_script, "Loads and executes an .stas script. Usage: tas_loa
 
 
 }
+
+CON_COMMAND(tas_load_search, "Starts a variable search for an .stas script. Usage: tas_load_search [script]")
+{
+#if defined( OE )
+	if (!engine)
+		return;
+
+	ArgsWrapper args(engine.get());
+#endif
+
+	if (args.ArgC() > 1)
+	{
+		scripts::g_TASReader.StartSearch(args.Arg(1));
+	}
+	else
+		Msg("Starts a variable search for an .stas script. Usage: tas_load_search [script]\n");
+
+
+}
+
+CON_COMMAND(tas_search_result, "Returns a search result in a variable search. Usage: tas_search_result [result]. Options are low/high/success/fail")
+{
+#if defined( OE )
+	if (!engine)
+		return;
+
+	ArgsWrapper args(engine.get());
+#endif
+
+	if (args.ArgC() > 1)
+	{
+		scripts::g_TASReader.SearchResult(args.Arg(1));
+	}
+	else
+		Msg("Returns a search result in a variable search. Usage: tas_search_result [result]. Options are low/high/success/fail\n");
+
+
+}
 #endif

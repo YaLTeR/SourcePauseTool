@@ -12,7 +12,8 @@ namespace scripts
 	{
 	public:
 		void ExecuteScript(std::string script);
-		void StartBinSearch(std::string script, SearchType type);
+		void StartSearch(std::string script);
+		void SearchResult(std::string result);
 	private:
 		bool inFrames;
 		bool freezeVariables;
@@ -22,12 +23,14 @@ namespace scripts
 		std::string line;
 		int currentLine;
 		long long int currentTick;
+		SearchType searchType;
 
 		VariableContainer variables;
 		std::string startCommand;
 		std::vector<afterframes_entry_t> afterFramesEntries;
 		std::map<std::string, std::string> props;
 
+		bool FindSearchType();
 		void CommonExecuteScript();
 		void Reset();
 		void ResetIterationState();

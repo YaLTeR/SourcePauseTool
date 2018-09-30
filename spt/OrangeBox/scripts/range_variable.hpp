@@ -4,10 +4,10 @@
 
 namespace scripts
 {
-	class SearchDoneException : public std::exception
+	class SearchDoneException
 	{};
 
-	enum SearchResult { Success, Fail, Low, High };
+	enum SearchResult { NoSearch, Success, Fail, Low, High };
 	enum SearchType { None, Lowest, Range, Highest, Random };
 
 	template <typename T>
@@ -25,6 +25,7 @@ namespace scripts
 		void SelectLow(SearchResult lastResult);
 		void SelectHigh(SearchResult lastResult);
 		void SelectRandom(SearchResult lastResult);
+		void SelectMiddle();
 		T Normalize(T value);
 		T GetValueForIndex(int index);
 
@@ -78,27 +79,34 @@ namespace scripts
 		std::getline(is, incS, '|');
 
 		ParseValues(lowS, highS, incS);
+		SelectMiddle();
 		uniformRandom = std::uniform_int_distribution<int>(lowIndex, highIndex);
 	}
 
 
 	inline void RangeVariable<int>::ParseValues(std::string lowS, std::string highS, std::string incS)
 	{
-		initialLow = std::stoi(lowS);
-		initialHigh = std::stoi(highS);
-		increment = std::stoi(incS);
+		initialLow = std::atoi(lowS.c_str());
+		initialHigh = std::atoi(highS.c_str());
+		increment = std::atoi(incS.c_str());
 
 		lowIndex = 0;
+		if (increment <= 0)
+			throw std::exception("increment cannot be <= 0");
+
 		highIndex = (initialHigh - initialLow) / increment;
 	}
 
 	inline void RangeVariable<float>::ParseValues(std::string lowS, std::string highS, std::string incS)
 	{
-		initialLow = std::stof(lowS);
-		initialHigh = std::stof(highS);
-		increment = std::stof(incS);
+		initialLow = std::atof(lowS.c_str());
+		initialHigh = std::atof(highS.c_str());
+		increment = std::atof(incS.c_str());
 
 		lowIndex = 0;
+		if(increment <= 0)
+			throw std::exception("increment cannot be <= 0");
+
 		highIndex = static_cast<int>((initialHigh - initialLow) / increment);
 	}
 
@@ -112,6 +120,9 @@ namespace scripts
 	template<typename T>
 	inline void RangeVariable<T>::Select(SearchResult lastResult, SearchType type)
 	{
+		if (lastResult == NoSearch)
+			return;
+
 		switch (type)
 		{
 		case Lowest:
@@ -123,8 +134,8 @@ namespace scripts
 		case Random:
 			SelectRandom(lastResult);
 			break;
-		case Range:
-			throw std::exception("Search type Range not implemented.");
+		default:
+			throw std::exception("Search type not implemented or not in search mode.");
 			break;
 		}
 
@@ -144,15 +155,15 @@ namespace scripts
 		{
 		case Low:
 			lowIndex = valueIndex;
-			valueIndex = (lowIndex + highIndex) / 2 + 1;
 			break;
 		case Success: case High:
 			highIndex = valueIndex;
-			valueIndex = (lowIndex + highIndex) / 2 + 1;
 			break;
 		default:
 			throw std::exception("Unexpected search result received. Lowest search only accepts Low, High and Success");
 		}
+
+		SelectMiddle();
 
 	}
 
@@ -163,22 +174,27 @@ namespace scripts
 		{
 		case Success: case Low:
 			lowIndex = valueIndex;
-			valueIndex = (lowIndex + highIndex) / 2 + 1;
 			break;
 		case High:
 			highIndex = valueIndex;
-			valueIndex = (lowIndex + highIndex) / 2 + 1;
 			break;
 		default:
 			throw std::exception("Unexpected search result received. Highest search only accepts Low, High and Success");
 		}
 
+		SelectMiddle();	
 	}
 
 	template<typename T>
 	inline void RangeVariable<T>::SelectRandom(SearchResult lastResult)
 	{
 		valueIndex = uniformRandom(rng);
+	}
+
+	template<typename T>
+	inline void RangeVariable<T>::SelectMiddle()
+	{
+		valueIndex = (lowIndex + highIndex) / 2;
 	}
 
 	inline float NormalizeDeg(double a)

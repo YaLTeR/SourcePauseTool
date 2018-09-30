@@ -32,18 +32,19 @@ namespace scripts
 
 	class VariableContainer
 	{
-	public:
+	public:	
 		std::string lastSuccessPrint;
-		std::string prevIterationPrint;
-		std::vector<std::string> successes;
-
+		std::string iterationPrint;
+		SearchType searchType;
 		std::map<std::string, ScriptVariable> variableMap;
+
+		void PrintBest();
 		void Clear();
-		void Iteration();
+		void Iteration(SearchType type);
 		void AddNewVariable(std::string type, std::string name, std::string value);
 		void SetResult(SearchResult result);
+		void PrintState();
 	private:
-		SearchType currentSearch;
 		SearchResult lastResult;
 	};
 

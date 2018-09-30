@@ -6,6 +6,7 @@
 #include <fstream>
 #include "..\..\sptlib-wrapper.hpp"
 #include "..\utils.hpp"
+#include "..\cvars.hpp"
 
 namespace scripts
 {
@@ -15,9 +16,65 @@ namespace scripts
 
 	void SourceTASReader::ExecuteScript(std::string script)
 	{
+		searchType = None;
 		freezeVariables = false;
 		fileName = script;
 		CommonExecuteScript();
+	}
+
+	void SourceTASReader::StartSearch(std::string script)
+	{
+		if(!FindSearchType())
+			return;
+
+		freezeVariables = false;
+		fileName = script;
+		CommonExecuteScript();
+		freezeVariables = true;
+	}
+
+	void SourceTASReader::SearchResult(std::string result)
+	{
+		try
+		{
+			if (result == "low")
+				variables.SetResult(Low);
+			else if (result == "high")
+				variables.SetResult(High);
+			else if (result == "success")
+			{
+				Msg("Iteration was successful!\n");
+				variables.SetResult(Success);
+			}
+			else if (result == "fail")
+				variables.SetResult(Fail);
+			else
+				throw std::exception("invalid result type");
+
+			CommonExecuteScript();
+		}
+		catch (const std::exception & ex)
+		{
+			Msg("Error setting result: %s\n", ex.what());
+		}
+	}
+
+	bool SourceTASReader::FindSearchType()
+	{
+		std::string searchT(tas_script_search.GetString());
+		if (searchT == "low")
+			searchType = Lowest;
+		else if (searchT == "high")
+			searchType = Highest;
+		else if (searchT == "random")
+			searchType = Random;
+		else
+		{
+			Msg("Search type was invalid!\n");
+			return false;
+		}
+
+		return true;
 	}
 
 	void SourceTASReader::CommonExecuteScript()
@@ -47,6 +104,11 @@ namespace scripts
 		{
 			Msg("Error in line %i: %s\n", currentLine, ex.what());
 		}
+		catch (const SearchDoneException& ex)
+		{
+			Msg("Search done.\n");
+			variables.PrintBest();
+		}
 		catch (...)
 		{
 			Msg("Unexpected exception on line %i\n", currentLine);
@@ -57,6 +119,7 @@ namespace scripts
 
 	void SourceTASReader::Execute()
 	{
+		clientDLL.ResetAfterframesQueue();
 		EngineConCmd(startCommand.c_str());
 
 		for (int i = 0; i < afterFramesEntries.size(); ++i)
@@ -89,7 +152,6 @@ namespace scripts
 		lineStream.str(line);
 		lineStream.clear();
 		++currentLine;
-		Msg("line: %s\n", line);
 	}
 
 	void SourceTASReader::ReplaceVariables()
@@ -168,7 +230,8 @@ namespace scripts
 				ParseVariable();
 		}
 
-		variables.Iteration();
+		variables.Iteration(searchType);
+		variables.PrintState();
 	}
 
 	void SourceTASReader::ParseVariable()
@@ -194,11 +257,6 @@ namespace scripts
 		{
 			ParseFrameBulk();
 		}
-		
-		line = EMPTY_BULK;
-		lineStream.str(line);
-		lineStream.clear();
-		ParseFrameBulk();
 	}
 
 	void SourceTASReader::ParseFrameBulk()
