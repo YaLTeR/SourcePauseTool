@@ -57,6 +57,7 @@ public:
 
 IServerUnknown* GetServerPlayer();
 IVEngineServer* GetEngine();
+std::string GetGameDir();
 
 #if defined( OE )
 struct ArgsWrapper

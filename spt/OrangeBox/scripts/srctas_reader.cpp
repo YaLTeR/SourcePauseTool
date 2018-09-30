@@ -7,6 +7,7 @@
 #include "..\..\sptlib-wrapper.hpp"
 #include "..\utils.hpp"
 #include "..\cvars.hpp"
+#include "..\spt-serverplugin.hpp"
 
 namespace scripts
 {
@@ -82,7 +83,8 @@ namespace scripts
 		try
 		{
 			Reset();
-			scriptStream.open("portal\\" + fileName + SCRIPT_EXT);
+			std::string gameDir = GetGameDir();
+			scriptStream.open(gameDir + "\\" + fileName + SCRIPT_EXT);
 
 			if (!scriptStream.is_open())
 				throw std::exception("File does not exist!");

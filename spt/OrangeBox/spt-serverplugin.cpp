@@ -119,6 +119,11 @@ IVEngineServer* GetEngine()
 {
 	return engine_server;
 }
+std::string GetGameDir()
+{
+	return engine->GetGameDirectory();
+}
+
 #else
 // TODO
 IServerUnknown* GetServerPlayer()
