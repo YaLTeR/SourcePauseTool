@@ -745,6 +745,21 @@ int __fastcall ClientDLL::HOOKED_GetButtonBits_Func(void* thisptr, int edx, int 
 	return rv;
 }
 
+bool DoAngleChange(float& angle, float target)
+{
+	float normalizedDiff = NormalizeDeg(target - angle);
+	if (std::abs(normalizedDiff) > _y_spt_anglesetspeed.GetFloat())
+	{
+		angle += std::copysign(_y_spt_anglesetspeed.GetFloat(), normalizedDiff);
+		return true;
+	}
+	else
+	{
+		angle = target;
+		return false;
+	}		
+}
+
 void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, float frametime)
 {
 	ORIG_AdjustAngles(thisptr, edx, frametime);
@@ -762,33 +777,14 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		va[PITCH] += pitchSpeed;
 	if (setPitch.set)
 	{
-		float targetPitch = setPitch.angle;
-		float normalizedDiff = NormalizeDeg(targetPitch - va[PITCH]);
-
-		// Check if change is too large for current angle set speed
-		if (std::abs(normalizedDiff) > _y_spt_anglesetspeed.GetFloat())
-			va[PITCH] += std::copysign(_y_spt_anglesetspeed.GetFloat(), normalizedDiff);
-		else
-		{
-			setPitch.set = false;
-			va[PITCH] = targetPitch;
-		}
+		setPitch.set = DoAngleChange(va[PITCH], setPitch.angle);
 	}
 
 	if (yawSpeed != 0.0f)
 		va[YAW] += yawSpeed;
 	if (setYaw.set)
 	{
-		
-		float targetYaw = setYaw.angle;
-		float normalizedDiff = NormalizeDeg(targetYaw - va[YAW]);
-		if (std::abs(normalizedDiff) > _y_spt_anglesetspeed.GetFloat())
-			va[YAW] += std::copysign(_y_spt_anglesetspeed.GetFloat(), normalizedDiff);
-		else
-		{
-			setYaw.set = false;
-			va[YAW] = targetYaw;
-		}
+		setYaw.set = setPitch.set = DoAngleChange(va[YAW], setYaw.angle);
 	}
 	else if (tasAddressesWereFound && yawSpeed == 0.0f && tas_strafe.GetBool())
 	{
