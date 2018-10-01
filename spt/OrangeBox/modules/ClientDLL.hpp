@@ -7,6 +7,7 @@
 #include "..\spt-serverplugin.hpp"
 #include "..\..\SDK\igamemovement.h"
 #include "..\public\cdll_int.h"
+#include "..\..\utils\signal.hpp"
 
 using std::uintptr_t;
 using std::size_t;
@@ -65,6 +66,7 @@ public:
 	void __fastcall HOOKED_CViewRender__RenderView_Func(void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw);
 	void __fastcall HOOKED_CViewRender__Render_Func(void* thisptr, int edx, void* rect);
 
+	Simple::Signal<void()> AfterFrames;
 	void DelayAfterframesQueue(int delay);
 	void AddIntoAfterframesQueue(const afterframes_entry_t& entry);
 	void ResetAfterframesQueue();

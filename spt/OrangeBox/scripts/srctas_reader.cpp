@@ -5,7 +5,7 @@
 #include "framebulk_handler.hpp"
 #include <fstream>
 #include "..\..\sptlib-wrapper.hpp"
-#include "..\utils.hpp"
+#include "..\..\utils\utils.hpp"
 #include "..\cvars.hpp"
 #include "..\spt-serverplugin.hpp"
 
@@ -17,6 +17,7 @@ namespace scripts
 
 	void SourceTASReader::ExecuteScript(std::string script)
 	{
+		hooked = false;
 		searchType = None;
 		freezeVariables = false;
 		fileName = script;
@@ -82,6 +83,7 @@ namespace scripts
 	{
 		try
 		{
+			HookAfterFrames();
 			Reset();
 			std::string gameDir = GetGameDir();
 			scriptStream.open(gameDir + "\\" + fileName + SCRIPT_EXT);
@@ -106,7 +108,7 @@ namespace scripts
 		{
 			Msg("Error in line %i: %s\n", currentLine, ex.what());
 		}
-		catch (const SearchDoneException& ex)
+		catch (const SearchDoneException&)
 		{
 			Msg("Search done.\n");
 			variables.PrintBest();
@@ -119,12 +121,27 @@ namespace scripts
 		scriptStream.close();
 	}
 
+	void SourceTASReader::HookAfterFrames()
+	{
+		if (!hooked)
+		{
+			clientDLL.AfterFrames += Simple::slot(this, &SourceTASReader::OnAfterFrames);
+			hooked = true;
+		}
+	}
+
+	void SourceTASReader::OnAfterFrames()
+	{
+		++currentTick;
+	}
+
 	void SourceTASReader::Execute()
 	{
+		currentTick = 0;
 		clientDLL.ResetAfterframesQueue();
 		EngineConCmd(startCommand.c_str());
 
-		for (int i = 0; i < afterFramesEntries.size(); ++i)
+		for (size_t i = 0; i < afterFramesEntries.size(); ++i)
 		{
 			clientDLL.AddIntoAfterframesQueue(afterFramesEntries[i]);
 		}
@@ -181,7 +198,7 @@ namespace scripts
 		lineStream.clear();
 		line.clear();
 		currentLine = 0;
-		currentTick = 0;
+		afterFramesTick = 0;
 		afterFramesEntries.clear();
 		props.clear();
 	}
@@ -268,8 +285,8 @@ namespace scripts
 
 		FrameBulkInfo info(lineStream);
 		auto output = HandleFrameBulk(info);
-		AddAfterframesEntry(currentTick, output.command);
-		currentTick += output.ticks;
+		AddAfterframesEntry(afterFramesTick, output.command);
+		afterFramesTick += output.ticks;
 	}
 
 	void SourceTASReader::HandleProps()

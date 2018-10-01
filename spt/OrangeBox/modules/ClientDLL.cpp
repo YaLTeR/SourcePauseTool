@@ -595,6 +595,8 @@ void ClientDLL::OnFrame()
 		return;
 	}
 
+	AfterFrames.emit();
+
 	for (auto it = afterframesQueue.begin(); it != afterframesQueue.end(); )
 	{
 		it->framesLeft--;
@@ -760,16 +762,33 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		va[PITCH] += pitchSpeed;
 	if (setPitch.set)
 	{
-		setPitch.set = false;
-		va[PITCH] = setPitch.angle;
+		float targetPitch = setPitch.angle;
+		float normalizedDiff = NormalizeDeg(targetPitch - va[PITCH]);
+
+		// Check if change is too large for current angle set speed
+		if (std::abs(normalizedDiff) > _y_spt_anglesetspeed.GetFloat())
+			va[PITCH] += std::copysign(_y_spt_anglesetspeed.GetFloat(), normalizedDiff);
+		else
+		{
+			setPitch.set = false;
+			va[PITCH] = targetPitch;
+		}
 	}
 
 	if (yawSpeed != 0.0f)
 		va[YAW] += yawSpeed;
 	if (setYaw.set)
 	{
-		setYaw.set = false;
-		va[YAW] = setYaw.angle;
+		
+		float targetYaw = setYaw.angle;
+		float normalizedDiff = NormalizeDeg(targetYaw - va[YAW]);
+		if (std::abs(normalizedDiff) > _y_spt_anglesetspeed.GetFloat())
+			va[YAW] += std::copysign(_y_spt_anglesetspeed.GetFloat(), normalizedDiff);
+		else
+		{
+			setYaw.set = false;
+			va[YAW] = targetYaw;
+		}
 	}
 	else if (tasAddressesWereFound && yawSpeed == 0.0f && tas_strafe.GetBool())
 	{

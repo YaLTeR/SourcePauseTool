@@ -15,6 +15,7 @@ namespace scripts
 		void StartSearch(std::string script);
 		void SearchResult(std::string result);
 	private:
+		bool hooked;
 		bool inFrames;
 		bool freezeVariables;
 		std::string fileName;
@@ -23,6 +24,7 @@ namespace scripts
 		std::string line;
 		int currentLine;
 		long long int currentTick;
+		long long int afterFramesTick;
 		SearchType searchType;
 
 		VariableContainer variables;
@@ -36,6 +38,9 @@ namespace scripts
 		void ResetIterationState();
 		void Execute();
 		void AddAfterframesEntry(long long int tick, std::string command);
+
+		void HookAfterFrames();
+		void OnAfterFrames();
 		
 		bool ParseLine();
 		void SetNewLine();

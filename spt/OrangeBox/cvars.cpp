@@ -44,6 +44,7 @@ ConVar tas_script_printvars("tas_script_printvars", "1", 0, "Prints variable inf
 
 ConVar _y_spt_autojump_ensure_legit("_y_spt_autojump_ensure_legit", "1", FCVAR_ARCHIVE);
 ConVar _y_spt_afterframes_reset_on_server_activate("_y_spt_afterframes_reset_on_server_activate", "1", FCVAR_ARCHIVE);
+ConVar _y_spt_anglesetspeed("_y_spt_anglesetspeed", "360", 0, "Determines how fast the view angle can move per tick while doing _y_spt_setyaw/_y_spt_setpitch.\n");
 ConVar _y_spt_pitchspeed("_y_spt_pitchspeed", "0");
 ConVar _y_spt_yawspeed("_y_spt_yawspeed", "0");
 ConVar _y_spt_force_90fov("_y_spt_force_90fov", "0");
