@@ -17,6 +17,7 @@ namespace scripts
 	SourceTASReader::SourceTASReader()
 	{
 		InitPropertyHandlers();
+		iterationFinished = true;
 	}
 
 	void SourceTASReader::ExecuteScript(std::string script)
@@ -136,10 +137,10 @@ namespace scripts
 
 	void SourceTASReader::OnAfterFrames()
 	{
-		++currentTick;
-
-		if (conditions.size() == 0)
+		if (conditions.size() == 0 || iterationFinished)
 			return;
+
+		++currentTick;
 
 		bool allTrue = true;
 
@@ -148,16 +149,22 @@ namespace scripts
 			allTrue = allTrue && pointer->IsTrue(currentTick, afterFramesTick);
 			if (pointer->ShouldTerminate(currentTick, afterFramesTick))
 			{
-				SearchResult("fail");
+				iterationFinished = true;
+				SearchResult(failResult);
+				return;
 			}
 		}
 
 		if (allTrue)
+		{
+			iterationFinished = true;
 			SearchResult("success");
+		}	
 	}
 
 	void SourceTASReader::Execute()
 	{
+		iterationFinished = false;
 		const std::string DEFAULT_START = ";host_framerate 0.015; sv_cheats 1; fps_max 66.66666; y_spt_pause 0;_y_spt_afterframes_await_load; _y_spt_afterframes_reset_on_server_activate 0";
 		startCommand += DEFAULT_START;
 		EngineConCmd(startCommand.c_str());
@@ -217,7 +224,6 @@ namespace scripts
 	void SourceTASReader::ResetIterationState()
 	{
 		conditions.clear();
-		inFrames = false;
 		startCommand.clear();
 		scriptStream.clear();
 		lineStream.clear();
@@ -225,6 +231,7 @@ namespace scripts
 		currentLine = 0;
 		afterFramesTick = 0;
 		afterFramesEntries.clear();
+		failResult = "fail";
 	}
 
 	void SourceTASReader::AddAfterframesEntry(long long int tick, std::string command)
@@ -292,7 +299,6 @@ namespace scripts
 
 	void SourceTASReader::ParseFrames()
 	{
-		inFrames = true;
 		while (ParseLine())
 		{
 			ParseFrameBulk();
@@ -314,6 +320,7 @@ namespace scripts
 	{
 		propertyHandlers["save"] = &SourceTASReader::HandleSave;
 		propertyHandlers["demo"] = &SourceTASReader::HandleDemo;
+		propertyHandlers["fail"] = &SourceTASReader::HandleFail;
 
 		// Conditions for automated searching
 		propertyHandlers["tick"] = &SourceTASReader::HandleTickRange;
@@ -333,9 +340,14 @@ namespace scripts
 		startCommand = "load " + value;
 	}
 
-	void SourceTASReader::HandleDemo(std::string & value)
+	void SourceTASReader::HandleDemo(std::string& value)
 	{
 		AddAfterframesEntry(0, "record " + value);
+	}
+
+	void SourceTASReader::HandleFail(std::string& value)
+	{
+		failResult = value;
 	}
 
 	void SourceTASReader::HandleTickRange(std::string & value)

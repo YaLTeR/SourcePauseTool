@@ -17,8 +17,8 @@ namespace scripts
 		void StartSearch(std::string script);
 		void SearchResult(std::string result);
 	private:
+		bool iterationFinished;
 		bool hooked;
-		bool inFrames;
 		bool freezeVariables;
 		std::string fileName;
 		std::ifstream scriptStream;
@@ -27,6 +27,7 @@ namespace scripts
 		int currentLine;
 		long long int currentTick;
 		long long int afterFramesTick;
+		std::string failResult;
 		SearchType searchType;
 
 		VariableContainer variables;
@@ -54,6 +55,7 @@ namespace scripts
 		void ParseProp();
 		void HandleSave(std::string& value);
 		void HandleDemo(std::string& value);
+		void HandleFail(std::string& value);
 		void HandleTickRange(std::string& value);
 		void HandleTicksFromEndRange(std::string& value);
 		
