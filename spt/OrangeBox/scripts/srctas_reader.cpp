@@ -137,6 +137,23 @@ namespace scripts
 	void SourceTASReader::OnAfterFrames()
 	{
 		++currentTick;
+
+		if (conditions.size() == 0)
+			return;
+
+		bool allTrue = true;
+
+		for (auto& pointer : conditions)
+		{
+			allTrue = allTrue && pointer->IsTrue(currentTick, afterFramesTick);
+			if (pointer->ShouldTerminate(currentTick, afterFramesTick))
+			{
+				SearchResult("fail");
+			}
+		}
+
+		if (allTrue)
+			SearchResult("success");
 	}
 
 	void SourceTASReader::Execute()
@@ -199,6 +216,7 @@ namespace scripts
 
 	void SourceTASReader::ResetIterationState()
 	{
+		conditions.clear();
 		inFrames = false;
 		startCommand.clear();
 		scriptStream.clear();
@@ -296,6 +314,18 @@ namespace scripts
 	{
 		propertyHandlers["save"] = &SourceTASReader::HandleSave;
 		propertyHandlers["demo"] = &SourceTASReader::HandleDemo;
+
+		// Conditions for automated searching
+		propertyHandlers["tick"] = &SourceTASReader::HandleTickRange;
+		propertyHandlers["tickend"] = &SourceTASReader::HandleTicksFromEndRange;
+		propertyHandlers["posx"] = &SourceTASReader::HandleXPos;
+		propertyHandlers["posy"] = &SourceTASReader::HandleYPos;
+		propertyHandlers["posz"] = &SourceTASReader::HandleZPos;
+		propertyHandlers["velx"] = &SourceTASReader::HandleXVel;
+		propertyHandlers["vely"] = &SourceTASReader::HandleYVel;
+		propertyHandlers["velz"] = &SourceTASReader::HandleZVel;
+		propertyHandlers["vel2d"] = &SourceTASReader::Handle2DVel;
+		propertyHandlers["velabs"] = &SourceTASReader::HandleAbsVel;
 	}
 
 	void SourceTASReader::HandleSave(std::string& value)
@@ -306,6 +336,27 @@ namespace scripts
 	void SourceTASReader::HandleDemo(std::string & value)
 	{
 		AddAfterframesEntry(0, "record " + value);
+	}
+
+	void SourceTASReader::HandleTickRange(std::string & value)
+	{
+		int min, max;
+		GetDoublet(value, min, max, '|');
+		conditions.push_back(std::unique_ptr<Condition>(new TickRangeCondition(min, max, false)));
+	}
+
+	void SourceTASReader::HandleTicksFromEndRange(std::string & value)
+	{
+		int min, max;
+		GetDoublet(value, min, max, '|');
+		conditions.push_back(std::unique_ptr<Condition>(new TickRangeCondition(min, max, true)));
+	}
+
+	void SourceTASReader::HandlePosVel(std::string & value, Axis axis, bool isPos)
+	{
+		float min, max;
+		GetDoublet(value, min, max, '|');
+		conditions.push_back(std::unique_ptr<Condition>(new PosSpeedCondition(min, max, axis, isPos)));
 	}
 
 	bool SourceTASReader::isLineEmpty()

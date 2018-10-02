@@ -5,6 +5,7 @@
 #include "variable_container.hpp"
 #include "..\modules\ClientDLL.hpp"
 #include <map>
+#include "condition.hpp"
 
 namespace scripts
 {
@@ -32,6 +33,7 @@ namespace scripts
 		std::string startCommand;
 		std::vector<afterframes_entry_t> afterFramesEntries;
 		std::map<std::string, void(SourceTASReader::*)(std::string&)> propertyHandlers;
+		std::vector<std::unique_ptr<Condition>> conditions;
 
 		bool FindSearchType();
 		void CommonExecuteScript();
@@ -52,6 +54,20 @@ namespace scripts
 		void ParseProp();
 		void HandleSave(std::string& value);
 		void HandleDemo(std::string& value);
+		void HandleTickRange(std::string& value);
+		void HandleTicksFromEndRange(std::string& value);
+		
+		void HandleXPos(std::string& value) { HandlePosVel(value, AxisX, true); }
+		void HandleYPos(std::string& value) { HandlePosVel(value, AxisY, true); }
+		void HandleZPos(std::string& value) { HandlePosVel(value, AxisZ, true); }
+
+		void HandleXVel(std::string& value) { HandlePosVel(value, AxisX, false); }
+		void HandleYVel(std::string& value) { HandlePosVel(value, AxisY, false); }
+		void HandleZVel(std::string& value) { HandlePosVel(value, AxisZ, false); }
+		void HandleAbsVel(std::string& value) { HandlePosVel(value, Abs, false); }
+		void Handle2DVel(std::string& value) { HandlePosVel(value, TwoD, false); }
+
+		void HandlePosVel(std::string& value, Axis axis, bool isPos);
 
 		void ParseVariables();
 		void ParseVariable();
