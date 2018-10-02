@@ -467,8 +467,6 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 	}
 
 	float r = random->RandomFloat(min, max);
-
-	const char *value = args.Arg(2);
 	cvar->SetValue(r);
 }
 

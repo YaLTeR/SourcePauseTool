@@ -66,10 +66,15 @@ namespace scripts
 		if (searchType == None)
 			throw std::exception("Set result while not in search mode!");
 
-		if (result == Success)
-			lastSuccessPrint = iterationPrint;
-
 		lastResult = result;
+
+		if (result == Success)
+		{
+			lastSuccessPrint = iterationPrint;
+			if (searchType == Random)
+				throw SearchDoneException();
+		}			
+		
 	}
 
 	void VariableContainer::PrintState()

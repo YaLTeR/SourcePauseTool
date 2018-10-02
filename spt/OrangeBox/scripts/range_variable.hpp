@@ -1,6 +1,8 @@
 #pragma once
 #include <random>
 #include <sstream>
+#include "..\..\utils\math.hpp"
+#include "..\..\utils\string_parsing.hpp"
 
 namespace scripts
 {
@@ -19,7 +21,7 @@ namespace scripts
 		std::string GetValue();
 		std::string GetRangeString();
 		void ParseInput(std::string value, bool angle);
-		void ParseValues(std::string lowS, std::string highS, std::string incS);
+		void ParseValues(std::string value);
 
 	private:
 		void SelectLow(SearchResult lastResult);
@@ -71,42 +73,21 @@ namespace scripts
 	inline void RangeVariable<T>::ParseInput(std::string value, bool angle)
 	{
 		isAngle = angle;
-		std::istringstream is(value);
-		std::string lowS, highS, incS;
-
-		std::getline(is, lowS, '|');
-		std::getline(is, highS, '|');
-		std::getline(is, incS, '|');
-
-		ParseValues(lowS, highS, incS);
+		ParseValues(value);
 		SelectMiddle();
 		uniformRandom = std::uniform_int_distribution<int>(lowIndex, highIndex);
 	}
 
 
-	inline void RangeVariable<int>::ParseValues(std::string lowS, std::string highS, std::string incS)
+	template<typename T>
+	inline void RangeVariable<T>::ParseValues(std::string value)
 	{
-		initialLow = std::atoi(lowS.c_str());
-		initialHigh = std::atoi(highS.c_str());
-		increment = std::atoi(incS.c_str());
-
-		lowIndex = 0;
+		GetTriplet(value, initialLow, initialHigh, increment, '|');
+		
 		if (increment <= 0)
 			throw std::exception("increment cannot be <= 0");
 
-		highIndex = (initialHigh - initialLow) / increment;
-	}
-
-	inline void RangeVariable<float>::ParseValues(std::string lowS, std::string highS, std::string incS)
-	{
-		initialLow = std::atof(lowS.c_str());
-		initialHigh = std::atof(highS.c_str());
-		increment = std::atof(incS.c_str());
-
 		lowIndex = 0;
-		if(increment <= 0)
-			throw std::exception("increment cannot be <= 0");
-
 		highIndex = static_cast<int>((initialHigh - initialLow) / increment);
 	}
 
@@ -186,7 +167,7 @@ namespace scripts
 	}
 
 	template<typename T>
-	inline void RangeVariable<T>::SelectRandom(SearchResult lastResult)
+	inline void RangeVariable<T>::SelectRandom(SearchResult)
 	{
 		valueIndex = uniformRandom(rng);
 	}
@@ -195,16 +176,6 @@ namespace scripts
 	inline void RangeVariable<T>::SelectMiddle()
 	{
 		valueIndex = (lowIndex + highIndex) / 2;
-	}
-
-	inline float NormalizeDeg(double a)
-	{
-		a = std::fmod(a, 360.0);
-		if (a >= 180.0)
-			a -= 360.0;
-		else if (a < -180.0)
-			a += 360.0;
-		return static_cast<float>(a);
 	}
 
 	template<typename T>
@@ -216,7 +187,7 @@ namespace scripts
 	inline float RangeVariable<float>::Normalize(float value)
 	{
 		if (isAngle)
-			value = NormalizeDeg(static_cast<double>(value));
+			value = static_cast<float>(NormalizeDeg(static_cast<double>(value)));
 
 		return value;
 	}

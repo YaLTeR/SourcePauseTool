@@ -11,6 +11,7 @@ namespace scripts
 	class SourceTASReader
 	{
 	public:
+		SourceTASReader();
 		void ExecuteScript(std::string script);
 		void StartSearch(std::string script);
 		void SearchResult(std::string result);
@@ -30,7 +31,7 @@ namespace scripts
 		VariableContainer variables;
 		std::string startCommand;
 		std::vector<afterframes_entry_t> afterFramesEntries;
-		std::map<std::string, std::string> props;
+		std::map<std::string, void(SourceTASReader::*)(std::string&)> propertyHandlers;
 
 		bool FindSearchType();
 		void CommonExecuteScript();
@@ -46,9 +47,11 @@ namespace scripts
 		void SetNewLine();
 		void ReplaceVariables();
 
+		void InitPropertyHandlers();
 		void ParseProps();
 		void ParseProp();
-		void HandleProps();
+		void HandleSave(std::string& value);
+		void HandleDemo(std::string& value);
 
 		void ParseVariables();
 		void ParseVariable();

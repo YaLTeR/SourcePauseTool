@@ -20,7 +20,8 @@ namespace scripts
 	public:
 		FrameBulkInfo(std::istringstream& stream);
 		std::string operator[](std::pair<int, int> i);
-		bool IsNumber(std::pair<int, int> i);
+		bool IsInt(std::pair<int, int> i);
+		bool IsFloat(std::pair<int, int> i);
 	private:
 		std::map<std::pair<int, int>, std::string> dataMap;
 	};

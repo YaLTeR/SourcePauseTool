@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "framebulk_handler.hpp"
+#include "..\..\utils\string_parsing.hpp"
 
 namespace scripts
 {
@@ -56,7 +57,7 @@ namespace scripts
 		{
 			data.AddCommand("tas_strafe 1");
 
-			if (!frameBulkInfo.IsNumber(JUMP_TYPE) || !frameBulkInfo.IsNumber(STRAFE_TYPE))
+			if (!frameBulkInfo.IsInt(JUMP_TYPE) || !frameBulkInfo.IsInt(STRAFE_TYPE))
 				throw std::exception("Jump type or strafe type was not a number!");
 
 			data.AddCommand("tas_strafe_jumptype " + frameBulkInfo[JUMP_TYPE]);
@@ -109,7 +110,7 @@ namespace scripts
 
 	void Angles(FrameBulkOutput& data, FrameBulkInfo& frameBulkInfo)
 	{
-		if (frameBulkInfo.IsNumber(YAW_KEY))
+		if (frameBulkInfo.IsFloat(YAW_KEY))
 		{
 			if (frameBulkInfo[STRAFE] == "s")
 				data.AddCommand("tas_strafe_yaw " + frameBulkInfo[YAW_KEY]);
@@ -117,13 +118,13 @@ namespace scripts
 				data.AddCommand("_y_spt_setyaw " + frameBulkInfo[YAW_KEY]);
 		}
 
-		if (frameBulkInfo.IsNumber(PITCH_KEY))
+		if (frameBulkInfo.IsFloat(PITCH_KEY))
 			data.AddCommand("_y_spt_setpitch " + frameBulkInfo[PITCH_KEY]);
 	}
 
 	void Ticks(FrameBulkOutput& data, FrameBulkInfo& frameBulkInfo)
 	{
-		if (!frameBulkInfo.IsNumber(TICKS))
+		if (!frameBulkInfo.IsInt(TICKS))
 			throw std::exception("Tick value was not a number!");
 
 		int ticks = std::atoi(frameBulkInfo[TICKS].c_str());
@@ -202,19 +203,16 @@ namespace scripts
 		return dataMap[i];
 	}
 
-	bool FrameBulkInfo::IsNumber(std::pair<int, int> i)
+	bool FrameBulkInfo::IsInt(std::pair<int, int> i)
 	{
 		std::string value = this->operator[](i);
-		std::stringstream ss(value);
-		float num = 0;
-		ss >> num;
+		return IsValue<int>(value);
+	}
 
-		if (ss.good() || value.size() == 0)
-			return false;
-		else if (num == 0 && value[0] != '0')
-			return false;
-		else
-			return true;
+	bool FrameBulkInfo::IsFloat(std::pair<int, int> i)
+	{
+		std::string value = this->operator[](i);
+		return IsValue<float>(value);
 	}
 
 }

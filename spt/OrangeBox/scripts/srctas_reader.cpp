@@ -5,15 +5,19 @@
 #include "framebulk_handler.hpp"
 #include <fstream>
 #include "..\..\sptlib-wrapper.hpp"
-#include "..\..\utils\utils.hpp"
+#include "..\..\utils\string_parsing.hpp"
 #include "..\cvars.hpp"
 #include "..\spt-serverplugin.hpp"
 
 namespace scripts
 {
 	SourceTASReader g_TASReader;
-	const std::string SAVE_KEY = "save";
 	const std::string SCRIPT_EXT = ".stas";
+
+	SourceTASReader::SourceTASReader()
+	{
+		InitPropertyHandlers();
+	}
 
 	void SourceTASReader::ExecuteScript(std::string script)
 	{
@@ -137,9 +141,12 @@ namespace scripts
 
 	void SourceTASReader::Execute()
 	{
+		const std::string DEFAULT_START = ";host_framerate 0.015; sv_cheats 1; fps_max 66.66666; y_spt_pause 0;_y_spt_afterframes_await_load; _y_spt_afterframes_reset_on_server_activate 0";
+		startCommand += DEFAULT_START;
+		EngineConCmd(startCommand.c_str());
+
 		currentTick = 0;
 		clientDLL.ResetAfterframesQueue();
-		EngineConCmd(startCommand.c_str());
 
 		for (size_t i = 0; i < afterFramesEntries.size(); ++i)
 		{
@@ -200,14 +207,12 @@ namespace scripts
 		currentLine = 0;
 		afterFramesTick = 0;
 		afterFramesEntries.clear();
-		props.clear();
 	}
 
 	void SourceTASReader::AddAfterframesEntry(long long int tick, std::string command)
 	{
 		afterFramesEntries.push_back(afterframes_entry_t(tick, command));
 	}
-
 
 	void SourceTASReader::ParseProps()
 	{
@@ -219,7 +224,6 @@ namespace scripts
 			}
 			ParseProp();
 		}
-		HandleProps();
 	}
 
 	void SourceTASReader::ParseProp()
@@ -229,11 +233,14 @@ namespace scripts
 
 		std::string prop;
 		std::string value;
+		GetDoublet(lineStream, prop, value, ' ');
 
-		std::getline(lineStream, prop, ' ');
-		std::getline(lineStream, value, ' ');
-
-		props[prop] = value;
+		if (propertyHandlers.find(prop) != propertyHandlers.end())
+		{
+			(this->*propertyHandlers[prop])(value);
+		}
+		else
+			throw std::exception("Unknown property name!");
 	}
 
 	void SourceTASReader::ParseVariables()
@@ -261,11 +268,7 @@ namespace scripts
 		std::string type;
 		std::string name;
 		std::string value;
-
-		std::getline(lineStream, type, ' ');
-		std::getline(lineStream, name, ' ');
-		std::getline(lineStream, value, ' ');
-
+		GetTriplet(lineStream, type, name, value, ' ');
 		variables.AddNewVariable(type, name, value);
 	}
 
@@ -289,18 +292,20 @@ namespace scripts
 		afterFramesTick += output.ticks;
 	}
 
-	void SourceTASReader::HandleProps()
+	void SourceTASReader::InitPropertyHandlers()
 	{
-		const std::string DEFAULT_START = ";host_framerate 0.015; sv_cheats 1; fps_max 66.66666; y_spt_pause 0;_y_spt_afterframes_await_load; _y_spt_afterframes_reset_on_server_activate 0";
+		propertyHandlers["save"] = &SourceTASReader::HandleSave;
+		propertyHandlers["demo"] = &SourceTASReader::HandleDemo;
+	}
 
-		if (props.find(SAVE_KEY) == props.end())
-			throw std::exception("Save property not found!");
+	void SourceTASReader::HandleSave(std::string& value)
+	{
+		startCommand = "load " + value;
+	}
 
-		startCommand = "load " + props["save"];
-		startCommand += DEFAULT_START;
-
-		if (props.find("demo") != props.end())
-			AddAfterframesEntry(0, "record " + props["demo"]);
+	void SourceTASReader::HandleDemo(std::string & value)
+	{
+		AddAfterframesEntry(0, "record " + value);
 	}
 
 	bool SourceTASReader::isLineEmpty()

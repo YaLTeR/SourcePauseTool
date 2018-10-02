@@ -19,33 +19,13 @@
 
 #include "OrangeBox/cvars.hpp"
 #include "strafestuff.hpp"
+#include "utils/math.hpp"
 
 // This code is a messed up version of hlstrafe,
 // go take a look at that instead:
 // https://github.com/HLTAS/hlstrafe
 
 static const constexpr double SAFEGUARD_THETA_DIFFERENCE_RAD = M_PI / 65536;
-
-// Return angle in [-Pi; Pi).
-inline double NormalizeRad(double a)
-{
-	a = std::fmod(a, M_PI * 2);
-	if (a >= M_PI)
-		a -= 2 * M_PI;
-	else if (a < -M_PI)
-		a += 2 * M_PI;
-	return a;
-}
-
-inline double NormalizeDeg(double a)
-{
-	a = std::fmod(a, 360.0);
-	if (a >= 180.0)
-		a -= 360.0;
-	else if (a < -180.0)
-		a += 360.0;
-	return a;
-}
 
 // Convert both arguments to doubles.
 inline double Atan2(double a, double b)
@@ -354,85 +334,19 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 
 	Button usedButton;
 	bool strafed;
-	//if (frame.Strafe) {
 	strafed = true;
 
 	switch (dir) {
-		//case StrafeDir::LEFT:
-		//	if (type == StrafeType::MAXACCEL)
-		//		out.Yaw = static_cast<float>(SideStrafeMaxAccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, false) * M_RAD2DEG);
-		//	else if (type == StrafeType::MAXANGLE)
-		//		out.Yaw = static_cast<float>(SideStrafeMaxAngle(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, false) * M_RAD2DEG);
-		//	//else if (type == StrafeType::CONSTSPEED)
-		//	//	out.Yaw = static_cast<float>(SideStrafeConstSpeed(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, false) * M_RAD2DEG);
-		//	//else if (type == StrafeType::MAXDECCEL) {
-		//	//	auto yaw = static_cast<float>(SideStrafeMaxDeccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, false, strafed) * M_RAD2DEG);
-		//	//	if (strafed)
-		//	//		out.Yaw = yaw;
-		//	//}
-		//	break;
-
-		//case StrafeDir::RIGHT:
-		//	if (type == StrafeType::MAXACCEL)
-		//		out.Yaw = static_cast<float>(SideStrafeMaxAccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, true) * M_RAD2DEG);
-		//	else if (type == StrafeType::MAXANGLE)
-		//		out.Yaw = static_cast<float>(SideStrafeMaxAngle(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, true) * M_RAD2DEG);
-		//	//else if (type == StrafeType::CONSTSPEED)
-		//	//	out.Yaw = static_cast<float>(SideStrafeConstSpeed(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, true) * M_RAD2DEG);
-		//	//else if (type == StrafeType::MAXDECCEL) {
-		//	//	auto yaw = static_cast<float>(SideStrafeMaxDeccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, true, strafed) * M_RAD2DEG);
-		//	//	if (strafed)
-		//	//		out.Yaw = yaw;
-		//	//}
-		//	break;
-
-		//case StrafeDir::BEST:
-		//	if (type == StrafeType::MAXACCEL)
-		//		out.Yaw = static_cast<float>(BestStrafeMaxAccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD) * M_RAD2DEG);
-		//	else if (type == StrafeType::MAXANGLE)
-		//		out.Yaw = static_cast<float>(BestStrafeMaxAngle(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD) * M_RAD2DEG);
-		//	else if (type == StrafeType::CONSTSPEED)
-		//		out.Yaw = static_cast<float>(BestStrafeConstSpeed(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD) * M_RAD2DEG);
-		//	else if (type == StrafeType::MAXDECCEL) {
-		//		auto yaw = static_cast<float>(BestStrafeMaxDeccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, strafed) * M_RAD2DEG);
-		//		if (strafed)
-		//			out.Yaw = yaw;
-		//	}
-		//	break;
-
 	case StrafeDir::YAW:
 		if (type == StrafeType::MAXACCEL)
 			out.Yaw = YawStrafeMaxAccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD) * M_RAD2DEG;
 		else if (type == StrafeType::MAXANGLE)
 			out.Yaw = YawStrafeMaxAngle(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD) * M_RAD2DEG;
-		//else if (type == StrafeType::CONSTSPEED)
-		//	out.Yaw = static_cast<float>(YawStrafeConstSpeed(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD) * M_RAD2DEG);
-		//else if (type == StrafeType::MAXDECCEL) {
-		//	auto yaw = static_cast<float>(YawStrafeMaxDeccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD, strafed) * M_RAD2DEG);
-		//	if (strafed)
-		//		out.Yaw = yaw;
-		//}
 		break;
-
-		//case StrafeDir::POINT:
-		//{
-		//	double point[] = { frame.GetX(), frame.GetY() };
-		//	auto yaw = static_cast<float>(PointStrafe(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, type, point, strafed) * M_RAD2DEG);
-		//	if (strafed)
-		//		out.Yaw = yaw;
-		//}
-		//break;
-
 	default:
 		strafed = false;
 		break;
 	}
-	//}
-
-	//std::ostringstream o;
-	//o << std::setprecision(8) << std::fixed << "[Strafing] wishspeed = " << wishspeed << "; speed = " << player.Velocity.Length2D();
-
-	//out.Yaw = static_cast<float>(YawStrafeMaxAccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD) * M_RAD2DEG);
 
 	if (strafed) {
 		out.Forward = (usedButton == Button::FORWARD || usedButton == Button::FORWARD_LEFT || usedButton == Button::FORWARD_RIGHT);
@@ -441,9 +355,6 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 		out.Left = (usedButton == Button::LEFT || usedButton == Button::FORWARD_LEFT || usedButton == Button::BACK_LEFT);
 		MapSpeeds(out, vars);
 	}
-
-	//o << "; resulting yaw = " << out.Yaw << "; predicted speed = " << player.Velocity.Length2D() << "\n";
-	//DevMsg("%s", o.str().c_str());
 
 	return onground;
 }

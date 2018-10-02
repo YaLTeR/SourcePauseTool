@@ -4,6 +4,7 @@
 #include "..\modules.hpp"
 #include "..\patterns.hpp"
 #include "..\..\strafestuff.hpp"
+#include "..\..\utils\math.hpp"
 #include "..\..\sptlib-wrapper.hpp"
 #include <SPTLib\memutils.hpp>
 #include <SPTLib\detoursutils.hpp>
@@ -607,19 +608,6 @@ void ClientDLL::OnFrame()
 		}
 		else
 			++it;
-	}
-
-	if (engineDLL.Demo_IsPlayingBack() && !engineDLL.Demo_IsPlaybackPaused())
-	{
-		auto tick = y_spt_pause_demo_on_tick.GetInt();
-		if (tick != 0)
-		{
-			if (tick < 0)
-				tick += engineDLL.Demo_GetTotalTicks();
-
-			if (tick == engineDLL.Demo_GetPlaybackTick())
-				EngineConCmd("demo_pause");
-		}
 	}
 }
 

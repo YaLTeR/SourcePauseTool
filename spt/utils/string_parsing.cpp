@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "utils.hpp"
+#include "string_parsing.hpp"
 #include <sstream>
 
 
@@ -13,3 +13,4 @@ void ReplaceAll(std::string & str, const std::string & from, const std::string &
 		start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
 	}
 }
+
