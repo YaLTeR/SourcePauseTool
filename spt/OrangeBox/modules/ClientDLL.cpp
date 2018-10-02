@@ -772,7 +772,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		va[YAW] += yawSpeed;
 	if (setYaw.set)
 	{
-		setYaw.set = setPitch.set = DoAngleChange(va[YAW], setYaw.angle);
+		setYaw.set = DoAngleChange(va[YAW], setYaw.angle);
 	}
 	else if (tasAddressesWereFound && yawSpeed == 0.0f && tas_strafe.GetBool())
 	{
