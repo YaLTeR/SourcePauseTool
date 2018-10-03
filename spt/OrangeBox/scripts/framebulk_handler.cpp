@@ -84,7 +84,7 @@ namespace scripts
 		else
 			data.AddCommand("-back");
 
-		if (frameBulkInfo[W] == "d")
+		if (frameBulkInfo[D] == "d")
 			data.AddCommand("+moveright");
 		else
 			data.AddCommand("-moveright");
