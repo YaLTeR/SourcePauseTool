@@ -38,8 +38,6 @@ ConVar tas_strafe_lgagst("tas_strafe_lgagst", "0", 0, "If enabled, jumps automat
 ConVar tas_strafe_lgagst_minspeed("tas_strafe_lgagst_minspeed", "30", 0, "Prevents LGAGST from triggering when the player speed is below this value. The default should be fine.");
 ConVar tas_strafe_lgagst_fullmaxspeed("tas_strafe_lgagst_fullmaxspeed", "0", 0, "If enabled, LGAGST assumes the player is standing regardless of the actual ducking state. Useful for when you land while crouching but intend to stand up immediately.\n");
 ConVar tas_strafe_jumptype("tas_strafe_jumptype", "1", 0, "TAS jump strafe types:\n\t0 - Does nothing,\n\t1 - Looks directly opposite to desired direction (for games with ABH),\n\t2 - Looks in desired direction (games with speed boost upon jumping but no ABH),\n\t3 - Looks in direction that results in greatest speed loss (for glitchless TASes on game with ABH).\n");
-	
-ConVar tas_script_search("tas_script_search", "low", 0, "Determines the search type. Options are:\n\t - low(finds lowest number with binary search)\n\t - high(finds highest number with binary search)\n\t - random(uniform random values).\n");
 ConVar tas_script_printvars("tas_script_printvars", "1", 0, "Prints variable information when running .stas scripts.\n");
 
 ConVar _y_spt_autojump_ensure_legit("_y_spt_autojump_ensure_legit", "1", FCVAR_ARCHIVE);

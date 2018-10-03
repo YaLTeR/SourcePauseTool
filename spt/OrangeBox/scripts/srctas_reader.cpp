@@ -18,25 +18,21 @@ namespace scripts
 	{
 		InitPropertyHandlers();
 		iterationFinished = true;
+		hooked = false;
 	}
 
 	void SourceTASReader::ExecuteScript(std::string script)
 	{
-		hooked = false;
-		searchType = None;
 		freezeVariables = false;
 		fileName = script;
-		CommonExecuteScript();
+		CommonExecuteScript(false);
 	}
 
 	void SourceTASReader::StartSearch(std::string script)
 	{
-		if(!FindSearchType())
-			return;
-
 		freezeVariables = false;
 		fileName = script;
-		CommonExecuteScript();
+		CommonExecuteScript(true);
 		freezeVariables = true;
 	}
 
@@ -45,20 +41,15 @@ namespace scripts
 		try
 		{
 			if (result == "low")
-				variables.SetResult(Low);
+				SearchResult(Low);
 			else if (result == "high")
-				variables.SetResult(High);
+				SearchResult(High);
 			else if (result == "success")
-			{
-				Msg("Iteration was successful!\n");
-				variables.SetResult(Success);
-			}
+				SearchResult(Success);
 			else if (result == "fail")
-				variables.SetResult(Fail);
+				SearchResult(Fail);
 			else
 				throw std::exception("invalid result type");
-
-			CommonExecuteScript();
 		}
 		catch (const std::exception & ex)
 		{
@@ -66,25 +57,37 @@ namespace scripts
 		}
 	}
 
-	bool SourceTASReader::FindSearchType()
+	void SourceTASReader::SearchResult(scripts::SearchResult result)
 	{
-		std::string searchT(tas_script_search.GetString());
-		if (searchT == "low")
-			searchType = Lowest;
-		else if (searchT == "high")
-			searchType = Highest;
-		else if (searchT == "random")
-			searchType = Random;
-		else
+		try
 		{
-			Msg("Search type was invalid!\n");
-			return false;
-		}
+			if (result == Success)
+			{
+				Msg("Iteration was successful!\n");
+				variables.PrintBest();
+				iterationFinished = true;
+				return;
+			}
 
-		return true;
+			variables.SetResult(result);
+			CommonExecuteScript(true);
+		}
+		catch (const std::exception & ex)
+		{
+			Msg("Error setting result: %s\n", ex.what());
+		}
+		catch (const SearchDoneException&)
+		{
+			Msg("Search done.\n");
+			variables.PrintBest();
+		}
+		catch (...)
+		{
+			Msg("Unexpected exception on line %i\n", currentLine);
+		}
 	}
 
-	void SourceTASReader::CommonExecuteScript()
+	void SourceTASReader::CommonExecuteScript(bool search)
 	{
 		try
 		{
@@ -96,6 +99,9 @@ namespace scripts
 			if (!scriptStream.is_open())
 				throw std::exception("File does not exist!");
 			ParseProps();
+
+			if (search && searchType == None)
+				throw std::exception("In search mode but search property is not set!");
 
 			while (!scriptStream.eof())
 			{
@@ -150,7 +156,13 @@ namespace scripts
 			if (pointer->ShouldTerminate(currentTick, afterFramesTick))
 			{
 				iterationFinished = true;
-				SearchResult(failResult);
+				if (searchType == Lowest)
+					SearchResult(Low);
+				else if (searchType == Highest)
+					SearchResult(High);
+				else
+					SearchResult(Fail);
+
 				return;
 			}
 		}
@@ -158,7 +170,7 @@ namespace scripts
 		if (allTrue)
 		{
 			iterationFinished = true;
-			SearchResult("success");
+			SearchResult(Success);
 		}	
 	}
 
@@ -231,7 +243,6 @@ namespace scripts
 		currentLine = 0;
 		afterFramesTick = 0;
 		afterFramesEntries.clear();
-		failResult = "fail";
 	}
 
 	void SourceTASReader::AddAfterframesEntry(long long int tick, std::string command)
@@ -320,7 +331,7 @@ namespace scripts
 	{
 		propertyHandlers["save"] = &SourceTASReader::HandleSave;
 		propertyHandlers["demo"] = &SourceTASReader::HandleDemo;
-		propertyHandlers["fail"] = &SourceTASReader::HandleFail;
+		propertyHandlers["search"] = &SourceTASReader::HandleSearch;
 
 		// Conditions for automated searching
 		propertyHandlers["tick"] = &SourceTASReader::HandleTickRange;
@@ -345,9 +356,18 @@ namespace scripts
 		AddAfterframesEntry(0, "record " + value);
 	}
 
-	void SourceTASReader::HandleFail(std::string& value)
+	void SourceTASReader::HandleSearch(std::string& value)
 	{
-		failResult = value;
+		if (value == "low")
+			searchType = Lowest;
+		else if (value == "high")
+			searchType = Highest;
+		else if (value == "random")
+			searchType = Random;
+		else
+		{
+			throw std::exception("Search type was invalid!");
+		}
 	}
 
 	void SourceTASReader::HandleTickRange(std::string & value)

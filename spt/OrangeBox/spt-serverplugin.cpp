@@ -910,7 +910,7 @@ CON_COMMAND(y_spt_find_seam_shot, "y_spt_find_seam_shot [<pitch1> <yaw1> <pitch2
 }
 
 
-CON_COMMAND(tas_load_script, "Loads and executes an .stas script. Usage: tas_load_script [script]")
+CON_COMMAND(tas_script_load, "Loads and executes an .stas script. Usage: tas_load_script [script]")
 {
 #if defined( OE )
 	if (!engine)
@@ -929,7 +929,7 @@ CON_COMMAND(tas_load_script, "Loads and executes an .stas script. Usage: tas_loa
 
 }
 
-CON_COMMAND(tas_load_search, "Starts a variable search for an .stas script. Usage: tas_load_search [script]")
+CON_COMMAND(tas_script_search, "Starts a variable search for an .stas script. Usage: tas_load_search [script]")
 {
 #if defined( OE )
 	if (!engine)
@@ -948,7 +948,7 @@ CON_COMMAND(tas_load_search, "Starts a variable search for an .stas script. Usag
 
 }
 
-CON_COMMAND(tas_search_result, "Returns a search result in a variable search. Usage: tas_search_result [result]. Options are low/high/success/fail")
+CON_COMMAND(tas_script_result, "Returns a search result in a variable search. Usage: tas_search_result [result]. Options are low/high/success/fail")
 {
 #if defined( OE )
 	if (!engine)

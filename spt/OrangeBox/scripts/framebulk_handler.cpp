@@ -74,12 +74,12 @@ namespace scripts
 		else
 			data.AddCommand("-forward");
 
-		if (frameBulkInfo[W] == "a")
+		if (frameBulkInfo[A] == "a")
 			data.AddCommand("+moveleft");
 		else
 			data.AddCommand("-moveleft");
 
-		if (frameBulkInfo[W] == "s")
+		if (frameBulkInfo[S] == "s")
 			data.AddCommand("+back");
 		else
 			data.AddCommand("-back");

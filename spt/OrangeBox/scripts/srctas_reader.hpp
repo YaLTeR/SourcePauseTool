@@ -6,6 +6,7 @@
 #include "..\modules\ClientDLL.hpp"
 #include <map>
 #include "condition.hpp"
+#include "range_variable.hpp"
 
 namespace scripts
 {
@@ -16,6 +17,7 @@ namespace scripts
 		void ExecuteScript(std::string script);
 		void StartSearch(std::string script);
 		void SearchResult(std::string result);
+		void SearchResult(scripts::SearchResult result);
 	private:
 		bool iterationFinished;
 		bool hooked;
@@ -27,7 +29,6 @@ namespace scripts
 		int currentLine;
 		long long int currentTick;
 		long long int afterFramesTick;
-		std::string failResult;
 		SearchType searchType;
 
 		VariableContainer variables;
@@ -36,8 +37,7 @@ namespace scripts
 		std::map<std::string, void(SourceTASReader::*)(std::string&)> propertyHandlers;
 		std::vector<std::unique_ptr<Condition>> conditions;
 
-		bool FindSearchType();
-		void CommonExecuteScript();
+		void CommonExecuteScript(bool search);
 		void Reset();
 		void ResetIterationState();
 		void Execute();
@@ -55,7 +55,7 @@ namespace scripts
 		void ParseProp();
 		void HandleSave(std::string& value);
 		void HandleDemo(std::string& value);
-		void HandleFail(std::string& value);
+		void HandleSearch(std::string& value);
 		void HandleTickRange(std::string& value);
 		void HandleTicksFromEndRange(std::string& value);
 		
