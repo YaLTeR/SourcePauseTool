@@ -29,7 +29,7 @@
   <PropertyGroup Label="Globals">
     <ProjectName>SPT</ProjectName>
     <ProjectGuid>{B6572CBE-7C7F-4FFF-94DE-AFBBBAB11C64}</ProjectGuid>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -736,6 +736,9 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">stdafx.hpp</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">stdafx.hpp</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="spt\OrangeBox\overlay\overlay-renderer.cpp" />
+    <ClCompile Include="spt\OrangeBox\overlay\overlays.cpp" />
+    <ClCompile Include="spt\OrangeBox\overlay\portal_camera.cpp" />
     <ClCompile Include="spt\OrangeBox\spt-serverplugin.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">NotUsing</PrecompiledHeader>
@@ -819,6 +822,9 @@
     <ClInclude Include="spt\OrangeBox\modules\ClientDLL.hpp" />
     <ClInclude Include="spt\OrangeBox\modules\EngineDLL.hpp" />
     <ClInclude Include="spt\OrangeBox\modules\ServerDLL.hpp" />
+    <ClInclude Include="spt\OrangeBox\overlay\overlay-renderer.hpp" />
+    <ClInclude Include="spt\OrangeBox\overlay\overlays.hpp" />
+    <ClInclude Include="spt\OrangeBox\overlay\portal_camera.hpp" />
     <ClInclude Include="spt\OrangeBox\patterns.hpp" />
     <ClInclude Include="spt\OrangeBox\spt-serverplugin.hpp" />
     <ClInclude Include="spt\sptlib-wrapper.hpp" />

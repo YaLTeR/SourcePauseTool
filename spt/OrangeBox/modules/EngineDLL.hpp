@@ -46,6 +46,7 @@ public:
 	bool Demo_IsPlaybackPaused() const;
 
 protected:
+
 	_SV_ActivateServer ORIG_SV_ActivateServer;
 	_FinishRestore ORIG_FinishRestore;
 	_SetPaused ORIG_SetPaused;

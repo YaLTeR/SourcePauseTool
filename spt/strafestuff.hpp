@@ -50,7 +50,9 @@ struct ProcessedFrame {
 	bool Left;
 	bool Jump;
 
-	float Yaw;
+	double Yaw;
+	float ForwardSpeed;
+	float SideSpeed;
 
 	ProcessedFrame()
 		: Forward(false)
@@ -58,6 +60,9 @@ struct ProcessedFrame {
 		, Right(false)
 		, Left(false)
 		, Jump(false)
+		, Yaw(0)
+		, ForwardSpeed(0)
+		, SideSpeed(0)
 	{
 	}
 };
@@ -77,16 +82,6 @@ enum class StrafeDir {
 	RIGHT = 1,
 	YAW = 3
 };
-
-#ifndef M_PI
-const double M_PI = 3.14159265358979323846;
-#endif
-const double M_RAD2DEG = 180 / M_PI;
-const double M_DEG2RAD = M_PI / 180;
-
-// Return angle in [-Pi; Pi).
-double NormalizeRad(double a);
-double NormalizeDeg(double a);
 
 // Convert both arguments to doubles.
 double Atan2(double a, double b);
@@ -111,6 +106,8 @@ double YawStrafeMaxAccel(PlayerData& player, const MovementVars& vars, bool ongr
 
 double YawStrafeMaxAngle(PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons, Button& usedButton,
 	double vel_yaw, double yaw);
+
+void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed);
 
 bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons);
 

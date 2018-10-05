@@ -8,6 +8,7 @@
 
 #include "engine\iserverplugin.h"
 #include "custom_interfaces.hpp"
+#include "eiface.h"
 
 //---------------------------------------------------------------------------------
 // Purpose: a sample 3rd party plugin class
@@ -53,6 +54,10 @@ public:
 	virtual void            ClientFullyConnect( edict_t *pEntity ) {};
 #endif
 };
+
+IServerUnknown* GetServerPlayer();
+IVEngineServer* GetEngine();
+std::string GetGameDir();
 
 #if defined( OE )
 struct ArgsWrapper

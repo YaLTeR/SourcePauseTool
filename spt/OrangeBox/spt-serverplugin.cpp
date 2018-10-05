@@ -9,6 +9,7 @@
 #include <SPTLib\Hooks.hpp>
 #include "custom_interfaces.hpp"
 #include "vstdlib\random.h"
+#include "scripts\srctas_reader.hpp"
 
 #include "cdll_int.h"
 #include "engine\iserverplugin.h"
@@ -19,6 +20,8 @@
 #include "mathlib\vmatrix.h"
 #endif
 
+#include "overlay\overlay-renderer.hpp"
+#include "overlay\overlays.hpp"
 #include "tier0\memdbgoff.h" // YaLTeR - switch off the memory debugging.
 
 using namespace std::literals;
@@ -111,6 +114,16 @@ IServerUnknown* GetServerPlayer()
 
 	return edict->GetUnknown();
 }
+
+IVEngineServer* GetEngine()
+{
+	return engine_server;
+}
+std::string GetGameDir()
+{
+	return engine->GetGameDirectory();
+}
+
 #else
 // TODO
 IServerUnknown* GetServerPlayer()
@@ -207,7 +220,12 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	ConVar_Register(0);
 #endif
 
+#ifndef P2
 	auto ptr = interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION, NULL);
+#else
+	auto ptr = interfaceFactory("VEngineClient015", NULL);
+#endif
+
 	if (ptr) {
 #ifdef OE
 		if (DoesGameLookLikeDMoMM())
@@ -449,8 +467,6 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 	}
 
 	float r = random->RandomFloat(min, max);
-
-	const char *value = args.Arg(2);
 	cvar->SetValue(r);
 }
 
@@ -500,6 +516,50 @@ CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of 
 	cvar->SetValue(value);
 }
 #endif
+
+void TestCanJb(float height)
+{
+	Vector player_origin = clientDLL.GetPlayerEyePos();
+	Vector vel = serverDLL.GetLastVelocity();
+
+	constexpr float gravity = 600;
+	constexpr float groundThreshold = 2.0f;
+	constexpr float ticktime = 0.015f;
+	constexpr int maxIterations = 1000;
+
+	for (int i = 0; i < maxIterations && (vel.z > 0 || player_origin.z >= height); ++i)
+	{
+		if (vel.z < 0 && player_origin.z - height <= groundThreshold)
+		{
+			Msg("Yes, projected landing height %.6f in %d ticks\n", player_origin.z, i);
+			return;
+		}
+
+		vel.z -= (gravity * ticktime / 2);
+		player_origin.z += vel.z * ticktime;
+		vel.z -= (gravity * ticktime / 2);
+	}
+	Msg("Jumpbug impossible\n");
+}
+
+CON_COMMAND(y_spt_canjb, "Tests if player can jumpbug on a given height, with the current position and speed.")
+{
+	if (!engine)
+		return;
+
+#if defined( OE )
+	ArgsWrapper args(engine.get());
+#endif
+
+	if (args.ArgC() < 2)
+	{
+		Msg("Usage: y_spt_canjb [height]\n");
+		return;
+	}
+
+	float height = std::stof(args.Arg(1));
+	TestCanJb(height);
+}
 
 #if defined( OE )
 static void DuckspamDown()
@@ -848,4 +908,54 @@ CON_COMMAND(y_spt_find_seam_shot, "y_spt_find_seam_shot [<pitch1> <yaw1> <pitch2
 
 	Msg("Could not find a seam shot. Best guess: setang %.8f %.8f 0\n", test.x, test.y);
 }
+
+
+CON_COMMAND(tas_script_load, "Loads and executes an .stas script. Usage: tas_load_script [script]")
+{
+#if defined( OE )
+	if (!engine)
+		return;
+
+	ArgsWrapper args(engine.get());
+#endif
+
+	if (args.ArgC() > 1)
+	{
+		scripts::g_TASReader.ExecuteScript(args.Arg(1));
+	}
+	else
+		Msg("Loads and executes an .stas script. Usage: tas_load_script [script]\n");
+
+
+}
+
+CON_COMMAND(tas_script_search, "Starts a variable search for an .stas script. Usage: tas_load_search [script]")
+{
+#if defined( OE )
+	if (!engine)
+		return;
+
+	ArgsWrapper args(engine.get());
+#endif
+
+	if (args.ArgC() > 1)
+	{
+		scripts::g_TASReader.StartSearch(args.Arg(1));
+	}
+	else
+		Msg("Starts a variable search for an .stas script. Usage: tas_load_search [script]\n");
+
+
+}
+
+CON_COMMAND(tas_script_result_success, "Returns a successful result in a variable search.")
+{
+	scripts::g_TASReader.SearchResult(scripts::Success);
+}
+
+CON_COMMAND(tas_script_result_fail, "Returns an unsuccessful result in a variable search.")
+{
+	scripts::g_TASReader.SearchResult(scripts::Fail);
+}
+
 #endif

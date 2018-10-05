@@ -4,11 +4,13 @@
 #include "..\modules.hpp"
 #include "..\patterns.hpp"
 #include "..\..\strafestuff.hpp"
+#include "..\..\utils\math.hpp"
 #include "..\..\sptlib-wrapper.hpp"
 #include <SPTLib\memutils.hpp>
 #include <SPTLib\detoursutils.hpp>
 #include <SPTLib\hooks.hpp>
 #include "ClientDLL.hpp"
+#include "..\overlay\overlay-renderer.hpp"
 
 #ifdef max
 #undef max
@@ -56,6 +58,16 @@ void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart(void* thisptr, int 
 	return clientDLL.HOOKED_CViewRender__OnRenderStart_Func(thisptr, edx);
 }
 
+void ClientDLL::HOOKED_CViewRender__RenderView(void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw)
+{
+	clientDLL.HOOKED_CViewRender__RenderView_Func(thisptr, edx, cameraView, nClearFlags, whatToDraw);
+}
+
+void ClientDLL::HOOKED_CViewRender__Render(void* thisptr, int edx, void* rect)
+{
+	clientDLL.HOOKED_CViewRender__Render_Func(thisptr, edx, rect);
+}
+
 void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.
@@ -74,7 +86,10 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		pCViewRender__OnRenderStart,
 		pMiddleOfCAM_Think,
 		pGetGroundEntity,
-		pCalcAbsoluteVelocity;
+		pCalcAbsoluteVelocity,
+		pReleaseRenderTargets,
+		pCViewRender__RenderView,
+		pCViewRender__Render;
 
 	auto fHudUpdate = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsHudUpdate, &pHudUpdate);
 	auto fGetButtonBits = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsGetButtonBits, &pGetButtonBits);
@@ -84,6 +99,8 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	auto fMiddleOfCAM_Think = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsMiddleOfCAM_Think, &pMiddleOfCAM_Think);
 	auto fGetGroundEntity = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsGetGroundEntity, &pGetGroundEntity);
 	auto fCalcAbsoluteVelocity = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCalcAbsoluteVelocity, &pCalcAbsoluteVelocity);
+	auto fCViewRender__RenderView = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__RenderView, &pCViewRender__RenderView);
+	auto fCViewRender__Render = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCViewRender__Render, &pCViewRender__Render);
 
 	// DoImageSpaceMotionBlur
 	uintptr_t pDoImageSpaceMotionBlur = NULL;
@@ -110,6 +127,14 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		case 3:
 			pgpGlobals = *(uintptr_t **)(pDoImageSpaceMotionBlur + 171);
 			break;
+
+		case 4:
+			pgpGlobals = *(uintptr_t **)(pDoImageSpaceMotionBlur + 177);
+			break;
+			
+		case 5:
+			pgpGlobals = *(uintptr_t **)(pDoImageSpaceMotionBlur + 128);
+			break;
 		}
 
 		EngineDevMsg("[client dll] pgpGlobals is %p.\n", pgpGlobals);
@@ -122,8 +147,6 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 	//Client-side CheckJumpButton
 	//Only for client prediction, when we're playing on a server.
-
-	EngineDevMsg("[client dll] Searching for CheckJumpButton...\n");
 
 	uintptr_t pCheckJumpButton = NULL;
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsClientCheckJumpButton, &pCheckJumpButton);
@@ -157,11 +180,41 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			off1M_nOldButtons = 2;
 			off2M_nOldButtons = 40;
 			break;
+
+		case 5:
+			off1M_nOldButtons = 1;
+			off2M_nOldButtons = 40;
+			break;
+
+		case 6:
+			off1M_nOldButtons = 1;
+			off2M_nOldButtons = 40;
+			break;
+
+		case 7:
+			off1M_nOldButtons = 2;
+			off2M_nOldButtons = 40;
+			break;
+
+		case 8:
+			off1M_nOldButtons = 2;
+			off2M_nOldButtons = 40;
+			break;
+			
+		case 9:
+			off1M_nOldButtons = 1;
+			off2M_nOldButtons = 40;
+			break;
+			
+		case 10:
+			off1M_nOldButtons = 2;
+			off2M_nOldButtons = 40;
 		}
 	}
 	else
 	{
-		EngineDevWarning("[client dll] Could not find CheckJumpButton.\n");
+		EngineDevWarning("[client dll] Could not find CheckJumpButton!\n");
+		EngineWarning("y_spt_autojump has no effect in multiplayer.\n");
 	}
 
 	// HudUpdate
@@ -221,6 +274,24 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			offForwardmove = 24;
 			offSidemove = 28;
 			break;
+			
+		case 2:
+			offM_pCommands = 196;
+			offForwardmove = 24;
+			offSidemove = 28;
+			break;
+			
+		case 3:
+			offM_pCommands = 196;
+			offForwardmove = 24;
+			offSidemove = 28;
+			break;
+			
+		case 4:
+			offM_pCommands = 196;
+			offForwardmove = 24;
+			offSidemove = 28;
+			break;
 		}
 	}
 	else
@@ -264,6 +335,28 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 			offServerPreviouslyPredictedOrigin = 3628;
 			offServerAbsOrigin = 580;
 			break;
+			
+		case 2:
+			offMaxspeed = 4312;
+			offFlags = 844;
+			offAbsVelocity = 300;
+			offDucking = 3713;
+			offDuckJumpTime = 3720;
+			offServerSurfaceFriction = 3872;
+			offServerPreviouslyPredictedOrigin = 3752;
+			offServerAbsOrigin = 636;
+			break;
+			
+		case 3:
+			offMaxspeed = 4320;
+			offFlags = 844;
+			offAbsVelocity = 300;
+			offDucking = 3721;
+			offDuckJumpTime = 3728;
+			offServerSurfaceFriction = 3872;
+			offServerPreviouslyPredictedOrigin = 3752;
+			offServerAbsOrigin = 636;
+			break;
 		}
 	} else
 	{
@@ -293,6 +386,14 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 		case 1:
 			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 30) + pMiddleOfCAM_Think + 34);
+			break;
+			
+		case 2:
+			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 21) + pMiddleOfCAM_Think + 25);
+			break;
+			
+		case 3:
+			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 23) + pMiddleOfCAM_Think + 27);
 			break;
 		}
 
@@ -336,6 +437,31 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("_y_spt_force_90fov has no effect.\n");
 	}
 
+	ptnNumber = fCViewRender__RenderView.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_CViewRender__RenderView = (_CViewRender__RenderView)(pCViewRender__RenderView);
+		EngineDevMsg("[client dll] Found CViewRender::RenderView at %p (using the build %s pattern).\n", pCViewRender__RenderView, Patterns::ptnsCViewRender__RenderView[ptnNumber].build.c_str());
+	}
+	else
+	{
+		EngineDevWarning("[client dll] Could not find CViewRender::RenderView\n");
+	}
+
+	ptnNumber = fCViewRender__Render.get();
+	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	{
+		ORIG_CViewRender__Render = (_CViewRender__Render)(pCViewRender__Render);
+		EngineDevMsg("[client dll] Found CViewRender::Render at %p (using the build %s pattern).\n", pCViewRender__Render, Patterns::ptnsCViewRender__Render[ptnNumber].build.c_str());
+	}
+	else
+	{
+		EngineDevWarning("[client dll] Could not find CViewRender::Render\n");
+	}
+
+	if (ORIG_CViewRender__RenderView == nullptr || ORIG_CViewRender__Render == nullptr)
+		EngineWarning("Overlay cameras have no effect.");
+
 	DetoursUtils::AttachDetours(moduleName, {
 		{ (PVOID *) (&ORIG_DoImageSpaceMotionBlur), HOOKED_DoImageSpaceMotionBlur },
 		{ (PVOID *) (&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
@@ -343,7 +469,9 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		{ (PVOID *) (&ORIG_GetButtonBits), HOOKED_GetButtonBits },
 		{ (PVOID *)(&ORIG_AdjustAngles), HOOKED_AdjustAngles },
 		{ (PVOID *)(&ORIG_CreateMove), HOOKED_CreateMove },
-		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart }
+		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart },
+		{ (PVOID *)(&ORIG_CViewRender__RenderView), HOOKED_CViewRender__RenderView },
+		{ (PVOID *)(&ORIG_CViewRender__Render), HOOKED_CViewRender__Render }
 	});
 }
 
@@ -356,7 +484,9 @@ void ClientDLL::Unhook()
 		{ (PVOID *)(&ORIG_GetButtonBits), HOOKED_GetButtonBits },
 		{ (PVOID *)(&ORIG_AdjustAngles), HOOKED_AdjustAngles },
 		{ (PVOID *)(&ORIG_CreateMove), HOOKED_CreateMove },
-		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart }
+		{ (PVOID *)(&ORIG_CViewRender__OnRenderStart), HOOKED_CViewRender__OnRenderStart },
+		{ (PVOID *)(&ORIG_CViewRender__RenderView), HOOKED_CViewRender__RenderView },
+		{ (PVOID *)(&ORIG_CViewRender__Render), HOOKED_CViewRender__Render }
 	});
 
 	Clear();
@@ -374,6 +504,8 @@ void ClientDLL::Clear()
 	GetLocalPlayer = nullptr;
 	GetGroundEntity = nullptr;
 	CalcAbsoluteVelocity = nullptr;
+	ORIG_CViewRender__RenderView = nullptr;
+	ORIG_CViewRender__Render = nullptr;
 
 	pgpGlobals = nullptr;
 	off1M_nOldButtons = 0;
@@ -419,6 +551,39 @@ void ClientDLL::ResetAfterframesQueue()
 	afterframesQueue.clear();
 }
 
+Vector ClientDLL::GetPlayerVelocity()
+{
+	auto player = GetLocalPlayer();
+	CalcAbsoluteVelocity(player, 0);
+	float *vel = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offAbsVelocity);
+
+	return Vector(vel[0], vel[1], vel[2]);
+}
+
+Vector ClientDLL::GetPlayerEyePos()
+{
+	Vector rval = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + offServerAbsOrigin);
+	constexpr float duckOffset = 28;
+	constexpr float standingOffset = 64;
+
+	if (GetFlagsDucking())
+	{
+		rval.z += duckOffset;
+	}
+	else
+	{
+		rval.z += standingOffset;
+	}
+	
+	return rval;
+}
+
+
+bool ClientDLL::GetFlagsDucking()
+{
+	return (*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(GetLocalPlayer()) + offFlags)) & FL_DUCKING;
+}
+
 void ClientDLL::OnFrame()
 {
 	if (afterframesPaused)
@@ -430,6 +595,8 @@ void ClientDLL::OnFrame()
 	{
 		return;
 	}
+
+	AfterFrames.emit();
 
 	for (auto it = afterframesQueue.begin(); it != afterframesQueue.end(); )
 	{
@@ -443,17 +610,14 @@ void ClientDLL::OnFrame()
 			++it;
 	}
 
-	if (engineDLL.Demo_IsPlayingBack() && !engineDLL.Demo_IsPlaybackPaused())
+	auto tick = y_spt_pause_demo_on_tick.GetInt();
+	if (tick != 0)
 	{
-		auto tick = y_spt_pause_demo_on_tick.GetInt();
-		if (tick != 0)
-		{
-			if (tick < 0)
-				tick += engineDLL.Demo_GetTotalTicks();
+		if (tick < 0)
+			tick += engineDLL.Demo_GetTotalTicks();
 
-			if (tick == engineDLL.Demo_GetPlaybackTick())
-				EngineConCmd("demo_pause");
-		}
+		if (tick == engineDLL.Demo_GetPlaybackTick())
+			EngineConCmd("demo_pause");
 	}
 }
 
@@ -579,6 +743,21 @@ int __fastcall ClientDLL::HOOKED_GetButtonBits_Func(void* thisptr, int edx, int 
 	return rv;
 }
 
+bool DoAngleChange(float& angle, float target)
+{
+	float normalizedDiff = NormalizeDeg(target - angle);
+	if (std::abs(normalizedDiff) > _y_spt_anglesetspeed.GetFloat())
+	{
+		angle += std::copysign(_y_spt_anglesetspeed.GetFloat(), normalizedDiff);
+		return true;
+	}
+	else
+	{
+		angle = target;
+		return false;
+	}		
+}
+
 void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, float frametime)
 {
 	ORIG_AdjustAngles(thisptr, edx, frametime);
@@ -596,16 +775,14 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		va[PITCH] += pitchSpeed;
 	if (setPitch.set)
 	{
-		setPitch.set = false;
-		va[PITCH] = setPitch.angle;
+		setPitch.set = DoAngleChange(va[PITCH], setPitch.angle);
 	}
 
 	if (yawSpeed != 0.0f)
 		va[YAW] += yawSpeed;
 	if (setYaw.set)
 	{
-		setYaw.set = false;
-		va[YAW] = setYaw.angle;
+		setYaw.set = DoAngleChange(va[YAW], setYaw.angle);
 	}
 	else if (tasAddressesWereFound && yawSpeed == 0.0f && tas_strafe.GetBool())
 	{
@@ -641,9 +818,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		curState.LgagstFullMaxspeed = tas_strafe_lgagst_fullmaxspeed.GetBool();
 
 		auto pl = PlayerData();
-		CalcAbsoluteVelocity(player, 0);
-		float *vel = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offAbsVelocity);
-		pl.Velocity = Vector(vel[0], vel[1], vel[2]);
+		pl.Velocity = GetPlayerVelocity();
 
 		//DevMsg("[Strafing] speed pre-friction = %.8f\n", pl.Velocity.Length2D());
 		//DevMsg("[Strafing] velocity pre-friction: %.8f %.8f %.8f\n", pl.Velocity.x, pl.Velocity.y, pl.Velocity.z);
@@ -689,7 +864,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		{
 			bool cantjump = false;
 			// This will report air on the first frame of unducking and report ground on the last one.
-			if ((*reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(player) + offDucking)) && ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING)) {
+			if ((*reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(player) + offDucking)) && GetFlagsDucking()) {
 				cantjump = true;
 			}
 
@@ -707,7 +882,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 
 			if (!cantjump && onground) {
 				if (tas_strafe_lgagst.GetBool()) {
-					LgagstJump(pl, vars, curState, onground, ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING), type, dir, tas_strafe_yaw.GetFloat(), va[YAW] * M_DEG2RAD, out, reduceWishspeed, btns, false);
+					LgagstJump(pl, vars, curState, onground, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW] * M_DEG2RAD, out, reduceWishspeed, btns, false);
 					if (out.Jump) {
 						onground = false;
 						jumped = true;
@@ -722,26 +897,16 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		}
 
 		Friction(pl, onground, vars);
-		Strafe(pl, vars, onground, jumped, ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, btns, usingButtons);
 
-		//EngineDevMsg("[Strafing] Yaw = %.8f\n", out.Yaw);
+		if (tas_strafe_vectorial.GetBool())
+			StrafeVectorial(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed);
+		else
+			Strafe(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, btns, usingButtons);
 
-		va[YAW] = out.Yaw;
-		if (out.Forward) {
-			*reinterpret_cast<float*>(pCmd + offForwardmove) += vars.Maxspeed;
-		}
-		if (out.Back) {
-			*reinterpret_cast<float*>(pCmd + offForwardmove) -= vars.Maxspeed;
-		}
-		if (out.Right) {
-			*reinterpret_cast<float*>(pCmd + offSidemove) += vars.Maxspeed;
-		}
-		if (out.Left) {
-			*reinterpret_cast<float*>(pCmd + offSidemove) -= vars.Maxspeed;
-		}
-		if (out.Jump) {
-			forceJump = true;
-		}
+		forceJump = out.Jump;
+		*reinterpret_cast<float*>(pCmd + offForwardmove) = out.ForwardSpeed;
+		*reinterpret_cast<float*>(pCmd + offSidemove) = out.SideSpeed;
+		va[YAW] = static_cast<float>(out.Yaw);
 	}
 
 	EngineSetViewAngles(va);
@@ -768,4 +933,46 @@ void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart_Func(void* thisptr,
 	float *fovViewmodel = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(thisptr) + 56);
 	*fov = 90;
 	*fovViewmodel = _viewmodel_fov->GetFloat();
+}
+
+void ClientDLL::HOOKED_CViewRender__RenderView_Func(void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw)
+{
+#ifndef SSDK2007
+	ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
+#else
+	g_OverlayRenderer.modifyView(static_cast<CViewSetup*>(cameraView), renderingOverlay);
+	if (renderingOverlay)
+	{
+		g_OverlayRenderer.modifySmallScreenFlags(nClearFlags, whatToDraw);
+		ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
+		return;
+	}
+	else
+	{
+		g_OverlayRenderer.modifyBigScreenFlags(nClearFlags, whatToDraw);
+		ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
+	}
+#endif	
+}
+
+void ClientDLL::HOOKED_CViewRender__Render_Func(void* thisptr, int edx, void* rect)
+{
+#ifndef SSDK2007
+	ORIG_CViewRender__Render(thisptr, edx, rect);
+#else
+	renderingOverlay = false;
+	if (!g_OverlayRenderer.shouldRenderOverlay())
+	{
+		ORIG_CViewRender__Render(thisptr, edx, rect);
+	}
+	else
+	{
+		ORIG_CViewRender__Render(thisptr, edx, rect);
+
+		renderingOverlay = true;
+		Rect_t rec = g_OverlayRenderer.getRect();
+		ORIG_CViewRender__Render(thisptr, edx, &rec);
+		renderingOverlay = false;
+	}
+#endif
 }
