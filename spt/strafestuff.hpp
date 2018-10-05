@@ -44,6 +44,7 @@ struct StrafeButtons {
 };
 
 struct ProcessedFrame {
+	bool Processed; // Should apply strafing in ClientDLL?
 	bool Forward;
 	bool Back;
 	bool Right;
@@ -55,7 +56,8 @@ struct ProcessedFrame {
 	float SideSpeed;
 
 	ProcessedFrame()
-		: Forward(false)
+		: Processed(false)
+		, Forward(false)
 		, Back(false)
 		, Right(false)
 		, Left(false)
@@ -107,7 +109,7 @@ double YawStrafeMaxAccel(PlayerData& player, const MovementVars& vars, bool ongr
 double YawStrafeMaxAngle(PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons, Button& usedButton,
 	double vel_yaw, double yaw);
 
-void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed);
+void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed, bool lockCamera);
 
 bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons);
 

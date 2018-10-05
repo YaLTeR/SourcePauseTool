@@ -7,7 +7,7 @@
 
 namespace scripts
 {
-	enum VariableType { Error, Var, IntRange, FloatRange, AngleRange };
+	enum class VariableType { Error, Var, IntRange, FloatRange, AngleRange };
 
 	class VarData
 	{
@@ -20,7 +20,7 @@ namespace scripts
 	class ScriptVariable
 	{
 	public:
-		ScriptVariable() { variableType = Error; }
+		ScriptVariable() { variableType = VariableType::Error; }
 		ScriptVariable(std::string type, std::string value);
 		std::string GetPrint(); // For printing the variable state
 		std::string GetValue(); // Returns the actual value of the variable in a string

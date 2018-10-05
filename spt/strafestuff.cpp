@@ -287,10 +287,16 @@ bool StrafeJump(PlayerData& player, const MovementVars& vars, bool ducking, Proc
 }
 
 
-void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed)
+void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed, bool lockCamera)
 {
 	if (jumped && StrafeJump(player, vars, ducking, out)) {
-		MapSpeeds(out, vars);
+
+		if (!lockCamera)
+		{
+			out.Processed = true;
+			MapSpeeds(out, vars);
+		}
+	
 		return;
 	}
 
@@ -300,22 +306,25 @@ void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground
 	// If forward is pressed, strafing should occur
 	if (dummy.Forward)
 	{
-		// Calculate updated yaw
-		double normalizedDiff = NormalizeDeg(target_yaw - vel_yaw + tas_strafe_vectorial_offset.GetFloat());
-		double additionAbs = std::min(static_cast<double>(tas_strafe_vectorial_increment.GetFloat()), std::abs(normalizedDiff));
+		if (!lockCamera)
+		{
+			// Calculate updated yaw
+			double normalizedDiff = NormalizeDeg(target_yaw - vel_yaw + tas_strafe_vectorial_offset.GetFloat());
+			double additionAbs = std::min(static_cast<double>(tas_strafe_vectorial_increment.GetFloat()), std::abs(normalizedDiff));
 
-		// Snap to target if difference too large(likely due to an ABH)
-		if (std::abs(normalizedDiff) > tas_strafe_vectorial_snap.GetFloat() && tas_strafe_vectorial_increment.GetFloat() > 0)
-			out.Yaw = target_yaw;
-		else
-			out.Yaw = vel_yaw + std::copysign(additionAbs, normalizedDiff);
+			// Snap to target if difference too large(likely due to an ABH)
+			if (std::abs(normalizedDiff) > tas_strafe_vectorial_snap.GetFloat() && tas_strafe_vectorial_increment.GetFloat() > 0)
+				out.Yaw = target_yaw;
+			else
+				out.Yaw = vel_yaw + std::copysign(additionAbs, normalizedDiff);	
+		}
 
 		// Set move speeds to match the current yaw to produce the acceleration in direction thetaDeg
 		double thetaDeg = dummy.Yaw;
 		double diff = (out.Yaw - thetaDeg) * M_DEG2RAD;
-
 		out.ForwardSpeed = static_cast<float>(std::cos(diff) * vars.Maxspeed);
 		out.SideSpeed = static_cast<float>(std::sin(diff) * vars.Maxspeed);
+		out.Processed = true;
 	}
 }
 
@@ -324,6 +333,7 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 {
 	//DevMsg("[Strafing] ducking = %d\n", (int)ducking);
 	if (jumped && StrafeJump(player, vars, ducking, out)) {
+		out.Processed = true;
 		MapSpeeds(out, vars);
 		return onground;
 	}
@@ -331,6 +341,7 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 	double wishspeed = vars.Maxspeed;
 	if (reduceWishspeed)
 		wishspeed *= 0.33333333f;
+
 
 	Button usedButton;
 	bool strafed;
@@ -353,6 +364,7 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 		out.Back = (usedButton == Button::BACK || usedButton == Button::BACK_LEFT || usedButton == Button::BACK_RIGHT);
 		out.Right = (usedButton == Button::RIGHT || usedButton == Button::FORWARD_RIGHT || usedButton == Button::BACK_RIGHT);
 		out.Left = (usedButton == Button::LEFT || usedButton == Button::FORWARD_LEFT || usedButton == Button::BACK_LEFT);
+		out.Processed = true;
 		MapSpeeds(out, vars);
 	}
 

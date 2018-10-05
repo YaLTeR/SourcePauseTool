@@ -60,15 +60,15 @@ namespace scripts
 		void HandleTickRange(std::string& value);
 		void HandleTicksFromEndRange(std::string& value);
 		
-		void HandleXPos(std::string& value) { HandlePosVel(value, AxisX, true); }
-		void HandleYPos(std::string& value) { HandlePosVel(value, AxisY, true); }
-		void HandleZPos(std::string& value) { HandlePosVel(value, AxisZ, true); }
+		void HandleXPos(std::string& value) { HandlePosVel(value, Axis::AxisX, true); }
+		void HandleYPos(std::string& value) { HandlePosVel(value, Axis::AxisY, true); }
+		void HandleZPos(std::string& value) { HandlePosVel(value, Axis::AxisZ, true); }
 
-		void HandleXVel(std::string& value) { HandlePosVel(value, AxisX, false); }
-		void HandleYVel(std::string& value) { HandlePosVel(value, AxisY, false); }
-		void HandleZVel(std::string& value) { HandlePosVel(value, AxisZ, false); }
-		void HandleAbsVel(std::string& value) { HandlePosVel(value, Abs, false); }
-		void Handle2DVel(std::string& value) { HandlePosVel(value, TwoD, false); }
+		void HandleXVel(std::string& value) { HandlePosVel(value, Axis::AxisX, false); }
+		void HandleYVel(std::string& value) { HandlePosVel(value, Axis::AxisY, false); }
+		void HandleZVel(std::string& value) { HandlePosVel(value, Axis::AxisZ, false); }
+		void HandleAbsVel(std::string& value) { HandlePosVel(value, Axis::Abs, false); }
+		void Handle2DVel(std::string& value) { HandlePosVel(value, Axis::TwoD, false); }
 
 		void HandlePosVel(std::string& value, Axis axis, bool isPos);
 

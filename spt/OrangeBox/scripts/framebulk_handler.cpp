@@ -60,11 +60,14 @@ namespace scripts
 		frameBulkInfo.AddPlusMinusCmd("y_spt_duckspam", frameBulkInfo[DUCKSPAM] == "d");
 
 		// todo
+#pragma warning(push)
+#pragma warning(disable:4390)
 		if (frameBulkInfo[USE_SPAM] == "u");
 		if (frameBulkInfo[LGAGST] == "l");
 		if (frameBulkInfo[JUMPBUG] == "b");
 		if (frameBulkInfo[DUCK_BEFORE_COLLISION] == "c");
 		if (frameBulkInfo[DUCK_BEFORE_GROUND] == "g");
+#pragma warning(pop)
 	}
 
 	void Field2(FrameBulkInfo& frameBulkInfo)
@@ -82,7 +85,7 @@ namespace scripts
 		frameBulkInfo.AddPlusMinusCmd("jump", frameBulkInfo[JUMP] == "j");
 		frameBulkInfo.AddPlusMinusCmd("duck", frameBulkInfo[DUCK] == "d");
 		frameBulkInfo.AddPlusMinusCmd("use", frameBulkInfo[USE] == "u");
-		frameBulkInfo.AddPlusMinusCmd("attack1", frameBulkInfo[ATTACK1] == "1");
+		frameBulkInfo.AddPlusMinusCmd("attack", frameBulkInfo[ATTACK1] == "1");
 		frameBulkInfo.AddPlusMinusCmd("attack2", frameBulkInfo[ATTACK2] == "2");
 		frameBulkInfo.AddPlusMinusCmd("reload", frameBulkInfo[RELOAD] == "r");
 	}
@@ -145,21 +148,21 @@ namespace scripts
 	{
 		const char DELIMITER = '|';
 		int section = 0;
-		std::string data;
+		std::string line;
 
 		do
 		{
-			std::getline(stream, data, DELIMITER);
+			std::getline(stream, line, DELIMITER);
 
 			// The sections after the first three are single string(could map section index to value type here but probably not worth the effort)
 			if (section > 2)
 			{
-				dataMap[std::make_pair(section, 0)] = data;
+				dataMap[std::make_pair(section, 0)] = line;
 			}
 			else
 			{
-				for (int i = 0; i < data.size(); ++i)
-					dataMap[std::make_pair(section, i)] = data[i];
+				for (size_t i = 0; i < line.size(); ++i)
+					dataMap[std::make_pair(section, i)] = line[i];
 			}
 
 			++section;

@@ -767,9 +767,10 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 
 	if (!pCmd)
 		return;
-
+	
 	float va[3];
 	EngineGetViewAngles(va);
+	float startYaw = va[YAW];
 
 	double pitchSpeed = atof(_y_spt_pitchspeed.GetString()),
 		yawSpeed = atof(_y_spt_yawspeed.GetString());
@@ -782,12 +783,15 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 	}
 
 	if (yawSpeed != 0.0f)
+	{
 		va[YAW] += yawSpeed;
+	}
 	if (setYaw.set)
 	{
 		setYaw.set = DoAngleChange(va[YAW], setYaw.angle);
 	}
-	else if (tasAddressesWereFound && yawSpeed == 0.0f && tas_strafe.GetBool())
+
+	if (tasAddressesWereFound && yawSpeed == 0.0f && tas_strafe.GetBool())
 	{
 		auto player = GetLocalPlayer();
 		auto onground = (GetGroundEntity(player, 0) != NULL); // TODO: This should really be a proper check.
@@ -900,16 +904,21 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		}
 
 		Friction(pl, onground, vars);
+		bool cameraLocked = va[YAW] != startYaw;
 
-		if (tas_strafe_vectorial.GetBool())
-			StrafeVectorial(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed);
-		else
+		if (tas_strafe_vectorial.GetBool()) // Can do vectorial strafing even with locked camera, provided we are not jumping
+			StrafeVectorial(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, cameraLocked);
+		else if(!cameraLocked) // didn't move mouse, can do regular strafe
 			Strafe(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, btns, usingButtons);
 
-		forceJump = out.Jump;
-		*reinterpret_cast<float*>(pCmd + offForwardmove) = out.ForwardSpeed;
-		*reinterpret_cast<float*>(pCmd + offSidemove) = out.SideSpeed;
-		va[YAW] = static_cast<float>(out.Yaw);
+		// This bool is set if strafing should occur
+		if (out.Processed)
+		{
+			forceJump = out.Jump;
+			*reinterpret_cast<float*>(pCmd + offForwardmove) = out.ForwardSpeed;
+			*reinterpret_cast<float*>(pCmd + offSidemove) = out.SideSpeed;
+			va[YAW] = static_cast<float>(out.Yaw);
+		}
 	}
 
 	EngineSetViewAngles(va);

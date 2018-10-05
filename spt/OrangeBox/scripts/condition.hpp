@@ -21,7 +21,7 @@ namespace scripts
 		int highTick;
 	};
 
-	enum Axis {AxisX, AxisY, AxisZ, TwoD, Abs};
+	enum class Axis {AxisX, AxisY, AxisZ, TwoD, Abs};
 
 	class PosSpeedCondition : public Condition
 	{

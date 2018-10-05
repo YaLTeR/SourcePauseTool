@@ -9,8 +9,8 @@ namespace scripts
 	class SearchDoneException
 	{};
 
-	enum SearchResult { NoSearch, Success, Fail };
-	enum SearchType { None, Lowest, Range, Highest, Random };
+	enum class SearchResult { NoSearch, Success, Fail };
+	enum class SearchType { None, Lowest, Range, Highest, Random };
 
 	template <typename T>
 	class RangeVariable
@@ -103,18 +103,18 @@ namespace scripts
 	template<typename T>
 	inline void RangeVariable<T>::Select(SearchResult lastResult, SearchType type)
 	{
-		if (lastResult == NoSearch)
+		if (lastResult == SearchResult::NoSearch)
 			return;
 
 		switch (type)
 		{
-		case Lowest:
+		case SearchType::Lowest:
 			SelectLow(lastResult);
 			break;
-		case Highest:
+		case SearchType::Highest:
 			SelectHigh(lastResult);
 			break;
-		case Random:
+		case SearchType::Random:
 			SelectRandom(lastResult);
 			break;
 		default:
@@ -123,7 +123,7 @@ namespace scripts
 		}
 
 		// Search stuck in place, stop searching
-		if (type != Random && lastIndex == valueIndex)
+		if (type != SearchType::Random && lastIndex == valueIndex)
 		{
 			throw SearchDoneException();
 		}
@@ -136,14 +136,14 @@ namespace scripts
 	{
 		switch (lastResult)
 		{
-		case Fail:
+		case SearchResult::Fail:
 			lowIndex = valueIndex;
 			break;
-		case Success:
+		case SearchResult::Success:
 			highIndex = valueIndex;
 			break;
 		default:
-			throw std::exception("Unexpected search result received. Lowest search only accepts Low, High and Success");
+			throw std::exception("Unexpected search result received.");
 		}
 
 		SelectMiddle();
@@ -155,14 +155,14 @@ namespace scripts
 	{
 		switch (lastResult)
 		{
-		case Success:
+		case SearchResult::Success:
 			lowIndex = valueIndex;
 			break;
-		case Fail:
+		case SearchResult::Fail:
 			highIndex = valueIndex;
 			break;
 		default:
-			throw std::exception("Unexpected search result received. Highest search only accepts Low, High and Success");
+			throw std::exception("Unexpected search result received.");
 		}
 
 		SelectMiddle();	

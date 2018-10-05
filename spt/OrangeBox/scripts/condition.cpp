@@ -47,19 +47,19 @@ namespace scripts
 
 		switch (axis)
 		{
-		case AxisX:
+		case Axis::AxisX:
 			val = v.x;
 			break;
-		case AxisY:
+		case Axis::AxisY:
 			val = v.y;
 			break;
-		case AxisZ:
+		case Axis::AxisZ:
 			val = v.z;
 			break;
-		case TwoD:
+		case Axis::TwoD:
 			val = v.Length2D();
 			break;
-		case Abs:
+		case Axis::Abs:
 			val = v.Length();
 			break;
 		default:

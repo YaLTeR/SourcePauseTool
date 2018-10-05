@@ -950,12 +950,12 @@ CON_COMMAND(tas_script_search, "Starts a variable search for an .stas script. Us
 
 CON_COMMAND(tas_script_result_success, "Returns a successful result in a variable search.")
 {
-	scripts::g_TASReader.SearchResult(scripts::Success);
+	scripts::g_TASReader.SearchResult(scripts::SearchResult::Success);
 }
 
 CON_COMMAND(tas_script_result_fail, "Returns an unsuccessful result in a variable search.")
 {
-	scripts::g_TASReader.SearchResult(scripts::Fail);
+	scripts::g_TASReader.SearchResult(scripts::SearchResult::Fail);
 }
 
 #endif

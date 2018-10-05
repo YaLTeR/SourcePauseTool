@@ -21,7 +21,7 @@ namespace scripts
 	void VariableContainer::Clear()
 	{
 		variableMap.clear();
-		lastResult = NoSearch;
+		lastResult = SearchResult::NoSearch;
 		lastSuccessPrint.clear();
 		iterationPrint.clear();
 	}
@@ -32,9 +32,9 @@ namespace scripts
 		int changes = 0;
 		searchType = type;
 
-		if (type == None)
+		if (type == SearchType::None)
 			maxChanges = 0;
-		else if (type != Random)
+		else if (type != SearchType::Random)
 			maxChanges = 1;
 		else
 			maxChanges = variableMap.size();
@@ -46,7 +46,7 @@ namespace scripts
 
 			if (changes > maxChanges)
 			{
-				if(type == None)
+				if(type == SearchType::None)
 					throw std::exception("Not in search mode, range variables are illegal.");
 				else 
 					throw std::exception("Binary search only accepts one range variable.");
@@ -63,15 +63,15 @@ namespace scripts
 
 	void VariableContainer::SetResult(SearchResult result)
 	{
-		if (searchType == None)
+		if (searchType == SearchType::None)
 			throw std::exception("Set result while not in search mode!");
 
 		lastResult = result;
 
-		if (result == Success)
+		if (result == SearchResult::Success)
 		{
 			lastSuccessPrint = iterationPrint;
-			if (searchType == Random)
+			if (searchType == SearchType::Random)
 				throw SearchDoneException();
 		}			
 		
@@ -98,22 +98,22 @@ namespace scripts
 	{
 		if (type == "var")
 		{
-			variableType = Var;
+			variableType = VariableType::Var;
 			data.value = value;
 		}
 		else if (type == "int")
 		{
-			variableType = IntRange;
+			variableType = VariableType::IntRange;
 			data.intRange.ParseInput(value, false);
 		}			
 		else if (type == "float")
 		{
-			variableType = FloatRange;
+			variableType = VariableType::FloatRange;
 			data.floatRange.ParseInput(value, false);
 		}
 		else if (type == "angle")
 		{
-			variableType = AngleRange;
+			variableType = VariableType::AngleRange;
 			data.floatRange.ParseInput(value, true);
 		}
 		else
@@ -124,11 +124,11 @@ namespace scripts
 	{
 		switch (variableType)
 		{
-		case Var:
+		case VariableType::Var:
 			return data.value;
-		case IntRange:
+		case VariableType::IntRange:
 			return data.intRange.GetRangeString();
-		case FloatRange: case AngleRange:
+		case VariableType::FloatRange: case VariableType::AngleRange:
 			return data.floatRange.GetRangeString();
 		default:
 			throw std::exception("Unexpected variable type while printing!");
@@ -139,11 +139,11 @@ namespace scripts
 	{
 		switch (variableType)
 		{
-		case Var:
+		case VariableType::Var:
 			return data.value;
-		case IntRange:
+		case VariableType::IntRange:
 			return data.intRange.GetValue();
-		case FloatRange: case AngleRange:
+		case VariableType::FloatRange: case VariableType::AngleRange:
 			return data.floatRange.GetValue();
 		default:
 			throw std::exception("Unexpected variable type while getting value!");
@@ -154,12 +154,12 @@ namespace scripts
 	{
 		switch (variableType)
 		{
-		case Var:
+		case VariableType::Var:
 			return false;
-		case IntRange: 
+		case VariableType::IntRange:
 			data.intRange.Select(search, type);
 			return true;
-		case FloatRange: case AngleRange:
+		case VariableType::FloatRange: case VariableType::AngleRange:
 			data.floatRange.Select(search, type);
 			return true;
 		default:

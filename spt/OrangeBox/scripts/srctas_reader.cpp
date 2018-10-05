@@ -73,9 +73,9 @@ namespace scripts
 				throw std::exception("File does not exist!");
 			ParseProps();
 
-			if (search && searchType == None)
+			if (search && searchType == SearchType::None)
 				throw std::exception("In search mode but search property is not set!");
-			else if (!search && searchType != None)
+			else if (!search && searchType != SearchType::None)
 				throw std::exception("Not in search mode but search property is set!");
 
 			while (!scriptStream.eof())
@@ -131,7 +131,7 @@ namespace scripts
 			if (pointer->ShouldTerminate(currentTick, afterFramesTick))
 			{
 				iterationFinished = true;
-				SearchResult(Fail);
+				SearchResult(SearchResult::Fail);
 
 				return;
 			}
@@ -140,7 +140,7 @@ namespace scripts
 		if (allTrue)
 		{
 			iterationFinished = true;
-			SearchResult(Success);
+			SearchResult(SearchResult::Success);
 		}	
 	}
 
@@ -214,6 +214,7 @@ namespace scripts
 		afterFramesTick = 0;
 		afterFramesEntries.clear();
 		tickTime = DEFAULT_TICK_TIME;
+		searchType = SearchType::None;
 	}
 
 	void SourceTASReader::AddAfterframesEntry(long long int tick, std::string command)
@@ -331,11 +332,11 @@ namespace scripts
 	void SourceTASReader::HandleSearch(std::string& value)
 	{
 		if (value == "low")
-			searchType = Lowest;
+			searchType = SearchType::Lowest;
 		else if (value == "high")
-			searchType = Highest;
+			searchType = SearchType::Highest;
 		else if (value == "random")
-			searchType = Random;
+			searchType = SearchType::Random;
 		else
 		{
 			throw std::exception("Search type was invalid!");
