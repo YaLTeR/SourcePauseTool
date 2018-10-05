@@ -86,6 +86,8 @@ namespace scripts
 		
 		if (increment <= 0)
 			throw std::exception("increment cannot be <= 0");
+		else if (initialLow >= initialHigh)
+			throw std::exception("Low was higher than high");
 
 		lowIndex = 0;
 		highIndex = static_cast<int>((initialHigh - initialLow) / increment);
