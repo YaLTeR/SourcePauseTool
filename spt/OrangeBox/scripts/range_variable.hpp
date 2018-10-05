@@ -9,7 +9,7 @@ namespace scripts
 	class SearchDoneException
 	{};
 
-	enum SearchResult { NoSearch, Success, Fail, Low, High };
+	enum SearchResult { NoSearch, Success, Fail };
 	enum SearchType { None, Lowest, Range, Highest, Random };
 
 	template <typename T>
@@ -134,10 +134,10 @@ namespace scripts
 	{
 		switch (lastResult)
 		{
-		case Low:
+		case Fail:
 			lowIndex = valueIndex;
 			break;
-		case Success: case High:
+		case Success:
 			highIndex = valueIndex;
 			break;
 		default:
@@ -153,10 +153,10 @@ namespace scripts
 	{
 		switch (lastResult)
 		{
-		case Success: case Low:
+		case Success:
 			lowIndex = valueIndex;
 			break;
-		case High:
+		case Fail:
 			highIndex = valueIndex;
 			break;
 		default:

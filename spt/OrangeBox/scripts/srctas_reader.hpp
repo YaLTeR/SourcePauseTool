@@ -16,7 +16,6 @@ namespace scripts
 		SourceTASReader();
 		void ExecuteScript(std::string script);
 		void StartSearch(std::string script);
-		void SearchResult(std::string result);
 		void SearchResult(scripts::SearchResult result);
 	private:
 		bool iterationFinished;
@@ -30,6 +29,7 @@ namespace scripts
 		long long int currentTick;
 		long long int afterFramesTick;
 		SearchType searchType;
+		float tickTime;
 
 		VariableContainer variables;
 		std::string startCommand;
@@ -56,6 +56,7 @@ namespace scripts
 		void HandleSave(std::string& value);
 		void HandleDemo(std::string& value);
 		void HandleSearch(std::string& value);
+		void HandleTickTime(std::string& value);
 		void HandleTickRange(std::string& value);
 		void HandleTicksFromEndRange(std::string& value);
 		

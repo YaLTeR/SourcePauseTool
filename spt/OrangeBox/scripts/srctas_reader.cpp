@@ -11,8 +11,9 @@
 
 namespace scripts
 {
+	const float DEFAULT_TICK_TIME = 0.015f;
 	SourceTASReader g_TASReader;
-	const std::string SCRIPT_EXT = ".stas";
+	const std::string SCRIPT_EXT = ".srctas";
 
 	SourceTASReader::SourceTASReader()
 	{
@@ -36,39 +37,10 @@ namespace scripts
 		freezeVariables = true;
 	}
 
-	void SourceTASReader::SearchResult(std::string result)
-	{
-		try
-		{
-			if (result == "low")
-				SearchResult(Low);
-			else if (result == "high")
-				SearchResult(High);
-			else if (result == "success")
-				SearchResult(Success);
-			else if (result == "fail")
-				SearchResult(Fail);
-			else
-				throw std::exception("invalid result type");
-		}
-		catch (const std::exception & ex)
-		{
-			Msg("Error setting result: %s\n", ex.what());
-		}
-	}
-
 	void SourceTASReader::SearchResult(scripts::SearchResult result)
 	{
 		try
 		{
-			if (result == Success)
-			{
-				Msg("Iteration was successful!\n");
-				variables.PrintBest();
-				iterationFinished = true;
-				return;
-			}
-
 			variables.SetResult(result);
 			CommonExecuteScript(true);
 		}
@@ -80,6 +52,7 @@ namespace scripts
 		{
 			Msg("Search done.\n");
 			variables.PrintBest();
+			iterationFinished = true;
 		}
 		catch (...)
 		{
@@ -102,6 +75,8 @@ namespace scripts
 
 			if (search && searchType == None)
 				throw std::exception("In search mode but search property is not set!");
+			else if (!search && searchType != None)
+				throw std::exception("Not in search mode but search property is set!");
 
 			while (!scriptStream.eof())
 			{
@@ -243,6 +218,7 @@ namespace scripts
 		currentLine = 0;
 		afterFramesTick = 0;
 		afterFramesEntries.clear();
+		tickTime = DEFAULT_TICK_TIME;
 	}
 
 	void SourceTASReader::AddAfterframesEntry(long long int tick, std::string command)
@@ -332,6 +308,7 @@ namespace scripts
 		propertyHandlers["save"] = &SourceTASReader::HandleSave;
 		propertyHandlers["demo"] = &SourceTASReader::HandleDemo;
 		propertyHandlers["search"] = &SourceTASReader::HandleSearch;
+		propertyHandlers["ticktime"] = &SourceTASReader::HandleTickTime;
 
 		// Conditions for automated searching
 		propertyHandlers["tick"] = &SourceTASReader::HandleTickRange;
@@ -368,6 +345,11 @@ namespace scripts
 		{
 			throw std::exception("Search type was invalid!");
 		}
+	}
+
+	void SourceTASReader::HandleTickTime(std::string & value)
+	{
+		tickTime = ParseValue<float>(value);
 	}
 
 	void SourceTASReader::HandleTickRange(std::string & value)

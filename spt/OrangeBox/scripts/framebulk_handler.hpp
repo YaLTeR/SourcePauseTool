@@ -22,6 +22,9 @@ namespace scripts
 		std::string operator[](std::pair<int, int> i);
 		bool IsInt(std::pair<int, int> i);
 		bool IsFloat(std::pair<int, int> i);
+		void AddCommand(const std::string& cmd) { data.AddCommand(cmd); }
+		void AddPlusMinusCmd(std::string command, bool set);
+		FrameBulkOutput data;
 	private:
 		std::map<std::pair<int, int>, std::string> dataMap;
 	};

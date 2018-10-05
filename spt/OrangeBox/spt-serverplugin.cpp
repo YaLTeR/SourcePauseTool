@@ -948,22 +948,14 @@ CON_COMMAND(tas_script_search, "Starts a variable search for an .stas script. Us
 
 }
 
-CON_COMMAND(tas_script_result, "Returns a search result in a variable search. Usage: tas_search_result [result]. Options are low/high/success/fail")
+CON_COMMAND(tas_script_result_success, "Returns a successful result in a variable search.")
 {
-#if defined( OE )
-	if (!engine)
-		return;
-
-	ArgsWrapper args(engine.get());
-#endif
-
-	if (args.ArgC() > 1)
-	{
-		scripts::g_TASReader.SearchResult(args.Arg(1));
-	}
-	else
-		Msg("Returns a search result in a variable search. Usage: tas_search_result [result]. Options are low/high/success/fail\n");
-
-
+	scripts::g_TASReader.SearchResult(scripts::Success);
 }
+
+CON_COMMAND(tas_script_result_fail, "Returns an unsuccessful result in a variable search.")
+{
+	scripts::g_TASReader.SearchResult(scripts::Fail);
+}
+
 #endif

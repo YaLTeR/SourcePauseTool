@@ -4,19 +4,26 @@
 
 namespace scripts
 {
-	typedef void(*CommandCallback) (FrameBulkOutput& data, FrameBulkInfo& frameBulkInfo);
+	typedef void(*CommandCallback) (FrameBulkInfo& frameBulkInfo);
 	std::vector<CommandCallback> frameBulkHandlers;
 
 	const auto STRAFE = std::pair<int, int>(0, 0);
 	const auto STRAFE_TYPE = std::pair<int, int>(0, 1);
 	const auto JUMP_TYPE = std::pair<int, int>(0, 2);
-	const auto AUTOJUMP = std::pair<int, int>(0, 3);
-	const auto DUCKSPAM = std::pair<int, int>(0, 4);
+	const auto LGAGST = std::pair<int, int>(0, 3);
+	const auto AUTOJUMP = std::pair<int, int>(0, 4);
+	const auto DUCKSPAM = std::pair<int, int>(0, 5);
+	const auto JUMPBUG = std::pair<int, int>(0, 6);
+	const auto DUCK_BEFORE_COLLISION = std::pair<int, int>(0, 7);
+	const auto DUCK_BEFORE_GROUND = std::pair<int, int>(0, 8);
+	const auto USE_SPAM = std::pair<int, int>(0, 9);
 
-	const auto W = std::pair<int, int>(1, 0);
-	const auto A = std::pair<int, int>(1, 1);
-	const auto S = std::pair<int, int>(1, 2);
-	const auto D = std::pair<int, int>(1, 3);
+	const auto FORWARD = std::pair<int, int>(1, 0);
+	const auto LEFT = std::pair<int, int>(1, 1);
+	const auto RIGHT = std::pair<int, int>(1, 2);
+	const auto BACK = std::pair<int, int>(1, 3);
+	const auto UP = std::pair<int, int>(1, 4);
+	const auto DOWN = std::pair<int, int>(1, 5);
 
 	const auto JUMP = std::pair<int, int>(2, 0);
 	const auto DUCK = std::pair<int, int>(2, 1);
@@ -29,135 +36,104 @@ namespace scripts
 	const auto PITCH_KEY = std::pair<int, int>(4, 0);
 	const auto TICKS = std::pair<int, int>(5, 0);
 	const auto COMMANDS = std::pair<int, int>(6, 0);
-	const std::string EMPTY_BULK = "-----|----|------|-|-|0|pause";
 
-	void Jump(FrameBulkOutput& data, FrameBulkInfo& frameBulkInfo)
-	{
-		if (frameBulkInfo[AUTOJUMP] == "j")
-			data.AddCommand("y_spt_autojump 1; +jump");
-		else if (frameBulkInfo[JUMP] == "j")
-			data.AddCommand("y_spt_autojump 0; +jump");
-		else
-			data.AddCommand("y_spt_autojump 0; -jump");
-	}
-
-	void Duck(FrameBulkOutput& data, FrameBulkInfo& frameBulkInfo)
-	{
-		if (frameBulkInfo[DUCKSPAM] == "d")
-			data.AddCommand("+y_spt_duckspam; -duck");
-		else if (frameBulkInfo[DUCK] == "d")
-			data.AddCommand("-y_spt_duckspam; +duck");
-		else
-			data.AddCommand("-y_spt_duckspam; -duck");
-	}
-
-	void Strafe(FrameBulkOutput& data, FrameBulkInfo& frameBulkInfo)
+	void Field1(FrameBulkInfo& frameBulkInfo)
 	{
 		if (frameBulkInfo[STRAFE] == "s")
 		{
-			data.AddCommand("tas_strafe 1");
+			frameBulkInfo.AddCommand("tas_strafe 1");
 
 			if (!frameBulkInfo.IsInt(JUMP_TYPE) || !frameBulkInfo.IsInt(STRAFE_TYPE))
 				throw std::exception("Jump type or strafe type was not a number!");
 
-			data.AddCommand("tas_strafe_jumptype " + frameBulkInfo[JUMP_TYPE]);
-			data.AddCommand("tas_strafe_type " + frameBulkInfo[STRAFE_TYPE]);
+			frameBulkInfo.AddCommand("tas_strafe_jumptype " + frameBulkInfo[JUMP_TYPE]);
+			frameBulkInfo.AddCommand("tas_strafe_type " + frameBulkInfo[STRAFE_TYPE]);
 		}
 		else
-			data.AddCommand("tas_strafe 0");
+			frameBulkInfo.AddCommand("tas_strafe 0");
+
+		if (frameBulkInfo[AUTOJUMP] == "j")
+			frameBulkInfo.AddCommand("y_spt_autojump 1; +jump");
+		else
+			frameBulkInfo.AddCommand("y_spt_autojump 0; -jump");
+
+		frameBulkInfo.AddPlusMinusCmd("y_spt_duckspam", frameBulkInfo[DUCKSPAM] == "d");
+
+		// todo
+		if (frameBulkInfo[USE_SPAM] == "u");
+		if (frameBulkInfo[LGAGST] == "l");
+		if (frameBulkInfo[JUMPBUG] == "b");
+		if (frameBulkInfo[DUCK_BEFORE_COLLISION] == "c");
+		if (frameBulkInfo[DUCK_BEFORE_GROUND] == "g");
 	}
 
-	void Movement(FrameBulkOutput& data, FrameBulkInfo& frameBulkInfo)
+	void Field2(FrameBulkInfo& frameBulkInfo)
 	{
-		if (frameBulkInfo[W] == "w")
-			data.AddCommand("+forward");
-		else
-			data.AddCommand("-forward");
-
-		if (frameBulkInfo[A] == "a")
-			data.AddCommand("+moveleft");
-		else
-			data.AddCommand("-moveleft");
-
-		if (frameBulkInfo[S] == "s")
-			data.AddCommand("+back");
-		else
-			data.AddCommand("-back");
-
-		if (frameBulkInfo[D] == "d")
-			data.AddCommand("+moveright");
-		else
-			data.AddCommand("-moveright");
+		frameBulkInfo.AddPlusMinusCmd("forward", frameBulkInfo[FORWARD] == "f");
+		frameBulkInfo.AddPlusMinusCmd("moveleft", frameBulkInfo[LEFT] == "l");
+		frameBulkInfo.AddPlusMinusCmd("moveright", frameBulkInfo[RIGHT] == "r");
+		frameBulkInfo.AddPlusMinusCmd("back", frameBulkInfo[BACK] == "b");
+		frameBulkInfo.AddPlusMinusCmd("moveup", frameBulkInfo[UP] == "u");
+		frameBulkInfo.AddPlusMinusCmd("movedown", frameBulkInfo[DOWN] == "d");
 	}
 
-	void Weapons(FrameBulkOutput& data, FrameBulkInfo& frameBulkInfo)
+	void Field3(FrameBulkInfo& frameBulkInfo)
 	{
-		if (frameBulkInfo[ATTACK1] == "1")
-			data.AddCommand("+attack");
-		else
-			data.AddCommand("-attack");
-
-		if (frameBulkInfo[ATTACK2] == "2")
-			data.AddCommand("+attack2");
-		else
-			data.AddCommand("-attack2");
-
-		if (frameBulkInfo[RELOAD] == "r")
-			data.AddCommand("+reload");
-		else
-			data.AddCommand("-reload");
+		frameBulkInfo.AddPlusMinusCmd("jump", frameBulkInfo[JUMP] == "j");
+		frameBulkInfo.AddPlusMinusCmd("duck", frameBulkInfo[DUCK] == "d");
+		frameBulkInfo.AddPlusMinusCmd("use", frameBulkInfo[USE] == "u");
+		frameBulkInfo.AddPlusMinusCmd("attack1", frameBulkInfo[ATTACK1] == "1");
+		frameBulkInfo.AddPlusMinusCmd("attack2", frameBulkInfo[ATTACK2] == "2");
+		frameBulkInfo.AddPlusMinusCmd("reload", frameBulkInfo[RELOAD] == "r");
 	}
 
-	void Angles(FrameBulkOutput& data, FrameBulkInfo& frameBulkInfo)
+	void Field4_5(FrameBulkInfo& frameBulkInfo)
 	{
 		if (frameBulkInfo.IsFloat(YAW_KEY))
 		{
 			if (frameBulkInfo[STRAFE] == "s")
-				data.AddCommand("tas_strafe_yaw " + frameBulkInfo[YAW_KEY]);
+				frameBulkInfo.AddCommand("tas_strafe_yaw " + frameBulkInfo[YAW_KEY]);
 			else
-				data.AddCommand("_y_spt_setyaw " + frameBulkInfo[YAW_KEY]);
+				frameBulkInfo.AddCommand("_y_spt_setyaw " + frameBulkInfo[YAW_KEY]);
 		}
 
 		if (frameBulkInfo.IsFloat(PITCH_KEY))
-			data.AddCommand("_y_spt_setpitch " + frameBulkInfo[PITCH_KEY]);
+			frameBulkInfo.AddCommand("_y_spt_setpitch " + frameBulkInfo[PITCH_KEY]);
 	}
 
-	void Ticks(FrameBulkOutput& data, FrameBulkInfo& frameBulkInfo)
+	void Field6(FrameBulkInfo& frameBulkInfo)
 	{
 		if (!frameBulkInfo.IsInt(TICKS))
 			throw std::exception("Tick value was not a number!");
 
 		int ticks = std::atoi(frameBulkInfo[TICKS].c_str());
-		data.ticks = ticks;
+		frameBulkInfo.data.ticks = ticks;
 	}
 
-	void Commands(FrameBulkOutput& data, FrameBulkInfo& frameBulkInfo)
+	void Field7(FrameBulkInfo& frameBulkInfo)
 	{
-		data.AddCommand(frameBulkInfo[COMMANDS]);
+		frameBulkInfo.AddCommand(frameBulkInfo[COMMANDS]);
 	}
 
 	void InitHandlers()
 	{
-		frameBulkHandlers.push_back(Jump);
-		frameBulkHandlers.push_back(Duck);
-		frameBulkHandlers.push_back(Strafe);
-		frameBulkHandlers.push_back(Movement);
-		frameBulkHandlers.push_back(Weapons);
-		frameBulkHandlers.push_back(Angles);
-		frameBulkHandlers.push_back(Ticks);
-		frameBulkHandlers.push_back(Commands);
+		frameBulkHandlers.push_back(Field1);
+		frameBulkHandlers.push_back(Field2);
+		frameBulkHandlers.push_back(Field3);
+		frameBulkHandlers.push_back(Field4_5);
+		frameBulkHandlers.push_back(Field6);
+		frameBulkHandlers.push_back(Field7);
 	}
 
 	FrameBulkOutput HandleFrameBulk(FrameBulkInfo& frameBulkInfo)
 	{
-		FrameBulkOutput data;
 		if (frameBulkHandlers.size() == 0)
 			InitHandlers();
 
 		for (auto handler : frameBulkHandlers)
-			handler(data, frameBulkInfo);
+			handler(frameBulkInfo);
 
-		return data;
+		return frameBulkInfo.data;
 	}
 
 	void FrameBulkOutput::AddCommand(std::string newCmd)
@@ -213,6 +189,14 @@ namespace scripts
 	{
 		std::string value = this->operator[](i);
 		return IsValue<float>(value);
+	}
+
+	void FrameBulkInfo::AddPlusMinusCmd(std::string command, bool set)
+	{
+		if (set)
+			data.AddCommand("+" + command);
+		else
+			data.AddCommand("-" + command);
 	}
 
 }
