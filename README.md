@@ -19,4 +19,4 @@ You will need Visual Studio 2017 or above.
    - Release P2 for the Portal 2 SDK from alliedmodders.
    
 ## .srctas documentation
-https://docs.google.com/document/d/11iu9kw5Ufa3-QaiR7poJWBwfe1I56wI6fBtDgmWZ8Aw/edit?usp=sharing
+[Documentation](https://docs.google.com/document/d/11iu9kw5Ufa3-QaiR7poJWBwfe1I56wI6fBtDgmWZ8Aw/edit?usp=sharing)
