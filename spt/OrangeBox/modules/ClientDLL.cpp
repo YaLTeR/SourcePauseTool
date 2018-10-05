@@ -610,14 +610,17 @@ void ClientDLL::OnFrame()
 			++it;
 	}
 
-	auto tick = y_spt_pause_demo_on_tick.GetInt();
-	if (tick != 0)
+	if (engineDLL.Demo_IsPlayingBack() && !engineDLL.Demo_IsPlaybackPaused())
 	{
-		if (tick < 0)
-			tick += engineDLL.Demo_GetTotalTicks();
+		auto tick = y_spt_pause_demo_on_tick.GetInt();
+		if (tick != 0)
+		{
+			if (tick < 0)
+				tick += engineDLL.Demo_GetTotalTicks();
 
-		if (tick == engineDLL.Demo_GetPlaybackTick())
-			EngineConCmd("demo_pause");
+			if (tick == engineDLL.Demo_GetPlaybackTick())
+				EngineConCmd("demo_pause");
+		}
 	}
 }
 
