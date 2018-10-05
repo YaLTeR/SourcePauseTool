@@ -578,10 +578,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\condition.cpp" />
-    <ClCompile Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\framebulk_handler.cpp" />
-    <ClCompile Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\srctas_reader.cpp" />
-    <ClCompile Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\variable_container.cpp" />
     <ClCompile Include="sptlib\detoursutils.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">sptlib-stdafx.hpp</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">sptlib-stdafx.hpp</PrecompiledHeaderFile>
@@ -796,11 +792,6 @@
     <Library Include="..\..\lib\public\vstdlib.lib" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\condition.hpp" />
-    <ClInclude Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\framebulk_handler.hpp" />
-    <ClInclude Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\range_variable.hpp" />
-    <ClInclude Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\srctas_reader.hpp" />
-    <ClInclude Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\variable_container.hpp" />
     <ClInclude Include="..\..\public\tier0\basetypes.h" />
     <ClInclude Include="..\..\public\Color.h" />
     <ClInclude Include="..\..\public\tier0\dbg.h" />

@@ -63,10 +63,6 @@
     </ClCompile>
     <ClCompile Include="spt\utils\math.cpp" />
     <ClCompile Include="spt\utils\string_parsing.cpp" />
-    <ClCompile Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\condition.cpp" />
-    <ClCompile Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\framebulk_handler.cpp" />
-    <ClCompile Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\srctas_reader.cpp" />
-    <ClCompile Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\variable_container.cpp" />
     <ClCompile Include="spt\OrangeBox\scripts\condition.cpp" />
     <ClCompile Include="spt\OrangeBox\scripts\framebulk_handler.cpp" />
     <ClCompile Include="spt\OrangeBox\scripts\srctas_reader.cpp" />
@@ -208,11 +204,6 @@
     <ClInclude Include="spt\utils\math.hpp" />
     <ClInclude Include="spt\utils\signal.hpp" />
     <ClInclude Include="spt\utils\string_parsing.hpp" />
-    <ClInclude Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\condition.hpp" />
-    <ClInclude Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\framebulk_handler.hpp" />
-    <ClInclude Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\range_variable.hpp" />
-    <ClInclude Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\srctas_reader.hpp" />
-    <ClInclude Include="..\..\..\..\SourcePauseTool\spt\OrangeBox\scripts\variable_container.hpp" />
     <ClInclude Include="spt\OrangeBox\scripts\condition.hpp" />
     <ClInclude Include="spt\OrangeBox\scripts\framebulk_handler.hpp" />
     <ClInclude Include="spt\OrangeBox\scripts\range_variable.hpp" />
