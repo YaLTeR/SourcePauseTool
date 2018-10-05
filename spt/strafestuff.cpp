@@ -306,18 +306,20 @@ void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground
 	// If forward is pressed, strafing should occur
 	if (dummy.Forward)
 	{
-		if (!lockCamera)
+		if (!lockCamera && tas_strafe_vectorial_increment.GetFloat() > 0)
 		{
 			// Calculate updated yaw
 			double normalizedDiff = NormalizeDeg(target_yaw - vel_yaw + tas_strafe_vectorial_offset.GetFloat());
 			double additionAbs = std::min(static_cast<double>(tas_strafe_vectorial_increment.GetFloat()), std::abs(normalizedDiff));
 
 			// Snap to target if difference too large(likely due to an ABH)
-			if (std::abs(normalizedDiff) > tas_strafe_vectorial_snap.GetFloat() && tas_strafe_vectorial_increment.GetFloat() > 0)
+			if (std::abs(normalizedDiff) > tas_strafe_vectorial_snap.GetFloat())
 				out.Yaw = target_yaw;
 			else
-				out.Yaw = vel_yaw + std::copysign(additionAbs, normalizedDiff);	
+				out.Yaw = vel_yaw + std::copysign(additionAbs, normalizedDiff);
 		}
+		else
+			out.Yaw = vel_yaw;
 
 		// Set move speeds to match the current yaw to produce the acceleration in direction thetaDeg
 		double thetaDeg = dummy.Yaw;

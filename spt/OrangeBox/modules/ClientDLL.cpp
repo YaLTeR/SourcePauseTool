@@ -791,7 +791,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		setYaw.set = DoAngleChange(va[YAW], setYaw.angle);
 	}
 
-	if (tasAddressesWereFound && yawSpeed == 0.0f && tas_strafe.GetBool())
+	if (tasAddressesWereFound && tas_strafe.GetBool())
 	{
 		auto player = GetLocalPlayer();
 		auto onground = (GetGroundEntity(player, 0) != NULL); // TODO: This should really be a proper check.
@@ -908,7 +908,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 
 		if (tas_strafe_vectorial.GetBool()) // Can do vectorial strafing even with locked camera, provided we are not jumping
 			StrafeVectorial(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, cameraLocked);
-		else if(!cameraLocked) // didn't move mouse, can do regular strafe
+		else if(!cameraLocked) // not changing yaw, can do regular strafe
 			Strafe(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, btns, usingButtons);
 
 		// This bool is set if strafing should occur
