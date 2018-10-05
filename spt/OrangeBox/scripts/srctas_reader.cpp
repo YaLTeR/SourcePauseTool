@@ -131,12 +131,7 @@ namespace scripts
 			if (pointer->ShouldTerminate(currentTick, afterFramesTick))
 			{
 				iterationFinished = true;
-				if (searchType == Lowest)
-					SearchResult(Low);
-				else if (searchType == Highest)
-					SearchResult(High);
-				else
-					SearchResult(Fail);
+				SearchResult(Fail);
 
 				return;
 			}

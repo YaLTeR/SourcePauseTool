@@ -212,8 +212,6 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("y_spt_pause_demo_on_tick is not available.\n");
 	}
 
-	clientDLL.AfterFrames += Simple::slot(this, &EngineDLL::PauseOnDemoTick);
-
 	DetoursUtils::AttachDetours(moduleName, {
 		{ (PVOID *)(&ORIG_SV_ActivateServer), HOOKED_SV_ActivateServer },
 		{ (PVOID *)(&ORIG_FinishRestore), HOOKED_FinishRestore },
@@ -304,19 +302,6 @@ bool EngineDLL::Demo_IsPlaybackPaused() const
 		return false;
 	auto demoplayer = *pDemoplayer;
 	return (*reinterpret_cast<bool(__fastcall ***)(void*)>(demoplayer))[6](demoplayer);
-}
-
-void EngineDLL::PauseOnDemoTick()
-{
-	auto tick = y_spt_pause_demo_on_tick.GetInt();
-	if (tick != 0)
-	{
-		if (tick < 0)
-			tick += Demo_GetTotalTicks();
-
-		if (tick == Demo_GetPlaybackTick())
-			EngineConCmd("demo_pause");
-	}
 }
 
 bool __cdecl EngineDLL::HOOKED_SV_ActivateServer_Func()

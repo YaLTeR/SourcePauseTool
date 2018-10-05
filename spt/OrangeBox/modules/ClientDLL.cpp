@@ -609,6 +609,16 @@ void ClientDLL::OnFrame()
 		else
 			++it;
 	}
+
+	auto tick = y_spt_pause_demo_on_tick.GetInt();
+	if (tick != 0)
+	{
+		if (tick < 0)
+			tick += engineDLL.Demo_GetTotalTicks();
+
+		if (tick == engineDLL.Demo_GetPlaybackTick())
+			EngineConCmd("demo_pause");
+	}
 }
 
 void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, int y, int w, int h)

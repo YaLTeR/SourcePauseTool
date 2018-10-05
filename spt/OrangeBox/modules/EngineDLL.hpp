@@ -40,12 +40,12 @@ public:
 	float GetTickrate() const;
 	void SetTickrate(float value);
 
-protected:
 	int Demo_GetPlaybackTick() const;
 	int Demo_GetTotalTicks() const;
 	bool Demo_IsPlayingBack() const;
 	bool Demo_IsPlaybackPaused() const;
-	void PauseOnDemoTick();
+
+protected:
 
 	_SV_ActivateServer ORIG_SV_ActivateServer;
 	_FinishRestore ORIG_FinishRestore;
