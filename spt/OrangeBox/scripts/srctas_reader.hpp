@@ -30,6 +30,7 @@ namespace scripts
 		long long int afterFramesTick;
 		SearchType searchType;
 		float tickTime;
+		float playbackSpeed;
 
 		VariableContainer variables;
 		std::string startCommand;
@@ -56,6 +57,7 @@ namespace scripts
 		void HandleSave(std::string& value);
 		void HandleDemo(std::string& value);
 		void HandleSearch(std::string& value);
+		void HandlePlaybackSpeed(std::string& value);
 		void HandleTickTime(std::string& value);
 		void HandleTickRange(std::string& value);
 		void HandleTicksFromEndRange(std::string& value);

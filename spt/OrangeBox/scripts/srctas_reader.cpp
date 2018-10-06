@@ -148,7 +148,8 @@ namespace scripts
 	{
 		iterationFinished = false;
 		std::ostringstream os;
-		os << ";host_framerate " << tickTime << "; sv_cheats 1; fps_max 66.66666; y_spt_pause 0;_y_spt_afterframes_await_load; _y_spt_afterframes_reset_on_server_activate 0";
+		float fps = 1.0f / tickTime * playbackSpeed;
+		os << ";host_framerate " << tickTime << "; sv_cheats 1; fps_max " << fps << "; y_spt_pause 0;_y_spt_afterframes_await_load; _y_spt_afterframes_reset_on_server_activate 0";
 		startCommand += os.str();
 		EngineConCmd(startCommand.c_str());
 
@@ -216,6 +217,7 @@ namespace scripts
 		afterFramesEntries.clear();
 		tickTime = DEFAULT_TICK_TIME;
 		searchType = SearchType::None;
+		playbackSpeed = 1.0f;
 	}
 
 	void SourceTASReader::AddAfterframesEntry(long long int tick, std::string command)
@@ -310,6 +312,7 @@ namespace scripts
 		propertyHandlers["save"] = &SourceTASReader::HandleSave;
 		propertyHandlers["demo"] = &SourceTASReader::HandleDemo;
 		propertyHandlers["search"] = &SourceTASReader::HandleSearch;
+		propertyHandlers["playspeed"] = &SourceTASReader::HandlePlaybackSpeed;
 		propertyHandlers["ticktime"] = &SourceTASReader::HandleTickTime;
 
 		// Conditions for automated searching
@@ -349,9 +352,20 @@ namespace scripts
 		}
 	}
 
+	void SourceTASReader::HandlePlaybackSpeed(std::string & value)
+	{
+		playbackSpeed = ParseValue<float>(value);
+		if (playbackSpeed <= 0.0f)
+			throw std::exception("Playback speed has to be positive!");
+	}
+
 	void SourceTASReader::HandleTickTime(std::string & value)
 	{
 		tickTime = ParseValue<float>(value);
+		if (tickTime <= 0.0f)
+			throw std::exception("Tick time has to be positive!");
+		else if (tickTime > 1.0f)
+			throw std::exception("Ticks are not this long.");
 	}
 
 	void SourceTASReader::HandleTickRange(std::string & value)
