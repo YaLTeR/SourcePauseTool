@@ -8,7 +8,8 @@ namespace scripts
 
 	struct FrameBulkOutput
 	{
-		std::string command;
+		std::string initialCommand;
+		std::string repeatingCommand;
 		int ticks;
 
 		void AddCommand(std::string newCmd);

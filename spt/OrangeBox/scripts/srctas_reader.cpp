@@ -295,7 +295,12 @@ namespace scripts
 
 		FrameBulkInfo info(lineStream);
 		auto output = HandleFrameBulk(info);
-		AddAfterframesEntry(afterFramesTick, output.command);
+		AddAfterframesEntry(afterFramesTick, output.initialCommand);
+		AddAfterframesEntry(afterFramesTick, output.repeatingCommand);
+
+		for(int i=1; i < output.ticks; ++i)
+			AddAfterframesEntry(afterFramesTick+i, output.initialCommand);
+
 		afterFramesTick += output.ticks;
 	}
 

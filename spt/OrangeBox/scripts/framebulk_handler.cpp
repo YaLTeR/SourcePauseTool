@@ -115,7 +115,8 @@ namespace scripts
 
 	void Field7(FrameBulkInfo& frameBulkInfo)
 	{
-		frameBulkInfo.AddCommand(frameBulkInfo[COMMANDS]);
+		if (frameBulkInfo[COMMANDS].length > 0)
+			frameBulkInfo.data.repeatingCommand += ";" + frameBulkInfo[COMMANDS];
 	}
 
 	void InitHandlers()
@@ -141,7 +142,7 @@ namespace scripts
 
 	void FrameBulkOutput::AddCommand(std::string newCmd)
 	{
-		command += ";" + newCmd;
+		initialCommand += ";" + newCmd;
 	}
 
 	FrameBulkInfo::FrameBulkInfo(std::istringstream& stream)
