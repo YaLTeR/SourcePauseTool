@@ -147,8 +147,9 @@ namespace scripts
 	void SourceTASReader::Execute()
 	{
 		iterationFinished = false;
-		const std::string DEFAULT_START = ";host_framerate 0.015; sv_cheats 1; fps_max 66.66666; y_spt_pause 0;_y_spt_afterframes_await_load; _y_spt_afterframes_reset_on_server_activate 0";
-		startCommand += DEFAULT_START;
+		std::ostringstream os;
+		os << ";host_framerate " << tickTime << "; sv_cheats 1; fps_max 66.66666; y_spt_pause 0;_y_spt_afterframes_await_load; _y_spt_afterframes_reset_on_server_activate 0";
+		startCommand += os.str();
 		EngineConCmd(startCommand.c_str());
 
 		currentTick = 0;
