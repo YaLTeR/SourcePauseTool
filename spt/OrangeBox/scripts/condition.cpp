@@ -7,6 +7,8 @@ namespace scripts
 {
 	TickRangeCondition::TickRangeCondition(int low, int high, bool reverse) : lowTick(low), highTick(high), reverse(reverse)
 	{
+		if (low >= high)
+			throw std::exception("Low tick should be lower than high.");
 	}
 
 	bool TickRangeCondition::IsTrue(int tick, int totalTicks)
@@ -31,7 +33,8 @@ namespace scripts
 
 	PosSpeedCondition::PosSpeedCondition(float low, float high, Axis axis, bool isPos) : low(low), high(high), axis(axis), isPos(isPos)
 	{
-
+		if (low >= high)
+			throw std::exception("Low value should be lower than high.");
 	}
 
 	bool PosSpeedCondition::IsTrue(int tick, int totalTicks)

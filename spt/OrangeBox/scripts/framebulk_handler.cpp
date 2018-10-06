@@ -115,7 +115,7 @@ namespace scripts
 
 	void Field7(FrameBulkInfo& frameBulkInfo)
 	{
-		if (frameBulkInfo[COMMANDS].length > 0)
+		if (frameBulkInfo[COMMANDS].length() > 0)
 			frameBulkInfo.data.repeatingCommand += ";" + frameBulkInfo[COMMANDS];
 	}
 
