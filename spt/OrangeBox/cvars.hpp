@@ -20,6 +20,7 @@ extern ConVar tas_strafe_vectorial;
 extern ConVar tas_strafe_vectorial_increment;
 extern ConVar tas_strafe_vectorial_offset;
 extern ConVar tas_strafe_vectorial_snap;
+extern ConVar tas_strafe_allow_jump_override;
 
 extern ConVar tas_force_airaccelerate;
 extern ConVar tas_force_wishspeed_cap;

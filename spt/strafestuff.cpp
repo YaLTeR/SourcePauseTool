@@ -291,7 +291,7 @@ void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground
 {
 	if (jumped && StrafeJump(player, vars, ducking, out)) {
 
-		if (!lockCamera)
+		if (!lockCamera || tas_strafe_allow_jump_override.GetBool())
 		{
 			out.Processed = true;
 			MapSpeeds(out, vars);

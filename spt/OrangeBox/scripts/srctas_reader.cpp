@@ -156,6 +156,9 @@ namespace scripts
 		currentTick = 0;
 		clientDLL.ResetAfterframesQueue();
 
+		if(demoName.length() > 0)
+			AddAfterframesEntry(demoDelay, "record " + demoName);
+
 		for (size_t i = 0; i < afterFramesEntries.size(); ++i)
 		{
 			clientDLL.AddIntoAfterframesQueue(afterFramesEntries[i]);
@@ -218,6 +221,8 @@ namespace scripts
 		tickTime = DEFAULT_TICK_TIME;
 		searchType = SearchType::None;
 		playbackSpeed = 1.0f;
+		demoDelay = 0;
+		demoName.clear();
 	}
 
 	void SourceTASReader::AddAfterframesEntry(long long int tick, std::string command)
@@ -314,6 +319,7 @@ namespace scripts
 	{
 		propertyHandlers["save"] = &SourceTASReader::HandleSave;
 		propertyHandlers["demo"] = &SourceTASReader::HandleDemo;
+		propertyHandlers["demodelay"] = &SourceTASReader::HandleDemoDelay;
 		propertyHandlers["search"] = &SourceTASReader::HandleSearch;
 		propertyHandlers["playspeed"] = &SourceTASReader::HandlePlaybackSpeed;
 		propertyHandlers["ticktime"] = &SourceTASReader::HandleTickTime;
@@ -333,12 +339,17 @@ namespace scripts
 
 	void SourceTASReader::HandleSave(std::string& value)
 	{
-		startCommand = "load " + value;
+		startCommand += "load " + value;
 	}
 
 	void SourceTASReader::HandleDemo(std::string& value)
 	{
-		AddAfterframesEntry(0, "record " + value);
+		demoName = value;
+	}
+
+	void SourceTASReader::HandleDemoDelay(std::string& value)
+	{
+		demoDelay = ParseValue<int>(value);
 	}
 
 	void SourceTASReader::HandleSearch(std::string& value)

@@ -31,6 +31,8 @@ namespace scripts
 		SearchType searchType;
 		float tickTime;
 		float playbackSpeed;
+		std::string demoName;
+		int demoDelay;
 
 		VariableContainer variables;
 		std::string startCommand;
@@ -56,6 +58,7 @@ namespace scripts
 		void ParseProp();
 		void HandleSave(std::string& value);
 		void HandleDemo(std::string& value);
+		void HandleDemoDelay(std::string& value);
 		void HandleSearch(std::string& value);
 		void HandlePlaybackSpeed(std::string& value);
 		void HandleTickTime(std::string& value);

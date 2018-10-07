@@ -596,8 +596,6 @@ void ClientDLL::OnFrame()
 		return;
 	}
 
-	AfterFrames.emit();
-
 	for (auto it = afterframesQueue.begin(); it != afterframesQueue.end(); )
 	{
 		it->framesLeft--;
@@ -622,6 +620,8 @@ void ClientDLL::OnFrame()
 				EngineConCmd("demo_pause");
 		}
 	}
+
+	AfterFrames.emit();
 }
 
 void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, int y, int w, int h)

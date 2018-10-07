@@ -26,6 +26,7 @@ ConVar tas_strafe_vectorial("tas_strafe_vectorial", "0", 0, "Determines if straf
 ConVar tas_strafe_vectorial_increment("tas_strafe_vectorial_increment", "2.5", 0, "Determines how fast the player yaw angle moves towards the target yaw angle. 0 for no movement, 180 for instant snapping. Has no effect on strafing speed.\n");
 ConVar tas_strafe_vectorial_offset("tas_strafe_vectorial_offset", "0", 0, "Determines the target view angle offset from tas_strafe_yaw\n");
 ConVar tas_strafe_vectorial_snap("tas_strafe_vectorial_snap", "170", 0, "Determines when the yaw angle snaps to the target yaw. Mainly used to prevent ABHing from resetting the yaw angle to the back on every jump.\n");
+ConVar tas_strafe_allow_jump_override("tas_strafe_allow_jump_override", "0", 0, "Determines if strafing can override the setyaw commands for jumping and force set the yaw.\n");
 
 ConVar tas_force_airaccelerate("tas_force_airaccelerate", "", 0, "Sets the value of airaccelerate used in TAS calculations. If empty, uses the value of sv_airaccelerate.\n\nShould be set to 15 for Portal.\n");
 ConVar tas_force_wishspeed_cap("tas_force_wishspeed_cap", "", 0, "Sets the value of the wishspeed cap used in TAS calculations. If empty, uses the default value: 30.\n\nShould be set to 60 for Portal.\n");

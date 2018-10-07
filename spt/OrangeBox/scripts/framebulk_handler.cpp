@@ -7,6 +7,7 @@ namespace scripts
 	typedef void(*CommandCallback) (FrameBulkInfo& frameBulkInfo);
 	std::vector<CommandCallback> frameBulkHandlers;
 
+	const std::string FIELD1_FILLED = "sXXljdbcgu";
 	const auto STRAFE = std::pair<int, int>(0, 0);
 	const auto STRAFE_TYPE = std::pair<int, int>(0, 1);
 	const auto JUMP_TYPE = std::pair<int, int>(0, 2);
@@ -39,6 +40,20 @@ namespace scripts
 
 	void Field1(FrameBulkInfo& frameBulkInfo)
 	{
+		for (int i = 0; i < FIELD1_FILLED.length(); ++i)
+		{
+			if (FIELD1_FILLED[i] != 'X')
+			{
+				std::string value = frameBulkInfo[std::make_pair(0, i)];
+				if (value != std::string(1, FIELD1_FILLED[i]) && value != std::string(1, '-'))
+				{
+					std::ostringstream os;
+					os << "Expected " << FIELD1_FILLED[i] << " in index (0, " << i << ") got " << value << " !";
+					throw std::exception(os.str().c_str());
+				}
+			}
+		}
+
 		if (frameBulkInfo[STRAFE] == "s")
 		{
 			frameBulkInfo.AddCommand("tas_strafe 1");
@@ -53,9 +68,9 @@ namespace scripts
 			frameBulkInfo.AddCommand("tas_strafe 0");
 
 		if (frameBulkInfo[AUTOJUMP] == "j")
-			frameBulkInfo.AddCommand("y_spt_autojump 1; +jump");
+			frameBulkInfo.AddCommand("y_spt_autojump 1");
 		else
-			frameBulkInfo.AddCommand("y_spt_autojump 0; -jump");
+			frameBulkInfo.AddCommand("y_spt_autojump 0");
 
 		frameBulkInfo.AddPlusMinusCmd("y_spt_duckspam", frameBulkInfo[DUCKSPAM] == "d");
 
@@ -82,7 +97,7 @@ namespace scripts
 
 	void Field3(FrameBulkInfo& frameBulkInfo)
 	{
-		frameBulkInfo.AddPlusMinusCmd("jump", frameBulkInfo[JUMP] == "j");
+		frameBulkInfo.AddPlusMinusCmd("jump", frameBulkInfo[JUMP] == "j" || frameBulkInfo[AUTOJUMP] == "j");
 		frameBulkInfo.AddPlusMinusCmd("duck", frameBulkInfo[DUCK] == "d");
 		frameBulkInfo.AddPlusMinusCmd("use", frameBulkInfo[USE] == "u");
 		frameBulkInfo.AddPlusMinusCmd("attack", frameBulkInfo[ATTACK1] == "1");
