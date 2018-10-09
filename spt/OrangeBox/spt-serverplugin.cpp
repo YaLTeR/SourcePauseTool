@@ -119,6 +119,10 @@ IVEngineServer* GetEngine()
 {
 	return engine_server;
 }
+ICvar * GetCvarInterface()
+{
+	return g_pCVar;
+}
 std::string GetGameDir()
 {
 	return engine->GetGameDirectory();

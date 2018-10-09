@@ -11,9 +11,16 @@
 
 namespace scripts
 {
+	#define dim(x) (sizeof(x) / sizeof((x)[0])) // calculates the size of an array at compile time, according to some spooky people on the internet this isn't type safe
+
 	const float DEFAULT_TICK_TIME = 0.015f;
 	SourceTASReader g_TASReader;
 	const std::string SCRIPT_EXT = ".srctas";
+	const char* RESET_VARS[] = {
+		"cl_forwardspeed",
+		"cl_sidespeed",
+		"cl_yawspeed"
+	};
 
 	SourceTASReader::SourceTASReader()
 	{
@@ -199,6 +206,56 @@ namespace scripts
 		}
 	}
 
+	void SourceTASReader::ResetConvars()
+	{
+		auto icvar = GetCvarInterface();
+		ConCommandBase * command = icvar->GetCommands();
+
+		// Loops through the console variables and commands
+		while (command != NULL)
+		{
+			const char* name = command->GetName();
+			// Reset any variables that have been marked to be reset for TASes
+			if (!command->IsCommand() && name != NULL && command->IsFlagSet(FCVAR_TAS_RESET))
+			{			
+				auto convar = icvar->FindVar(name);
+				DevMsg("Trying to reset variable %s\n", name);
+
+				// convar found
+				if (convar != NULL) 
+				{
+					DevMsg("Resetting var %s to value %s\n", name, convar->GetDefault());
+					convar->SetValue(convar->GetDefault());
+				}		
+				else
+					throw std::exception("Unable to find listed console variable!");
+			}
+
+			// Issue minus commands to reset any keypresses
+			else if (command->IsCommand() && command->GetName() != NULL && command->GetName()[0] == '-')
+			{
+				DevMsg("Running command %s\n", command->GetName());
+				EngineConCmd(command->GetName());
+			}
+
+			command = command->GetNext();
+		}
+
+
+		// Reset any variables selected above
+		for (int i = 0; i < dim(RESET_VARS); ++i)
+		{
+			auto command = icvar->FindVar(RESET_VARS[i]);
+			if (command != NULL)
+			{
+				DevMsg("Resetting var %s to value %s\n", command->GetName(), command->GetDefault());
+				command->SetValue(command->GetDefault());
+			}
+			else
+				DevWarning("Unable to find console variable %s\n", RESET_VARS[i]);
+		}
+	}
+
 	void SourceTASReader::Reset()
 	{
 		if (!freezeVariables)
@@ -210,6 +267,7 @@ namespace scripts
 
 	void SourceTASReader::ResetIterationState()
 	{
+		ResetConvars();
 		conditions.clear();
 		startCommand.clear();
 		scriptStream.clear();

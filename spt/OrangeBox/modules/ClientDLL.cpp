@@ -904,11 +904,11 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		}
 
 		Friction(pl, onground, vars);
-		bool cameraLocked = va[YAW] != startYaw;
+		bool yawChanged = va[YAW] != startYaw;
 
 		if (tas_strafe_vectorial.GetBool()) // Can do vectorial strafing even with locked camera, provided we are not jumping
-			StrafeVectorial(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, cameraLocked);
-		else if(!cameraLocked) // not changing yaw, can do regular strafe
+			StrafeVectorial(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, yawChanged);
+		else if(!yawChanged) // not changing yaw, can do regular strafe
 			Strafe(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, btns, usingButtons);
 
 		// This bool is set if strafing should occur

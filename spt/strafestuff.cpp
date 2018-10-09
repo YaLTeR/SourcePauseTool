@@ -309,12 +309,13 @@ void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground
 		if (!lockCamera && tas_strafe_vectorial_increment.GetFloat() > 0)
 		{
 			// Calculate updated yaw
-			double normalizedDiff = NormalizeDeg(target_yaw - vel_yaw + tas_strafe_vectorial_offset.GetFloat());
+			double adjustedTarget = NormalizeDeg(target_yaw + tas_strafe_vectorial_offset.GetFloat());
+			double normalizedDiff = NormalizeDeg(adjustedTarget - vel_yaw);
 			double additionAbs = std::min(static_cast<double>(tas_strafe_vectorial_increment.GetFloat()), std::abs(normalizedDiff));
 
 			// Snap to target if difference too large(likely due to an ABH)
 			if (std::abs(normalizedDiff) > tas_strafe_vectorial_snap.GetFloat())
-				out.Yaw = target_yaw;
+				out.Yaw = adjustedTarget;
 			else
 				out.Yaw = vel_yaw + std::copysign(additionAbs, normalizedDiff);
 		}
@@ -343,7 +344,6 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 	double wishspeed = vars.Maxspeed;
 	if (reduceWishspeed)
 		wishspeed *= 0.33333333f;
-
 
 	Button usedButton;
 	bool strafed;

@@ -2,6 +2,8 @@
 
 #include "convar.h"
 
+#define FCVAR_TAS_RESET (1 << 31)
+
 extern ConVar y_spt_pause;
 extern ConVar y_spt_motion_blur_fix;
 extern ConVar y_spt_autojump;
