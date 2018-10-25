@@ -5,6 +5,7 @@
 namespace scripts
 {
 	extern const std::string EMPTY_BULK;
+	const int NO_AFTERFRAMES_BULK = -1;
 
 	struct FrameBulkOutput
 	{

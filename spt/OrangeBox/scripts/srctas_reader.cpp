@@ -159,6 +159,7 @@ namespace scripts
 		os << ";host_framerate " << tickTime << "; sv_cheats 1; fps_max " << fps << "; y_spt_pause 0;_y_spt_afterframes_await_load; _y_spt_afterframes_reset_on_server_activate 0";
 		startCommand += os.str();
 		EngineConCmd(startCommand.c_str());
+		DevMsg("Executing start command: %s\n", startCommand.c_str());
 
 		currentTick = 0;
 		clientDLL.ResetAfterframesQueue();
@@ -361,16 +362,29 @@ namespace scripts
 
 		FrameBulkInfo info(lineStream);
 		auto output = HandleFrameBulk(info);
-		AddAfterframesEntry(afterFramesTick, output.initialCommand);
-		
-		if (output.repeatingCommand.length() > 0)
-		{
-			AddAfterframesEntry(afterFramesTick, output.repeatingCommand);
-			for (int i = 1; i < output.ticks; ++i)
-				AddAfterframesEntry(afterFramesTick + i, output.repeatingCommand);
-		}	
 
-		afterFramesTick += output.ticks;
+		if (output.ticks == NO_AFTERFRAMES_BULK)
+		{
+			startCommand += output.initialCommand + ";" + output.repeatingCommand;
+		}
+		else if(output.ticks >= 0)
+		{
+			AddAfterframesEntry(afterFramesTick, output.initialCommand);
+
+			if (output.repeatingCommand.length() > 0)
+			{
+				AddAfterframesEntry(afterFramesTick, output.repeatingCommand);
+				for (int i = 1; i < output.ticks; ++i)
+					AddAfterframesEntry(afterFramesTick + i, output.repeatingCommand);
+			}
+			afterFramesTick += output.ticks;
+		}
+		else
+		{
+			throw std::exception("Frame bulk length was negative!");
+		}
+
+		
 	}
 
 	void SourceTASReader::InitPropertyHandlers()

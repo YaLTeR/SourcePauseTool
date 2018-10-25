@@ -962,4 +962,27 @@ CON_COMMAND(tas_script_result_fail, "Returns an unsuccessful result in a variabl
 	scripts::g_TASReader.SearchResult(scripts::SearchResult::Fail);
 }
 
+CON_COMMAND(_y_spt_findangle, "Finds yaw/pitch angle to position from player's current position.")
+{
+#if defined( OE )
+	if (!engine)
+		return;
+
+	ArgsWrapper args(engine.get());
+#endif
+	Vector target;
+
+	if (args.ArgC() > 3)
+	{
+		target.x = atof(args.Arg(1));
+		target.y = atof(args.Arg(2));
+		target.z = atof(args.Arg(3));
+
+		Vector player_origin = clientDLL.GetPlayerEyePos();
+		Vector diff = (target - player_origin);
+		QAngle angles;
+		VectorAngles(diff, angles);
+	}
+
+}
 #endif
