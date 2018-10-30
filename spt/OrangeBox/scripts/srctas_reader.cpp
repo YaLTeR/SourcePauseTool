@@ -11,16 +11,17 @@
 
 namespace scripts
 {
-	#define dim(x) (sizeof(x) / sizeof((x)[0])) // calculates the size of an array at compile time, according to some spooky people on the internet this isn't type safe
-
 	const float DEFAULT_TICK_TIME = 0.015f;
 	SourceTASReader g_TASReader;
 	const std::string SCRIPT_EXT = ".srctas";
+
+	#define dim(x) (sizeof(x) / sizeof((x)[0])) // calculates the size of an array at compile time, according to some spooky people on the internet this isn't type safe
 	const char* RESET_VARS[] = {
 		"cl_forwardspeed",
 		"cl_sidespeed",
 		"cl_yawspeed"
 	};
+	const int RESET_VARS_COUNT = dim(RESET_VARS);
 
 	SourceTASReader::SourceTASReader()
 	{
@@ -154,23 +155,29 @@ namespace scripts
 	void SourceTASReader::Execute()
 	{
 		iterationFinished = false;
-		std::ostringstream os;
-		float fps = 1.0f / tickTime * playbackSpeed;
-		os << ";host_framerate " << tickTime << "; sv_cheats 1; fps_max " << fps << "; y_spt_pause 0;_y_spt_afterframes_await_load; _y_spt_afterframes_reset_on_server_activate 0";
-		startCommand += os.str();
-		EngineConCmd(startCommand.c_str());
-		DevMsg("Executing start command: %s\n", startCommand.c_str());
-
+		SetFpsAndPlayspeed();
 		currentTick = 0;
 		clientDLL.ResetAfterframesQueue();
 
-		if(demoName.length() > 0)
-			AddAfterframesEntry(demoDelay, "record " + demoName);
+		currentScript.Init(fileName);
 
-		for (size_t i = 0; i < afterFramesEntries.size(); ++i)
+		std::string startCmd(currentScript.initCommand + ";" + currentScript.duringLoad);
+		EngineConCmd(startCmd.c_str());
+		DevMsg("Executing start command: %s\n", startCmd.c_str());	
+		currentScript.AddAfterFramesEntry(demoDelay, "record " + demoName);
+
+		for (size_t i = 0; i < currentScript.afterFramesEntries.size(); ++i)
 		{
-			clientDLL.AddIntoAfterframesQueue(afterFramesEntries[i]);
+			clientDLL.AddIntoAfterframesQueue(currentScript.afterFramesEntries[i]);
 		}
+	}
+
+	void SourceTASReader::SetFpsAndPlayspeed()
+	{
+		std::ostringstream os;
+		float fps = 1.0f / tickTime * playbackSpeed;
+		os << "host_framerate " << tickTime << "; fps_max " << fps;
+		currentScript.AddDuringLoadCmd(os.str());
 	}
 
 	bool SourceTASReader::ParseLine()
@@ -244,7 +251,7 @@ namespace scripts
 
 
 		// Reset any variables selected above
-		for (int i = 0; i < dim(RESET_VARS); ++i)
+		for (int i = 0; i < RESET_VARS_COUNT; ++i)
 		{
 			auto command = icvar->FindVar(RESET_VARS[i]);
 			if (command != NULL)
@@ -270,24 +277,23 @@ namespace scripts
 	{
 		ResetConvars();
 		conditions.clear();
-		startCommand.clear();
 		scriptStream.clear();
 		lineStream.clear();
 		line.clear();
 		currentLine = 0;
 		afterFramesTick = 0;
-		afterFramesEntries.clear();
 		tickTime = DEFAULT_TICK_TIME;
 		searchType = SearchType::None;
 		playbackSpeed = 1.0f;
 		demoDelay = 0;
 		demoName.clear();
+		currentScript.Reset();
 	}
 
-	void SourceTASReader::AddAfterframesEntry(long long int tick, std::string command)
+	/*void SourceTASReader::AddAfterframesEntry(long long int tick, std::string command)
 	{
 		afterFramesEntries.push_back(afterframes_entry_t(tick, command));
-	}
+	}*/
 
 	void SourceTASReader::ParseProps()
 	{
@@ -359,32 +365,13 @@ namespace scripts
 	{
 		if (isLineEmpty())
 			return;
+		else if (line.find("ss") == 0)
+			currentScript.AddSaveState();
 
 		FrameBulkInfo info(lineStream);
 		auto output = HandleFrameBulk(info);
 
-		if (output.ticks == NO_AFTERFRAMES_BULK)
-		{
-			startCommand += output.initialCommand + ";" + output.repeatingCommand;
-		}
-		else if(output.ticks >= 0)
-		{
-			AddAfterframesEntry(afterFramesTick, output.initialCommand);
-
-			if (output.repeatingCommand.length() > 0)
-			{
-				AddAfterframesEntry(afterFramesTick, output.repeatingCommand);
-				for (int i = 1; i < output.ticks; ++i)
-					AddAfterframesEntry(afterFramesTick + i, output.repeatingCommand);
-			}
-			afterFramesTick += output.ticks;
-		}
-		else
-		{
-			throw std::exception("Frame bulk length was negative!");
-		}
-
-		
+		currentScript.AddFrameBulk(output);	
 	}
 
 	void SourceTASReader::InitPropertyHandlers()
@@ -411,7 +398,7 @@ namespace scripts
 
 	void SourceTASReader::HandleSave(std::string& value)
 	{
-		startCommand += "load " + value;
+		currentScript.SetSave(value);
 	}
 
 	void SourceTASReader::HandleDemo(std::string& value)

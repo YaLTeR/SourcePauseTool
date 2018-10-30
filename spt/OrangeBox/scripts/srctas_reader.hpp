@@ -7,6 +7,7 @@
 #include <map>
 #include "condition.hpp"
 #include "range_variable.hpp"
+#include "parsed_script.hpp"
 
 namespace scripts
 {
@@ -35,8 +36,9 @@ namespace scripts
 		int demoDelay;
 
 		VariableContainer variables;
-		std::string startCommand;
-		std::vector<afterframes_entry_t> afterFramesEntries;
+		ParsedScript currentScript;
+		//std::string startCommand;
+		//std::vector<afterframes_entry_t> afterFramesEntries;
 		std::map<std::string, void(SourceTASReader::*)(std::string&)> propertyHandlers;
 		std::vector<std::unique_ptr<Condition>> conditions;
 
@@ -44,7 +46,8 @@ namespace scripts
 		void Reset();
 		void ResetIterationState();
 		void Execute();
-		void AddAfterframesEntry(long long int tick, std::string command);
+		void SetFpsAndPlayspeed();
+		//void AddAfterframesEntry(long long int tick, std::string command);
 
 		void HookAfterFrames();
 		void OnAfterFrames();
