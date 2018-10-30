@@ -67,8 +67,8 @@
     <ClCompile Include="spt\OrangeBox\scripts\framebulk_handler.cpp" />
     <ClCompile Include="spt\OrangeBox\scripts\srctas_reader.cpp" />
     <ClCompile Include="spt\OrangeBox\scripts\variable_container.cpp" />
-    <ClCompile Include="spt\utils\tweetnacl.c" />
     <ClCompile Include="spt\OrangeBox\scripts\parsed_script.cpp" />
+    <ClCompile Include="spt\utils\tweetnacl.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">

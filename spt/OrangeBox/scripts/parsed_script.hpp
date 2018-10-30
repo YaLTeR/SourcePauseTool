@@ -3,10 +3,11 @@
 #include <string>
 #include <vector>
 #include "..\modules\ClientDLL.hpp"
-#include "framebulk_handler.hpp"
 
 namespace scripts
 {
+	class FrameBulkOutput;
+
 	struct Savestate
 	{
 		Savestate() {}
@@ -33,10 +34,10 @@ namespace scripts
 
 		void AddDuringLoadCmd(std::string cmd);
 		void AddInitCommand(std::string cmd);
-		void AddFrameBulk(FrameBulkOutput output);
+		void AddFrameBulk(FrameBulkOutput& output);
 		void AddSaveState();
 		void AddAfterFramesEntry(long long int tick, std::string command);
-		void SetSave(std::string save) { saveName = save };
+		void SetSave(std::string save) { saveName = save; };
 
 	private:
 		std::string saveName;

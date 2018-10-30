@@ -2,6 +2,7 @@
 #include "parsed_script.hpp"
 #include "..\..\utils\tweetnacl.h"
 #include "..\spt-serverplugin.hpp"
+#include "framebulk_handler.hpp"
 
 namespace scripts
 {
@@ -15,7 +16,7 @@ namespace scripts
 		initCommand += ";" + cmd;
 	}
 
-	void ParsedScript::AddFrameBulk(FrameBulkOutput output)
+	void ParsedScript::AddFrameBulk(FrameBulkOutput& output)
 	{
 		if (output.repeatingCommand.length() > 0)
 		{
@@ -112,7 +113,7 @@ namespace scripts
 			data += afterFramesEntries[i].command;
 		}
 		
-		crypto_hashblocks_sha256_tweet(hash, (const unsigned char*)data.c_str(), data.size());
+		crypto_hash(hash, (const unsigned char*)data.c_str(), data.size());
 
 		Savestate ss(tick, index,
 			scriptName + std::string((char*)&hash, crypto_hash_sha256_BYTES) + "-" + std::to_string(tick));
