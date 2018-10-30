@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "parsed_script.hpp"
-#include "..\..\utils\tweetnacl.h"
+#include "..\..\utils\md5.hpp"
 #include "..\spt-serverplugin.hpp"
 #include "framebulk_handler.hpp"
 
@@ -18,7 +18,7 @@ namespace scripts
 
 	void ParsedScript::AddFrameBulk(FrameBulkOutput& output)
 	{
-		if (output.repeatingCommand.length() > 0)
+		if (output.ticks >= 0)
 		{
 			AddAfterFramesEntry(afterFramesTick, output.initialCommand);
 			AddAfterFramesEntry(afterFramesTick, output.repeatingCommand);
@@ -40,35 +40,36 @@ namespace scripts
 
 	void ParsedScript::AddSaveState()
 	{
-		saveStateIndexes.push_back(afterFramesEntries.size());
+		saveStates.push_back(GetSaveStateInfo());
 	}
 
 	void ParsedScript::Reset()
 	{
-		scriptName = "";
+		scriptName.clear();
 		afterFramesTick = 0;
 		afterFramesEntries.clear();
 		saveStateIndexes.clear();
 		initCommand = "sv_cheats 1; y_spt_pause 0;_y_spt_afterframes_await_load; _y_spt_afterframes_reset_on_server_activate 0";
 		duringLoad.clear();
 		saveName.clear();
+		saveStates.clear();
 	}
 
 	void ParsedScript::Init(std::string scriptName)
 	{
 		this->scriptName = scriptName;
-
-		for (int i = 0; i < saveStateIndexes.size(); ++i)
-		{
-			saveStates.push_back(GetSaveStateInfo(i));
-		}
-
 		int saveStateIndex = -1;
 
 		for (int i = 0; i < saveStates.size(); ++i)
 		{
 			if (saveStates[i].exists)
 				saveStateIndex = i;
+			else
+			{
+				std::string entry("save " + saveStates[i].key);
+				AddAfterFramesEntry(saveStates[i].tick, entry);
+				Msg("Adding savestate entry %s\n", entry.c_str());
+			}
 		}
 
 		if (saveStateIndex != -1)
@@ -80,12 +81,27 @@ namespace scripts
 			{
 				if (afterFramesEntries[i].framesLeft == -1)
 					continue;
-				else if (afterFramesEntries[i].framesLeft > tick)
+				else if (afterFramesEntries[i].framesLeft >= tick)
 				{
-					afterFramesEntries[i].framesLeft -= tick;
+					// If the entry is on the same tick as the save, add a new during load entry
+					if (afterFramesEntries[i].framesLeft == tick)
+					{
+						afterframes_entry_t copy = afterFramesEntries[i];
+						copy.framesLeft = NO_AFTERFRAMES_BULK;
+						afterFramesEntries.push_back(copy);
+						afterFramesEntries[i].framesLeft = 0;
+					}
+					else
+					{
+						afterFramesEntries[i].framesLeft -= tick;
+					}
 				}
 				else
-					afterFramesEntries[i].framesLeft = 0;
+				{
+					afterFramesEntries.erase(afterFramesEntries.begin() + i);
+					--i;
+				}
+					
 			}
 		}
 
@@ -98,25 +114,21 @@ namespace scripts
 		afterFramesEntries.push_back(afterframes_entry_t(tick, command));
 	}
 
-	Savestate ParsedScript::GetSaveStateInfo(int index)
+	Savestate ParsedScript::GetSaveStateInfo()
 	{
-		static unsigned char hash[crypto_hash_sha256_BYTES];
-		std::string data;
-		int tick = 0;
-		
-		for (int i = 0; i < afterFramesEntries.size() && i < index; ++i)
-		{
-			if (afterFramesEntries[i].framesLeft > 0)
-				tick = afterFramesEntries[i].framesLeft;
+		std::string data = saveName;
 
+		for (int i = 0; i < afterFramesEntries.size(); ++i)
+		{
 			data += std::to_string(afterFramesEntries[i].framesLeft);
 			data += afterFramesEntries[i].command;
 		}
 		
-		crypto_hash(hash, (const unsigned char*)data.c_str(), data.size());
+		MD5 hash(data);
+		std::string digest = hash.hexdigest();
 
-		Savestate ss(tick, index,
-			scriptName + std::string((char*)&hash, crypto_hash_sha256_BYTES) + "-" + std::to_string(tick));
+		Savestate ss(afterFramesTick, afterFramesEntries.size(), "ss-" + digest + "-" + std::to_string(afterFramesTick));
+		Msg("Got savestate with hash %s\n", digest.c_str());
 
 		return ss;
 	}

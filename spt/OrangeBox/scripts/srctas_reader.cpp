@@ -161,6 +161,14 @@ namespace scripts
 
 		currentScript.Init(fileName);
 
+		for (size_t i = 0; i < currentScript.afterFramesEntries.size(); ++i)
+		{
+			if (currentScript.afterFramesEntries[i].framesLeft == NO_AFTERFRAMES_BULK)
+			{
+				currentScript.AddDuringLoadCmd(currentScript.afterFramesEntries[i].command);
+			}
+		}
+
 		std::string startCmd(currentScript.initCommand + ";" + currentScript.duringLoad);
 		EngineConCmd(startCmd.c_str());
 		DevMsg("Executing start command: %s\n", startCmd.c_str());	
@@ -168,7 +176,10 @@ namespace scripts
 
 		for (size_t i = 0; i < currentScript.afterFramesEntries.size(); ++i)
 		{
-			clientDLL.AddIntoAfterframesQueue(currentScript.afterFramesEntries[i]);
+			if (currentScript.afterFramesEntries[i].framesLeft != NO_AFTERFRAMES_BULK)
+			{
+				clientDLL.AddIntoAfterframesQueue(currentScript.afterFramesEntries[i]);
+			}
 		}
 	}
 
@@ -366,12 +377,16 @@ namespace scripts
 		if (isLineEmpty())
 			return;
 		else if (line.find("ss") == 0)
+		{
 			currentScript.AddSaveState();
+		}
+		else
+		{
+			FrameBulkInfo info(lineStream);
+			auto output = HandleFrameBulk(info);
 
-		FrameBulkInfo info(lineStream);
-		auto output = HandleFrameBulk(info);
-
-		currentScript.AddFrameBulk(output);	
+			currentScript.AddFrameBulk(output);
+		}
 	}
 
 	void SourceTASReader::InitPropertyHandlers()

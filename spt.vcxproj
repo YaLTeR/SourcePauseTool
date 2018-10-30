@@ -783,6 +783,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">stdafx.hpp</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="spt\utils\math.cpp" />
+    <ClCompile Include="spt\utils\md5.cpp" />
     <ClCompile Include="spt\utils\string_parsing.cpp" />
     <ClCompile Include="spt\utils\tweetnacl.c" />
   </ItemGroup>
@@ -845,6 +846,7 @@
     <ClInclude Include="spt\stdafx.hpp" />
     <ClInclude Include="spt\strafestuff.hpp" />
     <ClInclude Include="spt\utils\math.hpp" />
+    <ClInclude Include="spt\utils\md5.hpp" />
     <ClInclude Include="spt\utils\signal.hpp" />
     <ClInclude Include="spt\utils\string_parsing.hpp" />
     <ClInclude Include="spt\utils\tweetnacl.h" />

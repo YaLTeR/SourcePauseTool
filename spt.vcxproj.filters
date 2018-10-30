@@ -69,6 +69,7 @@
     <ClCompile Include="spt\OrangeBox\scripts\variable_container.cpp" />
     <ClCompile Include="spt\OrangeBox\scripts\parsed_script.cpp" />
     <ClCompile Include="spt\utils\tweetnacl.c" />
+    <ClCompile Include="spt\utils\md5.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -213,6 +214,7 @@
     <ClInclude Include="spt\OrangeBox\scripts\variable_container.hpp" />
     <ClInclude Include="spt\utils\tweetnacl.h" />
     <ClInclude Include="spt\OrangeBox\scripts\parsed_script.hpp" />
+    <ClInclude Include="spt\utils\md5.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">

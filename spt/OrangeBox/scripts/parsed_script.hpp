@@ -43,7 +43,7 @@ namespace scripts
 		std::string saveName;
 		std::string scriptName;
 		int afterFramesTick;
-		Savestate GetSaveStateInfo(int tick);
+		Savestate GetSaveStateInfo();
 		std::vector<Savestate> saveStates;
 	};
 }
