@@ -37,6 +37,7 @@ extern ConVar tas_strafe_lgagst_fullmaxspeed;
 extern ConVar tas_strafe_jumptype;
 
 extern ConVar tas_script_printvars;
+extern ConVar tas_script_savestates;
 
 extern ConVar _y_spt_autojump_ensure_legit;
 extern ConVar _y_spt_afterframes_reset_on_server_activate;

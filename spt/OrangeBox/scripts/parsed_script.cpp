@@ -3,6 +3,7 @@
 #include "..\..\utils\md5.hpp"
 #include "..\spt-serverplugin.hpp"
 #include "framebulk_handler.hpp"
+#include "..\cvars.hpp"
 
 namespace scripts
 {
@@ -62,13 +63,11 @@ namespace scripts
 
 		for (int i = 0; i < saveStates.size(); ++i)
 		{
-			if (saveStates[i].exists)
+			if (saveStates[i].exists && tas_script_savestates.GetBool())
 				saveStateIndex = i;
 			else
 			{
-				std::string entry("save " + saveStates[i].key);
-				AddAfterFramesEntry(saveStates[i].tick, entry);
-				Msg("Adding savestate entry %s\n", entry.c_str());
+				AddAfterFramesEntry(saveStates[i].tick, "save " + saveStates[i].key);
 			}
 		}
 
@@ -89,12 +88,10 @@ namespace scripts
 						afterframes_entry_t copy = afterFramesEntries[i];
 						copy.framesLeft = NO_AFTERFRAMES_BULK;
 						afterFramesEntries.push_back(copy);
-						afterFramesEntries[i].framesLeft = 0;
+						
 					}
-					else
-					{
-						afterFramesEntries[i].framesLeft -= tick;
-					}
+					
+					afterFramesEntries[i].framesLeft -= tick;
 				}
 				else
 				{
@@ -127,10 +124,7 @@ namespace scripts
 		MD5 hash(data);
 		std::string digest = hash.hexdigest();
 
-		Savestate ss(afterFramesTick, afterFramesEntries.size(), "ss-" + digest + "-" + std::to_string(afterFramesTick));
-		Msg("Got savestate with hash %s\n", digest.c_str());
-
-		return ss;
+		return Savestate(afterFramesTick, afterFramesEntries.size(), "ss-" + digest + "-" + std::to_string(afterFramesTick));
 	}
 
 	Savestate::Savestate(int tick, int index, std::string key) : tick(tick), index(index), key(key)
