@@ -785,7 +785,6 @@
     <ClCompile Include="spt\utils\math.cpp" />
     <ClCompile Include="spt\utils\md5.cpp" />
     <ClCompile Include="spt\utils\string_parsing.cpp" />
-    <ClCompile Include="spt\utils\tweetnacl.c" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib" />
@@ -849,7 +848,6 @@
     <ClInclude Include="spt\utils\md5.hpp" />
     <ClInclude Include="spt\utils\signal.hpp" />
     <ClInclude Include="spt\utils\string_parsing.hpp" />
-    <ClInclude Include="spt\utils\tweetnacl.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
