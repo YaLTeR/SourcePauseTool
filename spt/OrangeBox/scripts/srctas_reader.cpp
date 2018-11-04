@@ -217,6 +217,7 @@ namespace scripts
 
 	void SourceTASReader::ResetConvars()
 	{
+#ifndef OE
 		auto icvar = GetCvarInterface();
 		ConCommandBase * cmd = icvar->GetCommands();
 
@@ -263,6 +264,7 @@ namespace scripts
 			else
 				DevWarning("Unable to find console variable %s\n", RESET_VARS[i]);
 		}
+#endif
 	}
 
 	void SourceTASReader::Reset()

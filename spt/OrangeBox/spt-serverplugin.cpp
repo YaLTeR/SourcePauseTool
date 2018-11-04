@@ -125,7 +125,11 @@ ICvar * GetCvarInterface()
 }
 std::string GetGameDir()
 {
+#ifdef OE
+	return "hl2";
+#else
 	return engine->GetGameDirectory();
+#endif
 }
 
 #else
