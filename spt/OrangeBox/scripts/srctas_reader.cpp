@@ -72,7 +72,6 @@ namespace scripts
 	{
 		try
 		{
-			HookAfterFrames();
 			Reset();
 			std::string gameDir = GetGameDir();
 			scriptStream.open(gameDir + "\\" + fileName + SCRIPT_EXT);
@@ -113,15 +112,6 @@ namespace scripts
 		}
 
 		scriptStream.close();
-	}
-
-	void SourceTASReader::HookAfterFrames()
-	{
-		if (!hooked)
-		{
-			clientDLL.AfterFrames += Simple::slot(this, &SourceTASReader::OnAfterFrames);
-			hooked = true;
-		}
 	}
 
 	void SourceTASReader::OnAfterFrames()
@@ -228,14 +218,14 @@ namespace scripts
 	void SourceTASReader::ResetConvars()
 	{
 		auto icvar = GetCvarInterface();
-		ConCommandBase * command = icvar->GetCommands();
+		ConCommandBase * cmd = icvar->GetCommands();
 
 		// Loops through the console variables and commands
-		while (command != NULL)
+		while (cmd != NULL)
 		{
-			const char* name = command->GetName();
+			const char* name = cmd->GetName();
 			// Reset any variables that have been marked to be reset for TASes
-			if (!command->IsCommand() && name != NULL && command->IsFlagSet(FCVAR_TAS_RESET))
+			if (!cmd->IsCommand() && name != NULL && cmd->IsFlagSet(FCVAR_TAS_RESET))
 			{			
 				auto convar = icvar->FindVar(name);
 				DevMsg("Trying to reset variable %s\n", name);
@@ -251,24 +241,24 @@ namespace scripts
 			}
 
 			// Issue minus commands to reset any keypresses
-			else if (command->IsCommand() && command->GetName() != NULL && command->GetName()[0] == '-')
+			else if (cmd->IsCommand() && cmd->GetName() != NULL && cmd->GetName()[0] == '-')
 			{
-				DevMsg("Running command %s\n", command->GetName());
-				EngineConCmd(command->GetName());
+				DevMsg("Running command %s\n", cmd->GetName());
+				EngineConCmd(cmd->GetName());
 			}
 
-			command = command->GetNext();
+			cmd = cmd->GetNext();
 		}
 
 
 		// Reset any variables selected above
 		for (int i = 0; i < RESET_VARS_COUNT; ++i)
 		{
-			auto command = icvar->FindVar(RESET_VARS[i]);
-			if (command != NULL)
+			auto resetCmd = icvar->FindVar(RESET_VARS[i]);
+			if (cmd != NULL)
 			{
-				DevMsg("Resetting var %s to value %s\n", command->GetName(), command->GetDefault());
-				command->SetValue(command->GetDefault());
+				DevMsg("Resetting var %s to value %s\n", cmd->GetName(), resetCmd->GetDefault());
+				resetCmd->SetValue(resetCmd->GetDefault());
 			}
 			else
 				DevWarning("Unable to find console variable %s\n", RESET_VARS[i]);
@@ -301,11 +291,6 @@ namespace scripts
 		currentScript.Reset();
 	}
 
-	/*void SourceTASReader::AddAfterframesEntry(long long int tick, std::string command)
-	{
-		afterFramesEntries.push_back(afterframes_entry_t(tick, command));
-	}*/
-
 	void SourceTASReader::ParseProps()
 	{
 		while (ParseLine())
@@ -333,6 +318,11 @@ namespace scripts
 		}
 		else
 			throw std::exception("Unknown property name!");
+	}
+
+	void SourceTASReader::HandleSettings(std::string & value)
+	{
+		currentScript.AddDuringLoadCmd(value);
 	}
 
 	void SourceTASReader::ParseVariables()
@@ -397,6 +387,7 @@ namespace scripts
 		propertyHandlers["search"] = &SourceTASReader::HandleSearch;
 		propertyHandlers["playspeed"] = &SourceTASReader::HandlePlaybackSpeed;
 		propertyHandlers["ticktime"] = &SourceTASReader::HandleTickTime;
+		propertyHandlers["settings"] = &SourceTASReader::HandleSettings;
 
 		// Conditions for automated searching
 		propertyHandlers["tick"] = &SourceTASReader::HandleTickRange;

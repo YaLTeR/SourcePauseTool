@@ -204,7 +204,6 @@
       <Filter>spt\OrangeBox\overlay</Filter>
     </ClInclude>
     <ClInclude Include="spt\utils\math.hpp" />
-    <ClInclude Include="spt\utils\signal.hpp" />
     <ClInclude Include="spt\utils\string_parsing.hpp" />
     <ClInclude Include="spt\OrangeBox\scripts\condition.hpp" />
     <ClInclude Include="spt\OrangeBox\scripts\framebulk_handler.hpp" />

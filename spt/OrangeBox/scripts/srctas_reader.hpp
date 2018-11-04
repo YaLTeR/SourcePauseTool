@@ -18,6 +18,7 @@ namespace scripts
 		void ExecuteScript(std::string script);
 		void StartSearch(std::string script);
 		void SearchResult(scripts::SearchResult result);
+		void OnAfterFrames();
 	private:
 		bool iterationFinished;
 		bool hooked;
@@ -37,8 +38,6 @@ namespace scripts
 
 		VariableContainer variables;
 		ParsedScript currentScript;
-		//std::string startCommand;
-		//std::vector<afterframes_entry_t> afterFramesEntries;
 		std::map<std::string, void(SourceTASReader::*)(std::string&)> propertyHandlers;
 		std::vector<std::unique_ptr<Condition>> conditions;
 
@@ -47,11 +46,7 @@ namespace scripts
 		void ResetIterationState();
 		void Execute();
 		void SetFpsAndPlayspeed();
-		//void AddAfterframesEntry(long long int tick, std::string command);
 
-		void HookAfterFrames();
-		void OnAfterFrames();
-		
 		bool ParseLine();
 		void SetNewLine();
 		void ReplaceVariables();
@@ -60,6 +55,7 @@ namespace scripts
 		void InitPropertyHandlers();
 		void ParseProps();
 		void ParseProp();
+		void HandleSettings(std::string& value);
 		void HandleSave(std::string& value);
 		void HandleDemo(std::string& value);
 		void HandleDemoDelay(std::string& value);

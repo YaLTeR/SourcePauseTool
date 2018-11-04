@@ -621,6 +621,18 @@ CON_COMMAND(_y_spt_setyaw, "Sets the yaw. Usage: _y_spt_setyaw <yaw>")
 	clientDLL.SetYaw( atof(args.Arg(1)) );
 }
 
+CON_COMMAND(_y_spt_resetpitchyaw, "Resets pitch/yaw commands.")
+{
+	if (!engine)
+		return;
+
+#if defined( OE )
+	ArgsWrapper args(engine.get());
+#endif
+
+	clientDLL.ResetPitchYawCommands();
+}
+
 CON_COMMAND(_y_spt_setangles, "Sets the angles. Usage: _y_spt_setangles <pitch> <yaw>")
 {
 	if (!engine)

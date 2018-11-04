@@ -7,7 +7,13 @@ namespace scripts
 	typedef void(*CommandCallback) (FrameBulkInfo& frameBulkInfo);
 	std::vector<CommandCallback> frameBulkHandlers;
 
-	const std::string FIELD1_FILLED = "sXXljdbcgu";
+	const std::string FIELD0_FILLED = "s**ljdbcgu";
+	const std::string FIELD1_FILLED = "flrbud";
+	const std::string FIELD2_FILLED = "jdu12r";
+	const std::string EMPTY_FIELD = "-";
+	const char WILDCARD = '*';
+	const char DELIMITER = '|';
+
 	const auto STRAFE = std::pair<int, int>(0, 0);
 	const auto STRAFE_TYPE = std::pair<int, int>(0, 1);
 	const auto JUMP_TYPE = std::pair<int, int>(0, 2);
@@ -40,20 +46,6 @@ namespace scripts
 
 	void Field1(FrameBulkInfo& frameBulkInfo)
 	{
-		for (int i = 0; i < FIELD1_FILLED.length(); ++i)
-		{
-			if (FIELD1_FILLED[i] != 'X')
-			{
-				std::string value = frameBulkInfo[std::make_pair(0, i)];
-				if (value != std::string(1, FIELD1_FILLED[i]) && value != std::string(1, '-'))
-				{
-					std::ostringstream os;
-					os << "Expected " << FIELD1_FILLED[i] << " in index (0, " << i << ") got " << value << " !";
-					throw std::exception(os.str().c_str());
-				}
-			}
-		}
-
 		if (frameBulkInfo[STRAFE] == "s")
 		{
 			frameBulkInfo.AddCommand("tas_strafe 1");
@@ -114,9 +106,13 @@ namespace scripts
 			else
 				frameBulkInfo.AddCommand("_y_spt_setyaw " + frameBulkInfo[YAW_KEY]);
 		}
+		else if (frameBulkInfo[YAW_KEY] != EMPTY_FIELD)
+			throw std::exception("Unable to parse yaw angle.");
 
 		if (frameBulkInfo.IsFloat(PITCH_KEY))
 			frameBulkInfo.AddCommand("_y_spt_setpitch " + frameBulkInfo[PITCH_KEY]);
+		else if (frameBulkInfo[PITCH_KEY] != EMPTY_FIELD)
+			throw std::exception("Unable to parse pitch angle.");
 	}
 
 	void Field6(FrameBulkInfo& frameBulkInfo)
@@ -134,8 +130,16 @@ namespace scripts
 			frameBulkInfo.data.repeatingCommand += ";" + frameBulkInfo[COMMANDS];
 	}
 
+	void ValidateFieldFlags(FrameBulkInfo& frameBulkInfo)
+	{
+		frameBulkInfo.ValidateFieldFlags(frameBulkInfo, FIELD0_FILLED, 0);
+		frameBulkInfo.ValidateFieldFlags(frameBulkInfo, FIELD1_FILLED, 1);
+		frameBulkInfo.ValidateFieldFlags(frameBulkInfo, FIELD2_FILLED, 2);
+	}
+
 	void InitHandlers()
 	{
+		frameBulkHandlers.push_back(ValidateFieldFlags);
 		frameBulkHandlers.push_back(Field1);
 		frameBulkHandlers.push_back(Field2);
 		frameBulkHandlers.push_back(Field3);
@@ -162,7 +166,6 @@ namespace scripts
 
 	FrameBulkInfo::FrameBulkInfo(std::istringstream& stream)
 	{
-		const char DELIMITER = '|';
 		int section = 0;
 		std::string line;
 
@@ -216,6 +219,23 @@ namespace scripts
 			data.AddCommand("+" + command);
 		else
 			data.AddCommand("-" + command);
+	}
+
+	void FrameBulkInfo::ValidateFieldFlags(FrameBulkInfo& frameBulkInfo, const std::string & fields, int index)
+	{
+		for (size_t i = 0; i < fields.length(); ++i)
+		{
+			if (fields[i] != WILDCARD)
+			{
+				std::string value = frameBulkInfo[std::make_pair(index, i)];
+				if (value != std::string(1, fields[i]) && value != std::string(1, '-'))
+				{
+					std::ostringstream os;
+					os << "Expected " << fields[i] << " got " << value << " in bulk: " << fields;
+					throw std::exception(os.str().c_str());
+				}
+			}
+		}
 	}
 
 }

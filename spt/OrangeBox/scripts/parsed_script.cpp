@@ -24,9 +24,10 @@ namespace scripts
 			AddAfterFramesEntry(afterFramesTick, output.initialCommand);
 			AddAfterFramesEntry(afterFramesTick, output.repeatingCommand);
 
-			afterFramesTick += output.ticks;
 			for (int i = 1; i < output.ticks; ++i)
 				AddAfterFramesEntry(afterFramesTick + i, output.repeatingCommand);
+
+			afterFramesTick += output.ticks;
 		}
 		else if (output.ticks == NO_AFTERFRAMES_BULK)
 		{
@@ -50,18 +51,18 @@ namespace scripts
 		afterFramesTick = 0;
 		afterFramesEntries.clear();
 		saveStateIndexes.clear();
-		initCommand = "sv_cheats 1; y_spt_pause 0;_y_spt_afterframes_await_load; _y_spt_afterframes_reset_on_server_activate 0";
+		initCommand = "sv_cheats 1; y_spt_pause 0;_y_spt_afterframes_await_load; _y_spt_afterframes_reset_on_server_activate 0; _y_spt_resetpitchyaw";
 		duringLoad.clear();
 		saveName.clear();
 		saveStates.clear();
 	}
 
-	void ParsedScript::Init(std::string scriptName)
+	void ParsedScript::Init(std::string name)
 	{
-		this->scriptName = scriptName;
+		this->scriptName = name;
 		int saveStateIndex = -1;
 
-		for (int i = 0; i < saveStates.size(); ++i)
+		for (size_t i = 0; i < saveStates.size(); ++i)
 		{
 			if (saveStates[i].exists && tas_script_savestates.GetBool())
 				saveStateIndex = i;
@@ -76,11 +77,9 @@ namespace scripts
 			int tick = saveStates[saveStateIndex].tick;
 			saveName = saveStates[saveStateIndex].key;
 
-			for (int i = 0; i < afterFramesEntries.size(); ++i)
+			for (size_t i = 0; i < afterFramesEntries.size(); ++i)
 			{
-				if (afterFramesEntries[i].framesLeft == -1)
-					continue;
-				else if (afterFramesEntries[i].framesLeft >= tick)
+				if (afterFramesEntries[i].framesLeft >= tick)
 				{
 					// If the entry is on the same tick as the save, add a new during load entry
 					if (afterFramesEntries[i].framesLeft == tick)
@@ -115,7 +114,7 @@ namespace scripts
 	{
 		std::string data = saveName;
 
-		for (int i = 0; i < afterFramesEntries.size(); ++i)
+		for (size_t i = 0; i < afterFramesEntries.size(); ++i)
 		{
 			data += std::to_string(afterFramesEntries[i].framesLeft);
 			data += afterFramesEntries[i].command;

@@ -26,6 +26,7 @@ namespace scripts
 		bool IsFloat(std::pair<int, int> i);
 		void AddCommand(const std::string& cmd) { data.AddCommand(cmd); }
 		void AddPlusMinusCmd(std::string command, bool set);
+		void ValidateFieldFlags(FrameBulkInfo& frameBulkInfo, const std::string& fields, int index);
 		FrameBulkOutput data;
 	private:
 		std::map<std::pair<int, int>, std::string> dataMap;

@@ -6,7 +6,7 @@
 
 namespace scripts
 {
-	class FrameBulkOutput;
+	struct FrameBulkOutput;
 
 	struct Savestate
 	{
@@ -30,7 +30,7 @@ namespace scripts
 		std::vector<int> saveStateIndexes;
 		
 		void Reset();
-		void Init(std::string scriptName);
+		void Init(std::string name);
 
 		void AddDuringLoadCmd(std::string cmd);
 		void AddInitCommand(std::string cmd);

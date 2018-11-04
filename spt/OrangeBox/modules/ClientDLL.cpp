@@ -11,6 +11,7 @@
 #include <SPTLib\hooks.hpp>
 #include "ClientDLL.hpp"
 #include "..\overlay\overlay-renderer.hpp"
+#include "..\scripts\srctas_reader.hpp"
 
 #ifdef max
 #undef max
@@ -87,7 +88,6 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		pMiddleOfCAM_Think,
 		pGetGroundEntity,
 		pCalcAbsoluteVelocity,
-		pReleaseRenderTargets,
 		pCViewRender__RenderView,
 		pCViewRender__Render;
 
@@ -621,7 +621,7 @@ void ClientDLL::OnFrame()
 		}
 	}
 
-	AfterFrames.emit();
+	scripts::g_TASReader.OnAfterFrames();
 }
 
 void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, int y, int w, int h)
