@@ -24,7 +24,7 @@ inline void GetDoublet(std::istringstream& stream, std::string& out1, std::strin
 }
 
 template<typename T>
-inline void GetDoublet(std::string& s, T & out1, T & out2, char delim)
+inline void GetDoublet(std::string& s, T& out1, T& out2, char delim)
 {
 	std::istringstream is(s);
 	GetDoublet(is, out1, out2, delim);
@@ -40,14 +40,14 @@ inline void GetDoublet(std::istringstream& stream, T& out1, T& out2, char delim)
 }
 
 template<typename T>
-inline void GetTriplet(std::string & s, T & out1, T & out2, T& out3, char delim)
+inline void GetTriplet(std::string& s, T& out1, T& out2, T& out3, char delim)
 {
 	std::istringstream is(s);
 	GetTriplet(is, out1, out2, out3, delim);
 }
 
 template<typename T>
-inline void GetTriplet(std::istringstream & stream, T & out1, T & out2, T & out3, char delim)
+inline void GetTriplet(std::istringstream& stream, T& out1, T& out2, T& out3, char delim)
 {
 	std::string s1, s2, s3;
 	GetTriplet(stream, s1, s2, s3, delim);
@@ -75,7 +75,7 @@ inline T ParseValue(std::string s)
 	result = 0;
 	ss >> result;
 
-	if (ss.good() || s.size() == 0 || (result == 0 && s[0] != '0'))
+	if (ss.good() || s.empty() || (result == 0 && s[0] != '0'))
 		throw std::exception("Unable to parse value!");
 
 	return result;
@@ -88,7 +88,7 @@ inline bool IsValue(std::string s)
 	T result = 0;
 	ss >> result;
 
-	if (ss.good() || s.size() == 0 || (result == 0 && s[0] != '0'))
+	if (ss.good() || s.empty() || (result == 0 && s[0] != '0'))
 		return false;
 	else
 		return true;

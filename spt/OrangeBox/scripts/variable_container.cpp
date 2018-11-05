@@ -166,5 +166,4 @@ namespace scripts
 			throw std::exception("Unexpected variable type while starting iteration!");
 		}
 	}
-
 }

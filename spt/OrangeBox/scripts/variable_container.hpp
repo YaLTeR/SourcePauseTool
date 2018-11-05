@@ -51,5 +51,4 @@ namespace scripts
 	private:
 		SearchResult lastResult;
 	};
-
 }

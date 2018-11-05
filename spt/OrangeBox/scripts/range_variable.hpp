@@ -118,7 +118,7 @@ namespace scripts
 			SelectRandom(lastResult);
 			break;
 		default:
-			throw std::exception("Search type not implemented or not in search mode.");
+			throw std::exception("Search type is not implemented or not in search mode.");
 			break;
 		}
 
@@ -147,7 +147,6 @@ namespace scripts
 		}
 
 		SelectMiddle();
-
 	}
 
 	template<typename T>

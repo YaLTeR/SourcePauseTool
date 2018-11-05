@@ -76,5 +76,4 @@ namespace scripts
 	{
 		return false;
 	}
-
 }

@@ -290,7 +290,6 @@ bool StrafeJump(PlayerData& player, const MovementVars& vars, bool ducking, Proc
 void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed, bool lockCamera)
 {
 	if (jumped && StrafeJump(player, vars, ducking, out)) {
-
 		if (!lockCamera || tas_strafe_allow_jump_override.GetBool())
 		{
 			out.Processed = true;
@@ -313,7 +312,7 @@ void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground
 			double normalizedDiff = NormalizeDeg(adjustedTarget - vel_yaw);
 			double additionAbs = std::min(static_cast<double>(tas_strafe_vectorial_increment.GetFloat()), std::abs(normalizedDiff));
 
-			// Snap to target if difference too large(likely due to an ABH)
+			// Snap to target if difference too large (likely due to an ABH)
 			if (std::abs(normalizedDiff) > tas_strafe_vectorial_snap.GetFloat())
 				out.Yaw = adjustedTarget;
 			else

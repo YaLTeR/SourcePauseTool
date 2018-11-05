@@ -52,7 +52,7 @@ namespace scripts
 			variables.SetResult(result);
 			CommonExecuteScript(true);
 		}
-		catch (const std::exception & ex)
+		catch (const std::exception& ex)
 		{
 			Msg("Error setting result: %s\n", ex.what());
 		}
@@ -116,7 +116,7 @@ namespace scripts
 
 	void SourceTASReader::OnAfterFrames()
 	{
-		if (conditions.size() == 0 || iterationFinished)
+		if (conditions.empty() || iterationFinished)
 			return;
 
 		++currentTick;
@@ -219,7 +219,7 @@ namespace scripts
 	{
 #ifndef OE
 		auto icvar = GetCvarInterface();
-		ConCommandBase * cmd = icvar->GetCommands();
+		ConCommandBase* cmd = icvar->GetCommands();
 
 		// Loops through the console variables and commands
 		while (cmd != NULL)
@@ -250,7 +250,6 @@ namespace scripts
 
 			cmd = cmd->GetNext();
 		}
-
 
 		// Reset any variables selected above
 		for (int i = 0; i < RESET_VARS_COUNT; ++i)
@@ -492,5 +491,4 @@ namespace scripts
 
 		return os.str();
 	}
-
 }

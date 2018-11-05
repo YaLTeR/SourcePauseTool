@@ -767,7 +767,6 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 
 	if (!pCmd)
 		return;
-	
 	float va[3];
 	EngineGetViewAngles(va);
 	float startYaw = va[YAW];

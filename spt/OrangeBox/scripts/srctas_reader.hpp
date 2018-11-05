@@ -91,4 +91,3 @@ namespace scripts
 	std::string GetVarIdentifier(std::string name);
 	extern SourceTASReader g_TASReader;
 }
-

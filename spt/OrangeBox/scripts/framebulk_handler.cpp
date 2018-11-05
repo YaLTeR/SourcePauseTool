@@ -51,7 +51,7 @@ namespace scripts
 			frameBulkInfo.AddCommand("tas_strafe 1");
 
 			if (!frameBulkInfo.IsInt(JUMP_TYPE) || !frameBulkInfo.IsInt(STRAFE_TYPE))
-				throw std::exception("Jump type or strafe type was not a number!");
+				throw std::exception("Jump type or strafe type was not an integer!");
 
 			frameBulkInfo.AddCommand("tas_strafe_jumptype " + frameBulkInfo[JUMP_TYPE]);
 			frameBulkInfo.AddCommand("tas_strafe_type " + frameBulkInfo[STRAFE_TYPE]);
@@ -107,18 +107,18 @@ namespace scripts
 				frameBulkInfo.AddCommand("_y_spt_setyaw " + frameBulkInfo[YAW_KEY]);
 		}
 		else if (frameBulkInfo[YAW_KEY] != EMPTY_FIELD)
-			throw std::exception("Unable to parse yaw angle.");
+			throw std::exception("Unable to parse the yaw angle.");
 
 		if (frameBulkInfo.IsFloat(PITCH_KEY))
 			frameBulkInfo.AddCommand("_y_spt_setpitch " + frameBulkInfo[PITCH_KEY]);
 		else if (frameBulkInfo[PITCH_KEY] != EMPTY_FIELD)
-			throw std::exception("Unable to parse pitch angle.");
+			throw std::exception("Unable to parse the pitch angle.");
 	}
 
 	void Field6(FrameBulkInfo& frameBulkInfo)
 	{
 		if (!frameBulkInfo.IsInt(TICKS))
-			throw std::exception("Tick value was not a number!");
+			throw std::exception("Tick value was not an integer!");
 
 		int ticks = std::atoi(frameBulkInfo[TICKS].c_str());
 		frameBulkInfo.data.ticks = ticks;
@@ -126,7 +126,7 @@ namespace scripts
 
 	void Field7(FrameBulkInfo& frameBulkInfo)
 	{
-		if (frameBulkInfo[COMMANDS].length() > 0)
+		if (!frameBulkInfo[COMMANDS].empty())
 			frameBulkInfo.data.repeatingCommand += ";" + frameBulkInfo[COMMANDS];
 	}
 
@@ -150,7 +150,7 @@ namespace scripts
 
 	FrameBulkOutput HandleFrameBulk(FrameBulkInfo& frameBulkInfo)
 	{
-		if (frameBulkHandlers.size() == 0)
+		if (frameBulkHandlers.empty())
 			InitHandlers();
 
 		for (auto handler : frameBulkHandlers)
@@ -173,7 +173,7 @@ namespace scripts
 		{
 			std::getline(stream, line, DELIMITER);
 
-			// The sections after the first three are single string(could map section index to value type here but probably not worth the effort)
+			// The sections after the first three are single string (could map section index to value type here but probably not worth the effort)
 			if (section > 2)
 			{
 				dataMap[std::make_pair(section, 0)] = line;
@@ -221,7 +221,7 @@ namespace scripts
 			data.AddCommand("-" + command);
 	}
 
-	void FrameBulkInfo::ValidateFieldFlags(FrameBulkInfo& frameBulkInfo, const std::string & fields, int index)
+	void FrameBulkInfo::ValidateFieldFlags(FrameBulkInfo& frameBulkInfo, const std::string &fields, int index)
 	{
 		for (size_t i = 0; i < fields.length(); ++i)
 		{
@@ -231,12 +231,10 @@ namespace scripts
 				if (value != std::string(1, fields[i]) && value != std::string(1, '-'))
 				{
 					std::ostringstream os;
-					os << "Expected " << fields[i] << " got " << value << " in bulk: " << fields;
+					os << "Expected " << fields[i] << ", got " << value << " in bulk: " << fields;
 					throw std::exception(os.str().c_str());
 				}
 			}
 		}
 	}
-
 }
-

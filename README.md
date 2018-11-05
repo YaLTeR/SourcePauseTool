@@ -17,6 +17,5 @@ You will need Visual Studio 2017 or above.
    - Release for Source SDK 2007
    - Release 2013 for Source SDK 2013
    - Release P2 for the Portal 2 SDK from alliedmodders.
-   
 ## .srctas documentation
-[Documentation](https://docs.google.com/document/d/11iu9kw5Ufa3-QaiR7poJWBwfe1I56wI6fBtDgmWZ8Aw/edit?usp=sharing)
+.srctas is the SPT TAS script format. You can find its documentation [here](https://docs.google.com/document/d/11iu9kw5Ufa3-QaiR7poJWBwfe1I56wI6fBtDgmWZ8Aw/edit?usp=sharing).

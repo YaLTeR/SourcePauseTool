@@ -101,7 +101,7 @@ namespace scripts
 			}
 		}
 
-		if (saveName.size() > 0)
+		if (!saveName.empty())
 			AddInitCommand("load " + saveName);
 	}
 

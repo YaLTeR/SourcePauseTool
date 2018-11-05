@@ -14,7 +14,6 @@ namespace scripts
 		int ticks;
 
 		void AddCommand(std::string newCmd);
-
 	};
 
 	class FrameBulkInfo
@@ -34,4 +33,3 @@ namespace scripts
 
 	FrameBulkOutput HandleFrameBulk(FrameBulkInfo& frameBulkInfo);
 }
-

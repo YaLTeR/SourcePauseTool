@@ -119,10 +119,12 @@ IVEngineServer* GetEngine()
 {
 	return engine_server;
 }
+
 ICvar * GetCvarInterface()
 {
 	return g_pCVar;
 }
+
 std::string GetGameDir()
 {
 #ifdef OE
@@ -929,8 +931,7 @@ CON_COMMAND(y_spt_find_seam_shot, "y_spt_find_seam_shot [<pitch1> <yaw1> <pitch2
 	Msg("Could not find a seam shot. Best guess: setang %.8f %.8f 0\n", test.x, test.y);
 }
 
-
-CON_COMMAND(tas_script_load, "Loads and executes an .stas script. Usage: tas_load_script [script]")
+CON_COMMAND(tas_script_load, "Loads and executes an .srctas script. Usage: tas_load_script [script]")
 {
 #if defined( OE )
 	if (!engine)
@@ -944,12 +945,10 @@ CON_COMMAND(tas_script_load, "Loads and executes an .stas script. Usage: tas_loa
 		scripts::g_TASReader.ExecuteScript(args.Arg(1));
 	}
 	else
-		Msg("Loads and executes an .stas script. Usage: tas_load_script [script]\n");
-
-
+		Msg("Loads and executes an .srctas script. Usage: tas_load_script [script]\n");
 }
 
-CON_COMMAND(tas_script_search, "Starts a variable search for an .stas script. Usage: tas_load_search [script]")
+CON_COMMAND(tas_script_search, "Starts a variable search for an .srctas script. Usage: tas_load_search [script]")
 {
 #if defined( OE )
 	if (!engine)
@@ -963,9 +962,7 @@ CON_COMMAND(tas_script_search, "Starts a variable search for an .stas script. Us
 		scripts::g_TASReader.StartSearch(args.Arg(1));
 	}
 	else
-		Msg("Starts a variable search for an .stas script. Usage: tas_load_search [script]\n");
-
-
+		Msg("Starts a variable search for an .srctas script. Usage: tas_load_search [script]\n");
 }
 
 CON_COMMAND(tas_script_result_success, "Returns a successful result in a variable search.")
@@ -999,6 +996,5 @@ CON_COMMAND(_y_spt_findangle, "Finds yaw/pitch angle to position from player's c
 		QAngle angles;
 		VectorAngles(diff, angles);
 	}
-
 }
 #endif
