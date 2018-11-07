@@ -534,7 +534,7 @@ void TestCanJb(float height)
 
 	constexpr float gravity = 600;
 	constexpr float groundThreshold = 2.0f;
-	constexpr float ticktime = 0.015f;
+	float ticktime = engineDLL.GetTickrate();
 	constexpr int maxIterations = 1000;
 
 	for (int i = 0; i < maxIterations && (vel.z > 0 || player_origin.z >= height); ++i)

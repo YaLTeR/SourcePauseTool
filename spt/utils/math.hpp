@@ -8,5 +8,3 @@ const double M_DEG2RAD = M_PI / 180;
 
 double NormalizeRad(double a);
 double NormalizeDeg(double a);
-
-#define dim(x) (sizeof(x) / sizeof((x)[0]))

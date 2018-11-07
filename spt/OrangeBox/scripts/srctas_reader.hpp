@@ -60,7 +60,6 @@ namespace scripts
 		void HandleDemoDelay(const std::string& value);
 		void HandleSearch(const std::string& value);
 		void HandlePlaybackSpeed(const std::string& value);
-		void HandleTickTime(const std::string& value);
 		void HandleTickRange(const std::string& value);
 		void HandleTicksFromEndRange(const std::string& value);
 		

@@ -6,6 +6,7 @@
 #include "..\cvars.hpp"
 #include "..\spt-serverplugin.hpp"
 #include "..\modules\ClientDLL.hpp"
+#include "..\modules\EngineDLL.hpp"
 #include "..\modules.hpp"
 #include "framebulk_handler.hpp"
 #include "..\..\utils\math.hpp"
@@ -22,7 +23,7 @@ namespace scripts
 		"cl_yawspeed"
 	};
 
-	const int RESET_VARS_COUNT = dim(RESET_VARS);
+	const int RESET_VARS_COUNT = ARRAYSIZE(RESET_VARS);
 
 
 	SourceTASReader::SourceTASReader()
@@ -178,6 +179,7 @@ namespace scripts
 	void SourceTASReader::SetFpsAndPlayspeed()
 	{
 		std::ostringstream os;
+		tickTime = engineDLL.GetTickrate();
 		float fps = 1.0f / tickTime * playbackSpeed;
 		os << "host_framerate " << tickTime << "; fps_max " << fps;
 		currentScript.AddDuringLoadCmd(os.str());
@@ -393,7 +395,6 @@ namespace scripts
 		propertyHandlers["demodelay"] = &SourceTASReader::HandleDemoDelay;
 		propertyHandlers["search"] = &SourceTASReader::HandleSearch;
 		propertyHandlers["playspeed"] = &SourceTASReader::HandlePlaybackSpeed;
-		propertyHandlers["ticktime"] = &SourceTASReader::HandleTickTime;
 		propertyHandlers["settings"] = &SourceTASReader::HandleSettings;
 
 		// Conditions for automated searching
@@ -441,15 +442,6 @@ namespace scripts
 		playbackSpeed = ParseValue<float>(value);
 		if (playbackSpeed <= 0.0f)
 			throw std::exception("Playback speed has to be positive");
-	}
-
-	void SourceTASReader::HandleTickTime(const std::string & value)
-	{
-		tickTime = ParseValue<float>(value);
-		if (tickTime <= 0.0f)
-			throw std::exception("Tick time has to be positive");
-		else if (tickTime > 1.0f)
-			throw std::exception("Ticks are not this long");
 	}
 
 	void SourceTASReader::HandleTickRange(const std::string & value)
