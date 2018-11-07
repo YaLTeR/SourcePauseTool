@@ -51,7 +51,7 @@ namespace scripts
 			frameBulkInfo.AddCommand("tas_strafe 1");
 
 			if (!frameBulkInfo.IsInt(JUMP_TYPE) || !frameBulkInfo.IsInt(STRAFE_TYPE))
-				throw std::exception("Jump type or strafe type was not an integer!");
+				throw std::exception("Jump type or strafe type was not an integer");
 
 			frameBulkInfo.AddCommand("tas_strafe_jumptype " + frameBulkInfo[JUMP_TYPE]);
 			frameBulkInfo.AddCommand("tas_strafe_type " + frameBulkInfo[STRAFE_TYPE]);
@@ -107,18 +107,18 @@ namespace scripts
 				frameBulkInfo.AddCommand("_y_spt_setyaw " + frameBulkInfo[YAW_KEY]);
 		}
 		else if (frameBulkInfo[YAW_KEY] != EMPTY_FIELD)
-			throw std::exception("Unable to parse the yaw angle.");
+			throw std::exception("Unable to parse the yaw angle");
 
 		if (frameBulkInfo.IsFloat(PITCH_KEY))
 			frameBulkInfo.AddCommand("_y_spt_setpitch " + frameBulkInfo[PITCH_KEY]);
 		else if (frameBulkInfo[PITCH_KEY] != EMPTY_FIELD)
-			throw std::exception("Unable to parse the pitch angle.");
+			throw std::exception("Unable to parse the pitch angle");
 	}
 
 	void Field6(FrameBulkInfo& frameBulkInfo)
 	{
 		if (!frameBulkInfo.IsInt(TICKS))
-			throw std::exception("Tick value was not an integer!");
+			throw std::exception("Tick value was not an integer");
 
 		int ticks = std::atoi(frameBulkInfo[TICKS].c_str());
 		frameBulkInfo.data.ticks = ticks;
@@ -127,7 +127,8 @@ namespace scripts
 	void Field7(FrameBulkInfo& frameBulkInfo)
 	{
 		if (!frameBulkInfo[COMMANDS].empty())
-			frameBulkInfo.data.repeatingCommand += ";" + frameBulkInfo[COMMANDS];
+			frameBulkInfo.data.repeatingCommand.push_back(';');
+			frameBulkInfo.data.repeatingCommand += frameBulkInfo[COMMANDS];
 	}
 
 	void ValidateFieldFlags(FrameBulkInfo& frameBulkInfo)
@@ -159,9 +160,17 @@ namespace scripts
 		return frameBulkInfo.data;
 	}
 
-	void FrameBulkOutput::AddCommand(std::string newCmd)
+	void FrameBulkOutput::AddCommand(const std::string& newCmd)
 	{
-		initialCommand += ";" + newCmd;
+		initialCommand.push_back(';');
+		initialCommand += newCmd;
+	}
+
+	void FrameBulkOutput::AddCommand(char initChar, const std::string & newCmd)
+	{
+		initialCommand.push_back(';');
+		initialCommand.push_back(initChar);
+		initialCommand += newCmd;
 	}
 
 	FrameBulkInfo::FrameBulkInfo(std::istringstream& stream)
@@ -188,12 +197,12 @@ namespace scripts
 		} while (stream.good());
 	}
 
-	std::string FrameBulkInfo::operator[](std::pair<int, int> i)
+	const std::string& FrameBulkInfo::operator[](std::pair<int, int> i)
 	{
 		if (dataMap.find(i) == dataMap.end())
 		{
 			char buffer[50];
-			std::sprintf(buffer, "Unable to find index (%i, %i) in frame bulk!", i.first, i.second);
+			std::snprintf(buffer, 50, "Unable to find index (%i, %i) in frame bulk", i.first, i.second);
 
 			throw std::exception(buffer);
 		}
@@ -213,25 +222,25 @@ namespace scripts
 		return IsValue<float>(value);
 	}
 
-	void FrameBulkInfo::AddPlusMinusCmd(std::string command, bool set)
+	void FrameBulkInfo::AddPlusMinusCmd(const std::string& command, bool set)
 	{
 		if (set)
-			data.AddCommand("+" + command);
+			data.AddCommand('+', command);
 		else
-			data.AddCommand("-" + command);
+			data.AddCommand('-', command);
 	}
 
-	void FrameBulkInfo::ValidateFieldFlags(FrameBulkInfo& frameBulkInfo, const std::string &fields, int index)
+	void FrameBulkInfo::ValidateFieldFlags(FrameBulkInfo& frameBulkInfo, const std::string& fields, int index)
 	{
 		for (size_t i = 0; i < fields.length(); ++i)
 		{
 			if (fields[i] != WILDCARD)
 			{
-				std::string value = frameBulkInfo[std::make_pair(index, i)];
-				if (value != std::string(1, fields[i]) && value != std::string(1, '-'))
+				auto& value = frameBulkInfo[std::make_pair(index, i)];
+				if (value[0] != fields[i] && value[0] != '-')
 				{
 					std::ostringstream os;
-					os << "Expected " << fields[i] << ", got " << value << " in bulk: " << fields;
+					os << "Expected " << fields[i] << ", got " << value << " in field: " << fields;
 					throw std::exception(os.str().c_str());
 				}
 			}

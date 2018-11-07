@@ -36,7 +36,7 @@ namespace scripts
 		}
 		else
 		{
-			throw std::exception("Frame bulk length was negative!");
+			throw std::exception("Frame bulk length was negative");
 		}
 	}
 
@@ -114,10 +114,10 @@ namespace scripts
 	{
 		std::string data = saveName;
 
-		for (size_t i = 0; i < afterFramesEntries.size(); ++i)
+		for (auto& entry : afterFramesEntries)
 		{
-			data += std::to_string(afterFramesEntries[i].framesLeft);
-			data += afterFramesEntries[i].command;
+			data += std::to_string(entry.framesLeft);
+			data += entry.command;
 		}
 		
 		MD5 hash(data);
@@ -126,7 +126,7 @@ namespace scripts
 		return Savestate(afterFramesTick, afterFramesEntries.size(), "ss-" + digest + "-" + std::to_string(afterFramesTick));
 	}
 
-	Savestate::Savestate(int tick, int index, std::string key) : tick(tick), index(index), key(key)
+	Savestate::Savestate(int tick, int index, std::string key) : tick(tick), index(index), key(std::move(key))
 	{
 		TestExists();
 	}

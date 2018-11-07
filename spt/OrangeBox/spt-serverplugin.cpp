@@ -632,10 +632,6 @@ CON_COMMAND(_y_spt_resetpitchyaw, "Resets pitch/yaw commands.")
 	if (!engine)
 		return;
 
-#if defined( OE )
-	ArgsWrapper args(engine.get());
-#endif
-
 	clientDLL.ResetPitchYawCommands();
 }
 
@@ -941,9 +937,7 @@ CON_COMMAND(tas_script_load, "Loads and executes an .srctas script. Usage: tas_l
 #endif
 
 	if (args.ArgC() > 1)
-	{
 		scripts::g_TASReader.ExecuteScript(args.Arg(1));
-	}
 	else
 		Msg("Loads and executes an .srctas script. Usage: tas_load_script [script]\n");
 }
@@ -958,24 +952,22 @@ CON_COMMAND(tas_script_search, "Starts a variable search for an .srctas script. 
 #endif
 
 	if (args.ArgC() > 1)
-	{
 		scripts::g_TASReader.StartSearch(args.Arg(1));
-	}
 	else
 		Msg("Starts a variable search for an .srctas script. Usage: tas_load_search [script]\n");
 }
 
-CON_COMMAND(tas_script_result_success, "Returns a successful result in a variable search.")
+CON_COMMAND(tas_script_result_success, "Signals a successful result in a variable search.")
 {
 	scripts::g_TASReader.SearchResult(scripts::SearchResult::Success);
 }
 
-CON_COMMAND(tas_script_result_fail, "Returns an unsuccessful result in a variable search.")
+CON_COMMAND(tas_script_result_fail, "Signals an unsuccessful result in a variable search.")
 {
 	scripts::g_TASReader.SearchResult(scripts::SearchResult::Fail);
 }
 
-CON_COMMAND(_y_spt_findangle, "Finds yaw/pitch angle to position from player's current position.")
+CON_COMMAND(_y_spt_findangle, "Finds yaw/pitch angle from the player's position to the target position.")
 {
 #if defined( OE )
 	if (!engine)

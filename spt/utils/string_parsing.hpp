@@ -24,7 +24,7 @@ inline void GetDoublet(std::istringstream& stream, std::string& out1, std::strin
 }
 
 template<typename T>
-inline void GetDoublet(std::string& s, T& out1, T& out2, char delim)
+inline void GetDoublet(const std::string& s, T& out1, T& out2, char delim)
 {
 	std::istringstream is(s);
 	GetDoublet(is, out1, out2, delim);
@@ -40,7 +40,7 @@ inline void GetDoublet(std::istringstream& stream, T& out1, T& out2, char delim)
 }
 
 template<typename T>
-inline void GetTriplet(std::string& s, T& out1, T& out2, T& out3, char delim)
+inline void GetTriplet(const std::string& s, T& out1, T& out2, T& out3, char delim)
 {
 	std::istringstream is(s);
 	GetTriplet(is, out1, out2, out3, delim);

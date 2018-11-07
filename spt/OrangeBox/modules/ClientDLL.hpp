@@ -26,7 +26,7 @@ typedef void(__fastcall *_CViewRender__Render) (void* thisptr, int edx, void* re
 
 struct afterframes_entry_t
 {
-	afterframes_entry_t(long long int framesLeft, std::string command) : framesLeft(framesLeft), command(command) {}
+	afterframes_entry_t(long long int framesLeft, std::string command) : framesLeft(framesLeft), command(std::move(command)) {}
 	afterframes_entry_t() {}
 	long long int framesLeft;
 	std::string command;

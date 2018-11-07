@@ -47,15 +47,15 @@ namespace scripts
 			if (changes > maxChanges)
 			{
 				if(type == SearchType::None)
-					throw std::exception("Not in search mode, range variables are illegal.");
+					throw std::exception("Not in search mode, range variables are illegal");
 				else 
-					throw std::exception("Binary search only accepts one range variable.");
+					throw std::exception("Binary search only accepts one range variable");
 			}
 				
 		}
 	}
 
-	void VariableContainer::AddNewVariable(std::string type, std::string name, std::string value)
+	void VariableContainer::AddNewVariable(const std::string& type, const std::string& name, const std::string& value)
 	{
 		auto newVar = ScriptVariable(type, value);
 		variableMap[name] = newVar;
@@ -64,7 +64,7 @@ namespace scripts
 	void VariableContainer::SetResult(SearchResult result)
 	{
 		if (searchType == SearchType::None)
-			throw std::exception("Set result while not in search mode!");
+			throw std::exception("Set result while not in search mode");
 
 		lastResult = result;
 
@@ -94,7 +94,7 @@ namespace scripts
 		}
 	}
 
-	ScriptVariable::ScriptVariable(std::string type, std::string value)
+	ScriptVariable::ScriptVariable(const std::string& type, const std::string& value)
 	{
 		if (type == "var")
 		{
@@ -117,7 +117,7 @@ namespace scripts
 			data.floatRange.ParseInput(value, true);
 		}
 		else
-			throw std::exception("Unknown typename for variable!");
+			throw std::exception("Unknown typename for variable");
 	}
 
 	std::string ScriptVariable::GetPrint()
@@ -131,7 +131,7 @@ namespace scripts
 		case VariableType::FloatRange: case VariableType::AngleRange:
 			return data.floatRange.GetRangeString();
 		default:
-			throw std::exception("Unexpected variable type while printing!");
+			throw std::exception("Unexpected variable type while printing");
 		}
 	}
 
@@ -146,7 +146,7 @@ namespace scripts
 		case VariableType::FloatRange: case VariableType::AngleRange:
 			return data.floatRange.GetValue();
 		default:
-			throw std::exception("Unexpected variable type while getting value!");
+			throw std::exception("Unexpected variable type while getting value");
 		}
 	}
 
@@ -163,7 +163,7 @@ namespace scripts
 			data.floatRange.Select(search, type);
 			return true;
 		default:
-			throw std::exception("Unexpected variable type while starting iteration!");
+			throw std::exception("Unexpected variable type while starting iteration");
 		}
 	}
 }

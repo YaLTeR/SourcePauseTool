@@ -24,7 +24,7 @@ namespace scripts
 	{
 	public:
 		ScriptVariable() { variableType = VariableType::Error; }
-		ScriptVariable(std::string type, std::string value);
+		ScriptVariable(const std::string& type, const std::string& value);
 		std::string GetPrint(); // For printing the variable state
 		std::string GetValue(); // Returns the actual value of the variable in a string
 		bool Iteration(SearchResult search, SearchType type);
@@ -45,7 +45,7 @@ namespace scripts
 		void PrintBest();
 		void Clear();
 		void Iteration(SearchType type);
-		void AddNewVariable(std::string type, std::string name, std::string value);
+		void AddNewVariable(const std::string& type, const std::string& name, const std::string& value);
 		void SetResult(SearchResult result);
 		void PrintState();
 	private:

@@ -27,7 +27,7 @@ ConVar tas_strafe_vectorial("tas_strafe_vectorial", "0", FCVAR_TAS_RESET, "Deter
 ConVar tas_strafe_vectorial_increment("tas_strafe_vectorial_increment", "2.5", FCVAR_TAS_RESET, "Determines how fast the player yaw angle moves towards the target yaw angle. 0 for no movement, 180 for instant snapping. Has no effect on strafing speed.\n");
 ConVar tas_strafe_vectorial_offset("tas_strafe_vectorial_offset", "0", FCVAR_TAS_RESET, "Determines the target view angle offset from tas_strafe_yaw\n");
 ConVar tas_strafe_vectorial_snap("tas_strafe_vectorial_snap", "170", FCVAR_TAS_RESET, "Determines when the yaw angle snaps to the target yaw. Mainly used to prevent ABHing from resetting the yaw angle to the back on every jump.\n");
-ConVar tas_strafe_allow_jump_override("tas_strafe_allow_jump_override", "0", FCVAR_TAS_RESET, "Determines if strafing can override the setyaw commands for jumping and force set the yaw.\n");
+ConVar tas_strafe_allow_jump_override("tas_strafe_allow_jump_override", "0", FCVAR_TAS_RESET, "Determines if the setyaw/pitch commands are ignored when jumping + TAS strafing. Primarily used in search mode for stucklaunches when the exact time of the jump isn't known prior to running the script.\n");
 
 ConVar tas_force_airaccelerate("tas_force_airaccelerate", "", 0, "Sets the value of airaccelerate used in TAS calculations. If empty, uses the value of sv_airaccelerate.\n\nShould be set to 15 for Portal.\n");
 ConVar tas_force_wishspeed_cap("tas_force_wishspeed_cap", "", 0, "Sets the value of the wishspeed cap used in TAS calculations. If empty, uses the default value: 30.\n\nShould be set to 60 for Portal.\n");
@@ -41,7 +41,7 @@ ConVar tas_strafe_lgagst_minspeed("tas_strafe_lgagst_minspeed", "30", FCVAR_TAS_
 ConVar tas_strafe_lgagst_fullmaxspeed("tas_strafe_lgagst_fullmaxspeed", "0", FCVAR_TAS_RESET, "If enabled, LGAGST assumes the player is standing regardless of the actual ducking state. Useful for when you land while crouching but intend to stand up immediately.\n");
 ConVar tas_strafe_jumptype("tas_strafe_jumptype", "1", FCVAR_TAS_RESET, "TAS jump strafe types:\n\t0 - Does nothing,\n\t1 - Looks directly opposite to desired direction (for games with ABH),\n\t2 - Looks in desired direction (games with speed boost upon jumping but no ABH),\n\t3 - Looks in direction that results in greatest speed loss (for glitchless TASes on game with ABH).\n");
 ConVar tas_script_printvars("tas_script_printvars", "1", 0, "Prints variable information when running .srctas scripts.\n");
-ConVar tas_script_savestates("tas_script_savestates", "1", 0, "Enables/disables savestates in TAS scripts.\n");
+ConVar tas_script_savestates("tas_script_savestates", "1", 0, "Enables/disables savestates in .srctas scripts.\n");
 
 ConVar _y_spt_autojump_ensure_legit("_y_spt_autojump_ensure_legit", "1", FCVAR_ARCHIVE);
 ConVar _y_spt_afterframes_reset_on_server_activate("_y_spt_afterframes_reset_on_server_activate", "1", FCVAR_ARCHIVE);

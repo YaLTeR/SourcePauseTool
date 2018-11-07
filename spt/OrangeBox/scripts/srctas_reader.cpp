@@ -1,13 +1,14 @@
 #include "stdafx.h"
 
 #include "srctas_reader.hpp"
-#include "..\modules.hpp"
-#include "framebulk_handler.hpp"
-#include <fstream>
 #include "..\..\sptlib-wrapper.hpp"
 #include "..\..\utils\string_parsing.hpp"
 #include "..\cvars.hpp"
 #include "..\spt-serverplugin.hpp"
+#include "..\modules\ClientDLL.hpp"
+#include "..\modules.hpp"
+#include "framebulk_handler.hpp"
+#include "..\..\utils\math.hpp"
 
 namespace scripts
 {
@@ -15,13 +16,14 @@ namespace scripts
 	SourceTASReader g_TASReader;
 	const std::string SCRIPT_EXT = ".srctas";
 
-	#define dim(x) (sizeof(x) / sizeof((x)[0])) // calculates the size of an array at compile time, according to some spooky people on the internet this isn't type safe
 	const char* RESET_VARS[] = {
 		"cl_forwardspeed",
 		"cl_sidespeed",
 		"cl_yawspeed"
 	};
+
 	const int RESET_VARS_COUNT = dim(RESET_VARS);
+
 
 	SourceTASReader::SourceTASReader()
 	{
@@ -30,14 +32,14 @@ namespace scripts
 		hooked = false;
 	}
 
-	void SourceTASReader::ExecuteScript(std::string script)
+	void SourceTASReader::ExecuteScript(const std::string& script)
 	{
 		freezeVariables = false;
 		fileName = script;
 		CommonExecuteScript(false);
 	}
 
-	void SourceTASReader::StartSearch(std::string script)
+	void SourceTASReader::StartSearch(const std::string& script)
 	{
 		freezeVariables = false;
 		fileName = script;
@@ -77,13 +79,13 @@ namespace scripts
 			scriptStream.open(gameDir + "\\" + fileName + SCRIPT_EXT);
 
 			if (!scriptStream.is_open())
-				throw std::exception("File does not exist!");
+				throw std::exception("File does not exist");
 			ParseProps();
 
 			if (search && searchType == SearchType::None)
-				throw std::exception("In search mode but search property is not set!");
+				throw std::exception("In search mode but search property is not set");
 			else if (!search && searchType != SearchType::None)
-				throw std::exception("Not in search mode but search property is set!");
+				throw std::exception("Not in search mode but search property is set");
 
 			while (!scriptStream.eof())
 			{
@@ -99,7 +101,7 @@ namespace scripts
 		}
 		catch (const std::exception & ex)
 		{
-			Msg("Error in line %i: %s\n", currentLine, ex.what());
+			Msg("Error in line %i: %s!\n", currentLine, ex.what());
 		}
 		catch (const SearchDoneException&)
 		{
@@ -151,11 +153,11 @@ namespace scripts
 
 		currentScript.Init(fileName);
 
-		for (size_t i = 0; i < currentScript.afterFramesEntries.size(); ++i)
+		for (auto& entry : currentScript.afterFramesEntries)
 		{
-			if (currentScript.afterFramesEntries[i].framesLeft == NO_AFTERFRAMES_BULK)
+			if (entry.framesLeft == NO_AFTERFRAMES_BULK)
 			{
-				currentScript.AddDuringLoadCmd(currentScript.afterFramesEntries[i].command);
+				currentScript.AddDuringLoadCmd(entry.command);
 			}
 		}
 
@@ -164,11 +166,11 @@ namespace scripts
 		DevMsg("Executing start command: %s\n", startCmd.c_str());	
 		currentScript.AddAfterFramesEntry(demoDelay, "record " + demoName);
 
-		for (size_t i = 0; i < currentScript.afterFramesEntries.size(); ++i)
+		for (auto& entry : currentScript.afterFramesEntries)
 		{
-			if (currentScript.afterFramesEntries[i].framesLeft != NO_AFTERFRAMES_BULK)
+			if (entry.framesLeft != NO_AFTERFRAMES_BULK)
 			{
-				clientDLL.AddIntoAfterframesQueue(currentScript.afterFramesEntries[i]);
+				clientDLL.AddIntoAfterframesQueue(entry);
 			}
 		}
 	}
@@ -307,7 +309,9 @@ namespace scripts
 	void SourceTASReader::ParseProp()
 	{
 		if (isLineEmpty())
+		{
 			return;
+		}	
 
 		std::string prop;
 		std::string value;
@@ -318,10 +322,10 @@ namespace scripts
 			(this->*propertyHandlers[prop])(value);
 		}
 		else
-			throw std::exception("Unknown property name!");
+			throw std::exception("Unknown property name");
 	}
 
-	void SourceTASReader::HandleSettings(std::string & value)
+	void SourceTASReader::HandleSettings(const std::string & value)
 	{
 		currentScript.AddDuringLoadCmd(value);
 	}
@@ -403,22 +407,22 @@ namespace scripts
 		propertyHandlers["velabs"] = &SourceTASReader::HandleAbsVel;
 	}
 
-	void SourceTASReader::HandleSave(std::string& value)
+	void SourceTASReader::HandleSave(const std::string& value)
 	{
 		currentScript.SetSave(value);
 	}
 
-	void SourceTASReader::HandleDemo(std::string& value)
+	void SourceTASReader::HandleDemo(const std::string& value)
 	{
 		demoName = value;
 	}
 
-	void SourceTASReader::HandleDemoDelay(std::string& value)
+	void SourceTASReader::HandleDemoDelay(const std::string& value)
 	{
 		demoDelay = ParseValue<int>(value);
 	}
 
-	void SourceTASReader::HandleSearch(std::string& value)
+	void SourceTASReader::HandleSearch(const std::string& value)
 	{
 		if (value == "low")
 			searchType = SearchType::Lowest;
@@ -427,42 +431,40 @@ namespace scripts
 		else if (value == "random")
 			searchType = SearchType::Random;
 		else
-		{
-			throw std::exception("Search type was invalid!");
-		}
+			throw std::exception("Search type was invalid");
 	}
 
-	void SourceTASReader::HandlePlaybackSpeed(std::string & value)
+	void SourceTASReader::HandlePlaybackSpeed(const std::string & value)
 	{
 		playbackSpeed = ParseValue<float>(value);
 		if (playbackSpeed <= 0.0f)
-			throw std::exception("Playback speed has to be positive!");
+			throw std::exception("Playback speed has to be positive");
 	}
 
-	void SourceTASReader::HandleTickTime(std::string & value)
+	void SourceTASReader::HandleTickTime(const std::string & value)
 	{
 		tickTime = ParseValue<float>(value);
 		if (tickTime <= 0.0f)
-			throw std::exception("Tick time has to be positive!");
+			throw std::exception("Tick time has to be positive");
 		else if (tickTime > 1.0f)
-			throw std::exception("Ticks are not this long.");
+			throw std::exception("Ticks are not this long");
 	}
 
-	void SourceTASReader::HandleTickRange(std::string & value)
+	void SourceTASReader::HandleTickRange(const std::string & value)
 	{
 		int min, max;
 		GetDoublet(value, min, max, '|');
 		conditions.push_back(std::unique_ptr<Condition>(new TickRangeCondition(min, max, false)));
 	}
 
-	void SourceTASReader::HandleTicksFromEndRange(std::string & value)
+	void SourceTASReader::HandleTicksFromEndRange(const std::string & value)
 	{
 		int min, max;
 		GetDoublet(value, min, max, '|');
 		conditions.push_back(std::unique_ptr<Condition>(new TickRangeCondition(min, max, true)));
 	}
 
-	void SourceTASReader::HandlePosVel(std::string & value, Axis axis, bool isPos)
+	void SourceTASReader::HandlePosVel(const std::string & value, Axis axis, bool isPos)
 	{
 		float min, max;
 		GetDoublet(value, min, max, '|');

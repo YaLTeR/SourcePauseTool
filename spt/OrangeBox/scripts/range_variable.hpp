@@ -20,13 +20,13 @@ namespace scripts
 		void Select(SearchResult lastResult, SearchType type);
 		std::string GetValue();
 		std::string GetRangeString();
-		void ParseInput(std::string value, bool angle);
-		void ParseValues(std::string value);
+		void ParseInput(const std::string& value, bool angle);
+		void ParseValues(const std::string& value);
 
 	private:
 		void SelectLow(SearchResult lastResult);
 		void SelectHigh(SearchResult lastResult);
-		void SelectRandom(SearchResult lastResult);
+		void SelectRandom();
 		void SelectMiddle();
 		T Normalize(T value);
 		T GetValueForIndex(int index);
@@ -70,7 +70,7 @@ namespace scripts
 	}
 
 	template<typename T>
-	inline void RangeVariable<T>::ParseInput(std::string value, bool angle)
+	inline void RangeVariable<T>::ParseInput(const std::string& value, bool angle)
 	{
 		isAngle = angle;
 		ParseValues(value);
@@ -80,7 +80,7 @@ namespace scripts
 
 
 	template<typename T>
-	inline void RangeVariable<T>::ParseValues(std::string value)
+	inline void RangeVariable<T>::ParseValues(const std::string& value)
 	{
 		GetTriplet(value, initialLow, initialHigh, increment, '|');
 		
@@ -115,10 +115,10 @@ namespace scripts
 			SelectHigh(lastResult);
 			break;
 		case SearchType::Random:
-			SelectRandom(lastResult);
+			SelectRandom();
 			break;
 		default:
-			throw std::exception("Search type is not implemented or not in search mode.");
+			throw std::exception("Search type is not implemented or not in search mode");
 			break;
 		}
 
@@ -143,7 +143,7 @@ namespace scripts
 			highIndex = valueIndex;
 			break;
 		default:
-			throw std::exception("Unexpected search result received.");
+			throw std::exception("Unexpected search result received");
 		}
 
 		SelectMiddle();
@@ -161,14 +161,14 @@ namespace scripts
 			highIndex = valueIndex;
 			break;
 		default:
-			throw std::exception("Unexpected search result received.");
+			throw std::exception("Unexpected search result received");
 		}
 
 		SelectMiddle();	
 	}
 
 	template<typename T>
-	inline void RangeVariable<T>::SelectRandom(SearchResult)
+	inline void RangeVariable<T>::SelectRandom()
 	{
 		valueIndex = uniformRandom(rng);
 	}

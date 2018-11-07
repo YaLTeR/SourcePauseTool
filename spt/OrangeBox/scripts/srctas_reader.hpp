@@ -2,9 +2,8 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#include "variable_container.hpp"
-#include "..\modules\ClientDLL.hpp"
 #include <map>
+#include "variable_container.hpp"
 #include "condition.hpp"
 #include "range_variable.hpp"
 #include "parsed_script.hpp"
@@ -15,8 +14,8 @@ namespace scripts
 	{
 	public:
 		SourceTASReader();
-		void ExecuteScript(std::string script);
-		void StartSearch(std::string script);
+		void ExecuteScript(const std::string& script);
+		void StartSearch(const std::string& script);
 		void SearchResult(scripts::SearchResult result);
 		void OnAfterFrames();
 	private:
@@ -38,7 +37,7 @@ namespace scripts
 
 		VariableContainer variables;
 		ParsedScript currentScript;
-		std::map<std::string, void(SourceTASReader::*)(std::string&)> propertyHandlers;
+		std::map<std::string, void(SourceTASReader::*)(const std::string&)> propertyHandlers;
 		std::vector<std::unique_ptr<Condition>> conditions;
 
 		void CommonExecuteScript(bool search);
@@ -55,27 +54,27 @@ namespace scripts
 		void InitPropertyHandlers();
 		void ParseProps();
 		void ParseProp();
-		void HandleSettings(std::string& value);
-		void HandleSave(std::string& value);
-		void HandleDemo(std::string& value);
-		void HandleDemoDelay(std::string& value);
-		void HandleSearch(std::string& value);
-		void HandlePlaybackSpeed(std::string& value);
-		void HandleTickTime(std::string& value);
-		void HandleTickRange(std::string& value);
-		void HandleTicksFromEndRange(std::string& value);
+		void HandleSettings(const std::string& value);
+		void HandleSave(const std::string& value);
+		void HandleDemo(const std::string& value);
+		void HandleDemoDelay(const std::string& value);
+		void HandleSearch(const std::string& value);
+		void HandlePlaybackSpeed(const std::string& value);
+		void HandleTickTime(const std::string& value);
+		void HandleTickRange(const std::string& value);
+		void HandleTicksFromEndRange(const std::string& value);
 		
-		void HandleXPos(std::string& value) { HandlePosVel(value, Axis::AxisX, true); }
-		void HandleYPos(std::string& value) { HandlePosVel(value, Axis::AxisY, true); }
-		void HandleZPos(std::string& value) { HandlePosVel(value, Axis::AxisZ, true); }
+		void HandleXPos(const std::string& value) { HandlePosVel(value, Axis::AxisX, true); }
+		void HandleYPos(const std::string& value) { HandlePosVel(value, Axis::AxisY, true); }
+		void HandleZPos(const std::string& value) { HandlePosVel(value, Axis::AxisZ, true); }
 
-		void HandleXVel(std::string& value) { HandlePosVel(value, Axis::AxisX, false); }
-		void HandleYVel(std::string& value) { HandlePosVel(value, Axis::AxisY, false); }
-		void HandleZVel(std::string& value) { HandlePosVel(value, Axis::AxisZ, false); }
-		void HandleAbsVel(std::string& value) { HandlePosVel(value, Axis::Abs, false); }
-		void Handle2DVel(std::string& value) { HandlePosVel(value, Axis::TwoD, false); }
+		void HandleXVel(const std::string& value) { HandlePosVel(value, Axis::AxisX, false); }
+		void HandleYVel(const std::string& value) { HandlePosVel(value, Axis::AxisY, false); }
+		void HandleZVel(const std::string& value) { HandlePosVel(value, Axis::AxisZ, false); }
+		void HandleAbsVel(const std::string& value) { HandlePosVel(value, Axis::Abs, false); }
+		void Handle2DVel(const std::string& value) { HandlePosVel(value, Axis::TwoD, false); }
 
-		void HandlePosVel(std::string& value, Axis axis, bool isPos);
+		void HandlePosVel(const std::string& value, Axis axis, bool isPos);
 
 		void ParseVariables();
 		void ParseVariable();
