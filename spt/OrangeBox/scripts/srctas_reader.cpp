@@ -370,7 +370,9 @@ namespace scripts
 	void SourceTASReader::ParseFrameBulk()
 	{
 		if (isLineEmpty())
+		{
 			return;
+		}	
 		else if (line.find("ss") == 0)
 		{
 			currentScript.AddSaveState();
