@@ -259,9 +259,9 @@ namespace scripts
 		for (int i = 0; i < RESET_VARS_COUNT; ++i)
 		{
 			auto resetCmd = icvar->FindVar(RESET_VARS[i]);
-			if (cmd != NULL)
+			if (resetCmd != NULL)
 			{
-				DevMsg("Resetting var %s to value %s\n", cmd->GetName(), resetCmd->GetDefault());
+				DevMsg("Resetting var %s to value %s\n", resetCmd->GetName(), resetCmd->GetDefault());
 				resetCmd->SetValue(resetCmd->GetDefault());
 			}
 			else
