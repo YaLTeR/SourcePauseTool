@@ -102,25 +102,12 @@ void DefaultFOVChangeCallback(ConVar *var, char const *pOldString)
 	}
 }
 
-#ifndef P2
-IServerUnknown* GetServerPlayer()
-{
-	if (!engine_server)
-		return nullptr;
-
-	auto edict = engine_server->PEntityOfEntIndex(1);
-	if (!edict)
-		return nullptr;
-
-	return edict->GetUnknown();
-}
-
 IVEngineServer* GetEngine()
 {
 	return engine_server;
 }
 
-ICvar * GetCvarInterface()
+ICvar* GetCvarInterface()
 {
 	return g_pCVar;
 }
@@ -134,6 +121,18 @@ std::string GetGameDir()
 #endif
 }
 
+#ifndef P2
+IServerUnknown* GetServerPlayer()
+{
+	if (!engine_server)
+		return nullptr;
+
+	auto edict = engine_server->PEntityOfEntIndex(1);
+	if (!edict)
+		return nullptr;
+
+	return edict->GetUnknown();
+}
 #else
 // TODO
 IServerUnknown* GetServerPlayer()
