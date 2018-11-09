@@ -20,7 +20,7 @@ inline void GetDoublet(std::istringstream& stream, std::string& out1, std::strin
 	std::getline(stream, out1, delim);
 	if (!stream.good())
 		throw std::exception("Unable to read doublet!");
-	std::getline(stream, out2, delim);
+	std::getline(stream, out2);
 }
 
 template<typename T>
@@ -64,7 +64,7 @@ inline void GetTriplet(std::istringstream& stream, std::string& out1, std::strin
 	std::getline(stream, out2, delim);
 	if (!stream.good())
 		throw std::exception("Unable to read triplet!");
-	std::getline(stream, out3, delim);
+	std::getline(stream, out3);
 }
 
 template<typename T>

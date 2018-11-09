@@ -7,14 +7,16 @@
 
 namespace scripts
 {
-	void ParsedScript::AddDuringLoadCmd(std::string cmd)
+	void ParsedScript::AddDuringLoadCmd(const std::string& cmd)
 	{
-		duringLoad += ";" + cmd;
+		duringLoad.push_back(';');
+		duringLoad += cmd;
 	}
 
-	void ParsedScript::AddInitCommand(std::string cmd)
+	void ParsedScript::AddInitCommand(const std::string& cmd)
 	{
-		initCommand += ";" + cmd;
+		initCommand.push_back(';');
+		initCommand += cmd;
 	}
 
 	void ParsedScript::AddFrameBulk(FrameBulkOutput& output)
@@ -59,7 +61,7 @@ namespace scripts
 
 	void ParsedScript::Init(std::string name)
 	{
-		this->scriptName = name;
+		this->scriptName = std::move(name);
 		int saveStateIndex = -1;
 
 		for (size_t i = 0; i < saveStates.size(); ++i)
@@ -107,7 +109,7 @@ namespace scripts
 
 	void ParsedScript::AddAfterFramesEntry(long long int tick, std::string command)
 	{
-		afterFramesEntries.push_back(afterframes_entry_t(tick, command));
+		afterFramesEntries.push_back(afterframes_entry_t(tick, std::move(command)));
 	}
 
 	Savestate ParsedScript::GetSaveStateInfo()

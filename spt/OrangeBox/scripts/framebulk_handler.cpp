@@ -166,7 +166,7 @@ namespace scripts
 		initialCommand += newCmd;
 	}
 
-	void FrameBulkOutput::AddCommand(char initChar, const std::string & newCmd)
+	void FrameBulkOutput::AddCommand(char initChar, const std::string& newCmd)
 	{
 		initialCommand.push_back(';');
 		initialCommand.push_back(initChar);

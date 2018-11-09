@@ -32,8 +32,8 @@ namespace scripts
 		void Reset();
 		void Init(std::string name);
 
-		void AddDuringLoadCmd(std::string cmd);
-		void AddInitCommand(std::string cmd);
+		void AddDuringLoadCmd(const std::string& cmd);
+		void AddInitCommand(const std::string& cmd);
 		void AddFrameBulk(FrameBulkOutput& output);
 		void AddSaveState();
 		void AddAfterFramesEntry(long long int tick, std::string command);

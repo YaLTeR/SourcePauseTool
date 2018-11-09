@@ -1,9 +1,7 @@
 #include "stdafx.h"
 #include "string_parsing.hpp"
-#include <sstream>
 
-
-void ReplaceAll(std::string & str, const std::string & from, const std::string & to)
+void ReplaceAll(std::string& str, const std::string& from, const std::string& to)
 {
 	if (from.empty())
 		return;

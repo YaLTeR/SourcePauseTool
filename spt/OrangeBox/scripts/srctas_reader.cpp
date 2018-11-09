@@ -329,6 +329,7 @@ namespace scripts
 
 	void SourceTASReader::HandleSettings(const std::string & value)
 	{
+		Msg("Adding command %s\n", value.c_str());
 		currentScript.AddDuringLoadCmd(value);
 	}
 
