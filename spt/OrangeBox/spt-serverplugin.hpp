@@ -9,6 +9,7 @@
 #include "engine\iserverplugin.h"
 #include "custom_interfaces.hpp"
 #include "eiface.h"
+#include "icvar.h"
 
 //---------------------------------------------------------------------------------
 // Purpose: a sample 3rd party plugin class
@@ -57,6 +58,8 @@ public:
 
 IServerUnknown* GetServerPlayer();
 IVEngineServer* GetEngine();
+ICvar* GetCvarInterface();
+std::string GetGameDir();
 
 #if defined( OE )
 struct ArgsWrapper

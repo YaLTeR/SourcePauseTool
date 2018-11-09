@@ -4,12 +4,14 @@
 #include "..\modules.hpp"
 #include "..\patterns.hpp"
 #include "..\..\strafestuff.hpp"
+#include "..\..\utils\math.hpp"
 #include "..\..\sptlib-wrapper.hpp"
 #include <SPTLib\memutils.hpp>
 #include <SPTLib\detoursutils.hpp>
 #include <SPTLib\hooks.hpp>
 #include "ClientDLL.hpp"
 #include "..\overlay\overlay-renderer.hpp"
+#include "..\scripts\srctas_reader.hpp"
 
 #ifdef max
 #undef max
@@ -86,7 +88,6 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		pMiddleOfCAM_Think,
 		pGetGroundEntity,
 		pCalcAbsoluteVelocity,
-		pReleaseRenderTargets,
 		pCViewRender__RenderView,
 		pCViewRender__Render;
 
@@ -619,6 +620,8 @@ void ClientDLL::OnFrame()
 				EngineConCmd("demo_pause");
 		}
 	}
+
+	scripts::g_TASReader.OnAfterFrames();
 }
 
 void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, int y, int w, int h)
@@ -743,15 +746,30 @@ int __fastcall ClientDLL::HOOKED_GetButtonBits_Func(void* thisptr, int edx, int 
 	return rv;
 }
 
+bool DoAngleChange(float& angle, float target)
+{
+	float normalizedDiff = NormalizeDeg(target - angle);
+	if (std::abs(normalizedDiff) > _y_spt_anglesetspeed.GetFloat())
+	{
+		angle += std::copysign(_y_spt_anglesetspeed.GetFloat(), normalizedDiff);
+		return true;
+	}
+	else
+	{
+		angle = target;
+		return false;
+	}		
+}
+
 void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, float frametime)
 {
 	ORIG_AdjustAngles(thisptr, edx, frametime);
 
 	if (!pCmd)
 		return;
-
 	float va[3];
 	EngineGetViewAngles(va);
+	float startYaw = va[YAW];
 
 	double pitchSpeed = atof(_y_spt_pitchspeed.GetString()),
 		yawSpeed = atof(_y_spt_yawspeed.GetString());
@@ -760,18 +778,19 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		va[PITCH] += pitchSpeed;
 	if (setPitch.set)
 	{
-		setPitch.set = false;
-		va[PITCH] = setPitch.angle;
+		setPitch.set = DoAngleChange(va[PITCH], setPitch.angle);
 	}
 
 	if (yawSpeed != 0.0f)
+	{
 		va[YAW] += yawSpeed;
+	}
 	if (setYaw.set)
 	{
-		setYaw.set = false;
-		va[YAW] = setYaw.angle;
+		setYaw.set = DoAngleChange(va[YAW], setYaw.angle);
 	}
-	else if (tasAddressesWereFound && yawSpeed == 0.0f && tas_strafe.GetBool())
+
+	if (tasAddressesWereFound && tas_strafe.GetBool())
 	{
 		auto player = GetLocalPlayer();
 		auto onground = (GetGroundEntity(player, 0) != NULL); // TODO: This should really be a proper check.
@@ -884,16 +903,21 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		}
 
 		Friction(pl, onground, vars);
+		bool yawChanged = va[YAW] != startYaw;
 
-		if (tas_strafe_vectorial.GetBool())
-			StrafeVectorial(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed);
-		else
+		if (tas_strafe_vectorial.GetBool()) // Can do vectorial strafing even with locked camera, provided we are not jumping
+			StrafeVectorial(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, yawChanged);
+		else if(!yawChanged) // not changing yaw, can do regular strafe
 			Strafe(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, btns, usingButtons);
 
-		forceJump = out.Jump;
-		*reinterpret_cast<float*>(pCmd + offForwardmove) = out.ForwardSpeed;
-		*reinterpret_cast<float*>(pCmd + offSidemove) = out.SideSpeed;
-		va[YAW] = static_cast<float>(out.Yaw);
+		// This bool is set if strafing should occur
+		if (out.Processed)
+		{
+			forceJump = out.Jump;
+			*reinterpret_cast<float*>(pCmd + offForwardmove) = out.ForwardSpeed;
+			*reinterpret_cast<float*>(pCmd + offSidemove) = out.SideSpeed;
+			va[YAW] = static_cast<float>(out.Yaw);
+		}
 	}
 
 	EngineSetViewAngles(va);

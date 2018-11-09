@@ -19,33 +19,13 @@
 
 #include "OrangeBox/cvars.hpp"
 #include "strafestuff.hpp"
+#include "utils/math.hpp"
 
 // This code is a messed up version of hlstrafe,
 // go take a look at that instead:
 // https://github.com/HLTAS/hlstrafe
 
 static const constexpr double SAFEGUARD_THETA_DIFFERENCE_RAD = M_PI / 65536;
-
-// Return angle in [-Pi; Pi).
-inline double NormalizeRad(double a)
-{
-	a = std::fmod(a, M_PI * 2);
-	if (a >= M_PI)
-		a -= 2 * M_PI;
-	else if (a < -M_PI)
-		a += 2 * M_PI;
-	return a;
-}
-
-inline double NormalizeDeg(double a)
-{
-	a = std::fmod(a, 360.0);
-	if (a >= 180.0)
-		a -= 360.0;
-	else if (a < -180.0)
-		a += 360.0;
-	return a;
-}
 
 // Convert both arguments to doubles.
 inline double Atan2(double a, double b)
@@ -307,10 +287,15 @@ bool StrafeJump(PlayerData& player, const MovementVars& vars, bool ducking, Proc
 }
 
 
-void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed)
+void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed, bool lockCamera)
 {
 	if (jumped && StrafeJump(player, vars, ducking, out)) {
-		MapSpeeds(out, vars);
+		if (!lockCamera || tas_strafe_allow_jump_override.GetBool())
+		{
+			out.Processed = true;
+			MapSpeeds(out, vars);
+		}
+	
 		return;
 	}
 
@@ -320,22 +305,28 @@ void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground
 	// If forward is pressed, strafing should occur
 	if (dummy.Forward)
 	{
-		// Calculate updated yaw
-		double normalizedDiff = NormalizeDeg(target_yaw - vel_yaw + tas_strafe_vectorial_offset.GetFloat());
-		double additionAbs = std::min(static_cast<double>(tas_strafe_vectorial_increment.GetFloat()), std::abs(normalizedDiff));
+		if (!lockCamera && tas_strafe_vectorial_increment.GetFloat() > 0)
+		{
+			// Calculate updated yaw
+			double adjustedTarget = NormalizeDeg(target_yaw + tas_strafe_vectorial_offset.GetFloat());
+			double normalizedDiff = NormalizeDeg(adjustedTarget - vel_yaw);
+			double additionAbs = std::min(static_cast<double>(tas_strafe_vectorial_increment.GetFloat()), std::abs(normalizedDiff));
 
-		// Snap to target if difference too large(likely due to an ABH)
-		if (std::abs(normalizedDiff) > tas_strafe_vectorial_snap.GetFloat() && tas_strafe_vectorial_increment.GetFloat() > 0)
-			out.Yaw = target_yaw;
+			// Snap to target if difference too large (likely due to an ABH)
+			if (std::abs(normalizedDiff) > tas_strafe_vectorial_snap.GetFloat())
+				out.Yaw = adjustedTarget;
+			else
+				out.Yaw = vel_yaw + std::copysign(additionAbs, normalizedDiff);
+		}
 		else
-			out.Yaw = vel_yaw + std::copysign(additionAbs, normalizedDiff);
+			out.Yaw = vel_yaw;
 
 		// Set move speeds to match the current yaw to produce the acceleration in direction thetaDeg
 		double thetaDeg = dummy.Yaw;
 		double diff = (out.Yaw - thetaDeg) * M_DEG2RAD;
-
 		out.ForwardSpeed = static_cast<float>(std::cos(diff) * vars.Maxspeed);
 		out.SideSpeed = static_cast<float>(std::sin(diff) * vars.Maxspeed);
+		out.Processed = true;
 	}
 }
 
@@ -344,6 +335,7 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 {
 	//DevMsg("[Strafing] ducking = %d\n", (int)ducking);
 	if (jumped && StrafeJump(player, vars, ducking, out)) {
+		out.Processed = true;
 		MapSpeeds(out, vars);
 		return onground;
 	}
@@ -354,96 +346,28 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 
 	Button usedButton;
 	bool strafed;
-	//if (frame.Strafe) {
 	strafed = true;
 
 	switch (dir) {
-		//case StrafeDir::LEFT:
-		//	if (type == StrafeType::MAXACCEL)
-		//		out.Yaw = static_cast<float>(SideStrafeMaxAccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, false) * M_RAD2DEG);
-		//	else if (type == StrafeType::MAXANGLE)
-		//		out.Yaw = static_cast<float>(SideStrafeMaxAngle(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, false) * M_RAD2DEG);
-		//	//else if (type == StrafeType::CONSTSPEED)
-		//	//	out.Yaw = static_cast<float>(SideStrafeConstSpeed(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, false) * M_RAD2DEG);
-		//	//else if (type == StrafeType::MAXDECCEL) {
-		//	//	auto yaw = static_cast<float>(SideStrafeMaxDeccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, false, strafed) * M_RAD2DEG);
-		//	//	if (strafed)
-		//	//		out.Yaw = yaw;
-		//	//}
-		//	break;
-
-		//case StrafeDir::RIGHT:
-		//	if (type == StrafeType::MAXACCEL)
-		//		out.Yaw = static_cast<float>(SideStrafeMaxAccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, true) * M_RAD2DEG);
-		//	else if (type == StrafeType::MAXANGLE)
-		//		out.Yaw = static_cast<float>(SideStrafeMaxAngle(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, true) * M_RAD2DEG);
-		//	//else if (type == StrafeType::CONSTSPEED)
-		//	//	out.Yaw = static_cast<float>(SideStrafeConstSpeed(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, true) * M_RAD2DEG);
-		//	//else if (type == StrafeType::MAXDECCEL) {
-		//	//	auto yaw = static_cast<float>(SideStrafeMaxDeccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, true, strafed) * M_RAD2DEG);
-		//	//	if (strafed)
-		//	//		out.Yaw = yaw;
-		//	//}
-		//	break;
-
-		//case StrafeDir::BEST:
-		//	if (type == StrafeType::MAXACCEL)
-		//		out.Yaw = static_cast<float>(BestStrafeMaxAccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD) * M_RAD2DEG);
-		//	else if (type == StrafeType::MAXANGLE)
-		//		out.Yaw = static_cast<float>(BestStrafeMaxAngle(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD) * M_RAD2DEG);
-		//	else if (type == StrafeType::CONSTSPEED)
-		//		out.Yaw = static_cast<float>(BestStrafeConstSpeed(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD) * M_RAD2DEG);
-		//	else if (type == StrafeType::MAXDECCEL) {
-		//		auto yaw = static_cast<float>(BestStrafeMaxDeccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, strafed) * M_RAD2DEG);
-		//		if (strafed)
-		//			out.Yaw = yaw;
-		//	}
-		//	break;
-
 	case StrafeDir::YAW:
 		if (type == StrafeType::MAXACCEL)
 			out.Yaw = YawStrafeMaxAccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD) * M_RAD2DEG;
 		else if (type == StrafeType::MAXANGLE)
 			out.Yaw = YawStrafeMaxAngle(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD) * M_RAD2DEG;
-		//else if (type == StrafeType::CONSTSPEED)
-		//	out.Yaw = static_cast<float>(YawStrafeConstSpeed(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD) * M_RAD2DEG);
-		//else if (type == StrafeType::MAXDECCEL) {
-		//	auto yaw = static_cast<float>(YawStrafeMaxDeccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD, strafed) * M_RAD2DEG);
-		//	if (strafed)
-		//		out.Yaw = yaw;
-		//}
 		break;
-
-		//case StrafeDir::POINT:
-		//{
-		//	double point[] = { frame.GetX(), frame.GetY() };
-		//	auto yaw = static_cast<float>(PointStrafe(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, type, point, strafed) * M_RAD2DEG);
-		//	if (strafed)
-		//		out.Yaw = yaw;
-		//}
-		//break;
-
 	default:
 		strafed = false;
 		break;
 	}
-	//}
-
-	//std::ostringstream o;
-	//o << std::setprecision(8) << std::fixed << "[Strafing] wishspeed = " << wishspeed << "; speed = " << player.Velocity.Length2D();
-
-	//out.Yaw = static_cast<float>(YawStrafeMaxAccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD) * M_RAD2DEG);
 
 	if (strafed) {
 		out.Forward = (usedButton == Button::FORWARD || usedButton == Button::FORWARD_LEFT || usedButton == Button::FORWARD_RIGHT);
 		out.Back = (usedButton == Button::BACK || usedButton == Button::BACK_LEFT || usedButton == Button::BACK_RIGHT);
 		out.Right = (usedButton == Button::RIGHT || usedButton == Button::FORWARD_RIGHT || usedButton == Button::BACK_RIGHT);
 		out.Left = (usedButton == Button::LEFT || usedButton == Button::FORWARD_LEFT || usedButton == Button::BACK_LEFT);
+		out.Processed = true;
 		MapSpeeds(out, vars);
 	}
-
-	//o << "; resulting yaw = " << out.Yaw << "; predicted speed = " << player.Velocity.Length2D() << "\n";
-	//DevMsg("%s", o.str().c_str());
 
 	return onground;
 }

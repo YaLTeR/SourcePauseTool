@@ -5,7 +5,7 @@
 #include "..\modules\ClientDLL.hpp"
 #include "..\modules.hpp"
 #include "..\..\sptlib-wrapper.hpp"
-#include "..\..\strafestuff.hpp"
+#include "..\..\utils\math.hpp"
 #include "portal_camera.hpp"
 
 CameraInformation rearViewMirrorOverlay()

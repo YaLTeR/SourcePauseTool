@@ -9,6 +9,7 @@
 #include <SPTLib\Hooks.hpp>
 #include "custom_interfaces.hpp"
 #include "vstdlib\random.h"
+#include "scripts\srctas_reader.hpp"
 
 #include "cdll_int.h"
 #include "engine\iserverplugin.h"
@@ -118,6 +119,21 @@ IVEngineServer* GetEngine()
 {
 	return engine_server;
 }
+
+ICvar * GetCvarInterface()
+{
+	return g_pCVar;
+}
+
+std::string GetGameDir()
+{
+#ifdef OE
+	return "hl2";
+#else
+	return engine->GetGameDirectory();
+#endif
+}
+
 #else
 // TODO
 IServerUnknown* GetServerPlayer()
@@ -461,8 +477,6 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 	}
 
 	float r = random->RandomFloat(min, max);
-
-	const char *value = args.Arg(2);
 	cvar->SetValue(r);
 }
 
@@ -520,7 +534,7 @@ void TestCanJb(float height)
 
 	constexpr float gravity = 600;
 	constexpr float groundThreshold = 2.0f;
-	constexpr float ticktime = 0.015f;
+	float ticktime = engineDLL.GetTickrate();
 	constexpr int maxIterations = 1000;
 
 	for (int i = 0; i < maxIterations && (vel.z > 0 || player_origin.z >= height); ++i)
@@ -613,6 +627,14 @@ CON_COMMAND(_y_spt_setyaw, "Sets the yaw. Usage: _y_spt_setyaw <yaw>")
 	clientDLL.SetYaw( atof(args.Arg(1)) );
 }
 
+CON_COMMAND(_y_spt_resetpitchyaw, "Resets pitch/yaw commands.")
+{
+	if (!engine)
+		return;
+
+	clientDLL.ResetPitchYawCommands();
+}
+
 CON_COMMAND(_y_spt_setangles, "Sets the angles. Usage: _y_spt_setangles <pitch> <yaw>")
 {
 	if (!engine)
@@ -697,6 +719,69 @@ CON_COMMAND(y_spt_timer_reset, "Stops and resets the SPT timer.")
 CON_COMMAND(y_spt_timer_print, "Prints the current time of the SPT timer.")
 {
 	Warning("Current time (in ticks): %u\n", serverDLL.GetTicksPassed());
+}
+
+CON_COMMAND(tas_script_load, "Loads and executes an .srctas script. Usage: tas_load_script [script]")
+{
+#if defined( OE )
+	if (!engine)
+		return;
+
+	ArgsWrapper args(engine.get());
+#endif
+
+	if (args.ArgC() > 1)
+		scripts::g_TASReader.ExecuteScript(args.Arg(1));
+	else
+		Msg("Loads and executes an .srctas script. Usage: tas_load_script [script]\n");
+}
+
+CON_COMMAND(tas_script_search, "Starts a variable search for an .srctas script. Usage: tas_load_search [script]")
+{
+#if defined( OE )
+	if (!engine)
+		return;
+
+	ArgsWrapper args(engine.get());
+#endif
+
+	if (args.ArgC() > 1)
+		scripts::g_TASReader.StartSearch(args.Arg(1));
+	else
+		Msg("Starts a variable search for an .srctas script. Usage: tas_load_search [script]\n");
+}
+
+CON_COMMAND(tas_script_result_success, "Signals a successful result in a variable search.")
+{
+	scripts::g_TASReader.SearchResult(scripts::SearchResult::Success);
+}
+
+CON_COMMAND(tas_script_result_fail, "Signals an unsuccessful result in a variable search.")
+{
+	scripts::g_TASReader.SearchResult(scripts::SearchResult::Fail);
+}
+
+CON_COMMAND(_y_spt_findangle, "Finds the yaw/pitch angle required to look at the given position from player's current position.")
+{
+#if defined( OE )
+	if (!engine)
+		return;
+
+	ArgsWrapper args(engine.get());
+#endif
+	Vector target;
+
+	if (args.ArgC() > 3)
+	{
+		target.x = atof(args.Arg(1));
+		target.y = atof(args.Arg(2));
+		target.z = atof(args.Arg(3));
+
+		Vector player_origin = clientDLL.GetPlayerEyePos();
+		Vector diff = (target - player_origin);
+		QAngle angles;
+		VectorAngles(diff, angles);
+	}
 }
 
 #if SSDK2007
@@ -904,4 +989,5 @@ CON_COMMAND(y_spt_find_seam_shot, "y_spt_find_seam_shot [<pitch1> <yaw1> <pitch2
 
 	Msg("Could not find a seam shot. Best guess: setang %.8f %.8f 0\n", test.x, test.y);
 }
+
 #endif

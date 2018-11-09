@@ -3,7 +3,6 @@
 #ifdef SSDK2007
 #include "overlay-renderer.hpp"
 #include "..\modules\ClientDLL.hpp"
-#include "..\modules\EngineDLL.hpp"
 #include "..\modules.hpp"
 #include <SDK\hl_movedata.h>
 #include "..\cvars.hpp"
@@ -16,7 +15,7 @@ const int VIEWMODEL_MASK = ~RENDERVIEW_DRAWVIEWMODEL;
 
 bool OverlayRenderer::shouldRenderOverlay()
 {
-	return _y_spt_overlay.GetBool() && !engineDLL.Demo_IsPlayingBack();
+	return _y_spt_overlay.GetBool();
 }
 
 bool OverlayRenderer::shouldFlipScreens()

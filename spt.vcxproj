@@ -29,7 +29,7 @@
   <PropertyGroup Label="Globals">
     <ProjectName>SPT</ProjectName>
     <ProjectGuid>{B6572CBE-7C7F-4FFF-94DE-AFBBBAB11C64}</ProjectGuid>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -739,6 +739,11 @@
     <ClCompile Include="spt\OrangeBox\overlay\overlay-renderer.cpp" />
     <ClCompile Include="spt\OrangeBox\overlay\overlays.cpp" />
     <ClCompile Include="spt\OrangeBox\overlay\portal_camera.cpp" />
+    <ClCompile Include="spt\OrangeBox\scripts\condition.cpp" />
+    <ClCompile Include="spt\OrangeBox\scripts\framebulk_handler.cpp" />
+    <ClCompile Include="spt\OrangeBox\scripts\parsed_script.cpp" />
+    <ClCompile Include="spt\OrangeBox\scripts\srctas_reader.cpp" />
+    <ClCompile Include="spt\OrangeBox\scripts\variable_container.cpp" />
     <ClCompile Include="spt\OrangeBox\spt-serverplugin.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">NotUsing</PrecompiledHeader>
@@ -777,6 +782,9 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">stdafx.hpp</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">stdafx.hpp</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="spt\utils\math.cpp" />
+    <ClCompile Include="spt\utils\md5.cpp" />
+    <ClCompile Include="spt\utils\string_parsing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib" />
@@ -826,10 +834,19 @@
     <ClInclude Include="spt\OrangeBox\overlay\overlays.hpp" />
     <ClInclude Include="spt\OrangeBox\overlay\portal_camera.hpp" />
     <ClInclude Include="spt\OrangeBox\patterns.hpp" />
+    <ClInclude Include="spt\OrangeBox\scripts\condition.hpp" />
+    <ClInclude Include="spt\OrangeBox\scripts\framebulk_handler.hpp" />
+    <ClInclude Include="spt\OrangeBox\scripts\parsed_script.hpp" />
+    <ClInclude Include="spt\OrangeBox\scripts\range_variable.hpp" />
+    <ClInclude Include="spt\OrangeBox\scripts\srctas_reader.hpp" />
+    <ClInclude Include="spt\OrangeBox\scripts\variable_container.hpp" />
     <ClInclude Include="spt\OrangeBox\spt-serverplugin.hpp" />
     <ClInclude Include="spt\sptlib-wrapper.hpp" />
     <ClInclude Include="spt\stdafx.hpp" />
     <ClInclude Include="spt\strafestuff.hpp" />
+    <ClInclude Include="spt\utils\math.hpp" />
+    <ClInclude Include="spt\utils\md5.hpp" />
+    <ClInclude Include="spt\utils\string_parsing.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

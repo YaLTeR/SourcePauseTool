@@ -24,11 +24,13 @@ typedef void(__fastcall *_CalcAbsoluteVelocity) (void* thisptr, int edx);
 typedef void(__fastcall *_CViewRender__RenderView) (void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw);
 typedef void(__fastcall *_CViewRender__Render) (void* thisptr, int edx, void* rect);
 
-typedef struct
+struct afterframes_entry_t
 {
+	afterframes_entry_t(long long int framesLeft, std::string command) : framesLeft(framesLeft), command(std::move(command)) {}
+	afterframes_entry_t() {}
 	long long int framesLeft;
 	std::string command;
-} afterframes_entry_t;
+};
 
 typedef struct 
 {
@@ -75,6 +77,7 @@ public:
 
 	void SetPitch(float pitch) { setPitch.angle = pitch; setPitch.set = true; }
 	void SetYaw(float yaw)     { setYaw.angle   = yaw;   setYaw.set   = true; }
+	void ResetPitchYawCommands() { setYaw.set = false; setPitch.set = false; }
 	Vector GetPlayerVelocity();
 	Vector GetPlayerEyePos();
 	bool GetFlagsDucking();

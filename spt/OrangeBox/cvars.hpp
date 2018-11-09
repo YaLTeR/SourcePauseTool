@@ -2,6 +2,8 @@
 
 #include "convar.h"
 
+#define FCVAR_TAS_RESET (1 << 31)
+
 extern ConVar y_spt_pause;
 extern ConVar y_spt_motion_blur_fix;
 extern ConVar y_spt_autojump;
@@ -20,6 +22,7 @@ extern ConVar tas_strafe_vectorial;
 extern ConVar tas_strafe_vectorial_increment;
 extern ConVar tas_strafe_vectorial_offset;
 extern ConVar tas_strafe_vectorial_snap;
+extern ConVar tas_strafe_allow_jump_override;
 
 extern ConVar tas_force_airaccelerate;
 extern ConVar tas_force_wishspeed_cap;
@@ -33,8 +36,12 @@ extern ConVar tas_strafe_lgagst_minspeed;
 extern ConVar tas_strafe_lgagst_fullmaxspeed;
 extern ConVar tas_strafe_jumptype;
 
+extern ConVar tas_script_printvars;
+extern ConVar tas_script_savestates;
+
 extern ConVar _y_spt_autojump_ensure_legit;
 extern ConVar _y_spt_afterframes_reset_on_server_activate;
+extern ConVar _y_spt_anglesetspeed;
 extern ConVar _y_spt_pitchspeed;
 extern ConVar _y_spt_yawspeed;
 extern ConVar _y_spt_force_90fov;
