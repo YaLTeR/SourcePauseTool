@@ -743,6 +743,9 @@
     <ClCompile Include="spt\OrangeBox\scripts\framebulk_handler.cpp" />
     <ClCompile Include="spt\OrangeBox\scripts\parsed_script.cpp" />
     <ClCompile Include="spt\OrangeBox\scripts\srctas_reader.cpp" />
+    <ClCompile Include="spt\OrangeBox\scripts\tests\test.cpp" />
+    <ClCompile Include="spt\OrangeBox\scripts\tests\test_item.cpp" />
+    <ClCompile Include="spt\OrangeBox\scripts\tests\tracker.cpp" />
     <ClCompile Include="spt\OrangeBox\scripts\variable_container.cpp" />
     <ClCompile Include="spt\OrangeBox\spt-serverplugin.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -839,6 +842,9 @@
     <ClInclude Include="spt\OrangeBox\scripts\parsed_script.hpp" />
     <ClInclude Include="spt\OrangeBox\scripts\range_variable.hpp" />
     <ClInclude Include="spt\OrangeBox\scripts\srctas_reader.hpp" />
+    <ClInclude Include="spt\OrangeBox\scripts\tests\test.hpp" />
+    <ClInclude Include="spt\OrangeBox\scripts\tests\test_item.hpp" />
+    <ClInclude Include="spt\OrangeBox\scripts\tests\tracker.hpp" />
     <ClInclude Include="spt\OrangeBox\scripts\variable_container.hpp" />
     <ClInclude Include="spt\OrangeBox\spt-serverplugin.hpp" />
     <ClInclude Include="spt\sptlib-wrapper.hpp" />
