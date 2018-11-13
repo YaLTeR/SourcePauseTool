@@ -4,6 +4,7 @@
 #include "..\spt-serverplugin.hpp"
 #include "framebulk_handler.hpp"
 #include "..\cvars.hpp"
+#include "..\..\utils\file.hpp"
 
 namespace scripts
 {
@@ -135,9 +136,6 @@ namespace scripts
 
 	void Savestate::TestExists()
 	{
-		std::string dir = GetGameDir() + "\\SAVE\\" + key + ".sav";
-		std::ifstream is;
-		is.open(dir);
-		exists = is.is_open();
+		exists = FileExists(GetGameDir() + "\\SAVE\\" + key + ".sav");
 	}
 }

@@ -12,6 +12,7 @@
 #include "ClientDLL.hpp"
 #include "..\overlay\overlay-renderer.hpp"
 #include "..\scripts\srctas_reader.hpp"
+#include "..\scripts\tests\test.hpp"
 
 #ifdef max
 #undef max
@@ -622,6 +623,7 @@ void ClientDLL::OnFrame()
 	}
 
 	scripts::g_TASReader.OnAfterFrames();
+	scripts::g_Tester.OnAfterFrames();
 }
 
 void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, int y, int w, int h)

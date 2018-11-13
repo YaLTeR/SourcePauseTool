@@ -785,6 +785,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">stdafx.hpp</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">stdafx.hpp</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="spt\utils\file.cpp" />
     <ClCompile Include="spt\utils\math.cpp" />
     <ClCompile Include="spt\utils\md5.cpp" />
     <ClCompile Include="spt\utils\string_parsing.cpp" />
@@ -850,6 +851,7 @@
     <ClInclude Include="spt\sptlib-wrapper.hpp" />
     <ClInclude Include="spt\stdafx.hpp" />
     <ClInclude Include="spt\strafestuff.hpp" />
+    <ClInclude Include="spt\utils\file.hpp" />
     <ClInclude Include="spt\utils\math.hpp" />
     <ClInclude Include="spt\utils\md5.hpp" />
     <ClInclude Include="spt\utils\string_parsing.hpp" />

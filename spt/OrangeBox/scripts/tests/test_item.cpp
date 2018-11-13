@@ -2,6 +2,7 @@
 #include "test_item.hpp"
 #include <fstream>
 #include "..\..\..\utils\string_parsing.hpp"
+#include "dbg.h"
 
 namespace scripts
 {
@@ -15,15 +16,22 @@ namespace scripts
 			throw std::exception("Unable to open file for test data");
 
 		std::string line;
+		std::string tickS;
 		int tick;
+		std::string noS;
 		int no;
 		std::string value;
 
-		while (is.good())
+		while (is.good() && is.is_open())
 		{
 			std::getline(is, line);
-			GetTriplet<int, int, std::string>(line, tick, no, value, ' ');
-			data.push_back(TestItem(tick, no, value));
+			if (!line.empty())
+			{
+				GetStringTriplet(line, tickS, noS, value, ' ');
+				tick = ParseValue<int>(tickS);
+				no = ParseValue<int>(noS);
+				data.push_back(TestItem(tick, no, value));
+			}
 		}
 
 		return data;
@@ -36,7 +44,7 @@ namespace scripts
 
 		for (auto& entry : testData)
 		{
-			os << entry.TrackerNo << " " << entry.Data << '\n';
+			os << entry.Tick << ' ' <<  entry.TrackerNo << ' ' << entry.Data << '\n';
 		}
 
 		os.close();

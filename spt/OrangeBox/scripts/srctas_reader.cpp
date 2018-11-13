@@ -13,7 +13,6 @@
 
 namespace scripts
 {
-	const float DEFAULT_TICK_TIME = 0.015f;
 	SourceTASReader g_TASReader;
 	const std::string SCRIPT_EXT = ".srctas";
 
@@ -30,7 +29,6 @@ namespace scripts
 	{
 		InitPropertyHandlers();
 		iterationFinished = true;
-		hooked = false;
 	}
 
 	void SourceTASReader::ExecuteScript(const std::string& script)
@@ -100,7 +98,7 @@ namespace scripts
 
 			Execute();
 		}
-		catch (const std::exception & ex)
+		catch (const std::exception& ex)
 		{
 			Msg("Error in line %i: %s!\n", currentLine, ex.what());
 		}
@@ -128,8 +126,8 @@ namespace scripts
 
 		for (auto& pointer : conditions)
 		{
-			allTrue = allTrue && pointer->IsTrue(currentTick, afterFramesTick);
-			if (pointer->ShouldTerminate(currentTick, afterFramesTick))
+			allTrue = allTrue && pointer->IsTrue(currentTick, currentScript.GetScriptLength());
+			if (pointer->ShouldTerminate(currentTick, currentScript.GetScriptLength()))
 			{
 				iterationFinished = true;
 				SearchResult(SearchResult::Fail);
@@ -143,6 +141,11 @@ namespace scripts
 			iterationFinished = true;
 			SearchResult(SearchResult::Success);
 		}	
+	}
+
+	int SourceTASReader::GetCurrentScriptLength()
+	{
+		return currentScript.GetScriptLength();
 	}
 
 	void SourceTASReader::Execute()
@@ -299,8 +302,6 @@ namespace scripts
 		lineStream.clear();
 		line.clear();
 		currentLine = 0;
-		afterFramesTick = 0;
-		tickTime = DEFAULT_TICK_TIME;
 		searchType = SearchType::None;
 		playbackSpeed = 1.0f;
 		demoDelay = 0;
