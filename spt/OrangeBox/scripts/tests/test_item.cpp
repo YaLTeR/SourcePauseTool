@@ -22,9 +22,8 @@ namespace scripts
 		int no;
 		std::string value;
 
-		while (is.good() && is.is_open())
+		while (std::getline(is, line))
 		{
-			std::getline(is, line);
 			if (!line.empty())
 			{
 				GetStringTriplet(line, tickS, noS, value, ' ');
@@ -44,18 +43,13 @@ namespace scripts
 
 		for (auto& entry : testData)
 		{
-			os << entry.Tick << ' ' <<  entry.TrackerNo << ' ' << entry.Data << '\n';
+			os << entry.tick << ' ' <<  entry.trackerNo << ' ' << entry.data << '\n';
 		}
 
 		os.close();
 	}
 
-	TestItem::TestItem(int tick, int no, const std::string & data)
+	TestItem::TestItem(int tick, int no, const std::string & data) : tick(tick), trackerNo(no), data(data)
 	{
-		Tick = tick;
-		TrackerNo = no;
-		Data = data;
 	}
-
 }
-

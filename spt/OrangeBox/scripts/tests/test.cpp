@@ -14,17 +14,24 @@ namespace scripts
 	{
 		ResetIteration();
 		Reset();
+		trackers[VELOCITY_NO] = std::unique_ptr<Tracker>(new VelocityTracker(9));
+		trackers[POS_NO] = std::unique_ptr<Tracker>(new PosTracker(9));
+		trackers[ANG_NO] = std::unique_ptr<Tracker>(new AngTracker(9));
 	}
 
-	void Tester::LoadTest(const std::string & testName, bool generating)
+	void Tester::LoadTest(const std::string& testName, bool generating)
 	{
+		std::string folder(GetFolder(testName));
+		if (std::experimental::filesystem::is_directory(folder))
+		{
+			RunAllTests(folder, generating);
+			return;
+		}
+
 		ResetIteration();
 		try
 		{
 			currentTest = testName;
-			std::string trackerFile = TrackerFile(testName);
-			trackers = LoadTrackersFromFile(trackerFile);
-			
 			if (generating)
 			{
 				generatingData = true;
@@ -37,39 +44,35 @@ namespace scripts
 			
 			g_TASReader.ExecuteScript(testName);
 			lastTick = g_TASReader.GetCurrentScriptLength() - 1;
-			Msg("[TEST] Test length is %d\n", lastTick);
 		}
 		catch(const std::exception& ex)
 		{
+			successfulTest = false;
 			Msg("[TEST] Error loading test: %s\n", ex.what());
 		}
-		catch (...)
-		{
-			Msg("[TEST] Uncaught exception while loading test\n");
-		}
 	}
 
-	bool Tester::RequiredFilesExist(const std::string & testName, bool generating)
+	bool Tester::RequiredFilesExist(const std::string& testName, bool generating)
 	{
 		if (generating)
-			return FileExists(TrackerFile(testName)) && FileExists(ScriptFile(testName));
+			return FileExists(ScriptFile(testName));
 		else
-			return FileExists(TrackerFile(testName)) && FileExists(ScriptFile(testName)) && FileExists(TestDataFile(testName));
+			return FileExists(ScriptFile(testName)) && FileExists(TestDataFile(testName));
 	}
 
-	std::string Tester::TestDataFile(const std::string & testName)
+	std::string Tester::TestDataFile(const std::string& testName)
 	{
 		return GetGameDir() + "\\" + testName + DATA_EXT;
 	}
 
-	std::string Tester::TrackerFile(const std::string & testName)
-	{
-		return GetGameDir() + "\\" + testName + TRACKER_EXT;
-	}
-
-	std::string Tester::ScriptFile(const std::string & testName)
+	std::string Tester::ScriptFile(const std::string& testName)
 	{
 		return GetGameDir() + "\\" + testName + SCRIPT_EXT;
+	}
+
+	std::string Tester::GetFolder(const std::string& testName)
+	{
+		return GetGameDir() + "\\" + testName;
 	}
 
 	void Tester::OnAfterFrames()
@@ -79,41 +82,50 @@ namespace scripts
 			if (!runningTest && !generatingData)
 				return;
 
-			if (runningTest)
-				TestIteration();
-			else
-				GenerationIteration();
-
-			++currentTick;
-			if (currentTick >= lastTick)
+			++afterFramesTick;
+			if (afterFramesTick >= lastTick)
 				TestDone();
 		}
 		catch (const std::exception& ex)
 		{
 			Msg("[TEST] Error in test iteration: %s\n", ex.what());
 		}
-		catch (...)
+	}
+
+	void Tester::DataIteration()
+	{
+		try
 		{
-			Msg("[TEST] Uncaught exception during test iteration\n");
+			if (runningTest)
+				TestIteration();
+			else if (generatingData)
+				GenerationIteration();
+			++dataTick;
+		}
+		catch (const std::exception& ex)
+		{
+			Msg("Error logging data for test: %s\n", ex.what());
+			successfulTest = false;
 		}
 	}
 
 	void Tester::TestIteration()
 	{
-		while (currentTestItem < testItems.size() && testItems[currentTestItem].Tick <= currentTick)
+		while (currentTestItem < testItems.size() && testItems[currentTestItem].tick <= dataTick)
 		{
 			auto& item = testItems[currentTestItem];
 
-			if (item.Tick < currentTick)
+			if (item.tick < dataTick)
 				continue;
 
-			auto& tracker = trackers[item.TrackerNo];
-			auto result = tracker->Validate(item.Data);
+			auto& tracker = trackers[item.trackerNo];
+			auto result = tracker->Validate(item.data);
 
 			if (!result.successful)
 			{
-				successfulTest = false;
-				Msg("[TEST] Tracker %s difference at tick %d: %s\n", tracker->TrackerName().c_str(), item.Tick, result.errorMsg);
+				std::ostringstream oss;
+				oss << "[TEST] Tracker " << tracker->TrackerName() << " difference at tick " << item.tick << " : " << result.errorMsg << "\n";
+				throw std::exception(oss.str().c_str());
 			}
 
 			++currentTestItem;
@@ -122,23 +134,18 @@ namespace scripts
 
 	void Tester::GenerationIteration()
 	{
-		for (int i = 0; i < trackers.size(); ++i)
+		for (std::size_t i = 0; i < trackers.size(); ++i)
 		{
 			auto& tracker = trackers[i];
+			std::string data = tracker->GenerateTestData();
+			auto selfValidation = tracker->Validate(data);
 
-			if (tracker->InRange(currentTick))
+			if (!selfValidation.successful)
 			{
-				std::string data = tracker->GenerateTestData();
-				auto selfValidation = tracker->Validate(data);
-
-				if (!selfValidation.successful)
-				{
-					std::string error("[TEST] Tracker " + tracker->TrackerName() + " failed to self-validate on tick " + std::to_string(currentTick) + " : " + selfValidation.errorMsg + "\n");
-					Msg(error.c_str());
-				}
-
-				testItems.push_back(TestItem(currentTick, i, tracker->GenerateTestData()));
+				Msg("[TEST] Tracker %s failed to self-validate on tick %d : %s", tracker->TrackerName().c_str(), dataTick, selfValidation.errorMsg.c_str());
 			}
+
+			testItems.push_back(TestItem(dataTick, i, tracker->GenerateTestData()));
 		}
 	}
 
@@ -156,16 +163,23 @@ namespace scripts
 
 		++currentTestIndex;
 
+		if (successfulTest && runningTest)
+			Msg("[TEST] Test ran successfully\n");
+		else if (runningTest)
+			Msg("[TEST] Test was unsuccesful\n");
+		else
+			Msg("[TEST] Data automatically generated for test\n");
+
 		if (currentTestIndex >= testNames.size())
 		{
-			if(runningTest && successfulTest && testNames.empty())
-				Msg("[TEST] Test ran successfully\n");
-			else if(runningTest)
-				Msg("[TEST] %d / %d tests ran successfully\n", successfulTests, testNames.size());
-			else if(testNames.empty())
-				Msg("[TEST] Data automatically generated for test\n");
-			else
-				Msg("[TEST] Data automatically generated for %d tests\n", testNames.size());
+			if (!testNames.empty())
+			{
+				if (runningTest)
+					Msg("[TEST] %d / %d tests ran successfully\n", successfulTests, testNames.size());
+				else
+					Msg("[TEST] Data automatically generated for %d tests\n", testNames.size());
+			}
+				
 			ResetIteration();
 			Reset();
 		}
@@ -175,19 +189,23 @@ namespace scripts
 		}
 	}
 
-	void Tester::RunAllTests(const std::string & folder, bool generating)
+	void Tester::RunAllTests(const std::string& folder, bool generating)
 	{
 		Reset();
 
 		for (auto& entry : std::experimental::filesystem::recursive_directory_iterator(folder))
 		{
 			auto& path = entry.path();
-			auto& stem = path.relative_path().stem().generic_string();
-			if (path.extension() == SCRIPT_EXT)
+			auto& str = path.string().substr(GetGameDir().length() + 1);
+			int extPos = str.find(SCRIPT_EXT);
+
+			if (extPos != -1)
 			{
-				if (RequiredFilesExist(stem, generating))
+				str = str.substr(0, extPos);
+				
+				if (RequiredFilesExist(str, generating))
 				{
-					testNames.push_back(stem);
+					testNames.push_back(str);
 				}
 			}
 		}
@@ -200,15 +218,16 @@ namespace scripts
 
 	void Tester::ResetIteration()
 	{
-		trackers.clear();
 		testItems.clear();
 		currentTestItem = 0;
-		currentTick = 0;
+		afterFramesTick = 0;
+		dataTick = 0;
 		successfulTest = true;
 		lastTick = 0;
 		runningTest = false;
 		generatingData = false;
 	}
+
 	void Tester::Reset()
 	{
 		testNames.clear();
@@ -217,4 +236,3 @@ namespace scripts
 		successfulTests = 0;
 	}
 }
-

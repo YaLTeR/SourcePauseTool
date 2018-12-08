@@ -5,17 +5,10 @@
 #include "test_item.hpp"
 
 // Test contains the data describing a test
-// Has the same name as an .srctas script that is meant to be run in conjunction with it
 // Store trackers as a vector of unique_ptrs to the abstract base class
 // Hook AfterFrames into the afterframes queue in ClientDLL
 // Is a singleton, helps with the ClientDLL stuff
 // There's not that much of a reason to include simultaneously running tests, so I think this is a fine approach
-
-// Test description
-// Tracker key - double tick range - tracker descriptor(use space separator, tick range in format start|end)
-
-// Handling different trackers:
-// Use a map that maps strings into functions that return Tracker pointers(same as with Conditions)
 
 // Tracker:
 //	- Doesn't understand the passage of time, all time control is handled by the Test class
@@ -31,8 +24,10 @@
 
 namespace scripts
 {
-	const std::string TRACKER_EXT = ".test";
 	const std::string DATA_EXT = ".td";
+	const int VELOCITY_NO = 0;
+	const int POS_NO = 1;
+	const int ANG_NO = 2;
 
 	// Singleton
 	class Tester
@@ -42,10 +37,11 @@ namespace scripts
 		void LoadTest(const std::string& testName, bool generating);
 		static bool RequiredFilesExist(const std::string& testName, bool generating);
 		static std::string TestDataFile(const std::string& testName);
-		static std::string TrackerFile(const std::string& testName);
 		static std::string ScriptFile(const std::string& testName);
+		static std::string GetFolder(const std::string& testName);
 
 		void OnAfterFrames();
+		void DataIteration();
 		void TestIteration();
 		void GenerationIteration();
 		void TestDone();
@@ -54,19 +50,20 @@ namespace scripts
 		void ResetIteration();
 		void Reset();
 	private:
-		std::vector<std::unique_ptr<Tracker>> trackers;
+		std::map<int, std::unique_ptr<Tracker>> trackers;
 		std::vector<TestItem> testItems;
 		std::vector<std::string> testNames;
 		std::vector<int> failedTests;
 		std::string currentTest;
 
-		int currentTestIndex;
+		std::size_t currentTestIndex;
 		int successfulTests;
 		bool runningTest;
 		bool generatingData;
 
-		int currentTestItem;
-		int currentTick;
+		std::size_t currentTestItem;
+		int afterFramesTick;
+		int dataTick;
 		bool successfulTest;
 		int lastTick;
 	};

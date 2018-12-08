@@ -16,22 +16,12 @@ namespace scripts
 		virtual std::string GenerateTestData() const = 0;
 		virtual ValidationResult Validate(const std::string& expectedValue) const = 0;
 		virtual std::string TrackerName() const = 0;
-		void SetTickRange(int start, int end);
-		int GetStartTick();
-		int GetEndTick();
-		bool InRange(int tick);
-	private:
-		int startTick;
-		int endTick;
 	};
-
-	Tracker* GetVelocityTracker(const std::string& args);
-	Tracker* GetPosTracker(const std::string& args);
 
 	class VelocityTracker : public Tracker
 	{
 	public:
-		VelocityTracker(const std::string& args);
+		VelocityTracker(int decimals);
 		std::string GenerateTestData() const override;
 		ValidationResult Validate(const std::string& expectedValue) const override;
 		std::string TrackerName() const override;
@@ -42,7 +32,7 @@ namespace scripts
 	class PosTracker : public Tracker
 	{
 	public:
-		PosTracker(const std::string& args);
+		PosTracker(int decimals);
 		std::string GenerateTestData() const override;
 		ValidationResult Validate(const std::string& expectedValue) const override;
 		std::string TrackerName() const override;
@@ -50,5 +40,14 @@ namespace scripts
 		int decimals;
 	};
 
-	std::vector<std::unique_ptr<Tracker>> LoadTrackersFromFile(const std::string& fileName);
+	class AngTracker : public Tracker
+	{
+	public:
+		AngTracker(int decimals);
+		std::string GenerateTestData() const override;
+		ValidationResult Validate(const std::string& expectedValue) const override;
+		std::string TrackerName() const override;
+	private:
+		int decimals;
+	};
 }

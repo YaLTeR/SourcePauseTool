@@ -168,7 +168,8 @@ namespace scripts
 		std::string startCmd(currentScript.initCommand + ";" + currentScript.duringLoad);
 		EngineConCmd(startCmd.c_str());
 		DevMsg("Executing start command: %s\n", startCmd.c_str());	
-		currentScript.AddAfterFramesEntry(demoDelay, "record " + demoName);
+		if(!demoName.empty())
+			currentScript.AddAfterFramesEntry(demoDelay, "record " + demoName);
 
 		for (auto& entry : currentScript.afterFramesEntries)
 		{
@@ -342,7 +343,6 @@ namespace scripts
 
 	void SourceTASReader::HandleSettings(const std::string & value)
 	{
-		Msg("Adding command %s\n", value.c_str());
 		currentScript.AddDuringLoadCmd(value);
 	}
 

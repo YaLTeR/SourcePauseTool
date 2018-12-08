@@ -579,7 +579,6 @@ Vector ClientDLL::GetPlayerEyePos()
 	return rval;
 }
 
-
 bool ClientDLL::GetFlagsDucking()
 {
 	return (*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(GetLocalPlayer()) + offFlags)) & FL_DUCKING;
@@ -771,7 +770,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		return;
 	float va[3];
 	EngineGetViewAngles(va);
-	float startYaw = va[YAW];
+	bool yawChanged = false;
 
 	double pitchSpeed = atof(_y_spt_pitchspeed.GetString()),
 		yawSpeed = atof(_y_spt_yawspeed.GetString());
@@ -789,6 +788,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 	}
 	if (setYaw.set)
 	{
+		yawChanged = true;
 		setYaw.set = DoAngleChange(va[YAW], setYaw.angle);
 	}
 
@@ -905,7 +905,6 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		}
 
 		Friction(pl, onground, vars);
-		bool yawChanged = va[YAW] != startYaw;
 
 		if (tas_strafe_vectorial.GetBool()) // Can do vectorial strafing even with locked camera, provided we are not jumping
 			StrafeVectorial(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, yawChanged);
@@ -923,6 +922,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 	}
 
 	EngineSetViewAngles(va);
+	scripts::g_Tester.DataIteration();
 }
 
 void __fastcall ClientDLL::HOOKED_CreateMove_Func(void* thisptr, int edx, int sequence_number, float input_sample_frametime, bool active)

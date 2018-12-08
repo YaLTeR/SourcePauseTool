@@ -287,15 +287,15 @@ bool StrafeJump(PlayerData& player, const MovementVars& vars, bool ducking, Proc
 }
 
 
-void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed, bool lockCamera)
+void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed, bool yawChanged)
 {
 	if (jumped && StrafeJump(player, vars, ducking, out)) {
-		if (!lockCamera || tas_strafe_allow_jump_override.GetBool())
+		if (!yawChanged || tas_strafe_allow_jump_override.GetBool())
 		{
 			out.Processed = true;
 			MapSpeeds(out, vars);
 		}
-	
+
 		return;
 	}
 
@@ -305,7 +305,7 @@ void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground
 	// If forward is pressed, strafing should occur
 	if (dummy.Forward)
 	{
-		if (!lockCamera && tas_strafe_vectorial_increment.GetFloat() > 0)
+		if (!yawChanged && tas_strafe_vectorial_increment.GetFloat() > 0)
 		{
 			// Calculate updated yaw
 			double adjustedTarget = NormalizeDeg(target_yaw + tas_strafe_vectorial_offset.GetFloat());
@@ -337,6 +337,7 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 	if (jumped && StrafeJump(player, vars, ducking, out)) {
 		out.Processed = true;
 		MapSpeeds(out, vars);
+
 		return onground;
 	}
 

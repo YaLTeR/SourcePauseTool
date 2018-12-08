@@ -72,10 +72,14 @@ inline T ParseValue(std::string s)
 	T result = 0;
 	std::stringstream ss(s);
 	ss >> result;
-
-	if (ss.good() || s.empty() || (result == 0 && s[0] != '0'))
-		throw std::exception("Unable to parse value!");
-
+	
+	if (ss.good() || s.empty() || (result == 0 && ss.tellg() != -1))
+	{
+		std::ostringstream oss;
+		oss << "Unable to parse value " << s << " \n";
+		throw std::exception(oss.str().c_str());
+	}
+		
 	return result;
 }
 

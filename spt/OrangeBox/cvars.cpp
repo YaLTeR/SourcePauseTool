@@ -42,7 +42,6 @@ ConVar tas_strafe_lgagst_fullmaxspeed("tas_strafe_lgagst_fullmaxspeed", "0", FCV
 ConVar tas_strafe_jumptype("tas_strafe_jumptype", "1", FCVAR_TAS_RESET, "TAS jump strafe types:\n\t0 - Does nothing,\n\t1 - Looks directly opposite to desired direction (for games with ABH),\n\t2 - Looks in desired direction (games with speed boost upon jumping but no ABH),\n\t3 - Looks in direction that results in greatest speed loss (for glitchless TASes on game with ABH).\n");
 ConVar tas_script_printvars("tas_script_printvars", "1", 0, "Prints variable information when running .srctas scripts.\n");
 ConVar tas_script_savestates("tas_script_savestates", "1", 0, "Enables/disables savestates in .srctas scripts.\n");
-
 ConVar _y_spt_autojump_ensure_legit("_y_spt_autojump_ensure_legit", "1", FCVAR_ARCHIVE);
 ConVar _y_spt_afterframes_reset_on_server_activate("_y_spt_afterframes_reset_on_server_activate", "1", FCVAR_ARCHIVE);
 ConVar _y_spt_anglesetspeed("_y_spt_anglesetspeed", "360", FCVAR_TAS_RESET, "Determines how fast the view angle can move per tick while doing _y_spt_setyaw/_y_spt_setpitch.\n");
@@ -55,6 +54,10 @@ ConVar _y_spt_overlay_portal("_y_spt_overlay_portal", "blue", FCVAR_CHEAT, "Choo
 ConVar _y_spt_overlay_width("_y_spt_overlay_width", "480", FCVAR_CHEAT, "Determines the width of the overlay. Height is determined automatically from width.\n", true, 20.0f, true, 3840.0f);
 ConVar _y_spt_overlay_fov("_y_spt_overlay_fov", "90", FCVAR_CHEAT, "Determines the FOV of the overlay.\n", true, 5.0f, true, 140.0f);
 ConVar _y_spt_overlay_swap("_y_spt_overlay_swap", "0", FCVAR_CHEAT, "Swap alternate view and main screen?\n");
+
+#ifdef OE
+ConVar y_spt_gamedir("y_spt_gamedir", "", 0, "Sets the game directory, that is used for loading tas scripts and tests.\n");
+#endif
 
 ConVar *_viewmodel_fov = nullptr;
 ConVar *_sv_accelerate = nullptr;

@@ -4,14 +4,13 @@
 
 namespace scripts
 {
-
 	struct TestItem
 	{
 		TestItem(int tick, int no, const std::string& data);
 
-		int Tick;
-		int TrackerNo;
-		std::string Data;
+		int tick;
+		int trackerNo;
+		std::string data;
 	};
 
 	std::vector<TestItem> GetTestData(const std::string& fileName);

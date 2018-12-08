@@ -116,7 +116,7 @@ ICvar* GetCvarInterface()
 std::string GetGameDir()
 {
 #ifdef OE
-	return "hl2";
+	return std::string(y_spt_gamedir.GetString());
 #else
 	return engine->GetGameDirectory();
 #endif
@@ -798,7 +798,6 @@ CON_COMMAND(tas_test_generate, "Generates test data for given test.")
 	{
 		scripts::g_Tester.LoadTest(args.Arg(1), true);
 	}
-
 }
 
 CON_COMMAND(tas_test_validate, "Validates a test.")
@@ -815,9 +814,7 @@ CON_COMMAND(tas_test_validate, "Validates a test.")
 	{
 		scripts::g_Tester.LoadTest(args.Arg(1), false);
 	}
-
 }
-
 
 #if SSDK2007
 // TODO: remove fixed offsets.

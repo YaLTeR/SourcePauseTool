@@ -2,7 +2,7 @@
 #include "file.hpp"
 #include <fstream>
 
-bool FileExists(const std::string & fileName)
+bool FileExists(const std::string& fileName)
 {
 	std::string dir = fileName;
 	std::ifstream is;
