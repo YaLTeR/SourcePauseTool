@@ -10,6 +10,7 @@
 #include "custom_interfaces.hpp"
 #include "vstdlib\random.h"
 #include "scripts\srctas_reader.hpp"
+#include "scripts\tests\test.hpp"
 
 #include "cdll_int.h"
 #include "engine\iserverplugin.h"
@@ -115,7 +116,7 @@ ICvar* GetCvarInterface()
 std::string GetGameDir()
 {
 #ifdef OE
-	return "hl2";
+	return std::string(y_spt_gamedir.GetString());
 #else
 	return engine->GetGameDirectory();
 #endif
@@ -780,6 +781,38 @@ CON_COMMAND(_y_spt_findangle, "Finds the yaw/pitch angle required to look at the
 		Vector diff = (target - player_origin);
 		QAngle angles;
 		VectorAngles(diff, angles);
+	}
+}
+
+CON_COMMAND(tas_test_generate, "Generates test data for given test.")
+{
+#if defined( OE )
+	if (!engine)
+		return;
+
+	ArgsWrapper args(engine.get());
+#endif
+	Vector target;
+
+	if (args.ArgC() > 1)
+	{
+		scripts::g_Tester.LoadTest(args.Arg(1), true);
+	}
+}
+
+CON_COMMAND(tas_test_validate, "Validates a test.")
+{
+#if defined( OE )
+	if (!engine)
+		return;
+
+	ArgsWrapper args(engine.get());
+#endif
+	Vector target;
+
+	if (args.ArgC() > 1)
+	{
+		scripts::g_Tester.LoadTest(args.Arg(1), false);
 	}
 }
 

@@ -10,6 +10,8 @@
 
 namespace scripts
 {
+	extern const std::string SCRIPT_EXT;
+
 	class SourceTASReader
 	{
 	public:
@@ -18,9 +20,9 @@ namespace scripts
 		void StartSearch(const std::string& script);
 		void SearchResult(scripts::SearchResult result);
 		void OnAfterFrames();
+		int GetCurrentScriptLength();
 	private:
 		bool iterationFinished;
-		bool hooked;
 		bool freezeVariables;
 		std::string fileName;
 		std::ifstream scriptStream;
@@ -28,7 +30,6 @@ namespace scripts
 		std::string line;
 		int currentLine;
 		long long int currentTick;
-		long long int afterFramesTick;
 		SearchType searchType;
 		float tickTime;
 		float playbackSpeed;

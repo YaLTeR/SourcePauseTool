@@ -38,6 +38,7 @@ namespace scripts
 		void AddSaveState();
 		void AddAfterFramesEntry(long long int tick, std::string command);
 		void SetSave(std::string save) { saveName = save; };
+		int GetScriptLength() { return afterFramesTick; }
 
 	private:
 		std::string saveName;

@@ -52,6 +52,10 @@ extern ConVar _y_spt_overlay_width;
 extern ConVar _y_spt_overlay_fov;
 extern ConVar _y_spt_overlay_swap;
 
+#ifdef OE
+extern ConVar y_spt_gamedir;
+#endif
+
 extern ConVar *_viewmodel_fov;
 extern ConVar *_sv_accelerate;
 extern ConVar *_sv_airaccelerate;
