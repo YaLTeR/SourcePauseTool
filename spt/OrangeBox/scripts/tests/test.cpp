@@ -123,9 +123,8 @@ namespace scripts
 
 			if (!result.successful)
 			{
-				std::ostringstream oss;
-				oss << "[TEST] Tracker " << tracker->TrackerName() << " difference at tick " << item.tick << " : " << result.errorMsg << "\n";
-				throw std::exception(oss.str().c_str());
+				Msg("[TEST] Tracker %s difference at tick %d : %s\n", tracker->TrackerName().c_str(), item.tick, result.errorMsg.c_str());
+				successfulTest = false;
 			}
 
 			++currentTestItem;
@@ -142,7 +141,9 @@ namespace scripts
 
 			if (!selfValidation.successful)
 			{
-				Msg("[TEST] Tracker %s failed to self-validate on tick %d : %s", tracker->TrackerName().c_str(), dataTick, selfValidation.errorMsg.c_str());
+				std::ostringstream oss;
+				oss << "[TEST] Tracker " << tracker->TrackerName() << " failed to self-validate on tick " << dataTick << " : " << selfValidation.errorMsg << '\n';
+				throw std::exception(oss.str().c_str());
 			}
 
 			testItems.push_back(TestItem(dataTick, i, tracker->GenerateTestData()));
