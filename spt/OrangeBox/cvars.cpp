@@ -56,7 +56,7 @@ ConVar _y_spt_overlay_fov("_y_spt_overlay_fov", "90", FCVAR_CHEAT, "Determines t
 ConVar _y_spt_overlay_swap("_y_spt_overlay_swap", "0", FCVAR_CHEAT, "Swap alternate view and main screen?\n");
 
 #ifdef OE
-ConVar y_spt_gamedir("y_spt_gamedir", "", 0, "Sets the game directory, that is used for loading tas scripts and tests.\n");
+ConVar y_spt_gamedir("y_spt_gamedir", "", 0, "Sets the game directory, that is used for loading tas scripts and tests. Use the full path for the folder e.g. C:\\Steam\\steamapps\\sourcemods\\hl2oe\\\n");
 #endif
 
 ConVar *_viewmodel_fov = nullptr;

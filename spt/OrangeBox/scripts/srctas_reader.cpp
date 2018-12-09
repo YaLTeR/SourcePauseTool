@@ -74,6 +74,12 @@ namespace scripts
 		try
 		{
 			Reset();
+#if OE
+			const char* dir = y_spt_gamedir.GetString();
+			if (dir == NULL || dir[0] == '\0')
+				Msg("WARNING: Trying to load a script file without setting the game directory with y_spt_gamedir in old engine!\n");
+#endif
+
 			std::string gameDir = GetGameDir();
 			scriptStream.open(gameDir + "\\" + fileName + SCRIPT_EXT);
 
