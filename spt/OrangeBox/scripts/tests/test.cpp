@@ -94,6 +94,8 @@ namespace scripts
 
 	void Tester::DataIteration()
 	{
+		if (!successfulTest)
+			return;
 		try
 		{
 			if (runningTest)
@@ -104,7 +106,7 @@ namespace scripts
 		}
 		catch (const std::exception& ex)
 		{
-			Msg("Error logging data for test: %s\n", ex.what());
+			Msg("Error in test: %s\n", ex.what());
 			successfulTest = false;
 		}
 	}
@@ -123,8 +125,9 @@ namespace scripts
 
 			if (!result.successful)
 			{
-				Msg("[TEST] Tracker %s difference at tick %d : %s\n", tracker->TrackerName().c_str(), item.tick, result.errorMsg.c_str());
-				successfulTest = false;
+				std::ostringstream oss;
+				oss << "Tracker \"" << tracker->TrackerName() << "\" difference at tick " << item.tick << " : \"" << result.errorMsg << "\"";
+				throw std::exception(oss.str().c_str());
 			}
 
 			++currentTestItem;
@@ -142,7 +145,7 @@ namespace scripts
 			if (!selfValidation.successful)
 			{
 				std::ostringstream oss;
-				oss << "[TEST] Tracker " << tracker->TrackerName() << " failed to self-validate on tick " << dataTick << " : " << selfValidation.errorMsg << '\n';
+				oss << "Tracker " << tracker->TrackerName() << " failed to self-validate on tick " << dataTick << " : \"" << selfValidation.errorMsg << "\"";
 				throw std::exception(oss.str().c_str());
 			}
 
