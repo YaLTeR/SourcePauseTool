@@ -36,7 +36,7 @@ namespace scripts
 		return data;
 	}
 
-	void WriteTestDataToFile(const std::vector<TestItem>& testData, const std::string & fileName)
+	void WriteTestDataToFile(const std::vector<TestItem>& testData, const std::string& fileName)
 	{
 		std::ofstream os;
 		os.open(fileName);
