@@ -49,7 +49,7 @@ namespace scripts
 		os.close();
 	}
 
-	TestItem::TestItem(int tick, int no, const std::string & data) : tick(tick), trackerNo(no), data(data)
+	TestItem::TestItem(int tick, int no, const std::string& data) : tick(tick), trackerNo(no), data(data)
 	{
 	}
 }
