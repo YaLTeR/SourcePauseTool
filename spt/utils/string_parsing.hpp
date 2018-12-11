@@ -71,15 +71,15 @@ inline T ParseValue(std::string s)
 {
 	T result = 0;
 	std::stringstream ss(s);
-	ss >> result;
-	
-	if (ss.good() || s.empty() || (result == 0 && ss.tellg() != -1))
+	bool success = bool(ss >> result);
+
+	if (!success)
 	{
 		std::ostringstream oss;
 		oss << "Unable to parse value " << s << " \n";
 		throw std::exception(oss.str().c_str());
 	}
-		
+
 	return result;
 }
 
@@ -88,10 +88,5 @@ inline bool IsValue(std::string s)
 {
 	std::stringstream ss(s);
 	T result = 0;
-	ss >> result;
-
-	if (ss.good() || s.empty() || (result == 0 && s[0] != '0'))
-		return false;
-	else
-		return true;
+	return bool(ss >> result);
 }
