@@ -61,18 +61,42 @@
     <ClCompile Include="spt\OrangeBox\overlay\overlay-renderer.cpp">
       <Filter>spt\OrangeBox\overlay</Filter>
     </ClCompile>
-    <ClCompile Include="spt\utils\math.cpp" />
-    <ClCompile Include="spt\utils\string_parsing.cpp" />
-    <ClCompile Include="spt\OrangeBox\scripts\condition.cpp" />
-    <ClCompile Include="spt\OrangeBox\scripts\framebulk_handler.cpp" />
-    <ClCompile Include="spt\OrangeBox\scripts\srctas_reader.cpp" />
-    <ClCompile Include="spt\OrangeBox\scripts\variable_container.cpp" />
-    <ClCompile Include="spt\OrangeBox\scripts\parsed_script.cpp" />
-    <ClCompile Include="spt\utils\md5.cpp" />
-    <ClCompile Include="spt\OrangeBox\scripts\tests\test_item.cpp" />
-    <ClCompile Include="spt\OrangeBox\scripts\tests\tracker.cpp" />
-    <ClCompile Include="spt\OrangeBox\scripts\tests\test.cpp" />
-    <ClCompile Include="spt\utils\file.cpp" />
+    <ClCompile Include="spt\utils\file.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\utils\math.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\utils\md5.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\utils\string_parsing.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\scripts\framebulk_handler.cpp">
+      <Filter>spt\OrangeBox\scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\scripts\parsed_script.cpp">
+      <Filter>spt\OrangeBox\scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\scripts\srctas_reader.cpp">
+      <Filter>spt\OrangeBox\scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\scripts\condition.cpp">
+      <Filter>spt\OrangeBox\scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\scripts\variable_container.cpp">
+      <Filter>spt\OrangeBox\scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\scripts\tests\test.cpp">
+      <Filter>spt\OrangeBox\scripts\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\scripts\tests\test_item.cpp">
+      <Filter>spt\OrangeBox\scripts\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\OrangeBox\scripts\tests\tracker.cpp">
+      <Filter>spt\OrangeBox\scripts\tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -207,19 +231,45 @@
     <ClInclude Include="spt\OrangeBox\overlay\overlay-renderer.hpp">
       <Filter>spt\OrangeBox\overlay</Filter>
     </ClInclude>
-    <ClInclude Include="spt\utils\math.hpp" />
-    <ClInclude Include="spt\utils\string_parsing.hpp" />
-    <ClInclude Include="spt\OrangeBox\scripts\condition.hpp" />
-    <ClInclude Include="spt\OrangeBox\scripts\framebulk_handler.hpp" />
-    <ClInclude Include="spt\OrangeBox\scripts\range_variable.hpp" />
-    <ClInclude Include="spt\OrangeBox\scripts\srctas_reader.hpp" />
-    <ClInclude Include="spt\OrangeBox\scripts\variable_container.hpp" />
-    <ClInclude Include="spt\OrangeBox\scripts\parsed_script.hpp" />
-    <ClInclude Include="spt\utils\md5.hpp" />
-    <ClInclude Include="spt\OrangeBox\scripts\tests\test.hpp" />
-    <ClInclude Include="spt\OrangeBox\scripts\tests\tracker.hpp" />
-    <ClInclude Include="spt\OrangeBox\scripts\tests\test_item.hpp" />
-    <ClInclude Include="spt\utils\file.hpp" />
+    <ClInclude Include="spt\utils\file.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\math.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\md5.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\string_parsing.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\scripts\condition.hpp">
+      <Filter>spt\OrangeBox\scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\scripts\framebulk_handler.hpp">
+      <Filter>spt\OrangeBox\scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\scripts\parsed_script.hpp">
+      <Filter>spt\OrangeBox\scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\scripts\range_variable.hpp">
+      <Filter>spt\OrangeBox\scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\scripts\srctas_reader.hpp">
+      <Filter>spt\OrangeBox\scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\scripts\variable_container.hpp">
+      <Filter>spt\OrangeBox\scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\scripts\tests\test.hpp">
+      <Filter>spt\OrangeBox\scripts\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\scripts\tests\test_item.hpp">
+      <Filter>spt\OrangeBox\scripts\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\scripts\tests\tracker.hpp">
+      <Filter>spt\OrangeBox\scripts\tests</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">
@@ -259,6 +309,15 @@
     </Filter>
     <Filter Include="spt\OrangeBox\overlay">
       <UniqueIdentifier>{7f1270e1-5f6d-4110-9d82-4b2bc2b7400b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\utils">
+      <UniqueIdentifier>{33715ce3-a05a-40e3-9a9d-1d15086add50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\OrangeBox\scripts">
+      <UniqueIdentifier>{506bf5b8-b30d-400d-a9ae-79e83da2e8ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\OrangeBox\scripts\tests">
+      <UniqueIdentifier>{50d63f56-92b4-428c-ad41-8626a74b1984}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
