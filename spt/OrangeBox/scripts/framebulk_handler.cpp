@@ -9,7 +9,7 @@ namespace scripts
 
 	const std::string FIELD0_FILLED = "s**ljdbcgu";
 	const std::string FIELD1_FILLED = "flrbud";
-	const std::string FIELD2_FILLED = "jdu12r";
+	const std::string FIELD2_FILLED = "jdu12rws";
 	const std::string EMPTY_FIELD = "-";
 	const char WILDCARD = '*';
 	const char DELIMITER = '|';
@@ -38,6 +38,8 @@ namespace scripts
 	const auto ATTACK1 = std::pair<int, int>(2, 3);
 	const auto ATTACK2 = std::pair<int, int>(2, 4);
 	const auto RELOAD = std::pair<int, int>(2, 5);
+	const auto WALK = std::pair<int, int>(2, 6);
+	const auto SPEED = std::pair<int, int>(2, 7);
 
 	const auto YAW_KEY = std::pair<int, int>(3, 0);
 	const auto PITCH_KEY = std::pair<int, int>(4, 0);
@@ -95,6 +97,8 @@ namespace scripts
 		frameBulkInfo.AddPlusMinusCmd("attack", frameBulkInfo[ATTACK1] == "1");
 		frameBulkInfo.AddPlusMinusCmd("attack2", frameBulkInfo[ATTACK2] == "2");
 		frameBulkInfo.AddPlusMinusCmd("reload", frameBulkInfo[RELOAD] == "r");
+		frameBulkInfo.AddPlusMinusCmd("walk", frameBulkInfo[WALK] == "w");
+		frameBulkInfo.AddPlusMinusCmd("speed", frameBulkInfo[SPEED] == "s");
 	}
 
 	void Field4_5(FrameBulkInfo& frameBulkInfo)
