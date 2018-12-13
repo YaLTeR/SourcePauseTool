@@ -26,6 +26,7 @@ namespace scripts
 		void AddCommand(const std::string& cmd) { data.AddCommand(cmd); }
 		void AddPlusMinusCmd(const std::string& command, bool set);
 		void ValidateFieldFlags(FrameBulkInfo& frameBulkInfo, const std::string& fields, int index);
+		bool ContainsFlag(const std::pair<int, int>& key, const std::string& flag);
 		FrameBulkOutput data;
 	private:
 		std::map<std::pair<int, int>, std::string> dataMap;

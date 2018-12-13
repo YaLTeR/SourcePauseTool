@@ -48,7 +48,7 @@ namespace scripts
 
 	void Field1(FrameBulkInfo& frameBulkInfo)
 	{
-		if (frameBulkInfo[STRAFE] == "s")
+		if (frameBulkInfo.ContainsFlag(STRAFE, "s"))
 		{
 			frameBulkInfo.AddCommand("tas_strafe 1");
 
@@ -61,51 +61,51 @@ namespace scripts
 		else
 			frameBulkInfo.AddCommand("tas_strafe 0");
 
-		if (frameBulkInfo[AUTOJUMP] == "j")
+		if (frameBulkInfo.ContainsFlag(AUTOJUMP, "j"))
 			frameBulkInfo.AddCommand("y_spt_autojump 1");
 		else
 			frameBulkInfo.AddCommand("y_spt_autojump 0");
 
-		frameBulkInfo.AddPlusMinusCmd("y_spt_duckspam", frameBulkInfo[DUCKSPAM] == "d");
+		frameBulkInfo.AddPlusMinusCmd("y_spt_duckspam", frameBulkInfo.ContainsFlag(DUCKSPAM, "d"));
 
 		// todo
 #pragma warning(push)
 #pragma warning(disable:4390)
-		if (frameBulkInfo[USE_SPAM] == "u");
-		if (frameBulkInfo[LGAGST] == "l");
-		if (frameBulkInfo[JUMPBUG] == "b");
-		if (frameBulkInfo[DUCK_BEFORE_COLLISION] == "c");
-		if (frameBulkInfo[DUCK_BEFORE_GROUND] == "g");
+		if (frameBulkInfo.ContainsFlag(USE_SPAM, "u"));
+		if (frameBulkInfo.ContainsFlag(LGAGST, "l"));
+		if (frameBulkInfo.ContainsFlag(JUMPBUG, "b"));
+		if (frameBulkInfo.ContainsFlag(DUCK_BEFORE_COLLISION, "c"));
+		if (frameBulkInfo.ContainsFlag(DUCK_BEFORE_GROUND, "g"));
 #pragma warning(pop)
 	}
 
 	void Field2(FrameBulkInfo& frameBulkInfo)
 	{
-		frameBulkInfo.AddPlusMinusCmd("forward", frameBulkInfo[FORWARD] == "f");
-		frameBulkInfo.AddPlusMinusCmd("moveleft", frameBulkInfo[LEFT] == "l");
-		frameBulkInfo.AddPlusMinusCmd("moveright", frameBulkInfo[RIGHT] == "r");
-		frameBulkInfo.AddPlusMinusCmd("back", frameBulkInfo[BACK] == "b");
-		frameBulkInfo.AddPlusMinusCmd("moveup", frameBulkInfo[UP] == "u");
-		frameBulkInfo.AddPlusMinusCmd("movedown", frameBulkInfo[DOWN] == "d");
+		frameBulkInfo.AddPlusMinusCmd("forward", frameBulkInfo.ContainsFlag(FORWARD,"f"));
+		frameBulkInfo.AddPlusMinusCmd("moveleft", frameBulkInfo.ContainsFlag(LEFT,"l"));
+		frameBulkInfo.AddPlusMinusCmd("moveright", frameBulkInfo.ContainsFlag(RIGHT, "r"));
+		frameBulkInfo.AddPlusMinusCmd("back", frameBulkInfo.ContainsFlag(BACK, "b"));
+		frameBulkInfo.AddPlusMinusCmd("moveup", frameBulkInfo.ContainsFlag(UP, "u"));
+		frameBulkInfo.AddPlusMinusCmd("movedown", frameBulkInfo.ContainsFlag(DOWN, "d"));
 	}
 
 	void Field3(FrameBulkInfo& frameBulkInfo)
 	{
-		frameBulkInfo.AddPlusMinusCmd("jump", frameBulkInfo[JUMP] == "j" || frameBulkInfo[AUTOJUMP] == "j");
-		frameBulkInfo.AddPlusMinusCmd("duck", frameBulkInfo[DUCK] == "d");
-		frameBulkInfo.AddPlusMinusCmd("use", frameBulkInfo[USE] == "u");
-		frameBulkInfo.AddPlusMinusCmd("attack", frameBulkInfo[ATTACK1] == "1");
-		frameBulkInfo.AddPlusMinusCmd("attack2", frameBulkInfo[ATTACK2] == "2");
-		frameBulkInfo.AddPlusMinusCmd("reload", frameBulkInfo[RELOAD] == "r");
-		frameBulkInfo.AddPlusMinusCmd("walk", frameBulkInfo[WALK] == "w");
-		frameBulkInfo.AddPlusMinusCmd("speed", frameBulkInfo[SPEED] == "s");
+		frameBulkInfo.AddPlusMinusCmd("jump", frameBulkInfo.ContainsFlag(JUMP, "j") || frameBulkInfo.ContainsFlag(AUTOJUMP, "j"));
+		frameBulkInfo.AddPlusMinusCmd("duck", frameBulkInfo.ContainsFlag(DUCK, "d"));
+		frameBulkInfo.AddPlusMinusCmd("use", frameBulkInfo.ContainsFlag(USE, "u"));
+		frameBulkInfo.AddPlusMinusCmd("attack", frameBulkInfo.ContainsFlag(ATTACK1, "1"));
+		frameBulkInfo.AddPlusMinusCmd("attack2", frameBulkInfo.ContainsFlag(ATTACK2, "2"));
+		frameBulkInfo.AddPlusMinusCmd("reload", frameBulkInfo.ContainsFlag(RELOAD, "r"));
+		frameBulkInfo.AddPlusMinusCmd("walk", frameBulkInfo.ContainsFlag(WALK, "w"));
+		frameBulkInfo.AddPlusMinusCmd("speed", frameBulkInfo.ContainsFlag(SPEED, "s"));
 	}
 
 	void Field4_5(FrameBulkInfo& frameBulkInfo)
 	{
 		if (frameBulkInfo.IsFloat(YAW_KEY))
 		{
-			if (frameBulkInfo[STRAFE] == "s")
+			if (frameBulkInfo.ContainsFlag(STRAFE, "s"))
 				frameBulkInfo.AddCommand("tas_strafe_yaw " + frameBulkInfo[YAW_KEY]);
 			else
 				frameBulkInfo.AddCommand("_y_spt_setyaw " + frameBulkInfo[YAW_KEY]);
@@ -238,9 +238,10 @@ namespace scripts
 	{
 		for (size_t i = 0; i < fields.length(); ++i)
 		{
-			if (fields[i] != WILDCARD)
+			auto key = std::make_pair(index, i);
+			if (fields[i] != WILDCARD && frameBulkInfo.dataMap.find(key) != frameBulkInfo.dataMap.end())
 			{
-				auto& value = frameBulkInfo[std::make_pair(index, i)];
+				auto& value = frameBulkInfo[key];
 				if (value[0] != fields[i] && value[0] != '-')
 				{
 					std::ostringstream os;
@@ -249,5 +250,9 @@ namespace scripts
 				}
 			}
 		}
+	}
+	bool FrameBulkInfo::ContainsFlag(const std::pair<int, int>& key, const std::string & flag)
+	{
+		return dataMap.find(key) != dataMap.end() && this->operator[](key) == flag;
 	}
 }
