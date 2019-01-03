@@ -22,7 +22,7 @@ const int INDEX_MASK = MAX_EDICTS - 1;
 
 bool invalidPortal(edict_t* portal)
 {
-	return !portal || portal->IsFree() || strcmp(portal->GetClassName(), "prop_portal") != 0;
+	return !portal || strcmp(portal->GetClassName(), "prop_portal") != 0;
 }
 
 bool getPortalIndex(edict_t** portal_edict, Vector& new_player_origin, QAngle& new_player_angles)
@@ -145,11 +145,15 @@ int getPortal(const char* arg, bool verbose)
 {
 	int portal_index = atoi(arg);
 	auto engine_server = GetEngine();
+	bool want_blue = !strcmp(arg, "blue");
+	bool want_orange = !strcmp(arg, "orange");
+	bool want_auto = !strcmp(arg, "auto");
 
-	if (!strcmp(arg, "blue") || !strcmp(arg, "orange")) {
+	if (want_auto)
+		return serverDLL.GetEnviromentPortalHandle() & INDEX_MASK;
+
+	if (want_blue || want_orange || want_auto) {
 		std::vector<int> indices;
-
-		portal_index = -1;
 
 		for (int i = 0; i < MAX_EDICTS; ++i) {
 			auto ent = engine_server->PEntityOfEntIndex(i);
@@ -157,7 +161,9 @@ int getPortal(const char* arg, bool verbose)
 			if (ent && !ent->IsFree() && !strcmp(ent->GetClassName(), "prop_portal")) {
 				auto is_orange_portal = *reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(ent->GetUnknown()) + PORTAL_IS_ORANGE_OFFSET);
 
-				if (is_orange_portal == (arg[0] == 'o'))
+				if (is_orange_portal && want_orange)
+					indices.push_back(i);
+				else if (!is_orange_portal && want_blue)
 					indices.push_back(i);
 			}
 		}

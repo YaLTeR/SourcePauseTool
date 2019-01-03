@@ -55,12 +55,14 @@ public:
 	void StopTimer() { timerRunning = false; }
 	void ResetTimer() { ticksPassed = 0; timerRunning = false; }
 	unsigned int GetTicksPassed() const { return ticksPassed; }
+	int GetEnviromentPortalHandle();
 
 	_SnapEyeAngles SnapEyeAngles;
 	_FirePortal FirePortal;
 	double lastTraceFirePortalDistanceSq;
 	Vector lastTraceFirePortalNormal;
 	_GetActiveWeapon GetActiveWeapon;
+	int* m_hPortalEnvironmentOffsetPtr;
 
 protected:
 	_CheckJumpButton ORIG_CheckJumpButton;
