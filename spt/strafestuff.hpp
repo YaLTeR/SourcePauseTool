@@ -76,7 +76,8 @@ struct CurrentState {
 
 enum class StrafeType {
 	MAXACCEL = 0,
-	MAXANGLE = 1
+	MAXANGLE = 1,
+	CAPPED = 2
 };
 
 enum class StrafeDir {

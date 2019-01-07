@@ -33,6 +33,56 @@ inline double Atan2(double a, double b)
 	return std::atan2(a, b);
 }
 
+double TargetTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, double target)
+{
+	double accel = onground ? vars.Accelerate : vars.Airaccelerate;
+	double L = onground ? vars.Maxspeed : std::min(vars.Maxspeed, (float)30);
+	double gamma1 = vars.EntFriction * vars.Frametime * vars.Maxspeed * accel;
+	
+	PlayerData copy = player;
+	Friction(copy, onground, vars);
+	double lambdaVel = copy.Velocity.Length2D();
+
+	double cosTheta = ((target * target - lambdaVel * lambdaVel) / gamma1 - gamma1) / (2 * lambdaVel);
+	double gamma2 = L - lambdaVel * cosTheta;
+
+	if (std::abs(cosTheta) > 1)
+	{
+		Msg("Invalid cos value received in target vel strafing!\n");
+		return 0;
+	}
+	else
+		return std::acos(cosTheta);
+}
+
+
+double MaxAccelWithCapIntoYawTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, double vel_yaw, double yaw)
+{
+	if (!player.Velocity.AsVector2D().IsZero(0))
+		vel_yaw = Atan2(player.Velocity.y, player.Velocity.x);
+
+	const float CAP = 299.99f; // The speed cap for this strafing method
+	double theta = MaxAccelTheta(player, vars, onground, wishspeed);
+
+	Vector2D avec(std::cos(theta), std::sin(theta));
+	PlayerData vel;
+	vel.Velocity.x = player.Velocity.Length2D();
+	VectorFME(vel, vars, onground, wishspeed, avec);
+
+	if (vel.Velocity.Length2D() > CAP)
+		theta = TargetTheta(player, vars, onground, wishspeed, CAP);
+
+	return std::copysign(theta, NormalizeRad(yaw - vel_yaw));
+}
+
+/*double MaintainTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed)
+{
+	double accel = onground ? vars.Accelerate : vars.Airaccelerate;
+	double cosTheta = -vars.EntFriction * vars.Frametime * vars.Maxspeed * accel / (2 * player.Velocity.Length2D());
+
+	return std::acos(cosTheta);
+}*/
+
 double MaxAccelTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed)
 {
 	double accel = onground ? vars.Accelerate : vars.Airaccelerate;
@@ -181,6 +231,18 @@ double YawStrafeMaxAccel(PlayerData& player, const MovementVars& vars, bool ongr
 {
 	double resulting_yaw;
 	double theta = MaxAccelIntoYawTheta(player, vars, onground, wishspeed, vel_yaw, yaw);
+	Vector2D newvel;
+	SideStrafeGeneral(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw, std::fabs(theta), (theta < 0), newvel, resulting_yaw);
+	player.Velocity.AsVector2D() = newvel;
+
+	return resulting_yaw;
+}
+
+double YawStrafeMaintain(PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons, Button& usedButton,
+	double vel_yaw, double yaw)
+{
+	double resulting_yaw;
+	double theta = MaxAccelWithCapIntoYawTheta(player, vars, onground, wishspeed, vel_yaw, yaw);
 	Vector2D newvel;
 	SideStrafeGeneral(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw, std::fabs(theta), (theta < 0), newvel, resulting_yaw);
 	player.Velocity.AsVector2D() = newvel;
@@ -355,6 +417,8 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 			out.Yaw = YawStrafeMaxAccel(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD) * M_RAD2DEG;
 		else if (type == StrafeType::MAXANGLE)
 			out.Yaw = YawStrafeMaxAngle(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD) * M_RAD2DEG;
+		else if (type == StrafeType::CAPPED)
+			out.Yaw = YawStrafeMaintain(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD) * M_RAD2DEG;
 		break;
 	default:
 		strafed = false;
