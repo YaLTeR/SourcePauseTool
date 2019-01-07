@@ -238,7 +238,7 @@ double YawStrafeMaxAccel(PlayerData& player, const MovementVars& vars, bool ongr
 	return resulting_yaw;
 }
 
-double YawStrafeMaintain(PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons, Button& usedButton,
+double YawStrafeCapped(PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons, Button& usedButton,
 	double vel_yaw, double yaw)
 {
 	double resulting_yaw;
@@ -418,7 +418,7 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 		else if (type == StrafeType::MAXANGLE)
 			out.Yaw = YawStrafeMaxAngle(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD) * M_RAD2DEG;
 		else if (type == StrafeType::CAPPED)
-			out.Yaw = YawStrafeMaintain(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD) * M_RAD2DEG;
+			out.Yaw = YawStrafeCapped(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD) * M_RAD2DEG;
 		break;
 	default:
 		strafed = false;
