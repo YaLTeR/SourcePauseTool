@@ -290,7 +290,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.;Detours\include;..\..\common;..\..\public;..\..\public\tier0;..\..\public\tier1;..\..\game\server;..\..\vgui2%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;Detours\include;..\..\common;..\..\public;..\..\public\tier0;..\..\public\tier1;..\..\game\server;..\..\public\mathlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SSDK2007;WIN32;_WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;sptONLY;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -736,6 +736,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">stdafx.hpp</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">stdafx.hpp</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="spt\OrangeBox\modules\vguimatsurfaceDLL.cpp" />
     <ClCompile Include="spt\OrangeBox\overlay\overlay-renderer.cpp" />
     <ClCompile Include="spt\OrangeBox\overlay\overlays.cpp" />
     <ClCompile Include="spt\OrangeBox\overlay\portal_camera.cpp" />
@@ -834,6 +835,7 @@
     <ClInclude Include="spt\OrangeBox\modules\ClientDLL.hpp" />
     <ClInclude Include="spt\OrangeBox\modules\EngineDLL.hpp" />
     <ClInclude Include="spt\OrangeBox\modules\ServerDLL.hpp" />
+    <ClInclude Include="spt\OrangeBox\modules\vguimatsurfaceDLL.hpp" />
     <ClInclude Include="spt\OrangeBox\overlay\overlay-renderer.hpp" />
     <ClInclude Include="spt\OrangeBox\overlay\overlays.hpp" />
     <ClInclude Include="spt\OrangeBox\overlay\portal_camera.hpp" />

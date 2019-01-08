@@ -33,26 +33,31 @@ inline double Atan2(double a, double b)
 	return std::atan2(a, b);
 }
 
+
 double TargetTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, double target)
 {
 	double accel = onground ? vars.Accelerate : vars.Airaccelerate;
 	double L = onground ? vars.Maxspeed : std::min(vars.Maxspeed, (float)30);
 	double gamma1 = vars.EntFriction * vars.Frametime * vars.Maxspeed * accel;
-	
+
 	PlayerData copy = player;
 	Friction(copy, onground, vars);
 	double lambdaVel = copy.Velocity.Length2D();
 
-	double cosTheta = ((target * target - lambdaVel * lambdaVel) / gamma1 - gamma1) / (2 * lambdaVel);
-	double gamma2 = L - lambdaVel * cosTheta;
+	double cosTheta;
+	bool usedGamma1;
 
-	if (std::abs(cosTheta) > 1)
+	if (gamma1 <= 2 * L)
 	{
-		Msg("Invalid cos value received in target vel strafing!\n");
-		return 0;
+		cosTheta = ((target * target - lambdaVel * lambdaVel) / gamma1 - gamma1) / (2 * lambdaVel);
+		return std::acos(cosTheta);
 	}
 	else
+	{
+		cosTheta = std::sqrt((target * target - L * L) / lambdaVel * lambdaVel);
 		return std::acos(cosTheta);
+	}
+	
 }
 
 
@@ -85,6 +90,7 @@ double MaxAccelWithCapIntoYawTheta(const PlayerData& player, const MovementVars&
 
 double MaxAccelTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed)
 {
+	Msg("Wishspeed %f, accelerate %f, airaccelerate %f, ent friction %f, wishspeedcap %f, max speed %f\n", (float)wishspeed, (float)vars.Accelerate, (float)vars.Airaccelerate, (float)vars.EntFriction, (float)vars.WishspeedCap, (float)vars.Maxspeed);
 	double accel = onground ? vars.Accelerate : vars.Airaccelerate;
 	double accelspeed = accel * wishspeed * vars.EntFriction * vars.Frametime;
 	if (accelspeed <= 0.0)

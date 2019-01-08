@@ -45,12 +45,16 @@ extern ConVar _y_spt_anglesetspeed;
 extern ConVar _y_spt_pitchspeed;
 extern ConVar _y_spt_yawspeed;
 extern ConVar _y_spt_force_90fov;
+
 extern ConVar _y_spt_overlay;
 extern ConVar _y_spt_overlay_type;
 extern ConVar _y_spt_overlay_portal;
 extern ConVar _y_spt_overlay_width;
 extern ConVar _y_spt_overlay_fov;
 extern ConVar _y_spt_overlay_swap;
+extern ConVar _y_spt_overlay_crosshair;
+extern ConVar _y_spt_overlay_crosshair_color;
+extern ConVar _y_spt_overlay_crosshair_size;
 
 #ifdef OE
 extern ConVar y_spt_gamedir;

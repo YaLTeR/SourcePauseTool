@@ -10,6 +10,9 @@
 #include "custom_interfaces.hpp"
 #include "eiface.h"
 #include "icvar.h"
+#include "vguimatsurface\imatsystemsurface.h"
+#include "vguimatsurface\imatsystemsurfacev5.h"
+#include "vgui\ischeme.h"
 
 //---------------------------------------------------------------------------------
 // Purpose: a sample 3rd party plugin class
@@ -58,6 +61,8 @@ public:
 
 IServerUnknown* GetServerPlayer();
 IVEngineServer* GetEngine();
+IMatSystemSurface* GetSurface();
+vgui::IScheme* GetIScheme();
 ICvar* GetCvarInterface();
 std::string GetGameDir();
 

@@ -55,6 +55,24 @@ inline void GetTriplet(std::istringstream& stream, T1& out1, T2& out2, T3& out3,
 	out3 = ParseValue<T3>(s3);
 }
 
+template<typename T1, typename T2, typename T3, typename T4>
+inline void GetQuadlet(const std::string& s, T1& out1, T2& out2, T3& out3, T4& out4, char delim)
+{
+	std::istringstream is(s);
+	GetQuadlet(is, out1, out2, out3, out4, delim);
+}
+
+template<typename T1, typename T2, typename T3, typename T4>
+inline void GetQuadlet(std::istringstream& stream, T1& out1, T2& out2, T3& out3, T4& out4, char delim)
+{
+	std::string s1, s2, s3, s4;
+	GetQuadlet(stream, s1, s2, s3, s4, delim);
+	out1 = ParseValue<T1>(s1);
+	out2 = ParseValue<T2>(s2);
+	out3 = ParseValue<T3>(s3);
+	out4 = ParseValue<T4>(s4);
+}
+
 inline void GetTriplet(std::istringstream& stream, std::string& out1, std::string& out2, std::string& out3, char delim)
 {
 	std::getline(stream, out1, delim);
@@ -64,6 +82,20 @@ inline void GetTriplet(std::istringstream& stream, std::string& out1, std::strin
 	if (!stream.good())
 		throw std::exception("Unable to read triplet!");
 	std::getline(stream, out3);
+}
+
+inline void GetQuadlet(std::istringstream& stream, std::string& out1, std::string& out2, std::string& out3, std::string& out4, char delim)
+{
+	std::getline(stream, out1, delim);
+	if (!stream.good())
+		throw std::exception("Unable to read quadlet!");
+	std::getline(stream, out2, delim);
+	if (!stream.good())
+		throw std::exception("Unable to read quadlet!");
+	std::getline(stream, out3, delim);
+	if (!stream.good())
+		throw std::exception("Unable to read quadlet!");
+	std::getline(stream, out4);
 }
 
 template<typename T>

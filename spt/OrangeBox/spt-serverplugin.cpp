@@ -37,6 +37,8 @@ inline bool FStrEq( const char *sz1, const char *sz2 )
 std::unique_ptr<EngineClientWrapper> engine;
 IVEngineServer *engine_server = nullptr;
 IUniformRandomStream* random = nullptr;
+IMatSystemSurface* surface = nullptr;
+vgui::IScheme* scheme = nullptr;
 void *gm = nullptr;
 
 int lastSeed = 0;
@@ -106,6 +108,16 @@ void DefaultFOVChangeCallback(ConVar *var, char const *pOldString)
 IVEngineServer* GetEngine()
 {
 	return engine_server;
+}
+
+IMatSystemSurface * GetSurface()
+{
+	return surface;
+}
+
+vgui::IScheme * GetIScheme()
+{
+	return scheme;
 }
 
 ICvar* GetCvarInterface()
@@ -277,6 +289,18 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		DevWarning("SPT: Failed to get the IUniformRandomStream interface.\n");
 	}
 
+	surface = (IMatSystemSurface*)interfaceFactory(MAT_SYSTEM_SURFACE_INTERFACE_VERSION, NULL);
+	if (!surface)
+	{
+		DevWarning("SPT: Failed to get the IMatSystemSurface interface.\n");
+	}
+
+	scheme = (vgui::IScheme*)interfaceFactory(VGUI_SCHEME_INTERFACE_VERSION, NULL);
+	if (!scheme)
+	{
+		DevWarning("SPT: Failed to get the IScheme interface.\n");
+	}
+
 	EngineConCmd = CallServerCommand;
 	EngineGetViewAngles = GetViewAngles;
 	EngineSetViewAngles = SetViewAngles;
@@ -289,6 +313,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	Hooks::getInstance().AddToHookedModules(&engineDLL);
 	Hooks::getInstance().AddToHookedModules(&clientDLL);
 	Hooks::getInstance().AddToHookedModules(&serverDLL);
+	Hooks::getInstance().AddToHookedModules(&vgui_matsurfaceDLL);
 
 	Hooks::getInstance().Init();
 

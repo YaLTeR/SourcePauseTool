@@ -8,6 +8,8 @@
 #include <SPTLib\detoursutils.hpp>
 #include <SPTLib\hooks.hpp>
 #include "EngineDLL.hpp"
+#include "vguimatsurfaceDLL.hpp"
+#include "..\overlay\overlay-renderer.hpp"
 
 using std::uintptr_t;
 using std::size_t;
@@ -47,6 +49,11 @@ void __cdecl EngineDLL::HOOKED_Cbuf_Execute()
 	return engineDLL.HOOKED_Cbuf_Execute_Func();
 }
 
+void __fastcall EngineDLL::HOOKED_VGui_Paint(void * thisptr, int edx, int mode)
+{
+	engineDLL.HOOKED_VGui_Paint_Func(thisptr, edx, mode);
+}
+
 void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
 	Clear(); // Just in case.
@@ -63,13 +70,15 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		pFinishRestore = NULL,
 		pSetPaused = NULL,
 		pMiddleOfSV_InitGameDLL = NULL,
-		pRecord = NULL;
+		pRecord = NULL,
+		pVGui_Paint = NULL;
 
 	auto fActivateServer = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSV_ActivateServer, &pSV_ActivateServer);
 	auto fFinishRestore = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsFinishRestore, &pFinishRestore);
 	auto fSetPaused = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSetPaused, &pSetPaused);
 	auto fMiddleOfSV_InitGameDLL = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsMiddleOfSV_InitGameDLL, &pMiddleOfSV_InitGameDLL);
 	auto fRecord = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsRecord, &pRecord);
+	auto fVGui_Paint = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsVGui_Paint, &pVGui_Paint);
 
 	// m_bLoadgame and pGameServer (&sv)
 	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsSpawnPlayer, &pSpawnPlayer);
@@ -212,6 +221,18 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("y_spt_pause_demo_on_tick is not available.\n");
 	}
 
+	ptnNumber = fVGui_Paint.get();
+	if (pVGui_Paint)
+	{
+		ORIG_VGui_Paint = (_VGui_Paint)pVGui_Paint;
+		EngineDevMsg("Found VGui_Paint at %p (using the build %s pattern).\n", pVGui_Paint, Patterns::ptnsVGui_Paint[ptnNumber].build.c_str());
+	}
+	else
+	{
+		EngineDevWarning("Could not find VGui_Paint!\n");
+		EngineWarning("Speedrun hud is not available.\n");
+	}
+
 	DetoursUtils::AttachDetours(moduleName, {
 		{ (PVOID *)(&ORIG_SV_ActivateServer), HOOKED_SV_ActivateServer },
 		{ (PVOID *)(&ORIG_FinishRestore), HOOKED_FinishRestore },
@@ -219,7 +240,8 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		{ (PVOID *)(&ORIG__Host_RunFrame), HOOKED__Host_RunFrame },
 		{ (PVOID *)(&ORIG__Host_RunFrame_Input), HOOKED__Host_RunFrame_Input },
 		{ (PVOID *)(&ORIG__Host_RunFrame_Server), HOOKED__Host_RunFrame_Server },
-		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute }
+		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute },
+		{ (PVOID *)(&ORIG_VGui_Paint), HOOKED_VGui_Paint }
 	});
 }
 
@@ -232,7 +254,8 @@ void EngineDLL::Unhook()
 		{ (PVOID *)(&ORIG__Host_RunFrame), HOOKED__Host_RunFrame },
 		{ (PVOID *)(&ORIG__Host_RunFrame_Input), HOOKED__Host_RunFrame_Input },
 		{ (PVOID *)(&ORIG__Host_RunFrame_Server), HOOKED__Host_RunFrame_Server },
-		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute }
+		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute },
+		{ (PVOID *)(&ORIG_VGui_Paint), HOOKED_VGui_Paint }
 	});
 
 	Clear();
@@ -248,6 +271,7 @@ void EngineDLL::Clear()
 	ORIG__Host_RunFrame_Input = nullptr;
 	ORIG__Host_RunFrame_Server = nullptr;
 	ORIG_Cbuf_Execute = nullptr;
+	ORIG_VGui_Paint = nullptr;
 	pGameServer = nullptr;
 	pM_bLoadgame = nullptr;
 	shouldPreventNextUnpause = false;
@@ -415,4 +439,12 @@ void __cdecl EngineDLL::HOOKED_Cbuf_Execute_Func()
 	ORIG_Cbuf_Execute();
 
 	EngineDevMsg("Cbuf_Execute() end.\n");
+}
+
+void __fastcall EngineDLL::HOOKED_VGui_Paint_Func(void * thisptr, int edx, int mode)
+{
+	if(mode == 2 && clientDLL.renderingOverlay)
+		vgui_matsurfaceDLL.DrawCrosshair();
+
+	ORIG_VGui_Paint(thisptr, edx, mode);
 }

@@ -54,6 +54,9 @@ ConVar _y_spt_overlay_portal("_y_spt_overlay_portal", "auto", FCVAR_CHEAT, "Choo
 ConVar _y_spt_overlay_width("_y_spt_overlay_width", "480", FCVAR_CHEAT, "Determines the width of the overlay. Height is determined automatically from width.\n", true, 20.0f, true, 3840.0f);
 ConVar _y_spt_overlay_fov("_y_spt_overlay_fov", "90", FCVAR_CHEAT, "Determines the FOV of the overlay.\n", true, 5.0f, true, 140.0f);
 ConVar _y_spt_overlay_swap("_y_spt_overlay_swap", "0", FCVAR_CHEAT, "Swap alternate view and main screen?\n");
+ConVar _y_spt_overlay_crosshair("_y_spt_overlay_crosshair", "1", FCVAR_CHEAT, "Enables dot crosshair on overlay.\n");
+ConVar _y_spt_overlay_crosshair_color("_y_spt_overlay_crosshair_color", "178 0 255 200", FCVAR_CHEAT, "The RGBA color of the crosshair.\n");
+ConVar _y_spt_overlay_crosshair_size("_y_spt_overlay_crosshair_sizer", "3", FCVAR_CHEAT, "The radius of the overlay crosshair.\n");
 
 #ifdef OE
 ConVar y_spt_gamedir("y_spt_gamedir", "", 0, "Sets the game directory, that is used for loading tas scripts and tests. Use the full path for the folder e.g. C:\\Steam\\steamapps\\sourcemods\\hl2oe\\\n");

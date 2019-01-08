@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <SPTLib\IHookableNameFilter.hpp>
+#include <SPTLib\detoursutils.hpp>
 #include "..\spt-serverplugin.hpp"
 #include "..\..\SDK\igamemovement.h"
 #include "..\public\cdll_int.h"
@@ -81,6 +82,7 @@ public:
 	Vector GetPlayerVelocity();
 	Vector GetPlayerEyePos();
 	bool GetFlagsDucking();
+	bool renderingOverlay;
 
 protected:
 	_DoImageSpaceMotionBlur ORIG_DoImageSpaceMotionBlur;
@@ -127,5 +129,5 @@ protected:
 	void OnFrame();
 
 	int afterframesDelay;
-	bool renderingOverlay;
+	DetoursUtils::PatternContainer patternContainer;
 };
