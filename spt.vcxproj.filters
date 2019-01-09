@@ -99,6 +99,7 @@
     </ClCompile>
     <ClCompile Include="spt\OrangeBox\modules\vguimatsurfaceDLL.cpp" />
     <ClCompile Include="SPTLib\patterncontainer.cpp" />
+    <ClCompile Include="..\..\public\vgui_controls\vgui_controls.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">

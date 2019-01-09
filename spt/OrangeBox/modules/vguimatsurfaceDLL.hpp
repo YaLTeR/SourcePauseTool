@@ -7,6 +7,9 @@
 #include "vguimatsurface\imatsystemsurface.h"
 #include "vgui\ischeme.h"
 #include "convar.h"
+#ifdef OE
+#include "vector.h"
+#endif
 
 using std::uintptr_t;
 using std::size_t;
