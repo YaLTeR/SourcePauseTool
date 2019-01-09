@@ -35,6 +35,7 @@ extern ConVar tas_strafe_lgagst;
 extern ConVar tas_strafe_lgagst_minspeed;
 extern ConVar tas_strafe_lgagst_fullmaxspeed;
 extern ConVar tas_strafe_jumptype;
+extern ConVar tas_strafe_capped_limit;
 
 extern ConVar tas_script_printvars;
 extern ConVar tas_script_savestates;
@@ -45,6 +46,12 @@ extern ConVar _y_spt_anglesetspeed;
 extern ConVar _y_spt_pitchspeed;
 extern ConVar _y_spt_yawspeed;
 extern ConVar _y_spt_force_90fov;
+
+extern ConVar y_spt_hud_velocity;
+extern ConVar y_spt_hud_flags;
+extern ConVar y_spt_hud_accel;
+extern ConVar y_spt_hud_script_length;
+extern ConVar y_spt_hud_portal_bubble;
 
 extern ConVar _y_spt_overlay;
 extern ConVar _y_spt_overlay_type;

@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <SPTLib\IHookableNameFilter.hpp>
-#include <SPTLib\detoursutils.hpp>
+#include <SPTLib\patterncontainer.hpp>
 #include "..\spt-serverplugin.hpp"
 #include "..\..\SDK\igamemovement.h"
 #include "..\public\cdll_int.h"
@@ -81,8 +81,10 @@ public:
 	void ResetPitchYawCommands() { setYaw.set = false; setPitch.set = false; }
 	Vector GetPlayerVelocity();
 	Vector GetPlayerEyePos();
+	int GetPlayerFlags();
 	bool GetFlagsDucking();
 	bool renderingOverlay;
+	void* screenRect;
 
 protected:
 	_DoImageSpaceMotionBlur ORIG_DoImageSpaceMotionBlur;

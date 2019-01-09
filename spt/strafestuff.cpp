@@ -33,7 +33,6 @@ inline double Atan2(double a, double b)
 	return std::atan2(a, b);
 }
 
-
 double TargetTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, double target)
 {
 	double accel = onground ? vars.Accelerate : vars.Airaccelerate;
@@ -66,7 +65,6 @@ double MaxAccelWithCapIntoYawTheta(const PlayerData& player, const MovementVars&
 	if (!player.Velocity.AsVector2D().IsZero(0))
 		vel_yaw = Atan2(player.Velocity.y, player.Velocity.x);
 
-	const float CAP = 299.99f; // The speed cap for this strafing method
 	double theta = MaxAccelTheta(player, vars, onground, wishspeed);
 
 	Vector2D avec(std::cos(theta), std::sin(theta));
@@ -74,23 +72,14 @@ double MaxAccelWithCapIntoYawTheta(const PlayerData& player, const MovementVars&
 	vel.Velocity.x = player.Velocity.Length2D();
 	VectorFME(vel, vars, onground, wishspeed, avec);
 
-	if (vel.Velocity.Length2D() > CAP)
-		theta = TargetTheta(player, vars, onground, wishspeed, CAP);
+	if (vel.Velocity.Length2D() > tas_strafe_capped_limit.GetFloat())
+		theta = TargetTheta(player, vars, onground, wishspeed, tas_strafe_capped_limit.GetFloat());
 
 	return std::copysign(theta, NormalizeRad(yaw - vel_yaw));
 }
 
-/*double MaintainTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed)
-{
-	double accel = onground ? vars.Accelerate : vars.Airaccelerate;
-	double cosTheta = -vars.EntFriction * vars.Frametime * vars.Maxspeed * accel / (2 * player.Velocity.Length2D());
-
-	return std::acos(cosTheta);
-}*/
-
 double MaxAccelTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed)
 {
-	Msg("Wishspeed %f, accelerate %f, airaccelerate %f, ent friction %f, wishspeedcap %f, max speed %f\n", (float)wishspeed, (float)vars.Accelerate, (float)vars.Airaccelerate, (float)vars.EntFriction, (float)vars.WishspeedCap, (float)vars.Maxspeed);
 	double accel = onground ? vars.Accelerate : vars.Airaccelerate;
 	double accelspeed = accel * wishspeed * vars.EntFriction * vars.Frametime;
 	if (accelspeed <= 0.0)

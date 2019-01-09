@@ -123,10 +123,11 @@ namespace scripts
 
 	void SourceTASReader::OnAfterFrames()
 	{
+		if (currentTick < currentScript.GetScriptLength())
+			++currentTick;
+
 		if (conditions.empty() || iterationFinished)
 			return;
-
-		++currentTick;
 
 		bool allTrue = true;
 
@@ -147,6 +148,11 @@ namespace scripts
 			iterationFinished = true;
 			SearchResult(SearchResult::Success);
 		}	
+	}
+
+	int SourceTASReader::GetCurrentTick()
+	{
+		return currentTick;
 	}
 
 	int SourceTASReader::GetCurrentScriptLength()

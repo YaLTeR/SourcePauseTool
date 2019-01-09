@@ -18,7 +18,7 @@ ConVar y_spt_pause_demo_on_tick(
 ConVar y_spt_on_slide_pause_for("y_spt_on_slide_pause_for", "0", 0, "Whenever sliding occurs in DMoMM, pause for this many ticks.");
 
 ConVar tas_strafe("tas_strafe", "0", FCVAR_TAS_RESET);
-ConVar tas_strafe_type("tas_strafe_type", "0", FCVAR_TAS_RESET, "TAS strafe types:\n\t0 - Max acceleration strafing,\n\t1 - Max angle strafing.\n");
+ConVar tas_strafe_type("tas_strafe_type", "0", FCVAR_TAS_RESET, "TAS strafe types:\n\t0 - Max acceleration strafing,\n\t1 - Max angle strafing.\n\t2 - Max accel strafing with a speed cap.\n");
 ConVar tas_strafe_dir("tas_strafe_dir", "3", FCVAR_TAS_RESET, "TAS strafe dirs:\n\t0 - to the left,\n\t1 - to the right,\n\t3 - to the yaw given in tas_strafe_yaw.");
 ConVar tas_strafe_yaw("tas_strafe_yaw", "", FCVAR_TAS_RESET, "Yaw to strafe to with tas_strafe_dir = 3.");
 ConVar tas_strafe_buttons("tas_strafe_buttons", "", FCVAR_TAS_RESET, "Sets the strafing buttons. The format is 4 digits: \"<AirLeft> <AirRight> <GroundLeft> <GroundRight>\". The default (auto-detect) is empty string: \"\".\n"
@@ -28,6 +28,7 @@ ConVar tas_strafe_vectorial_increment("tas_strafe_vectorial_increment", "2.5", F
 ConVar tas_strafe_vectorial_offset("tas_strafe_vectorial_offset", "0", FCVAR_TAS_RESET, "Determines the target view angle offset from tas_strafe_yaw\n");
 ConVar tas_strafe_vectorial_snap("tas_strafe_vectorial_snap", "170", FCVAR_TAS_RESET, "Determines when the yaw angle snaps to the target yaw. Mainly used to prevent ABHing from resetting the yaw angle to the back on every jump.\n");
 ConVar tas_strafe_allow_jump_override("tas_strafe_allow_jump_override", "0", FCVAR_TAS_RESET, "Determines if the setyaw/pitch commands are ignored when jumping + TAS strafing. Primarily used in search mode for stucklaunches when the exact time of the jump isn't known prior to running the script.\n");
+ConVar tas_strafe_capped_limit("tas_strafe_capped_limit", "299.99", FCVAR_TAS_RESET, "Determines the speed cap while using capped strafing(type 2).\n");
 
 ConVar tas_force_airaccelerate("tas_force_airaccelerate", "", 0, "Sets the value of airaccelerate used in TAS calculations. If empty, uses the value of sv_airaccelerate.\n\nShould be set to 15 for Portal.\n");
 ConVar tas_force_wishspeed_cap("tas_force_wishspeed_cap", "", 0, "Sets the value of the wishspeed cap used in TAS calculations. If empty, uses the default value: 30.\n\nShould be set to 60 for Portal.\n");
@@ -48,6 +49,13 @@ ConVar _y_spt_anglesetspeed("_y_spt_anglesetspeed", "360", FCVAR_TAS_RESET, "Det
 ConVar _y_spt_pitchspeed("_y_spt_pitchspeed", "0", FCVAR_TAS_RESET);
 ConVar _y_spt_yawspeed("_y_spt_yawspeed", "0", FCVAR_TAS_RESET);
 ConVar _y_spt_force_90fov("_y_spt_force_90fov", "0");
+
+ConVar y_spt_hud_velocity("y_spt_hud_velocity", "0", FCVAR_CHEAT, "Turns on the velocity hud.\n");
+ConVar y_spt_hud_flags("y_spt_hud_flags", "0", FCVAR_CHEAT, "Turns on the flags hud.\n");
+ConVar y_spt_hud_accel("y_spt_hud_accel", "0", FCVAR_CHEAT, "Turns on the acceleration hud.\n");
+ConVar y_spt_hud_script_length("y_spt_hud_script_progress", "0", FCVAR_CHEAT, "Turns on the script progress hud.\n");
+ConVar y_spt_hud_portal_bubble("y_spt_hud_portal_bubble", "0", FCVAR_CHEAT, "Turns on portal bubble index hud.\n");
+
 ConVar _y_spt_overlay("_y_spt_overlay", "0", FCVAR_CHEAT, "Enables the overlay camera in the top left of the screen.\n");
 ConVar _y_spt_overlay_type("_y_spt_overlay_type", "0", FCVAR_CHEAT, "Overlay type. 0 = save glitch body, 1 = angle glitch simulation, 2 = rear view mirror.\n");
 ConVar _y_spt_overlay_portal("_y_spt_overlay_portal", "auto", FCVAR_CHEAT, "Chooses the portal for the overlay camera. Valid options are blue/orange/portal index. For the SG camera this is the portal you save glitch on, for angle glitch simulation this is the portal you enter.\n");
@@ -56,7 +64,7 @@ ConVar _y_spt_overlay_fov("_y_spt_overlay_fov", "90", FCVAR_CHEAT, "Determines t
 ConVar _y_spt_overlay_swap("_y_spt_overlay_swap", "0", FCVAR_CHEAT, "Swap alternate view and main screen?\n");
 ConVar _y_spt_overlay_crosshair("_y_spt_overlay_crosshair", "1", FCVAR_CHEAT, "Enables dot crosshair on overlay.\n");
 ConVar _y_spt_overlay_crosshair_color("_y_spt_overlay_crosshair_color", "178 0 255 200", FCVAR_CHEAT, "The RGBA color of the crosshair.\n");
-ConVar _y_spt_overlay_crosshair_size("_y_spt_overlay_crosshair_sizer", "3", FCVAR_CHEAT, "The radius of the overlay crosshair.\n");
+ConVar _y_spt_overlay_crosshair_size("_y_spt_overlay_crosshair_size", "3", FCVAR_CHEAT, "The radius of the overlay crosshair.\n");
 
 #ifdef OE
 ConVar y_spt_gamedir("y_spt_gamedir", "", 0, "Sets the game directory, that is used for loading tas scripts and tests. Use the full path for the folder e.g. C:\\Steam\\steamapps\\sourcemods\\hl2oe\\\n");

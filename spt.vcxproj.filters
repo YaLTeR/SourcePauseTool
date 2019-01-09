@@ -98,6 +98,7 @@
       <Filter>spt\OrangeBox\scripts\tests</Filter>
     </ClCompile>
     <ClCompile Include="spt\OrangeBox\modules\vguimatsurfaceDLL.cpp" />
+    <ClCompile Include="SPTLib\patterncontainer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -272,6 +273,7 @@
       <Filter>spt\OrangeBox\scripts\tests</Filter>
     </ClInclude>
     <ClInclude Include="spt\OrangeBox\modules\vguimatsurfaceDLL.hpp" />
+    <ClInclude Include="SPTLib\patterncontainer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">

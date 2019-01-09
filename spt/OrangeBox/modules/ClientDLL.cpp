@@ -450,6 +450,11 @@ Vector ClientDLL::GetPlayerEyePos()
 	return rval;
 }
 
+int ClientDLL::GetPlayerFlags()
+{
+	return (*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(GetLocalPlayer()) + offFlags));
+}
+
 bool ClientDLL::GetFlagsDucking()
 {
 	return (*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(GetLocalPlayer()) + offFlags)) & FL_DUCKING;
@@ -794,6 +799,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 
 	EngineSetViewAngles(va);
 	scripts::g_Tester.DataIteration();
+	vgui_matsurfaceDLL.NewTick();
 }
 
 void __fastcall ClientDLL::HOOKED_CreateMove_Func(void* thisptr, int edx, int sequence_number, float input_sample_frametime, bool active)
@@ -846,6 +852,7 @@ void ClientDLL::HOOKED_CViewRender__Render_Func(void* thisptr, int edx, void* re
 	ORIG_CViewRender__Render(thisptr, edx, rect);
 #else
 	renderingOverlay = false;
+	screenRect = rect;
 	if (!g_OverlayRenderer.shouldRenderOverlay())
 	{
 		ORIG_CViewRender__Render(thisptr, edx, rect);

@@ -11,7 +11,6 @@
 #include "eiface.h"
 #include "icvar.h"
 #include "vguimatsurface\imatsystemsurface.h"
-#include "vguimatsurface\imatsystemsurfacev5.h"
 #include "vgui\ischeme.h"
 
 //---------------------------------------------------------------------------------

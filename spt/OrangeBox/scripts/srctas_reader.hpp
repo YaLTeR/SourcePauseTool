@@ -20,6 +20,7 @@ namespace scripts
 		void StartSearch(const std::string& script);
 		void SearchResult(scripts::SearchResult result);
 		void OnAfterFrames();
+		int GetCurrentTick();
 		int GetCurrentScriptLength();
 	private:
 		bool iterationFinished;

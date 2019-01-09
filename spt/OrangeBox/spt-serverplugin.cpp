@@ -38,7 +38,7 @@ std::unique_ptr<EngineClientWrapper> engine;
 IVEngineServer *engine_server = nullptr;
 IUniformRandomStream* random = nullptr;
 IMatSystemSurface* surface = nullptr;
-vgui::IScheme* scheme = nullptr;
+vgui::ISchemeManager* scheme = nullptr;
 void *gm = nullptr;
 
 int lastSeed = 0;
@@ -117,7 +117,7 @@ IMatSystemSurface * GetSurface()
 
 vgui::IScheme * GetIScheme()
 {
-	return scheme;
+	return scheme->GetIScheme(scheme->GetDefaultScheme());
 }
 
 ICvar* GetCvarInterface()
@@ -295,7 +295,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		DevWarning("SPT: Failed to get the IMatSystemSurface interface.\n");
 	}
 
-	scheme = (vgui::IScheme*)interfaceFactory(VGUI_SCHEME_INTERFACE_VERSION, NULL);
+	scheme = (vgui::ISchemeManager*)interfaceFactory(VGUI_SCHEME_INTERFACE_VERSION, NULL);
 	if (!scheme)
 	{
 		DevWarning("SPT: Failed to get the IScheme interface.\n");

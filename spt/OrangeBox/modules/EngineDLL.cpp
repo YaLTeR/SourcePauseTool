@@ -443,8 +443,8 @@ void __cdecl EngineDLL::HOOKED_Cbuf_Execute_Func()
 
 void __fastcall EngineDLL::HOOKED_VGui_Paint_Func(void * thisptr, int edx, int mode)
 {
-	if(mode == 2 && clientDLL.renderingOverlay)
-		vgui_matsurfaceDLL.DrawCrosshair();
+	if (mode == 2 && !clientDLL.renderingOverlay)
+		vgui_matsurfaceDLL.DrawHUD((vrect_t*)clientDLL.screenRect);
 
 	ORIG_VGui_Paint(thisptr, edx, mode);
 }
