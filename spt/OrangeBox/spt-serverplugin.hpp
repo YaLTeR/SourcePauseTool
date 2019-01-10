@@ -60,8 +60,6 @@ public:
 
 IServerUnknown* GetServerPlayer();
 IVEngineServer* GetEngine();
-IMatSystemSurface* GetSurface();
-vgui::IScheme* GetIScheme();
 ICvar* GetCvarInterface();
 std::string GetGameDir();
 

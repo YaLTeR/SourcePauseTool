@@ -24,6 +24,7 @@ typedef void*(__fastcall *_GetGroundEntity) (void* thisptr, int edx);
 typedef void(__fastcall *_CalcAbsoluteVelocity) (void* thisptr, int edx);
 typedef void(__fastcall *_CViewRender__RenderView) (void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw);
 typedef void(__fastcall *_CViewRender__Render) (void* thisptr, int edx, void* rect);
+typedef void*(__cdecl *_GetClientModeNormal) ();
 
 struct afterframes_entry_t
 {
@@ -85,6 +86,7 @@ public:
 	bool GetFlagsDucking();
 	bool renderingOverlay;
 	void* screenRect;
+	_GetClientModeNormal ORIG_GetClientModeNormal;
 
 protected:
 	_DoImageSpaceMotionBlur ORIG_DoImageSpaceMotionBlur;

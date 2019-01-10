@@ -765,6 +765,17 @@ namespace Patterns
 		}
 	};
 
+	const MemUtils::ptnvec ptnsCHLClient__CanRecordDemo =
+	{
+		{
+			"5135",
+			{
+				0xE8, '?', '?', '?', '?', 0x85, 0xC0, 0x74, 0x11, 0xE8, '?', '?', '?', '?', 0x8B, 0x10, 0x8B, 0xC8, 0x8B, 0x92, 0x84, 0x00, 0x00, 0x00, 0xFF, 0xE2
+			},
+			"x????xxxxx????xxxxxxxxxxxx"
+		}
+	};
+
 	// server.dll patterns
 	const MemUtils::ptnvec ptnsServerCheckJumpButton =
 	{

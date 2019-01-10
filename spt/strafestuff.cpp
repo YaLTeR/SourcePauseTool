@@ -44,7 +44,6 @@ double TargetTheta(const PlayerData& player, const MovementVars& vars, bool ongr
 	double lambdaVel = copy.Velocity.Length2D();
 
 	double cosTheta;
-	bool usedGamma1;
 
 	if (gamma1 <= 2 * L)
 	{

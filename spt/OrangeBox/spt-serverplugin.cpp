@@ -16,13 +16,19 @@
 #include "engine\iserverplugin.h"
 #include "eiface.h"
 #include "tier2\tier2.h"
+#include "tier3\tier3.h"
+#include "vgui\isystem.h"
+#include "vgui\iinput.h"
+#include "vgui\ivgui.h"
 
 #if SSDK2007
 #include "mathlib\vmatrix.h"
 #endif
 
+#include "..\vgui\tas_gui.hpp"
 #include "overlay\overlay-renderer.hpp"
 #include "overlay\overlays.hpp"
+#include "..\vgui\vgui_utils.hpp"
 #include "tier0\memdbgoff.h" // YaLTeR - switch off the memory debugging.
 
 using namespace std::literals;
@@ -202,6 +208,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	auto startTime = std::chrono::high_resolution_clock::now();
 
 	ConnectTier1Libraries(&interfaceFactory, 1);
+	ConnectTier3Libraries(&interfaceFactory, 1);
 
 	gm = gameServerFactory(INTERFACENAME_GAMEMOVEMENT, NULL);
 	if (gm) {
@@ -289,18 +296,6 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		DevWarning("SPT: Failed to get the IUniformRandomStream interface.\n");
 	}
 
-	surface = (IMatSystemSurface*)interfaceFactory(MAT_SYSTEM_SURFACE_INTERFACE_VERSION, NULL);
-	if (!surface)
-	{
-		DevWarning("SPT: Failed to get the IMatSystemSurface interface.\n");
-	}
-
-	scheme = (vgui::ISchemeManager*)interfaceFactory(VGUI_SCHEME_INTERFACE_VERSION, NULL);
-	if (!scheme)
-	{
-		DevWarning("SPT: Failed to get the IScheme interface.\n");
-	}
-
 	EngineConCmd = CallServerCommand;
 	EngineGetViewAngles = GetViewAngles;
 	EngineSetViewAngles = SetViewAngles;
@@ -335,6 +330,7 @@ void CSourcePauseTool::Unload( void )
 #endif
 
 	DisconnectTier1Libraries();
+	DisconnectTier3Libraries();
 }
 
 const char *CSourcePauseTool::GetPluginDescription( void )
@@ -839,6 +835,11 @@ CON_COMMAND(tas_test_validate, "Validates a test.")
 	{
 		scripts::g_Tester.LoadTest(args.Arg(1), false);
 	}
+}
+
+CON_COMMAND(tas_gui, "Opens the TAS GUI")
+{
+	 vgui::OpenTASGUI();
 }
 
 #if SSDK2007

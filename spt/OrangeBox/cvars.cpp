@@ -55,6 +55,7 @@ ConVar y_spt_hud_flags("y_spt_hud_flags", "0", FCVAR_CHEAT, "Turns on the flags 
 ConVar y_spt_hud_accel("y_spt_hud_accel", "0", FCVAR_CHEAT, "Turns on the acceleration hud.\n");
 ConVar y_spt_hud_script_length("y_spt_hud_script_progress", "0", FCVAR_CHEAT, "Turns on the script progress hud.\n");
 ConVar y_spt_hud_portal_bubble("y_spt_hud_portal_bubble", "0", FCVAR_CHEAT, "Turns on portal bubble index hud.\n");
+ConVar y_spt_hud_decimals("y_spt_hud_decimals", "2", FCVAR_CHEAT, "Determines the number of decimals in the SPT HUD.\n");
 
 ConVar _y_spt_overlay("_y_spt_overlay", "0", FCVAR_CHEAT, "Enables the overlay camera in the top left of the screen.\n");
 ConVar _y_spt_overlay_type("_y_spt_overlay_type", "0", FCVAR_CHEAT, "Overlay type. 0 = save glitch body, 1 = angle glitch simulation, 2 = rear view mirror.\n");

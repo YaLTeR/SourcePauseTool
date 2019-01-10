@@ -11,6 +11,8 @@
 #include "Color.h"
 #include "const.h"
 #include "..\scripts\srctas_reader.hpp"
+#include "..\..\vgui\vgui_utils.hpp"
+#include "vgui_controls\controls.h"
 
 const int INDEX_MASK = MAX_EDICTS - 1;
 
@@ -33,7 +35,7 @@ void VGui_MatSurfaceDLL::Hook(const std::wstring & moduleName, HMODULE hModule, 
 	auto icvar = GetCvarInterface();
 	cl_showpos = icvar->FindVar("cl_showpos");
 	cl_showfps = icvar->FindVar("cl_showfps");
-	auto scheme = GetIScheme();
+	auto scheme = vgui::GetScheme();
 
 	font = scheme->GetFont("DefaultFixedOutline", false);
 
@@ -60,8 +62,8 @@ void VGui_MatSurfaceDLL::DrawHUD(vrect_t* screen)
 		return;
 
 	ORIG_StartDrawing();
-	auto surface = GetSurface();
-	auto scheme = GetIScheme();
+	auto surface = (IMatSystemSurface*)vgui::surface();
+	auto scheme = vgui::GetScheme();
 
 	try
 	{
@@ -108,18 +110,20 @@ void VGui_MatSurfaceDLL::DrawTopRightHUD(vrect_t * screen, vgui::IScheme * schem
 		++vertIndex;
 
 	const int BUFFER_SIZE = 80;
+	wchar_t format[BUFFER_SIZE];
 	wchar_t buffer[BUFFER_SIZE];
 	currentVel = clientDLL.GetPlayerVelocity();
 	Vector accel = currentVel - previousVel;
+	int width = y_spt_hud_decimals.GetInt();
 
 	if (y_spt_hud_velocity.GetBool())
 	{
-		swprintf_s(buffer, BUFFER_SIZE, L"vel(xyz): %.5f %.5f %.5f", currentVel.x, currentVel.y, currentVel.z);
+		swprintf_s(buffer, BUFFER_SIZE, L"vel(xyz): %.*f %.*f %.*f", width, currentVel.x, width, currentVel.y, width, currentVel.z);
 		surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
 		surface->DrawPrintText(buffer, wcslen(buffer));
 		++vertIndex;
 
-		swprintf_s(buffer, BUFFER_SIZE, L"vel(xy): %.5f", currentVel.Length2D());
+		swprintf_s(buffer, BUFFER_SIZE, L"vel(xy): %.*f", width, currentVel.Length2D());
 		surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
 		surface->DrawPrintText(buffer, wcslen(buffer));
 		++vertIndex;
@@ -127,12 +131,12 @@ void VGui_MatSurfaceDLL::DrawTopRightHUD(vrect_t * screen, vgui::IScheme * schem
 
 	if (y_spt_hud_accel.GetBool())
 	{
-		swprintf_s(buffer, BUFFER_SIZE, L"accel(xyz): %.5f %.5f %.5f", accel.x, accel.y, accel.z);
+		swprintf_s(buffer, BUFFER_SIZE, L"accel(xyz): %.*f %.*f %.*f", width, accel.x, width, accel.y, width, accel.z);
 		surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
 		surface->DrawPrintText(buffer, wcslen(buffer));
 		++vertIndex;
 
-		swprintf_s(buffer, BUFFER_SIZE, L"accel(xy): %.5f", accel.Length2D());
+		swprintf_s(buffer, BUFFER_SIZE, L"accel(xy): %.*f", width, accel.Length2D());
 		surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
 		surface->DrawPrintText(buffer, wcslen(buffer));
 		++vertIndex;
@@ -157,7 +161,6 @@ void VGui_MatSurfaceDLL::DrawTopRightHUD(vrect_t * screen, vgui::IScheme * schem
 
 	if (y_spt_hud_flags.GetBool())
 	{
-		int mask = 1;
 		int flags = clientDLL.GetPlayerFlags();
 		for (int u = 0; u < ARRAYSIZE(FLAGS); ++u)
 		{

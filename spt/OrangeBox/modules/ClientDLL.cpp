@@ -80,7 +80,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	this->moduleName = moduleName;
 
 	MemUtils::ptnvec_size ptnNumber;
-	uintptr_t pMiddleOfCAM_Think;
+	uintptr_t pMiddleOfCAM_Think, pCHLClient__CanRecordDemo;
 
 	patternContainer.Init(moduleName, moduleStart, moduleLength);
 	patternContainer.AddEntry(HOOKED_HudUpdate, (PVOID*)&ORIG_HudUpdate, Patterns::ptnsHudUpdate, "CHLClient::HudUpdate");
@@ -95,6 +95,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	patternContainer.AddEntry(nullptr, (PVOID*)&CalcAbsoluteVelocity, Patterns::ptnsCalcAbsoluteVelocity, "CalcAbsoluteVelocity");
 	patternContainer.AddEntry(HOOKED_DoImageSpaceMotionBlur, (PVOID*)&ORIG_DoImageSpaceMotionBlur, Patterns::ptnsDoImageSpaceMotionBlur, "DoImageSpaceMotionBlur");
 	patternContainer.AddEntry(HOOKED_CheckJumpButton, (PVOID*)&ORIG_CheckJumpButton, Patterns::ptnsClientCheckJumpButton, "CheckJumpButton");
+	patternContainer.AddEntry(nullptr, (PVOID*)&pCHLClient__CanRecordDemo, Patterns::ptnsCHLClient__CanRecordDemo, "pCHLClient::CanRecordDemo");
 
 	if (ORIG_DoImageSpaceMotionBlur)
 	{
@@ -326,6 +327,14 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		}
 
 		EngineDevMsg("[client dll] Found GetLocalPlayer at %p.\n", GetLocalPlayer);
+	}
+
+	if (pCHLClient__CanRecordDemo)
+	{
+		int offset = *reinterpret_cast<int*>(pCHLClient__CanRecordDemo + 1);
+		const int CALL_INSTRUCTION_LEN = 5;
+		ORIG_GetClientModeNormal = (_GetClientModeNormal)(offset + pCHLClient__CanRecordDemo + CALL_INSTRUCTION_LEN);
+		EngineDevMsg("[client.dll] Found GetClientModeNormal at %p\n", ORIG_GetClientModeNormal);
 	}
 
 	extern bool FoundEngineServer();
@@ -833,7 +842,6 @@ void ClientDLL::HOOKED_CViewRender__RenderView_Func(void* thisptr, int edx, void
 	g_OverlayRenderer.modifyView(static_cast<CViewSetup*>(cameraView), renderingOverlay);
 	if (renderingOverlay)
 	{
-		auto surface = GetSurface();
 		g_OverlayRenderer.modifySmallScreenFlags(nClearFlags, whatToDraw);
 		ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
 		return;

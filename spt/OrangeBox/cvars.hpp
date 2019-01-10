@@ -52,6 +52,7 @@ extern ConVar y_spt_hud_flags;
 extern ConVar y_spt_hud_accel;
 extern ConVar y_spt_hud_script_length;
 extern ConVar y_spt_hud_portal_bubble;
+extern ConVar y_spt_hud_decimals;
 
 extern ConVar _y_spt_overlay;
 extern ConVar _y_spt_overlay_type;
