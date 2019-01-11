@@ -79,7 +79,6 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	this->moduleLength = moduleLength;
 	this->moduleName = moduleName;
 
-	MemUtils::ptnvec_size ptnNumber;
 	uintptr_t pMiddleOfCAM_Think, pCHLClient__CanRecordDemo;
 
 	patternContainer.Init(moduleName, moduleStart, moduleLength);
@@ -99,7 +98,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 	if (ORIG_DoImageSpaceMotionBlur)
 	{
-		ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_DoImageSpaceMotionBlur);
+		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_DoImageSpaceMotionBlur);
 
 		switch (ptnNumber)
 		{
@@ -137,7 +136,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 	if (ORIG_CheckJumpButton)
 	{
-		ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_CheckJumpButton);
+		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_CheckJumpButton);
 
 		switch (ptnNumber)
 		{
@@ -212,7 +211,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 	if (ORIG_CreateMove)
 	{
-		ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_CreateMove);
+		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_CreateMove);
 
 		switch (ptnNumber) {
 		case 0:
@@ -256,8 +255,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 	if (GetGroundEntity)
 	{
-		ptnNumber = patternContainer.FindPatternIndex((PVOID*)&GetGroundEntity);
-
+		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&GetGroundEntity);
 		switch (ptnNumber) {
 		case 0:
 			offMaxspeed = 4136;
@@ -307,7 +305,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 	if (pMiddleOfCAM_Think)
 	{
-		ptnNumber = patternContainer.FindPatternIndex((PVOID*)&pMiddleOfCAM_Think);
+		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&pMiddleOfCAM_Think);
 		switch (ptnNumber) {
 		case 0:
 			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 29) + pMiddleOfCAM_Think + 33);

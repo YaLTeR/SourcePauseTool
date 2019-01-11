@@ -15,7 +15,7 @@
 #include "vgui_controls\controls.h"
 
 const int INDEX_MASK = MAX_EDICTS - 1;
-ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement vars hud.\n");
+ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement vars hud.\n"); // Putting this in cvars.cpp crashes the game xdddd
 
 void VGui_MatSurfaceDLL::Hook(const std::wstring & moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
 {
@@ -26,19 +26,18 @@ void VGui_MatSurfaceDLL::Hook(const std::wstring & moduleName, HMODULE hModule, 
 	this->moduleLength = moduleLength;
 	this->moduleName = moduleName;
 
+	auto icvar = GetCvarInterface();
+	cl_showpos = icvar->FindVar("cl_showpos");
+	cl_showfps = icvar->FindVar("cl_showfps");
+	auto scheme = vgui::GetScheme();
+	font = scheme->GetFont("DefaultFixedOutline", false);
+
 	patternContainer.Init(moduleName, moduleStart, moduleLength);
 	patternContainer.AddEntry(nullptr, (PVOID*)&ORIG_StartDrawing, Patterns::ptnsStartDrawing, "StartDrawing");
 	patternContainer.AddEntry(nullptr, (PVOID*)&ORIG_FinishDrawing, Patterns::ptnsFinishDrawing, "FinishDrawing");
 
 	if (!ORIG_FinishDrawing || !ORIG_StartDrawing)
-		Msg("HUD drawing solutions are not available.\n");
-
-	auto icvar = GetCvarInterface();
-	cl_showpos = icvar->FindVar("cl_showpos");
-	cl_showfps = icvar->FindVar("cl_showfps");
-	auto scheme = vgui::GetScheme();
-
-	font = scheme->GetFont("DefaultFixedOutline", false);
+		Warning("HUD drawing solutions are not available.\n");
 
 	patternContainer.Hook();
 }
@@ -105,7 +104,7 @@ L"MOVETYPE_PUSH", L"MOVETYPE_NOCLIP", L"MOVETYPE_LADDER", L"MOVETYPE_OBSERVER", 
 const wchar* MOVECOLLIDE_FLAGS[] = { L"MOVECOLLIDE_DEFAULT", L"MOVECOLLIDE_FLY_BOUNCE", L"MOVECOLLIDE_FLY_CUSTOM", L"MOVECOLLIDE_COUNT" };
 
 const wchar* COLLISION_GROUPS[] = { L"COLLISION_GROUP_NONE", L"COLLISION_GROUP_DEBRIS", L"COLLISION_GROUP_DEBRIS_TRIGGER", L"COLLISION_GROUP_INTERACTIVE_DEBRIS", L"COLLISION_GROUP_INTERACTIVE"
-, L"COLLISION_GROUP_PLAYER", NULL, L"COLLISION_GROUP_VEHICLE", L"COLLISION_GROUP_PLAYER_MOVEMENT", L"COLLISION_GROUP_NPC", L"COLLISION_GROUP_IN_VEHICLE", L"COLLISION_GROUP_WEAPON", 
+, L"COLLISION_GROUP_PLAYER", L"COLLISION_GROUP_BREAKABLE_GLASS,", L"COLLISION_GROUP_VEHICLE", L"COLLISION_GROUP_PLAYER_MOVEMENT", L"COLLISION_GROUP_NPC", L"COLLISION_GROUP_IN_VEHICLE", L"COLLISION_GROUP_WEAPON", 
 L"COLLISION_GROUP_VEHICLE_CLIP", L"COLLISION_GROUP_PROJECTILE", L"COLLISION_GROUP_DOOR_BLOCKER", L"COLLISION_GROUP_PASSABLE_DOOR", L"COLLISION_GROUP_DISSOLVING", L"COLLISION_GROUP_PUSHAWAY",
 L"COLLISION_GROUP_NPC_ACTOR", L"COLLISION_GROUP_NPC_SCRIPTED", L"LAST_SHARED_COLLISION_GROUP" };
 
@@ -134,21 +133,13 @@ void VGui_MatSurfaceDLL::DrawTopRightHUD(vrect_t * screen, vgui::IScheme * schem
 
 	if (y_spt_hud_velocity.GetBool())
 	{
-		swprintf_s(buffer, BUFFER_SIZE, L"vel(xyz): %.*f %.*f %.*f", width, currentVel.x, width, currentVel.y, width, currentVel.z);
-		surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
-		surface->DrawPrintText(buffer, wcslen(buffer));
-		++vertIndex;
-
+		DrawTripleFloat(vertIndex, L"vel(xyz)", currentVel.x, currentVel.y, currentVel.z, fontTall, BUFFER_SIZE, x, surface, buffer);
 		DrawSingleFloat(vertIndex, L"vel(xy)", currentVel.Length2D(), fontTall, BUFFER_SIZE, x, surface, buffer);
 	}
 
 	if (y_spt_hud_accel.GetBool())
 	{
-		swprintf_s(buffer, BUFFER_SIZE, L"accel(xyz): %.*f %.*f %.*f", width, accel.x, width, accel.y, width, accel.z);
-		surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
-		surface->DrawPrintText(buffer, wcslen(buffer));
-		++vertIndex;
-
+		DrawTripleFloat(vertIndex, L"accel(xyz)", accel.x, accel.y, accel.z, fontTall, BUFFER_SIZE, x, surface, buffer);
 		DrawSingleFloat(vertIndex, L"accel(xy)", accel.Length2D(), fontTall, BUFFER_SIZE, x, surface, buffer);
 	}
 
@@ -163,10 +154,7 @@ void VGui_MatSurfaceDLL::DrawTopRightHUD(vrect_t * screen, vgui::IScheme * schem
 	if (y_spt_hud_portal_bubble.GetBool())
 	{
 		int in_bubble = (serverDLL.GetEnviromentPortalHandle() & INDEX_MASK) != INDEX_MASK;
-		swprintf_s(buffer, BUFFER_SIZE, L"portal bubble: %d", in_bubble);
-		surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
-		surface->DrawPrintText(buffer, wcslen(buffer));
-		++vertIndex;
+		DrawSingleInt(vertIndex, L"portal bubble", in_bubble, fontTall, BUFFER_SIZE, x, surface, buffer);
 	}
 
 	if (y_spt_hud_flags.GetBool())
@@ -177,7 +165,7 @@ void VGui_MatSurfaceDLL::DrawTopRightHUD(vrect_t * screen, vgui::IScheme * schem
 
 	if (y_spt_hud_moveflags.GetBool())
 	{
-		int flags = serverDLL.GetPlayerMoveType() & 0xF;
+		int flags = serverDLL.GetPlayerMoveType();
 		DrawFlagsHud(true, L"Move type", vertIndex, x, MOVETYPE_FLAGS, ARRAYSIZE(MOVETYPE_FLAGS), surface, buffer, BUFFER_SIZE, flags, fontTall);
 	}
 
@@ -189,21 +177,21 @@ void VGui_MatSurfaceDLL::DrawTopRightHUD(vrect_t * screen, vgui::IScheme * schem
 
 	if (y_spt_hud_movecollideflags.GetBool())
 	{
-		int flags = serverDLL.GetPlayerMoveCollide() & 0x7;
+		int flags = serverDLL.GetPlayerMoveCollide();
 		DrawFlagsHud(true, L"Move collide", vertIndex, x, MOVECOLLIDE_FLAGS, ARRAYSIZE(MOVECOLLIDE_FLAGS), surface, buffer, BUFFER_SIZE, flags, fontTall);
 	}
 
 	if (y_spt_hud_vars.GetBool())
 	{
 		auto vars = clientDLL.GetMovementVars();
-		DrawSingleFloat(vertIndex, L"Accelerate", vars.Accelerate, fontTall, BUFFER_SIZE, x, surface, buffer);
-		DrawSingleFloat(vertIndex, L"Airaccelerate", vars.Airaccelerate, fontTall, BUFFER_SIZE, x, surface, buffer);
-		DrawSingleFloat(vertIndex, L"Ent friction", vars.EntFriction, fontTall, BUFFER_SIZE, x, surface, buffer);
-		DrawSingleFloat(vertIndex, L"Frametime", vars.Frametime, fontTall, BUFFER_SIZE, x, surface, buffer);
-		DrawSingleFloat(vertIndex, L"Friction", vars.Friction, fontTall, BUFFER_SIZE, x, surface, buffer);
-		DrawSingleFloat(vertIndex, L"Maxspeed", vars.Maxspeed, fontTall, BUFFER_SIZE, x, surface, buffer);
-		DrawSingleFloat(vertIndex, L"Stopspeed", vars.Stopspeed, fontTall, BUFFER_SIZE, x, surface, buffer);
-		DrawSingleFloat(vertIndex, L"Wishspeed cap", vars.WishspeedCap, fontTall, BUFFER_SIZE, x, surface, buffer);
+		DrawSingleFloat(vertIndex, L"accelerate", vars.Accelerate, fontTall, BUFFER_SIZE, x, surface, buffer);
+		DrawSingleFloat(vertIndex, L"airaccelerate", vars.Airaccelerate, fontTall, BUFFER_SIZE, x, surface, buffer);
+		DrawSingleFloat(vertIndex, L"ent friction", vars.EntFriction, fontTall, BUFFER_SIZE, x, surface, buffer);
+		DrawSingleFloat(vertIndex, L"frametime", vars.Frametime, fontTall, BUFFER_SIZE, x, surface, buffer);
+		DrawSingleFloat(vertIndex, L"friction", vars.Friction, fontTall, BUFFER_SIZE, x, surface, buffer);
+		DrawSingleFloat(vertIndex, L"maxspeed", vars.Maxspeed, fontTall, BUFFER_SIZE, x, surface, buffer);
+		DrawSingleFloat(vertIndex, L"stopspeed", vars.Stopspeed, fontTall, BUFFER_SIZE, x, surface, buffer);
+		DrawSingleFloat(vertIndex, L"wishspeed cap", vars.WishspeedCap, fontTall, BUFFER_SIZE, x, surface, buffer);
 	}
 
 #endif
@@ -246,6 +234,24 @@ void VGui_MatSurfaceDLL::DrawSingleFloat(int& vertIndex, const wchar * name, flo
 {
 	int width = y_spt_hud_decimals.GetInt();
 	swprintf_s(buffer, bufferCount, L"%s: %.*f", name, width, f);
+	surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
+	surface->DrawPrintText(buffer, wcslen(buffer));
+	++vertIndex;
+}
+
+void VGui_MatSurfaceDLL::DrawSingleInt(int & vertIndex, const wchar * name, int i, int fontTall, int bufferCount, int x, IMatSystemSurface * surface, wchar * buffer)
+{
+	int width = y_spt_hud_decimals.GetInt();
+	swprintf_s(buffer, bufferCount, L"%s: %d", name, width, i);
+	surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
+	surface->DrawPrintText(buffer, wcslen(buffer));
+	++vertIndex;
+}
+
+void VGui_MatSurfaceDLL::DrawTripleFloat(int & vertIndex, const wchar * name, float f1, float f2, float f3, int fontTall, int bufferCount, int x, IMatSystemSurface * surface, wchar * buffer)
+{
+	int width = y_spt_hud_decimals.GetInt();
+	swprintf_s(buffer, bufferCount, L"%s: %.*f %.*f %.*f", name, width, f1, width, f2, width, f3);
 	surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
 	surface->DrawPrintText(buffer, wcslen(buffer));
 	++vertIndex;

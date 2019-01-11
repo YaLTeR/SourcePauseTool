@@ -87,7 +87,6 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	this->moduleLength = moduleLength;
 	this->moduleName = moduleName;
 
-	MemUtils::ptnvec_size ptnNumber;
 	uintptr_t pCHL2_Player__HandleInteraction = NULL,
 		pPerformFlyCollisionResolution = NULL,
 		pGetStepSoundVelocities = NULL,
@@ -107,7 +106,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	// Server-side CheckJumpButton
 	if (ORIG_CheckJumpButton)
 	{
-		ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_CheckJumpButton);
+		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_CheckJumpButton);
 		switch (ptnNumber)
 		{
 		case 0:
@@ -204,7 +203,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	// FinishGravity
 	if (ORIG_FinishGravity)
 	{
-		ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_FinishGravity);
+		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_FinishGravity);
 		switch (ptnNumber)
 		{
 		case 0:
@@ -261,7 +260,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	// PlayerRunCommand
 	if (ORIG_PlayerRunCommand)
 	{
-		ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_FinishGravity);
+		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_FinishGravity);
 		switch (ptnNumber)
 		{
 		case 0:
@@ -634,12 +633,12 @@ int ServerDLL::GetPlayerPhysicsFlags() const
 
 int ServerDLL::GetPlayerMoveType() const
 {
-	return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_moveType));
+	return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_moveType)) & 0xF;
 }
 
 int ServerDLL::GetPlayerMoveCollide() const
 {
-	return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_moveCollide));
+	return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_moveCollide)) & 0x7;
 }
 
 int ServerDLL::GetPlayerCollisionGroup() const

@@ -664,7 +664,7 @@
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">$(IntDir)SPTLib.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">$(IntDir)SPTLib.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
-    <ClCompile Include="SPTLib\patterncontainer.cpp" />
+    <ClCompile Include="spt\utils\patterncontainer.cpp" />
     <ClCompile Include="sptlib\sptlib.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">sptlib-stdafx.hpp</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">sptlib-stdafx.hpp</PrecompiledHeaderFile>
@@ -838,7 +838,7 @@
     <ClInclude Include="sptlib\IHookableModule.hpp" />
     <ClInclude Include="sptlib\IHookableNameFilter.hpp" />
     <ClInclude Include="sptlib\memutils.hpp" />
-    <ClInclude Include="SPTLib\patterncontainer.hpp" />
+    <ClInclude Include="spt\utils\patterncontainer.hpp" />
     <ClInclude Include="sptlib\sptlib.hpp" />
     <ClInclude Include="sptlib\sptlib-stdafx.hpp" />
     <ClInclude Include="spt\OrangeBox\custom_interfaces.hpp" />

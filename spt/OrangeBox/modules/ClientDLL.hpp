@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <SPTLib\IHookableNameFilter.hpp>
-#include <SPTLib\patterncontainer.hpp>
+#include "..\..\utils\patterncontainer.hpp"
 #include "..\spt-serverplugin.hpp"
 #include "..\..\SDK\igamemovement.h"
 #include "..\public\cdll_int.h"
@@ -135,5 +135,5 @@ protected:
 	void OnFrame();
 
 	int afterframesDelay;
-	DetoursUtils::PatternContainer patternContainer;
+	PatternContainer patternContainer;
 };

@@ -98,10 +98,10 @@
       <Filter>spt\OrangeBox\scripts\tests</Filter>
     </ClCompile>
     <ClCompile Include="spt\OrangeBox\modules\vguimatsurfaceDLL.cpp" />
-    <ClCompile Include="SPTLib\patterncontainer.cpp" />
     <ClCompile Include="..\..\public\vgui_controls\vgui_controls.cpp" />
     <ClCompile Include="spt\vgui\tas_gui.cpp" />
     <ClCompile Include="spt\vgui\vgui_utils.cpp" />
+    <ClCompile Include="spt\utils\patterncontainer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -276,9 +276,9 @@
       <Filter>spt\OrangeBox\scripts\tests</Filter>
     </ClInclude>
     <ClInclude Include="spt\OrangeBox\modules\vguimatsurfaceDLL.hpp" />
-    <ClInclude Include="SPTLib\patterncontainer.hpp" />
     <ClInclude Include="spt\vgui\tas_gui.hpp" />
     <ClInclude Include="spt\vgui\vgui_utils.hpp" />
+    <ClInclude Include="spt\utils\patterncontainer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">

@@ -2,6 +2,7 @@
 #pragma once
 
 #include <SPTLib\IHookableNameFilter.hpp>
+#include "..\..\utils\patterncontainer.hpp"
 
 using std::uintptr_t;
 using std::size_t;
@@ -50,6 +51,7 @@ public:
 	bool Demo_IsPlaybackPaused() const;
 
 protected:
+	PatternContainer patternContainer;
 	_SV_ActivateServer ORIG_SV_ActivateServer;
 	_FinishRestore ORIG_FinishRestore;
 	_SetPaused ORIG_SetPaused;

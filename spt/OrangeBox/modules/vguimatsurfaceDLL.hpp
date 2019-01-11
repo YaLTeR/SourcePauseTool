@@ -2,7 +2,7 @@
 #pragma once
 
 #include <SPTLib\IHookableNameFilter.hpp>
-#include "SPTLib\patterncontainer.hpp"
+#include "..\..\utils\patterncontainer.hpp"
 #include "tier0\basetypes.h"
 #include "vguimatsurface\imatsystemsurface.h"
 #include "vgui\ischeme.h"
@@ -30,11 +30,13 @@ public:
 	void DrawTopRightHUD(vrect_t* screen, vgui::IScheme* scheme, IMatSystemSurface* surface);
 	void DrawFlagsHud(bool mutuallyExclusiveFlags, const wchar* hudName, int& vertIndex, int x, const wchar** nameArray, int count, IMatSystemSurface* surface, wchar* buffer, int bufferCount, int flags, int fontTall);
 	void DrawSingleFloat(int& vertIndex, const wchar* name, float f, int fontTall, int bufferCount, int x, IMatSystemSurface* surface, wchar* buffer);
+	void DrawSingleInt(int& vertIndex, const wchar* name, int i, int fontTall, int bufferCount, int x, IMatSystemSurface* surface, wchar* buffer);
+	void DrawTripleFloat(int& vertIndex, const wchar* name, float f1, float f2, float f3, int fontTall, int bufferCount, int x, IMatSystemSurface* surface, wchar* buffer);
 
 	_StartDrawing ORIG_StartDrawing;
 	_FinishDrawing ORIG_FinishDrawing;
 protected:
-	DetoursUtils::PatternContainer patternContainer;
+	PatternContainer patternContainer;
 	ConVar* cl_showpos;
 	ConVar* cl_showfps;
 	vgui::HFont font;

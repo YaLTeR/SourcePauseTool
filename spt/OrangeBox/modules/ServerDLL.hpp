@@ -5,7 +5,7 @@
 
 #include "engine\iserverplugin.h"
 #include <SDK\hl_movedata.h>
-#include "SPTLib\patterncontainer.hpp"
+#include "..\..\utils\patterncontainer.hpp"
 
 using std::uintptr_t;
 using std::size_t;
@@ -70,7 +70,7 @@ public:
 	int* m_hPortalEnvironmentOffsetPtr;
 
 protected:
-	DetoursUtils::PatternContainer patternContainer;
+	PatternContainer patternContainer;
 	_CheckJumpButton ORIG_CheckJumpButton;
 	_FinishGravity ORIG_FinishGravity;
 	_PlayerRunCommand ORIG_PlayerRunCommand;

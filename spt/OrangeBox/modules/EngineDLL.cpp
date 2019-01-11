@@ -63,28 +63,25 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	this->moduleLength = moduleLength;
 	this->moduleName = moduleName;
 
-	MemUtils::ptnvec_size ptnNumber;
+	patternContainer.Init(moduleName, moduleStart, moduleLength);
 
 	uintptr_t pSpawnPlayer = NULL,
-		pSV_ActivateServer = NULL,
-		pFinishRestore = NULL,
-		pSetPaused = NULL,
 		pMiddleOfSV_InitGameDLL = NULL,
-		pRecord = NULL,
-		pVGui_Paint = NULL;
+		pRecord = NULL;
 
-	auto fActivateServer = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSV_ActivateServer, &pSV_ActivateServer);
-	auto fFinishRestore = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsFinishRestore, &pFinishRestore);
-	auto fSetPaused = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsSetPaused, &pSetPaused);
-	auto fMiddleOfSV_InitGameDLL = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsMiddleOfSV_InitGameDLL, &pMiddleOfSV_InitGameDLL);
-	auto fRecord = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsRecord, &pRecord);
-	auto fVGui_Paint = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsVGui_Paint, &pVGui_Paint);
+	patternContainer.AddEntry(HOOKED_SV_ActivateServer, (PVOID*)&ORIG_SV_ActivateServer, Patterns::ptnsSV_ActivateServer, "SV_ActivateServer");
+	patternContainer.AddEntry(HOOKED_FinishRestore, (PVOID*)&ORIG_FinishRestore, Patterns::ptnsFinishRestore, "FinishRestore");
+	patternContainer.AddEntry(HOOKED_SetPaused, (PVOID*)&ORIG_SetPaused, Patterns::ptnsSetPaused, "SetPaused");
+	patternContainer.AddEntry(nullptr, (PVOID*)&pMiddleOfSV_InitGameDLL, Patterns::ptnsMiddleOfSV_InitGameDLL, "MiddleOfSV_InitGameDLL");
+	patternContainer.AddEntry(nullptr, (PVOID*)&pRecord, Patterns::ptnsRecord, "Record");
+	patternContainer.AddEntry(HOOKED_VGui_Paint, (PVOID*)&ORIG_VGui_Paint, Patterns::ptnsVGui_Paint, "VGui_Paint");
+	patternContainer.AddEntry(nullptr, (PVOID*)&pSpawnPlayer, Patterns::ptnsSpawnPlayer, "SpawnPlayer");
+
 
 	// m_bLoadgame and pGameServer (&sv)
-	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsSpawnPlayer, &pSpawnPlayer);
-	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	if (pSpawnPlayer)
 	{
-		EngineDevMsg("Found SpawnPlayer at %p (using the build %s pattern).\n", pSpawnPlayer, Patterns::ptnsSpawnPlayer[ptnNumber].build.c_str());
+		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&pSpawnPlayer);
 
 		switch (ptnNumber)
 		{
@@ -127,21 +124,17 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 	else
 	{
-		EngineDevWarning("Could not find SpawnPlayer!\n");
 		EngineWarning("y_spt_pause 2 has no effect.\n");
 	}
 
 	// SV_ActivateServer
-	ptnNumber = fActivateServer.get();
-	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	if (ORIG_SV_ActivateServer)
 	{
-		ORIG_SV_ActivateServer = (_SV_ActivateServer)pSV_ActivateServer;
-		EngineDevMsg("Found SV_ActivateServer at %p (using the build %s pattern).\n", pSV_ActivateServer, Patterns::ptnsSV_ActivateServer[ptnNumber].build.c_str());
-
+		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_SV_ActivateServer);
 		switch (ptnNumber)
 		{
 		case 3:
-			pGameServer = (*(void **)(pSV_ActivateServer + 223));
+			pGameServer = (*(void **)((int)ORIG_SV_ActivateServer + 223));
 			break;
 		}
 
@@ -151,42 +144,26 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 	else
 	{
-		EngineDevWarning("Could not find SV_ActivateServer!\n");
 		EngineWarning("y_spt_pause 2 has no effect.\n");
 		EngineWarning("_y_spt_afterframes_reset_on_server_activate has no effect.\n");
 	}
 
 	// FinishRestore
-	ptnNumber = fFinishRestore.get();
-	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	if (!ORIG_FinishRestore)
 	{
-		ORIG_FinishRestore = (_FinishRestore)pFinishRestore;
-		EngineDevMsg("Found FinishRestore at %p (using the build %s pattern).\n", pFinishRestore, Patterns::ptnsFinishRestore[ptnNumber].build.c_str());
-	}
-	else
-	{
-		EngineDevWarning("Could not find FinishRestore!\n");
 		EngineWarning("y_spt_pause 1 has no effect.\n");
 	}
 
 	// SetPaused
-	ptnNumber = fSetPaused.get();
-	if (pSetPaused)
+	if (!ORIG_FinishRestore)
 	{
-		ORIG_SetPaused = (_SetPaused)pSetPaused;
-		EngineDevMsg("Found SetPaused at %p (using the build %s pattern).\n", pSetPaused, Patterns::ptnsSetPaused[ptnNumber].build.c_str());
-	}
-	else
-	{
-		EngineDevWarning("Could not find SetPaused!\n");
 		EngineWarning("y_spt_pause has no effect.\n");
 	}
 
 	// interval_per_tick
-	ptnNumber = fMiddleOfSV_InitGameDLL.get();
 	if (pMiddleOfSV_InitGameDLL)
 	{
-		EngineDevMsg("Found the interval_per_tick pattern at %p (using the build %s pattern).\n", pMiddleOfSV_InitGameDLL, Patterns::ptnsMiddleOfSV_InitGameDLL[ptnNumber].build.c_str());
+		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&pMiddleOfSV_InitGameDLL);
 
 		switch (ptnNumber)
 		{
@@ -203,61 +180,30 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 	else
 	{
-		EngineDevWarning("Could not find the interval_per_tick pattern!\n");
 		EngineWarning("_y_spt_tickrate has no effect.\n");
 	}
 
-	ptnNumber = fRecord.get();
 	if (pRecord)
 	{
 		pDemoplayer = *reinterpret_cast<void***>(pRecord + 132);
-
-		EngineDevMsg("Found record at %p (using the build %s pattern).\n", pRecord, Patterns::ptnsRecord[ptnNumber].build.c_str());
 		EngineDevMsg("Found demoplayer at %p.\n", pDemoplayer);
 	}
 	else
 	{
-		EngineDevWarning("Could not find record!\n");
 		EngineWarning("y_spt_pause_demo_on_tick is not available.\n");
 	}
 
-	ptnNumber = fVGui_Paint.get();
-	if (pVGui_Paint)
+	if (!ORIG_VGui_Paint)
 	{
-		ORIG_VGui_Paint = (_VGui_Paint)pVGui_Paint;
-		EngineDevMsg("Found VGui_Paint at %p (using the build %s pattern).\n", pVGui_Paint, Patterns::ptnsVGui_Paint[ptnNumber].build.c_str());
-	}
-	else
-	{
-		EngineDevWarning("Could not find VGui_Paint!\n");
 		EngineWarning("Speedrun hud is not available.\n");
 	}
 
-	DetoursUtils::AttachDetours(moduleName, {
-		{ (PVOID *)(&ORIG_SV_ActivateServer), HOOKED_SV_ActivateServer },
-		{ (PVOID *)(&ORIG_FinishRestore), HOOKED_FinishRestore },
-		{ (PVOID *)(&ORIG_SetPaused), HOOKED_SetPaused },
-		{ (PVOID *)(&ORIG__Host_RunFrame), HOOKED__Host_RunFrame },
-		{ (PVOID *)(&ORIG__Host_RunFrame_Input), HOOKED__Host_RunFrame_Input },
-		{ (PVOID *)(&ORIG__Host_RunFrame_Server), HOOKED__Host_RunFrame_Server },
-		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute },
-		{ (PVOID *)(&ORIG_VGui_Paint), HOOKED_VGui_Paint }
-	});
+	patternContainer.Hook();
 }
 
 void EngineDLL::Unhook()
 {
-	DetoursUtils::DetachDetours(moduleName, {
-		{ (PVOID *)(&ORIG_SV_ActivateServer), HOOKED_SV_ActivateServer },
-		{ (PVOID *)(&ORIG_FinishRestore), HOOKED_FinishRestore },
-		{ (PVOID *)(&ORIG_SetPaused), HOOKED_SetPaused },
-		{ (PVOID *)(&ORIG__Host_RunFrame), HOOKED__Host_RunFrame },
-		{ (PVOID *)(&ORIG__Host_RunFrame_Input), HOOKED__Host_RunFrame_Input },
-		{ (PVOID *)(&ORIG__Host_RunFrame_Server), HOOKED__Host_RunFrame_Server },
-		{ (PVOID *)(&ORIG_Cbuf_Execute), HOOKED_Cbuf_Execute },
-		{ (PVOID *)(&ORIG_VGui_Paint), HOOKED_VGui_Paint }
-	});
-
+	patternContainer.Unhook();
 	Clear();
 }
 
