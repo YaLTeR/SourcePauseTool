@@ -8,6 +8,7 @@
 #include "..\spt-serverplugin.hpp"
 #include "..\..\SDK\igamemovement.h"
 #include "..\public\cdll_int.h"
+#include "..\..\strafestuff.hpp"
 
 using std::uintptr_t;
 using std::size_t;
@@ -80,6 +81,7 @@ public:
 	void SetPitch(float pitch) { setPitch.angle = pitch; setPitch.set = true; }
 	void SetYaw(float yaw)     { setYaw.angle   = yaw;   setYaw.set   = true; }
 	void ResetPitchYawCommands() { setYaw.set = false; setPitch.set = false; }
+	MovementVars GetMovementVars();
 	Vector GetPlayerVelocity();
 	Vector GetPlayerEyePos();
 	int GetPlayerFlags();

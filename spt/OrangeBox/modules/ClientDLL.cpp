@@ -432,6 +432,65 @@ void ClientDLL::ResetAfterframesQueue()
 	afterframesQueue.clear();
 }
 
+MovementVars ClientDLL::GetMovementVars()
+{
+	auto player = GetLocalPlayer();
+	auto onground = (GetGroundEntity(player, 0) != NULL); // TODO: This should really be a proper check.
+	auto maxspeed = *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offMaxspeed);
+
+	if (tas_force_onground.GetBool())
+		onground = true;
+
+	auto vars = MovementVars();
+	vars.Accelerate = _sv_accelerate->GetFloat();
+
+	if (tas_force_airaccelerate.GetString()[0] != '\0')
+		vars.Airaccelerate = tas_force_airaccelerate.GetFloat();
+	else
+		vars.Airaccelerate = _sv_airaccelerate->GetFloat();
+
+	vars.EntFriction = 1;
+	vars.Frametime = 0.015f;
+	vars.Friction = _sv_friction->GetFloat();
+	vars.Maxspeed = (maxspeed > 0) ? std::min(maxspeed, _sv_maxspeed->GetFloat()) : _sv_maxspeed->GetFloat();
+	vars.Stopspeed = _sv_stopspeed->GetFloat();
+
+	if (tas_force_wishspeed_cap.GetString()[0] != '\0')
+		vars.WishspeedCap = tas_force_wishspeed_cap.GetFloat();
+	else
+		vars.WishspeedCap = 30;
+
+	auto pl = PlayerData();
+	pl.Velocity = GetPlayerVelocity();
+
+	extern IServerUnknown* GetServerPlayer();
+	auto server_player = GetServerPlayer();
+
+	auto previouslyPredictedOrigin = reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(server_player) + offServerPreviouslyPredictedOrigin);
+	auto absOrigin = reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(server_player) + offServerAbsOrigin);
+	bool gameCodeMovedPlayer = (*previouslyPredictedOrigin != *absOrigin);
+
+	vars.EntFriction = *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(server_player) + offServerSurfaceFriction);
+
+	if (gameCodeMovedPlayer) {
+		if (tas_reset_surface_friction.GetBool()) {
+			vars.EntFriction = 1.0f;
+		}
+
+		if (pl.Velocity.z <= 140.f) {
+			if (onground) {
+				// TODO: This should check the real surface friction.
+				vars.EntFriction = 1.0f;
+			}
+			else if (pl.Velocity.z > 0.f) {
+				vars.EntFriction = 0.25f;
+			}
+		}
+	}
+
+	return vars;
+}
+
 Vector ClientDLL::GetPlayerVelocity()
 {
 	auto player = GetLocalPlayer();
@@ -686,24 +745,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		if (tas_force_onground.GetBool())
 			onground = true;
 
-		auto vars = MovementVars();
-		vars.Accelerate = _sv_accelerate->GetFloat();
-
-		if (tas_force_airaccelerate.GetString()[0] != '\0')
-			vars.Airaccelerate = tas_force_airaccelerate.GetFloat();
-		else
-			vars.Airaccelerate = _sv_airaccelerate->GetFloat();
-
-		vars.EntFriction = 1;
-		vars.Frametime = 0.015f;
-		vars.Friction = _sv_friction->GetFloat();
-		vars.Maxspeed = (maxspeed > 0) ? std::min(maxspeed, _sv_maxspeed->GetFloat()) : _sv_maxspeed->GetFloat();
-		vars.Stopspeed = _sv_stopspeed->GetFloat();
-
-		if (tas_force_wishspeed_cap.GetString()[0] != '\0')
-			vars.WishspeedCap = tas_force_wishspeed_cap.GetFloat();
-		else
-			vars.WishspeedCap = 30;
+		auto vars = GetMovementVars();
 
 		// Lgagst requires more prediction that is done here for correct operation.
 		auto curState = CurrentState();
@@ -721,32 +763,6 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		bool jumped = false;
 		const int IN_JUMP = (1 << 1);
 
-		extern IServerUnknown* GetServerPlayer();
-		auto server_player = GetServerPlayer();
-
-		auto previouslyPredictedOrigin = reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(server_player) + offServerPreviouslyPredictedOrigin);
-		auto absOrigin = reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(server_player) + offServerAbsOrigin);
-		bool gameCodeMovedPlayer = (*previouslyPredictedOrigin != *absOrigin);
-
-		vars.EntFriction = *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(server_player) + offServerSurfaceFriction);
-
-		if (gameCodeMovedPlayer) {
-			if (tas_reset_surface_friction.GetBool()) {
-				vars.EntFriction = 1.0f;
-			}
-
-			if (pl.Velocity.z <= 140.f) {
-				if (onground) {
-					// TODO: This should check the real surface friction.
-					vars.EntFriction = 1.0f;
-				} else if (pl.Velocity.z > 0.f) {
-					vars.EntFriction = 0.25f;
-				}
-			}
-		}
-
-		//DevMsg("[Strafing] EntFriction = %f\n", vars.EntFriction);
-
 		auto btns = StrafeButtons();
 		bool usingButtons = (sscanf(tas_strafe_buttons.GetString(), "%hhu %hhu %hhu %hhu", &btns.AirLeft, &btns.AirRight, &btns.GroundLeft, &btns.GroundRight) == 4);
 		auto type = static_cast<StrafeType>(tas_strafe_type.GetInt());
@@ -758,18 +774,6 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 			bool cantjump = false;
 			// This will report air on the first frame of unducking and report ground on the last one.
 			if ((*reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(player) + offDucking)) && GetFlagsDucking()) {
-				cantjump = true;
-			}
-
-			auto djt = (*reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offDuckJumpTime));
-			djt -= vars.Frametime * 1000;
-			djt = std::max(0.f, djt);
-			float flDuckMilliseconds = std::max(0.0f, 1000.f - djt);
-			float flDuckSeconds = flDuckMilliseconds * 0.001f;
-			if (flDuckSeconds > 0.2) {
-				djt = 0;
-			}
-			if (djt > 0) {
 				cantjump = true;
 			}
 

@@ -5,6 +5,7 @@
 
 #include "engine\iserverplugin.h"
 #include <SDK\hl_movedata.h>
+#include "SPTLib\patterncontainer.hpp"
 
 using std::uintptr_t;
 using std::size_t;
@@ -55,7 +56,11 @@ public:
 	void StopTimer() { timerRunning = false; }
 	void ResetTimer() { ticksPassed = 0; timerRunning = false; }
 	unsigned int GetTicksPassed() const { return ticksPassed; }
-	int GetEnviromentPortalHandle();
+	int GetPlayerPhysicsFlags() const;
+	int GetPlayerMoveType() const;
+	int GetPlayerMoveCollide() const;
+	int GetPlayerCollisionGroup() const;
+	int GetEnviromentPortalHandle() const;
 
 	_SnapEyeAngles SnapEyeAngles;
 	_FirePortal FirePortal;
@@ -65,6 +70,7 @@ public:
 	int* m_hPortalEnvironmentOffsetPtr;
 
 protected:
+	DetoursUtils::PatternContainer patternContainer;
 	_CheckJumpButton ORIG_CheckJumpButton;
 	_FinishGravity ORIG_FinishGravity;
 	_PlayerRunCommand ORIG_PlayerRunCommand;
@@ -82,6 +88,10 @@ protected:
 	ptrdiff_t off1M_bDucked;
 	ptrdiff_t off2M_bDucked;
 	ptrdiff_t offM_vecAbsVelocity;
+	ptrdiff_t offM_afPhysicsFlags;
+	ptrdiff_t offM_moveType;
+	ptrdiff_t offM_moveCollide;
+	ptrdiff_t offM_collisionGroup;
 
 	Vector lastVelocity;
 

@@ -40,7 +40,6 @@ double TargetTheta(const PlayerData& player, const MovementVars& vars, bool ongr
 	double gamma1 = vars.EntFriction * vars.Frametime * vars.Maxspeed * accel;
 
 	PlayerData copy = player;
-	Friction(copy, onground, vars);
 	double lambdaVel = copy.Velocity.Length2D();
 
 	double cosTheta;

@@ -88,25 +88,26 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	this->moduleName = moduleName;
 
 	MemUtils::ptnvec_size ptnNumber;
+	uintptr_t pCHL2_Player__HandleInteraction = NULL,
+		pPerformFlyCollisionResolution = NULL,
+		pGetStepSoundVelocities = NULL,
+		pCBaseEntity__SetCollisionGroup = NULL;
+	patternContainer.Init(moduleName, moduleStart, moduleLength);
 
-	uintptr_t pCheckJumpButton = NULL,
-		pFinishGravity = NULL,
-		pPlayerRunCommand = NULL,
-		pCheckStuck = NULL,
-		pMiddleOfSlidingFunction = NULL;
-
-	auto fFinishGravity = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsFinishGravity, &pFinishGravity);
-	auto fPlayerRunCommand = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsPlayerRunCommand, &pPlayerRunCommand);
-	auto fCheckStuck = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsCheckStuck, &pCheckStuck);
-	auto fMiddleOfSlidingFunction = std::async(std::launch::async, MemUtils::FindUniqueSequence, moduleStart, moduleLength, Patterns::ptnsMiddleOfSlidingFunction, &pMiddleOfSlidingFunction);
+	patternContainer.AddEntry(HOOKED_FinishGravity, (PVOID*)&ORIG_FinishGravity, Patterns::ptnsFinishGravity, "FinishGravity");
+	patternContainer.AddEntry(HOOKED_PlayerRunCommand, (PVOID*)&ORIG_PlayerRunCommand, Patterns::ptnsPlayerRunCommand, "PlayerRunCommand");
+	patternContainer.AddEntry(HOOKED_CheckStuck, (PVOID*)&ORIG_CheckStuck, Patterns::ptnsCheckStuck, "CheckStuck");
+	patternContainer.AddEntry(HOOKED_MiddleOfSlidingFunction, (PVOID*)&ORIG_MiddleOfSlidingFunction, Patterns::ptnsCheckStuck, "MiddleOfSlidingFunction");
+	patternContainer.AddEntry(HOOKED_CheckJumpButton, (PVOID*)&ORIG_CheckJumpButton, Patterns::ptnsServerCheckJumpButton, "CheckJumpButton");
+	patternContainer.AddEntry(nullptr, (PVOID*)&pCHL2_Player__HandleInteraction, Patterns::ptnsCHL2_Player__HandleInteraction, "CHL2_Player__HandleInteraction");
+	patternContainer.AddEntry(nullptr, (PVOID*)&pPerformFlyCollisionResolution, Patterns::ptnsPerformFlyCollisionResolution, "PerformFlyCollisionResolution");
+	patternContainer.AddEntry(nullptr, (PVOID*)&pGetStepSoundVelocities, Patterns::ptnsGetStepSoundVelocities, "GetStepSoundVelocities");
+	patternContainer.AddEntry(nullptr, (PVOID*)&pCBaseEntity__SetCollisionGroup, Patterns::ptnsCBaseEntity__SetCollisionGroup, "CBaseEntity::SetCollisionGroup");
 
 	// Server-side CheckJumpButton
-	ptnNumber = MemUtils::FindUniqueSequence(moduleStart, moduleLength, Patterns::ptnsServerCheckJumpButton, &pCheckJumpButton);
-	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	if (ORIG_CheckJumpButton)
 	{
-		ORIG_CheckJumpButton = (_CheckJumpButton)pCheckJumpButton;
-		EngineDevMsg("[server dll] Found CheckJumpButton at %p (using the build %s pattern).\n", pCheckJumpButton, Patterns::ptnsServerCheckJumpButton[ptnNumber].build.c_str());
-
+		ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_CheckJumpButton);
 		switch (ptnNumber)
 		{
 		case 0:
@@ -197,17 +198,13 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 	else
 	{
-		EngineDevWarning("[server dll] Could not find CheckJumpButton!\n");
 		EngineWarning("y_spt_autojump has no effect.\n");
 	}
 
 	// FinishGravity
-	ptnNumber = fFinishGravity.get();
-	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	if (ORIG_FinishGravity)
 	{
-		ORIG_FinishGravity = (_FinishGravity)pFinishGravity;
-		EngineDevMsg("[server dll] Found FinishGravity at %p (using the build %s pattern).\n", pFinishGravity, Patterns::ptnsFinishGravity[ptnNumber].build.c_str());
-
+		ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_FinishGravity);
 		switch (ptnNumber)
 		{
 		case 0:
@@ -258,17 +255,13 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	}
 	else
 	{
-		EngineDevWarning("[server dll] Could not find FinishGravity!\n");
 		EngineWarning("y_spt_additional_jumpboost has no effect.\n");
 	}
 
 	// PlayerRunCommand
-	ptnNumber = fPlayerRunCommand.get();
-	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	if (ORIG_PlayerRunCommand)
 	{
-		ORIG_PlayerRunCommand = (_PlayerRunCommand)pPlayerRunCommand;
-		EngineDevMsg("[server dll] Found PlayerRunCommand at %p (using the build %s pattern).\n", pPlayerRunCommand, Patterns::ptnsPlayerRunCommand[ptnNumber].build.c_str());
-
+		ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_FinishGravity);
 		switch (ptnNumber)
 		{
 		case 0:
@@ -326,31 +319,46 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 		EngineWarning("_y_spt_getvel has no effect.\n");
 	}
 
-	// CheckStuck
-	ptnNumber = fCheckStuck.get();
-	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	if (pCHL2_Player__HandleInteraction)
 	{
-		ORIG_CheckStuck = (_CheckStuck)pCheckStuck;
-		EngineDevMsg("[server dll] Found CheckStuck at %p (using the build %s pattern).\n", pCheckStuck, Patterns::ptnsCheckStuck[ptnNumber].build.c_str());
+		offM_afPhysicsFlags = *reinterpret_cast<int*>(pCHL2_Player__HandleInteraction + 0x16);
+		EngineDevMsg("Physics flags offset is %d\n", offM_afPhysicsFlags);
 	}
-	else
+
+	if (pPerformFlyCollisionResolution)
 	{
-		EngineDevWarning("[server dll] Could not find CheckStuck!\n");
+		offM_moveCollide = *reinterpret_cast<int*>(pPerformFlyCollisionResolution + 0x8);
+		EngineDevMsg("Move collide offset is %d\n", offM_moveCollide);
+	}
+
+	if (pGetStepSoundVelocities)
+	{
+		offM_moveType = *reinterpret_cast<int*>(pGetStepSoundVelocities + 0xB);
+		EngineDevMsg("Move type offset is %d\n", offM_moveType);
+	}
+
+	if (pCBaseEntity__SetCollisionGroup)
+	{
+		offM_collisionGroup = *reinterpret_cast<int*>(pCBaseEntity__SetCollisionGroup + 0x5);
+		EngineDevMsg("Collision group offset is %d\n", offM_collisionGroup);
+	}
+
+	// CheckStuck
+	if (!ORIG_CheckStuck)
+	{
 		EngineWarning("y_spt_stucksave has no effect.\n");
 	}
 
 	// Middle of DMoMM sliding function.
-	ptnNumber = fMiddleOfSlidingFunction.get();
-	if (ptnNumber != MemUtils::INVALID_SEQUENCE_INDEX)
+	if (ORIG_MiddleOfSlidingFunction)
 	{
-		ORIG_MiddleOfSlidingFunction = (void*)pMiddleOfSlidingFunction;
-		ORIG_SlidingAndOtherStuff = (_SlidingAndOtherStuff)(pMiddleOfSlidingFunction - 0x4bb);
-		EngineDevMsg("[server dll] Found the sliding code at %p (using the build %s pattern).\n", pMiddleOfSlidingFunction, Patterns::ptnsMiddleOfSlidingFunction[ptnNumber].build.c_str());
-		EngineDevMsg("[server dll] Found the sliding function at %p.\n", ORIG_SlidingAndOtherStuff);
+		ORIG_SlidingAndOtherStuff = (_SlidingAndOtherStuff)(&ORIG_MiddleOfSlidingFunction - 0x4bb);
+		patternContainer.AddHook(HOOKED_SlidingAndOtherStuff, (PVOID*)ORIG_SlidingAndOtherStuff);
+		EngineDevMsg("[server.dll] Found the sliding function at %p.\n", ORIG_SlidingAndOtherStuff);
 	}
 	else
 	{
-		EngineDevWarning("[server dll] Could not find the sliding code!\n");
+		EngineDevWarning("[server.dll] Could not find the sliding code!\n");
 		EngineWarning("y_spt_on_slide_pause_for has no effect.\n");
 	}
 
@@ -369,16 +377,9 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	m_hPortalEnvironmentOffsetPtr = reinterpret_cast<int*>((unsigned int)FirePortal + 0xA3);
 	GetActiveWeapon = reinterpret_cast<_GetActiveWeapon>(moduleStart + 0xCCE90);
 	ORIG_TraceFirePortal = reinterpret_cast<_TraceFirePortal>(moduleStart + 0x441730);
+	patternContainer.AddHook(HOOKED_TraceFirePortal, (PVOID*)&ORIG_TraceFirePortal);
 
-	DetoursUtils::AttachDetours(moduleName, {
-		{ (PVOID *)(&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
-		{ (PVOID *)(&ORIG_FinishGravity), HOOKED_FinishGravity },
-		{ (PVOID *)(&ORIG_PlayerRunCommand), HOOKED_PlayerRunCommand },
-		{ (PVOID *)(&ORIG_CheckStuck), HOOKED_CheckStuck },
-		{ (PVOID *)(&ORIG_TraceFirePortal), HOOKED_TraceFirePortal },
-		{ (PVOID *)(&ORIG_SlidingAndOtherStuff), HOOKED_SlidingAndOtherStuff },
-		{ &ORIG_MiddleOfSlidingFunction, HOOKED_MiddleOfSlidingFunction }
-	});
+	patternContainer.Hook();
 }
 
 void ServerDLL::Unhook()
@@ -392,16 +393,7 @@ void ServerDLL::Unhook()
 		EngineDevMsg("[server dll] Unhooked ProcessMovement through the vftable.\n");
 	}
 
-	DetoursUtils::DetachDetours(moduleName, {
-		{ (PVOID *)(&ORIG_CheckJumpButton), HOOKED_CheckJumpButton },
-		{ (PVOID *)(&ORIG_FinishGravity), HOOKED_FinishGravity },
-		{ (PVOID *)(&ORIG_PlayerRunCommand), HOOKED_PlayerRunCommand },
-		{ (PVOID *)(&ORIG_CheckStuck), HOOKED_CheckStuck },
-		{ (PVOID *)(&ORIG_TraceFirePortal), HOOKED_TraceFirePortal },
-		{ (PVOID *)(&ORIG_SlidingAndOtherStuff), HOOKED_SlidingAndOtherStuff },
-		{ &ORIG_MiddleOfSlidingFunction, HOOKED_MiddleOfSlidingFunction }
-	});
-
+	patternContainer.Unhook();
 	Clear();
 }
 
@@ -635,7 +627,27 @@ void ServerDLL::HOOKED_MiddleOfSlidingFunction_Func()
 	}
 }
 
-int ServerDLL::GetEnviromentPortalHandle()
+int ServerDLL::GetPlayerPhysicsFlags() const
+{
+	return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_afPhysicsFlags));
+}
+
+int ServerDLL::GetPlayerMoveType() const
+{
+	return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_moveType));
+}
+
+int ServerDLL::GetPlayerMoveCollide() const
+{
+	return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_moveCollide));
+}
+
+int ServerDLL::GetPlayerCollisionGroup() const
+{
+	return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_collisionGroup));
+}
+
+int ServerDLL::GetEnviromentPortalHandle() const
 {
 	int offset = *m_hPortalEnvironmentOffsetPtr;
 

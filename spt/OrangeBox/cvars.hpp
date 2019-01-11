@@ -49,6 +49,9 @@ extern ConVar _y_spt_force_90fov;
 
 extern ConVar y_spt_hud_velocity;
 extern ConVar y_spt_hud_flags;
+extern ConVar y_spt_hud_moveflags;
+extern ConVar y_spt_hud_movecollideflags;
+extern ConVar y_spt_hud_collisionflags;
 extern ConVar y_spt_hud_accel;
 extern ConVar y_spt_hud_script_length;
 extern ConVar y_spt_hud_portal_bubble;
