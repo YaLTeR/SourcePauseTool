@@ -97,7 +97,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	patternContainer.AddEntry(HOOKED_FinishGravity, (PVOID*)&ORIG_FinishGravity, Patterns::ptnsFinishGravity, "FinishGravity");
 	patternContainer.AddEntry(HOOKED_PlayerRunCommand, (PVOID*)&ORIG_PlayerRunCommand, Patterns::ptnsPlayerRunCommand, "PlayerRunCommand");
 	patternContainer.AddEntry(HOOKED_CheckStuck, (PVOID*)&ORIG_CheckStuck, Patterns::ptnsCheckStuck, "CheckStuck");
-	patternContainer.AddEntry(HOOKED_MiddleOfSlidingFunction, (PVOID*)&ORIG_MiddleOfSlidingFunction, Patterns::ptnsCheckStuck, "MiddleOfSlidingFunction");
+	patternContainer.AddEntry(HOOKED_MiddleOfSlidingFunction, (PVOID*)&ORIG_MiddleOfSlidingFunction, Patterns::ptnsMiddleOfSlidingFunction, "MiddleOfSlidingFunction");
 	patternContainer.AddEntry(HOOKED_CheckJumpButton, (PVOID*)&ORIG_CheckJumpButton, Patterns::ptnsServerCheckJumpButton, "CheckJumpButton");
 	patternContainer.AddEntry(nullptr, (PVOID*)&pCHL2_Player__HandleInteraction, Patterns::ptnsCHL2_Player__HandleInteraction, "CHL2_Player__HandleInteraction");
 	patternContainer.AddEntry(nullptr, (PVOID*)&pPerformFlyCollisionResolution, Patterns::ptnsPerformFlyCollisionResolution, "PerformFlyCollisionResolution");
