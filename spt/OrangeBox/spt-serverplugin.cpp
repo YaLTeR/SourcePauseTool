@@ -11,6 +11,7 @@
 #include "vstdlib\random.h"
 #include "scripts\srctas_reader.hpp"
 #include "scripts\tests\test.hpp"
+#include "..\utils\string_parsing.hpp"
 
 #include "cdll_int.h"
 #include "engine\iserverplugin.h"
@@ -173,7 +174,7 @@ bool DoesGameLookLikePortal()
 
 	if (engine) {
 		auto game_dir = engine->GetGameDirectory();
-		return (GetFileName(string_converter.from_bytes(game_dir)) == L"portal"s);
+		return (GetFileName(s2ws(game_dir)) == L"portal"s);
 	}
 #endif
 
@@ -305,12 +306,12 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	_EngineWarning = Warning;
 	_EngineDevWarning = DevWarning;
 
-	Hooks::getInstance().AddToHookedModules(&engineDLL);
-	Hooks::getInstance().AddToHookedModules(&clientDLL);
-	Hooks::getInstance().AddToHookedModules(&serverDLL);
-	Hooks::getInstance().AddToHookedModules(&vgui_matsurfaceDLL);
+	Hooks::AddToHookedModules(&engineDLL);
+	Hooks::AddToHookedModules(&clientDLL);
+	Hooks::AddToHookedModules(&serverDLL);
+	Hooks::AddToHookedModules(&vgui_matsurfaceDLL);
 
-	Hooks::getInstance().Init();
+	Hooks::Init(true);
 
 	auto loadTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
 	std::ostringstream out;
@@ -323,7 +324,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 
 void CSourcePauseTool::Unload( void )
 {
-	Hooks::getInstance().Free();
+	Hooks::Free();
 
 #if !defined( OE )
 	ConVar_Unregister();

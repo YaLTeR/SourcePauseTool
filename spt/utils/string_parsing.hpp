@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 
+std::wstring s2ws(const std::string& s);
 void ReplaceAll(std::string& str, const std::string& from, const std::string& to);
 inline void GetTriplet(std::istringstream& stream, std::string& out1, std::string& out2, std::string& out3, char delim);
 template<typename T>

@@ -13,7 +13,6 @@
 #undef min
 #endif
 
-#include <algorithm>
 #include <sstream>
 #include <iomanip>
 

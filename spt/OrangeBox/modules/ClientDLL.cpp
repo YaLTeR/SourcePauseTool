@@ -1,18 +1,15 @@
-#include "stdafx.hpp"
-
+#include "stdafx.h"
 #include "..\cvars.hpp"
 #include "..\modules.hpp"
-#include "..\patterns.hpp"
 #include "..\..\strafestuff.hpp"
-#include "..\..\utils\math.hpp"
 #include "..\..\sptlib-wrapper.hpp"
 #include <SPTLib\memutils.hpp>
-#include <SPTLib\detoursutils.hpp>
 #include <SPTLib\hooks.hpp>
 #include "ClientDLL.hpp"
 #include "..\overlay\overlay-renderer.hpp"
 #include "..\scripts\srctas_reader.hpp"
 #include "..\scripts\tests\test.hpp"
+#include "..\patterns.hpp"
 
 #ifdef max
 #undef max
@@ -20,7 +17,6 @@
 #ifdef min
 #undef min
 #endif
-#include <algorithm>
 
 using std::uintptr_t;
 using std::size_t;
@@ -70,18 +66,14 @@ void ClientDLL::HOOKED_CViewRender__Render(void* thisptr, int edx, void* rect)
 	clientDLL.HOOKED_CViewRender__Render_Func(thisptr, edx, rect);
 }
 
-void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
+void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* moduleBase, size_t moduleLength, bool needToIntercept)
 {
 	Clear(); // Just in case.
-
-	this->hModule = hModule;
-	this->moduleStart = moduleStart;
-	this->moduleLength = moduleLength;
-	this->moduleName = moduleName;
-
 	uintptr_t pMiddleOfCAM_Think, pCHLClient__CanRecordDemo;
 
-	patternContainer.Init(moduleName, moduleStart, moduleLength);
+	patternContainer.Init(moduleName, (int)moduleBase, moduleLength);
+
+	/*
 	patternContainer.AddEntry(HOOKED_HudUpdate, (PVOID*)&ORIG_HudUpdate, Patterns::ptnsHudUpdate, "CHLClient::HudUpdate");
 	patternContainer.AddEntry(HOOKED_GetButtonBits, (PVOID*)&ORIG_GetButtonBits, Patterns::ptnsGetButtonBits, "CInput::GetButtonBits");
 	patternContainer.AddEntry(HOOKED_AdjustAngles, (PVOID*)&ORIG_AdjustAngles, Patterns::ptnsAdjustAngles, "CInput::AdjustAngles");
@@ -361,7 +353,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 
 	if (ORIG_CViewRender__RenderView == nullptr || ORIG_CViewRender__Render == nullptr)
 		EngineWarning("Overlay cameras have no effect.\n");
-
+		*/
 	patternContainer.Hook();
 }
 

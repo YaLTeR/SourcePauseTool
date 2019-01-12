@@ -1,15 +1,14 @@
-#include "stdafx.hpp"
-
+#include "stdafx.h"
 #include "..\cvars.hpp"
 #include "..\modules.hpp"
-#include "..\patterns.hpp"
+
 #include "..\..\sptlib-wrapper.hpp"
 #include <SPTLib\memutils.hpp>
-#include <SPTLib\detoursutils.hpp>
 #include <SPTLib\hooks.hpp>
 #include "EngineDLL.hpp"
 #include "vguimatsurfaceDLL.hpp"
 #include "..\overlay\overlay-renderer.hpp"
+#include "..\patterns.hpp"
 
 using std::uintptr_t;
 using std::size_t;
@@ -54,21 +53,17 @@ void __fastcall EngineDLL::HOOKED_VGui_Paint(void * thisptr, int edx, int mode)
 	engineDLL.HOOKED_VGui_Paint_Func(thisptr, edx, mode);
 }
 
-void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
+void EngineDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* moduleBase, size_t moduleLength, bool needToIntercept)
 {
 	Clear(); // Just in case.
 
-	this->hModule = hModule;
-	this->moduleStart = moduleStart;
-	this->moduleLength = moduleLength;
-	this->moduleName = moduleName;
-
-	patternContainer.Init(moduleName, moduleStart, moduleLength);
+	patternContainer.Init(moduleName, (int)moduleBase, moduleLength);
 
 	uintptr_t pSpawnPlayer = NULL,
 		pMiddleOfSV_InitGameDLL = NULL,
 		pRecord = NULL;
 
+	/*
 	patternContainer.AddEntry(HOOKED_SV_ActivateServer, (PVOID*)&ORIG_SV_ActivateServer, Patterns::ptnsSV_ActivateServer, "SV_ActivateServer");
 	patternContainer.AddEntry(HOOKED_FinishRestore, (PVOID*)&ORIG_FinishRestore, Patterns::ptnsFinishRestore, "FinishRestore");
 	patternContainer.AddEntry(HOOKED_SetPaused, (PVOID*)&ORIG_SetPaused, Patterns::ptnsSetPaused, "SetPaused");
@@ -197,7 +192,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	{
 		EngineWarning("Speedrun hud is not available.\n");
 	}
-
+	*/
 	patternContainer.Hook();
 }
 

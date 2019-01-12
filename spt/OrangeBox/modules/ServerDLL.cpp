@@ -1,13 +1,12 @@
-#include "stdafx.hpp"
-
+#include "stdafx.h"
 #include "..\cvars.hpp"
 #include "..\modules.hpp"
-#include "..\patterns.hpp"
+
 #include "..\..\sptlib-wrapper.hpp"
 #include <SPTLib\memutils.hpp>
-#include <SPTLib\detoursutils.hpp>
 #include <SPTLib\hooks.hpp>
 #include "ServerDLL.hpp"
+#include "..\patterns.hpp"
 
 using std::uintptr_t;
 using std::size_t;
@@ -78,22 +77,17 @@ __declspec(naked) void ServerDLL::HOOKED_MiddleOfSlidingFunction()
 	}
 }
 
-void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
+void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* moduleBase, size_t moduleLength, bool needToIntercept)
 {
 	Clear(); // Just in case.
-
-	this->hModule = hModule;
-	this->moduleStart = moduleStart;
-	this->moduleLength = moduleLength;
-	this->moduleName = moduleName;
 
 	uintptr_t pCHL2_Player__HandleInteraction = NULL,
 		pPerformFlyCollisionResolution = NULL,
 		pGetStepSoundVelocities = NULL,
 		pCBaseEntity__SetCollisionGroup = NULL;
-	patternContainer.Init(moduleName, moduleStart, moduleLength);
+	patternContainer.Init(moduleName, (int)moduleBase, moduleLength);
 
-	patternContainer.AddEntry(HOOKED_FinishGravity, (PVOID*)&ORIG_FinishGravity, Patterns::ptnsFinishGravity, "FinishGravity");
+	/*patternContainer.AddEntry(HOOKED_FinishGravity, (PVOID*)&ORIG_FinishGravity, Patterns::ptnsFinishGravity, "FinishGravity");
 	patternContainer.AddEntry(HOOKED_PlayerRunCommand, (PVOID*)&ORIG_PlayerRunCommand, Patterns::ptnsPlayerRunCommand, "PlayerRunCommand");
 	patternContainer.AddEntry(HOOKED_CheckStuck, (PVOID*)&ORIG_CheckStuck, Patterns::ptnsCheckStuck, "CheckStuck");
 	patternContainer.AddEntry(HOOKED_MiddleOfSlidingFunction, (PVOID*)&ORIG_MiddleOfSlidingFunction, Patterns::ptnsMiddleOfSlidingFunction, "MiddleOfSlidingFunction");
@@ -376,7 +370,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t 
 	m_hPortalEnvironmentOffsetPtr = reinterpret_cast<int*>((unsigned int)FirePortal + 0xA3);
 	GetActiveWeapon = reinterpret_cast<_GetActiveWeapon>(moduleStart + 0xCCE90);
 	ORIG_TraceFirePortal = reinterpret_cast<_TraceFirePortal>(moduleStart + 0x441730);
-	patternContainer.AddHook(HOOKED_TraceFirePortal, (PVOID*)&ORIG_TraceFirePortal);
+	patternContainer.AddHook(HOOKED_TraceFirePortal, (PVOID*)&ORIG_TraceFirePortal);*/
 
 	patternContainer.Hook();
 }
@@ -387,7 +381,7 @@ void ServerDLL::Unhook()
 	if (gm) {
 		auto vftable = *reinterpret_cast<uintptr_t**>(gm);
 		//MemUtils::HookVTable(vftable, 17, reinterpret_cast<uintptr_t>(ORIG_AirAccelerate));
-		MemUtils::HookVTable(vftable, 1, reinterpret_cast<uintptr_t>(ORIG_ProcessMovement));
+		MemUtils::HookVTable((void**)vftable, 1, reinterpret_cast<void*>(ORIG_ProcessMovement));
 
 		EngineDevMsg("[server dll] Unhooked ProcessMovement through the vftable.\n");
 	}

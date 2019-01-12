@@ -1,10 +1,9 @@
 #include "stdafx.h"
 #include "vguimatsurfaceDLL.hpp"
 #include <SPTLib\memutils.hpp>
-#include <SPTLib\detoursutils.hpp>
+#include <SPTLib\Windows\detoursutils.hpp>
 #include <SPTLib\hooks.hpp>
 #include "..\modules.hpp"
-#include "..\patterns.hpp"
 #include "..\overlay\overlay-renderer.hpp"
 #include "..\cvars.hpp"
 #include "..\..\utils\string_parsing.hpp"
@@ -13,18 +12,14 @@
 #include "..\scripts\srctas_reader.hpp"
 #include "..\..\vgui\vgui_utils.hpp"
 #include "vgui_controls\controls.h"
+#include "..\patterns.hpp"
 
 const int INDEX_MASK = MAX_EDICTS - 1;
 ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement vars hud.\n"); // Putting this in cvars.cpp crashes the game xdddd
 
-void VGui_MatSurfaceDLL::Hook(const std::wstring & moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength)
+void VGui_MatSurfaceDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* moduleBase, size_t moduleLength, bool needToIntercept)
 {
 	Clear(); // Just in case.
-
-	this->hModule = hModule;
-	this->moduleStart = moduleStart;
-	this->moduleLength = moduleLength;
-	this->moduleName = moduleName;
 
 	auto icvar = GetCvarInterface();
 	cl_showpos = icvar->FindVar("cl_showpos");
@@ -32,9 +27,9 @@ void VGui_MatSurfaceDLL::Hook(const std::wstring & moduleName, HMODULE hModule, 
 	auto scheme = vgui::GetScheme();
 	font = scheme->GetFont("DefaultFixedOutline", false);
 
-	patternContainer.Init(moduleName, moduleStart, moduleLength);
-	patternContainer.AddEntry(nullptr, (PVOID*)&ORIG_StartDrawing, Patterns::ptnsStartDrawing, "StartDrawing");
-	patternContainer.AddEntry(nullptr, (PVOID*)&ORIG_FinishDrawing, Patterns::ptnsFinishDrawing, "FinishDrawing");
+	patternContainer.Init(moduleName, (int)moduleBase, moduleLength);
+	//patternContainer.AddEntry(nullptr, (PVOID*)&ORIG_StartDrawing, Patterns::ptnsStartDrawing, "StartDrawing");
+	//patternContainer.AddEntry(nullptr, (PVOID*)&ORIG_FinishDrawing, Patterns::ptnsFinishDrawing, "FinishDrawing");
 
 	if (!ORIG_FinishDrawing || !ORIG_StartDrawing)
 		Warning("HUD drawing solutions are not available.\n");
@@ -125,11 +120,9 @@ void VGui_MatSurfaceDLL::DrawTopRightHUD(vrect_t * screen, vgui::IScheme * schem
 		++vertIndex;
 
 	const int BUFFER_SIZE = 80;
-	wchar_t format[BUFFER_SIZE];
 	wchar_t buffer[BUFFER_SIZE];
 	currentVel = clientDLL.GetPlayerVelocity();
 	Vector accel = currentVel - previousVel;
-	int width = y_spt_hud_decimals.GetInt();
 
 	if (y_spt_hud_velocity.GetBool())
 	{
@@ -241,8 +234,7 @@ void VGui_MatSurfaceDLL::DrawSingleFloat(int& vertIndex, const wchar * name, flo
 
 void VGui_MatSurfaceDLL::DrawSingleInt(int & vertIndex, const wchar * name, int i, int fontTall, int bufferCount, int x, IMatSystemSurface * surface, wchar * buffer)
 {
-	int width = y_spt_hud_decimals.GetInt();
-	swprintf_s(buffer, bufferCount, L"%s: %d", name, width, i);
+	swprintf_s(buffer, bufferCount, L"%s: %d", name, i);
 	surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
 	surface->DrawPrintText(buffer, wcslen(buffer));
 	++vertIndex;

@@ -22,9 +22,6 @@
     <ClCompile Include="spt\OrangeBox\modules.cpp">
       <Filter>spt\OrangeBox</Filter>
     </ClCompile>
-    <ClCompile Include="sptlib\detoursutils.cpp">
-      <Filter>SPTLib</Filter>
-    </ClCompile>
     <ClCompile Include="sptlib\Hooks.cpp">
       <Filter>SPTLib</Filter>
     </ClCompile>
@@ -97,11 +94,31 @@
     <ClCompile Include="spt\OrangeBox\scripts\tests\tracker.cpp">
       <Filter>spt\OrangeBox\scripts\tests</Filter>
     </ClCompile>
-    <ClCompile Include="spt\OrangeBox\modules\vguimatsurfaceDLL.cpp" />
     <ClCompile Include="..\..\public\vgui_controls\vgui_controls.cpp" />
-    <ClCompile Include="spt\vgui\tas_gui.cpp" />
-    <ClCompile Include="spt\vgui\vgui_utils.cpp" />
-    <ClCompile Include="spt\utils\patterncontainer.cpp" />
+    <ClCompile Include="spt\OrangeBox\modules\vguimatsurfaceDLL.cpp">
+      <Filter>spt\OrangeBox\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\vgui\tas_gui.cpp">
+      <Filter>spt\OrangeBox\vgui</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\vgui\vgui_utils.cpp">
+      <Filter>spt\OrangeBox\vgui</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\utils\patterncontainer.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="SPTLib\Windows\DetoursUtils.cpp">
+      <Filter>SPTLib\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="SPTLib\Windows\Hooks_win.cpp">
+      <Filter>SPTLib\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="SPTLib\Windows\MemUtils_win.cpp">
+      <Filter>SPTLib\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="SPTLib\IHookableNameFilterOrdered.cpp">
+      <Filter>SPTLib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -191,9 +208,6 @@
     <ClInclude Include="spt\OrangeBox\modules.hpp">
       <Filter>spt\OrangeBox</Filter>
     </ClInclude>
-    <ClInclude Include="sptlib\detoursutils.hpp">
-      <Filter>SPTLib</Filter>
-    </ClInclude>
     <ClInclude Include="sptlib\Hooks.hpp">
       <Filter>SPTLib</Filter>
     </ClInclude>
@@ -275,10 +289,27 @@
     <ClInclude Include="spt\OrangeBox\scripts\tests\tracker.hpp">
       <Filter>spt\OrangeBox\scripts\tests</Filter>
     </ClInclude>
-    <ClInclude Include="spt\OrangeBox\modules\vguimatsurfaceDLL.hpp" />
-    <ClInclude Include="spt\vgui\tas_gui.hpp" />
-    <ClInclude Include="spt\vgui\vgui_utils.hpp" />
-    <ClInclude Include="spt\utils\patterncontainer.hpp" />
+    <ClInclude Include="spt\OrangeBox\modules\vguimatsurfaceDLL.hpp">
+      <Filter>spt\OrangeBox\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\vgui\tas_gui.hpp">
+      <Filter>spt\OrangeBox\vgui</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\vgui\vgui_utils.hpp">
+      <Filter>spt\OrangeBox\vgui</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\patterncontainer.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="SPTLib\Windows\DetoursUtils.hpp">
+      <Filter>SPTLib\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="SPTLib\IHookableNameFilterOrdered.hpp">
+      <Filter>SPTLib</Filter>
+    </ClInclude>
+    <ClInclude Include="SPTLib\patterns.hpp">
+      <Filter>SPTLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">
@@ -327,6 +358,12 @@
     </Filter>
     <Filter Include="spt\OrangeBox\scripts\tests">
       <UniqueIdentifier>{50d63f56-92b4-428c-ad41-8626a74b1984}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\OrangeBox\vgui">
+      <UniqueIdentifier>{9a0cc798-591f-4142-b9a1-14e54c0dc421}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SPTLib\Windows">
+      <UniqueIdentifier>{9a4a9a35-de34-40d0-a01c-057aea6a099d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

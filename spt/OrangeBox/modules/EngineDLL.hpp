@@ -21,7 +21,7 @@ class EngineDLL : public IHookableNameFilter
 {
 public:
 	EngineDLL() : IHookableNameFilter({ L"engine.dll" }) {};
-	virtual void Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength);
+	virtual void Hook(const std::wstring& moduleName, void* moduleHandle, void* moduleBase, size_t moduleLength, bool needToIntercept);
 	virtual void Unhook();
 	virtual void Clear();
 
