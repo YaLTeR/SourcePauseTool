@@ -7,6 +7,7 @@
 #include <SPTLib\hooks.hpp>
 #include "ServerDLL.hpp"
 #include "..\patterns.hpp"
+#include "..\overlay\overlays.hpp"
 
 using std::uintptr_t;
 using std::size_t;
@@ -77,30 +78,66 @@ __declspec(naked) void ServerDLL::HOOKED_MiddleOfSlidingFunction()
 	}
 }
 
+#define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::server::##name);
+#define GET_HOOKEDFUTURE(future_name) \
+    { \
+        auto pattern = f##future_name.get(); \
+        if (ORIG_##future_name) { \
+            DevMsg("[server dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
+			patternContainer.AddHook(HOOKED_##future_name, (PVOID*)&ORIG_##future_name); \
+			for(int i=0; true; ++i) { if(patterns::server::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)ORIG_##future_name,i); break; } } \
+        } else { \
+            DevWarning("[server dll] Could not find " #future_name ".\n"); \
+        } \
+    }
+
+#define GET_FUTURE(future_name) \
+    { \
+        auto pattern = f##future_name.get(); \
+        if (ORIG_##future_name) { \
+            DevMsg("[server dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
+			for(int i=0; true; ++i) { if(patterns::server::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)ORIG_##future_name,i); break; } } \
+		} else { \
+			DevWarning("[server dll] Could not find " #future_name ".\n"); \
+		} \
+}
+
 void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* moduleBase, size_t moduleLength, bool needToIntercept)
 {
 	Clear(); // Just in case.
+	m_Name = moduleName;
+	m_Base = moduleBase;
+	m_Length = moduleLength;
+	uintptr_t ORIG_CHL2_Player__HandleInteraction = NULL,
+		ORIG_PerformFlyCollisionResolution = NULL,
+		ORIG_GetStepSoundVelocities = NULL,
+		ORIG_CBaseEntity__SetCollisionGroup = NULL;
+	patternContainer.Init(moduleName);
 
-	uintptr_t pCHL2_Player__HandleInteraction = NULL,
-		pPerformFlyCollisionResolution = NULL,
-		pGetStepSoundVelocities = NULL,
-		pCBaseEntity__SetCollisionGroup = NULL;
-	patternContainer.Init(moduleName, (int)moduleBase, moduleLength);
+	DEF_FUTURE(FinishGravity);
+	DEF_FUTURE(PlayerRunCommand);
+	DEF_FUTURE(CheckStuck);
+	DEF_FUTURE(MiddleOfSlidingFunction);
+	DEF_FUTURE(CheckJumpButton);
+	DEF_FUTURE(CHL2_Player__HandleInteraction);
+	DEF_FUTURE(PerformFlyCollisionResolution);
+	DEF_FUTURE(GetStepSoundVelocities);
+	DEF_FUTURE(CBaseEntity__SetCollisionGroup);
 
-	/*patternContainer.AddEntry(HOOKED_FinishGravity, (PVOID*)&ORIG_FinishGravity, Patterns::ptnsFinishGravity, "FinishGravity");
-	patternContainer.AddEntry(HOOKED_PlayerRunCommand, (PVOID*)&ORIG_PlayerRunCommand, Patterns::ptnsPlayerRunCommand, "PlayerRunCommand");
-	patternContainer.AddEntry(HOOKED_CheckStuck, (PVOID*)&ORIG_CheckStuck, Patterns::ptnsCheckStuck, "CheckStuck");
-	patternContainer.AddEntry(HOOKED_MiddleOfSlidingFunction, (PVOID*)&ORIG_MiddleOfSlidingFunction, Patterns::ptnsMiddleOfSlidingFunction, "MiddleOfSlidingFunction");
-	patternContainer.AddEntry(HOOKED_CheckJumpButton, (PVOID*)&ORIG_CheckJumpButton, Patterns::ptnsServerCheckJumpButton, "CheckJumpButton");
-	patternContainer.AddEntry(nullptr, (PVOID*)&pCHL2_Player__HandleInteraction, Patterns::ptnsCHL2_Player__HandleInteraction, "CHL2_Player__HandleInteraction");
-	patternContainer.AddEntry(nullptr, (PVOID*)&pPerformFlyCollisionResolution, Patterns::ptnsPerformFlyCollisionResolution, "PerformFlyCollisionResolution");
-	patternContainer.AddEntry(nullptr, (PVOID*)&pGetStepSoundVelocities, Patterns::ptnsGetStepSoundVelocities, "GetStepSoundVelocities");
-	patternContainer.AddEntry(nullptr, (PVOID*)&pCBaseEntity__SetCollisionGroup, Patterns::ptnsCBaseEntity__SetCollisionGroup, "CBaseEntity::SetCollisionGroup");
+	GET_HOOKEDFUTURE(FinishGravity);
+	GET_HOOKEDFUTURE(PlayerRunCommand);
+	GET_HOOKEDFUTURE(CheckStuck);
+	GET_HOOKEDFUTURE(MiddleOfSlidingFunction);
+	GET_HOOKEDFUTURE(CheckJumpButton);
+	GET_FUTURE(CHL2_Player__HandleInteraction);
+	GET_FUTURE(PerformFlyCollisionResolution);
+	GET_FUTURE(GetStepSoundVelocities);
+	GET_FUTURE(CBaseEntity__SetCollisionGroup);
 
 	// Server-side CheckJumpButton
 	if (ORIG_CheckJumpButton)
 	{
-		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_CheckJumpButton);
+		int ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_CheckJumpButton);
 		switch (ptnNumber)
 		{
 		case 0:
@@ -191,13 +228,13 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	}
 	else
 	{
-		EngineWarning("y_spt_autojump has no effect.\n");
+		Warning("y_spt_autojump has no effect.\n");
 	}
 
 	// FinishGravity
 	if (ORIG_FinishGravity)
 	{
-		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_FinishGravity);
+		int ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_FinishGravity);
 		switch (ptnNumber)
 		{
 		case 0:
@@ -248,13 +285,13 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	}
 	else
 	{
-		EngineWarning("y_spt_additional_jumpboost has no effect.\n");
+		Warning("y_spt_additional_jumpboost has no effect.\n");
 	}
 
 	// PlayerRunCommand
 	if (ORIG_PlayerRunCommand)
 	{
-		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_FinishGravity);
+		int ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_FinishGravity);
 		switch (ptnNumber)
 		{
 		case 0:
@@ -308,38 +345,38 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	}
 	else
 	{
-		EngineDevWarning("[server dll] Could not find PlayerRunCommand!\n");
-		EngineWarning("_y_spt_getvel has no effect.\n");
+		DevWarning("[server dll] Could not find PlayerRunCommand!\n");
+		Warning("_y_spt_getvel has no effect.\n");
 	}
 
-	if (pCHL2_Player__HandleInteraction)
+	if (ORIG_CHL2_Player__HandleInteraction)
 	{
-		offM_afPhysicsFlags = *reinterpret_cast<int*>(pCHL2_Player__HandleInteraction + 0x16);
-		EngineDevMsg("Physics flags offset is %d\n", offM_afPhysicsFlags);
+		offM_afPhysicsFlags = *reinterpret_cast<int*>(ORIG_CHL2_Player__HandleInteraction + 0x16);
+		DevMsg("Physics flags offset is %d\n", offM_afPhysicsFlags);
 	}
 
-	if (pPerformFlyCollisionResolution)
+	if (ORIG_PerformFlyCollisionResolution)
 	{
-		offM_moveCollide = *reinterpret_cast<int*>(pPerformFlyCollisionResolution + 0x8);
-		EngineDevMsg("Move collide offset is %d\n", offM_moveCollide);
+		offM_moveCollide = *reinterpret_cast<int*>(ORIG_PerformFlyCollisionResolution + 0x8);
+		DevMsg("Move collide offset is %d\n", offM_moveCollide);
 	}
 
-	if (pGetStepSoundVelocities)
+	if (ORIG_GetStepSoundVelocities)
 	{
-		offM_moveType = *reinterpret_cast<int*>(pGetStepSoundVelocities + 0xB);
-		EngineDevMsg("Move type offset is %d\n", offM_moveType);
+		offM_moveType = *reinterpret_cast<int*>(ORIG_GetStepSoundVelocities + 0xB);
+		DevMsg("Move type offset is %d\n", offM_moveType);
 	}
 
-	if (pCBaseEntity__SetCollisionGroup)
+	if (ORIG_CBaseEntity__SetCollisionGroup)
 	{
-		offM_collisionGroup = *reinterpret_cast<int*>(pCBaseEntity__SetCollisionGroup + 0x5);
-		EngineDevMsg("Collision group offset is %d\n", offM_collisionGroup);
+		offM_collisionGroup = *reinterpret_cast<int*>(ORIG_CBaseEntity__SetCollisionGroup + 0x5);
+		DevMsg("Collision group offset is %d\n", offM_collisionGroup);
 	}
 
 	// CheckStuck
 	if (!ORIG_CheckStuck)
 	{
-		EngineWarning("y_spt_stucksave has no effect.\n");
+		Warning("y_spt_stucksave has no effect.\n");
 	}
 
 	// Middle of DMoMM sliding function.
@@ -347,31 +384,32 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	{
 		ORIG_SlidingAndOtherStuff = (_SlidingAndOtherStuff)(&ORIG_MiddleOfSlidingFunction - 0x4bb);
 		patternContainer.AddHook(HOOKED_SlidingAndOtherStuff, (PVOID*)ORIG_SlidingAndOtherStuff);
-		EngineDevMsg("[server.dll] Found the sliding function at %p.\n", ORIG_SlidingAndOtherStuff);
+		DevMsg("[server.dll] Found the sliding function at %p.\n", ORIG_SlidingAndOtherStuff);
 	}
 	else
 	{
-		EngineDevWarning("[server.dll] Could not find the sliding code!\n");
-		EngineWarning("y_spt_on_slide_pause_for has no effect.\n");
+		DevWarning("[server.dll] Could not find the sliding code!\n");
+		Warning("y_spt_on_slide_pause_for has no effect.\n");
 	}
 
 	extern void* gm;
 	if (gm) {
-		auto vftable = *reinterpret_cast<uintptr_t**>(gm);
+		auto vftable = reinterpret_cast<void**>(gm);
 		//ORIG_AirAccelerate = reinterpret_cast<_AirAccelerate>(MemUtils::HookVTable(vftable, 17, reinterpret_cast<uintptr_t>(HOOKED_AirAccelerate)));
-		ORIG_ProcessMovement = reinterpret_cast<_ProcessMovement>(MemUtils::HookVTable(vftable, 1, reinterpret_cast<uintptr_t>(HOOKED_ProcessMovement)));
+		ORIG_ProcessMovement = reinterpret_cast<_ProcessMovement>(MemUtils::HookVTable(vftable, 1, reinterpret_cast<void*>(HOOKED_ProcessMovement)));
 
 		EngineDevMsg("[server dll] Hooked ProcessMovement through the vftable.\n");
 	}
 
 	// TODO: remove fixed offsets.
-	SnapEyeAngles = reinterpret_cast<_SnapEyeAngles>(moduleStart + 0x1B92F0);
-	FirePortal = reinterpret_cast<_FirePortal>(moduleStart + 0x442090);
+	SnapEyeAngles = reinterpret_cast<_SnapEyeAngles>((unsigned int)moduleBase + 0x1B92F0);
+	FirePortal = reinterpret_cast<_FirePortal>((unsigned int)moduleBase + 0x442090);
 	m_hPortalEnvironmentOffsetPtr = reinterpret_cast<int*>((unsigned int)FirePortal + 0xA3);
-	GetActiveWeapon = reinterpret_cast<_GetActiveWeapon>(moduleStart + 0xCCE90);
-	ORIG_TraceFirePortal = reinterpret_cast<_TraceFirePortal>(moduleStart + 0x441730);
-	patternContainer.AddHook(HOOKED_TraceFirePortal, (PVOID*)&ORIG_TraceFirePortal);*/
+	GetActiveWeapon = reinterpret_cast<_GetActiveWeapon>((unsigned int)moduleBase + 0xCCE90);
+	ORIG_TraceFirePortal = reinterpret_cast<_TraceFirePortal>((unsigned int)moduleBase + 0x441730);
+	patternContainer.AddHook(HOOKED_TraceFirePortal, (PVOID*)&ORIG_TraceFirePortal);
 
+	
 	patternContainer.Hook();
 }
 
@@ -379,12 +417,13 @@ void ServerDLL::Unhook()
 {
 	extern void* gm;
 	if (gm) {
-		auto vftable = *reinterpret_cast<uintptr_t**>(gm);
+		auto vftable = reinterpret_cast<void**>(gm);
 		//MemUtils::HookVTable(vftable, 17, reinterpret_cast<uintptr_t>(ORIG_AirAccelerate));
-		MemUtils::HookVTable((void**)vftable, 1, reinterpret_cast<void*>(ORIG_ProcessMovement));
+		MemUtils::HookVTable(vftable, 1, reinterpret_cast<void*>(ORIG_ProcessMovement));
 
 		EngineDevMsg("[server dll] Unhooked ProcessMovement through the vftable.\n");
 	}
+
 
 	patternContainer.Unhook();
 	Clear();
@@ -622,27 +661,44 @@ void ServerDLL::HOOKED_MiddleOfSlidingFunction_Func()
 
 int ServerDLL::GetPlayerPhysicsFlags() const
 {
-	return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_afPhysicsFlags));
+	if (!serverActive())
+		return -1;
+	else 
+		return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_afPhysicsFlags));
 }
 
 int ServerDLL::GetPlayerMoveType() const
 {
-	return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_moveType)) & 0xF;
+	if (!serverActive())
+		return -1;
+	else 
+		return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_moveType)) & 0xF;
 }
 
 int ServerDLL::GetPlayerMoveCollide() const
 {
-	return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_moveCollide)) & 0x7;
+	if (!serverActive())
+		return -1;
+	else
+		return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_moveCollide)) & 0x7;
 }
 
 int ServerDLL::GetPlayerCollisionGroup() const
 {
-	return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_collisionGroup));
+	if (!serverActive())
+		return -1;
+	else
+		return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_collisionGroup));
 }
 
 int ServerDLL::GetEnviromentPortalHandle() const
 {
-	int offset = *m_hPortalEnvironmentOffsetPtr;
+	if (!serverActive())
+		return -1;
+	else
+	{
+		int offset = *m_hPortalEnvironmentOffsetPtr;
 
-	return *reinterpret_cast<int*>(((int)GetServerPlayer() + offset));
+		return *reinterpret_cast<int*>(((int)GetServerPlayer() + offset));
+	}
 }

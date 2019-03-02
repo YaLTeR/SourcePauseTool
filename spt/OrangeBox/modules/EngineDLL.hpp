@@ -15,6 +15,7 @@ typedef void(__cdecl *__Host_RunFrame_Input) (float accumulated_extra_samples, i
 typedef void(__cdecl *__Host_RunFrame_Server) (int bFinalTick);
 typedef void(__cdecl *_Cbuf_Execute) ();
 typedef void(__fastcall *_VGui_Paint) (void* thisptr, int edx, int mode);
+typedef int(__fastcall *DemoPlayer__Func)(void* thisptr);
 
 
 class EngineDLL : public IHookableNameFilter
@@ -69,4 +70,9 @@ protected:
 	int* pM_State;
 	int* pM_nSignonState;
 	void** pDemoplayer;
+	
+	int GetPlaybackTick_Offset;
+	int GetTotalTicks_Offset;
+	int IsPlayingBack_Offset;
+	int IsPlaybackPaused_Offset;
 };

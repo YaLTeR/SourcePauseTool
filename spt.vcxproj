@@ -928,7 +928,6 @@
     <ClCompile Include="spt\utils\math.cpp" />
     <ClCompile Include="spt\utils\md5.cpp" />
     <ClCompile Include="spt\utils\string_parsing.cpp" />
-    <ClCompile Include="spt\vgui\tas_gui.cpp" />
     <ClCompile Include="spt\vgui\vgui_utils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -1000,7 +999,6 @@
     <ClInclude Include="spt\utils\math.hpp" />
     <ClInclude Include="spt\utils\md5.hpp" />
     <ClInclude Include="spt\utils\string_parsing.hpp" />
-    <ClInclude Include="spt\vgui\tas_gui.hpp" />
     <ClInclude Include="spt\vgui\vgui_utils.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

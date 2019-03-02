@@ -98,9 +98,9 @@ protected:
 	_AdjustAngles ORIG_AdjustAngles;
 	_CreateMove ORIG_CreateMove;
 	_CViewRender__OnRenderStart ORIG_CViewRender__OnRenderStart;
-	_GetLocalPlayer GetLocalPlayer;
-	_GetGroundEntity GetGroundEntity;
-	_CalcAbsoluteVelocity CalcAbsoluteVelocity;
+	_GetLocalPlayer ORIG_GetLocalPlayer;
+	_GetGroundEntity ORIG_GetGroundEntity;
+	_CalcAbsoluteVelocity ORIG_CalcAbsoluteVelocity;
 	_CViewRender__RenderView ORIG_CViewRender__RenderView;
 	_CViewRender__Render ORIG_CViewRender__Render;
 

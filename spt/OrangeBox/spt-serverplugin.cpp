@@ -26,7 +26,6 @@
 #include "mathlib\vmatrix.h"
 #endif
 
-#include "..\vgui\tas_gui.hpp"
 #include "overlay\overlay-renderer.hpp"
 #include "overlay\overlays.hpp"
 #include "..\vgui\vgui_utils.hpp"
@@ -216,7 +215,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		DevMsg("SPT: Found IGameMovement at %p.\n", gm);
 	} else {
 		DevWarning("SPT: Could not find IGameMovement.\n");
-		DevWarning("SPT: ProcessMovement logging with tas_log is unavaliable.\n");
+		DevWarning("SPT: ProcessMovement logging with tas_log is unavailable.\n");
 	}
 
 	if (!g_pCVar)
@@ -836,11 +835,6 @@ CON_COMMAND(tas_test_validate, "Validates a test.")
 	{
 		scripts::g_Tester.LoadTest(args.Arg(1), false);
 	}
-}
-
-CON_COMMAND(tas_gui, "Opens the TAS GUI")
-{
-	 vgui::OpenTASGUI();
 }
 
 #if SSDK2007

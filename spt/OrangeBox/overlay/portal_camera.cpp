@@ -11,6 +11,7 @@
 #include "edict.h"
 #include "..\cvars.hpp"
 #include "mathlib\vmatrix.h"
+#include "overlay-renderer.hpp"
 
 const int PORTAL_ORIGIN_OFFSET = 1180;
 const int PORTAL_ANGLE_OFFSET = 1192;
@@ -25,8 +26,11 @@ bool invalidPortal(edict_t* portal)
 	return !portal || strcmp(portal->GetClassName(), "prop_portal") != 0;
 }
 
-bool getPortalIndex(edict_t** portal_edict, Vector& new_player_origin, QAngle& new_player_angles)
+bool getPortal(edict_t** portal_edict, Vector& new_player_origin, QAngle& new_player_angles)
 {
+	if (!serverActive())
+		return false;
+
 	int portal_index = getPortal(_y_spt_overlay_portal.GetString(), false);
 	auto engine_server = GetEngine();
 	edict_t* portal = nullptr;
@@ -54,7 +58,7 @@ void calculateAGPosition(Vector& new_player_origin, QAngle& new_player_angles)
 	edict_t * exit_portal = NULL;
 	auto engine_server = GetEngine();
 
-	if (getPortalIndex(&enter_portal, new_player_origin, new_player_angles))
+	if (getPortal(&enter_portal, new_player_origin, new_player_angles))
 	{
 		int exit_portal_ehandle = *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(enter_portal->GetUnknown()) + PORTAL_LINKED_OFFSET);
 		int exit_portal_index = exit_portal_ehandle & INDEX_MASK;
@@ -70,7 +74,7 @@ void calculateAGPosition(Vector& new_player_origin, QAngle& new_player_angles)
 void calculateSGPosition(Vector& new_player_origin, QAngle& new_player_angles)
 {
 	edict_t * portal;
-	if (getPortalIndex(&portal, new_player_origin, new_player_angles))
+	if (getPortal(&portal, new_player_origin, new_player_angles))
 		calculateOffsetPlayer(portal, new_player_origin, new_player_angles);
 }
 
@@ -85,6 +89,29 @@ bool isInfrontOfPortal(edict_t* saveglitch_portal, const Vector& player_origin)
 	float dot = DotProduct(normal, delta);
 
 	return dot >= 0;
+}
+
+std::wstring calculateWillAGSG(Vector& new_player_origin, QAngle& new_player_angles)
+{
+	edict_t* enter_portal;
+	if (!getPortal(&enter_portal, new_player_origin, new_player_angles))
+		return L"no portal selected";
+
+	Vector enter_origin = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(enter_portal->GetUnknown()) + PORTAL_ORIGIN_OFFSET);
+	auto& enter_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(enter_portal->GetUnknown()) + PORTAL_ANGLE_OFFSET);
+	Vector enterForward;
+	AngleVectors(enter_angles, &enterForward);
+
+	if (enterForward.z >= -0.7071f)
+		return L"no, bad entry portal";
+
+	Vector pos;
+	calculateAGPosition(pos, QAngle());
+
+	if (enterForward.Dot(pos - enter_origin) >= 0)
+		return L"no, tp position in front";
+	else
+		return L"yes";
 }
 
 void calculateOffsetPortal(edict_t* enter_portal, edict_t* exit_portal, Vector& new_player_origin, QAngle& new_player_angles)

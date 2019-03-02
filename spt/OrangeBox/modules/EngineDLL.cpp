@@ -53,79 +53,111 @@ void __fastcall EngineDLL::HOOKED_VGui_Paint(void * thisptr, int edx, int mode)
 	engineDLL.HOOKED_VGui_Paint_Func(thisptr, edx, mode);
 }
 
+#define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::engine::##name);
+#define GET_HOOKEDFUTURE(future_name) \
+    { \
+        auto pattern = f##future_name.get(); \
+        if (ORIG_##future_name) { \
+            DevMsg("[engine dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
+			patternContainer.AddHook(HOOKED_##future_name, (PVOID*)&ORIG_##future_name); \
+			for(int i=0; true; ++i) { if(patterns::engine::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)ORIG_##future_name,i); break; } } \
+        } else { \
+            DevWarning("[engine dll] Could not find " #future_name ".\n"); \
+        } \
+    }
+
+#define GET_FUTURE(future_name) \
+    { \
+        auto pattern = f##future_name.get(); \
+        if (ORIG_##future_name) { \
+            DevMsg("[engine dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
+			for(int i=0; true; ++i) { if(patterns::engine::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)ORIG_##future_name,i); break; } } \
+		} else { \
+			DevWarning("[engine dll] Could not find " #future_name ".\n"); \
+		} \
+}
+
 void EngineDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* moduleBase, size_t moduleLength, bool needToIntercept)
 {
 	Clear(); // Just in case.
+	m_Name = moduleName;
+	m_Base = moduleBase;
+	m_Length = moduleLength;
+	patternContainer.Init(moduleName);
 
-	patternContainer.Init(moduleName, (int)moduleBase, moduleLength);
+	uintptr_t ORIG_SpawnPlayer = NULL,
+		ORIG_MiddleOfSV_InitGameDLL = NULL,
+		ORIG_Record = NULL;
 
-	uintptr_t pSpawnPlayer = NULL,
-		pMiddleOfSV_InitGameDLL = NULL,
-		pRecord = NULL;
+	DEF_FUTURE(SV_ActivateServer);
+	DEF_FUTURE(FinishRestore);
+	DEF_FUTURE(SetPaused);
+	DEF_FUTURE(MiddleOfSV_InitGameDLL);
+	DEF_FUTURE(Record);
+	DEF_FUTURE(VGui_Paint);
+	DEF_FUTURE(SpawnPlayer);
 
-	/*
-	patternContainer.AddEntry(HOOKED_SV_ActivateServer, (PVOID*)&ORIG_SV_ActivateServer, Patterns::ptnsSV_ActivateServer, "SV_ActivateServer");
-	patternContainer.AddEntry(HOOKED_FinishRestore, (PVOID*)&ORIG_FinishRestore, Patterns::ptnsFinishRestore, "FinishRestore");
-	patternContainer.AddEntry(HOOKED_SetPaused, (PVOID*)&ORIG_SetPaused, Patterns::ptnsSetPaused, "SetPaused");
-	patternContainer.AddEntry(nullptr, (PVOID*)&pMiddleOfSV_InitGameDLL, Patterns::ptnsMiddleOfSV_InitGameDLL, "MiddleOfSV_InitGameDLL");
-	patternContainer.AddEntry(nullptr, (PVOID*)&pRecord, Patterns::ptnsRecord, "Record");
-	patternContainer.AddEntry(HOOKED_VGui_Paint, (PVOID*)&ORIG_VGui_Paint, Patterns::ptnsVGui_Paint, "VGui_Paint");
-	patternContainer.AddEntry(nullptr, (PVOID*)&pSpawnPlayer, Patterns::ptnsSpawnPlayer, "SpawnPlayer");
-
+	GET_HOOKEDFUTURE(SV_ActivateServer);
+	GET_HOOKEDFUTURE(FinishRestore);
+	GET_HOOKEDFUTURE(SetPaused);
+	GET_FUTURE(MiddleOfSV_InitGameDLL);
+	GET_HOOKEDFUTURE(VGui_Paint);
+	GET_FUTURE(SpawnPlayer);
+	
 
 	// m_bLoadgame and pGameServer (&sv)
-	if (pSpawnPlayer)
+	if (ORIG_SpawnPlayer)
 	{
-		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&pSpawnPlayer);
+		int ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_SpawnPlayer);
 
 		switch (ptnNumber)
 		{
 		case 0:
-			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 5));
-			pGameServer = (*(void **)(pSpawnPlayer + 18));
+			pM_bLoadgame = (*(bool **)(ORIG_SpawnPlayer + 5));
+			pGameServer = (*(void **)(ORIG_SpawnPlayer + 18));
 			break;
 
 		case 1:
-			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 8));
-			pGameServer = (*(void **)(pSpawnPlayer + 21));
+			pM_bLoadgame = (*(bool **)(ORIG_SpawnPlayer + 8));
+			pGameServer = (*(void **)(ORIG_SpawnPlayer + 21));
 			break;
 
 		case 2: // 4104 is the same as 5135 here.
-			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 5));
-			pGameServer = (*(void **)(pSpawnPlayer + 18));
+			pM_bLoadgame = (*(bool **)(ORIG_SpawnPlayer + 5));
+			pGameServer = (*(void **)(ORIG_SpawnPlayer + 18));
 			break;
 
 		case 3: // 2257546 is the same as 5339 here.
-			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 8));
-			pGameServer = (*(void **)(pSpawnPlayer + 21));
+			pM_bLoadgame = (*(bool **)(ORIG_SpawnPlayer + 8));
+			pGameServer = (*(void **)(ORIG_SpawnPlayer + 21));
 			break;
 
 		case 4:
-			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 26));
+			pM_bLoadgame = (*(bool **)(ORIG_SpawnPlayer + 26));
 			//pGameServer = (*(void **)(pSpawnPlayer + 21)); - We get this one from SV_ActivateServer in OE.
 			break;
 
 		case 5: // 6879 is the same as 5339 here.
-			pM_bLoadgame = (*(bool **)(pSpawnPlayer + 8));
-			pGameServer = (*(void **)(pSpawnPlayer + 21));
+			pM_bLoadgame = (*(bool **)(ORIG_SpawnPlayer + 8));
+			pGameServer = (*(void **)(ORIG_SpawnPlayer + 21));
 			break;
 		}
 
-		EngineDevMsg("m_bLoadGame is situated at %p.\n", pM_bLoadgame);
+		DevMsg("m_bLoadGame is situated at %p.\n", pM_bLoadgame);
 
 #if !defined( OE )
-		EngineDevMsg("pGameServer is %p.\n", pGameServer);
+		DevMsg("pGameServer is %p.\n", pGameServer);
 #endif
 	}
 	else
 	{
-		EngineWarning("y_spt_pause 2 has no effect.\n");
+		Warning("y_spt_pause 2 has no effect.\n");
 	}
 
 	// SV_ActivateServer
 	if (ORIG_SV_ActivateServer)
 	{
-		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_SV_ActivateServer);
+		int ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_SV_ActivateServer);
 		switch (ptnNumber)
 		{
 		case 3:
@@ -139,60 +171,85 @@ void EngineDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	}
 	else
 	{
-		EngineWarning("y_spt_pause 2 has no effect.\n");
-		EngineWarning("_y_spt_afterframes_reset_on_server_activate has no effect.\n");
+		Warning("y_spt_pause 2 has no effect.\n");
+		Warning("_y_spt_afterframes_reset_on_server_activate has no effect.\n");
 	}
 
 	// FinishRestore
 	if (!ORIG_FinishRestore)
 	{
-		EngineWarning("y_spt_pause 1 has no effect.\n");
+		Warning("y_spt_pause 1 has no effect.\n");
 	}
 
 	// SetPaused
 	if (!ORIG_FinishRestore)
 	{
-		EngineWarning("y_spt_pause has no effect.\n");
+		Warning("y_spt_pause has no effect.\n");
 	}
 
 	// interval_per_tick
-	if (pMiddleOfSV_InitGameDLL)
+	if (ORIG_MiddleOfSV_InitGameDLL)
 	{
-		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&pMiddleOfSV_InitGameDLL);
+		int ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_MiddleOfSV_InitGameDLL);
 
 		switch (ptnNumber)
 		{
 		case 0:
-			pIntervalPerTick = *reinterpret_cast<float**>(pMiddleOfSV_InitGameDLL + 18);
+			pIntervalPerTick = *reinterpret_cast<float**>(ORIG_MiddleOfSV_InitGameDLL + 18);
 			break;
 
 		case 1:
-			pIntervalPerTick = *reinterpret_cast<float**>(pMiddleOfSV_InitGameDLL + 16);
+			pIntervalPerTick = *reinterpret_cast<float**>(ORIG_MiddleOfSV_InitGameDLL + 16);
 			break;
 		}
 		
-		EngineDevMsg("Found interval_per_tick at %p.\n", pIntervalPerTick);
+		DevMsg("Found interval_per_tick at %p.\n", pIntervalPerTick);
 	}
 	else
 	{
-		EngineWarning("_y_spt_tickrate has no effect.\n");
+		Warning("_y_spt_tickrate has no effect.\n");
 	}
 
-	if (pRecord)
+
+	auto pRecord = fRecord.get();
+	if (ORIG_Record)
 	{
-		pDemoplayer = *reinterpret_cast<void***>(pRecord + 132);
-		EngineDevMsg("Found demoplayer at %p.\n", pDemoplayer);
+		if (strcmp(pRecord->name(), "2707") == 0)
+		{
+			pDemoplayer = *reinterpret_cast<void***>(ORIG_Record + 132);
+
+			// vftable offsets
+			GetPlaybackTick_Offset = 2;
+			GetTotalTicks_Offset = 3;
+			IsPlaybackPaused_Offset = 5;
+			IsPlayingBack_Offset = 6;
+		}		
+		else if (strcmp(pRecord->name(), "5135") == 0)
+		{
+			pDemoplayer = *reinterpret_cast<void***>(ORIG_Record + 0xA2);
+
+			// vftable offsets
+			GetPlaybackTick_Offset = 3;
+			GetTotalTicks_Offset = 4;
+			IsPlaybackPaused_Offset = 6;
+			IsPlayingBack_Offset = 7;
+		}
+		else
+			Warning("Record pattern had no matching clause for catching the demoplayer. y_spt_pause_demo_on_tick unavailable.");
+		
+		DevMsg("Found demoplayer at %p, record is at %p.\n", pDemoplayer, ORIG_Record);
 	}
 	else
 	{
-		EngineWarning("y_spt_pause_demo_on_tick is not available.\n");
+		Warning("y_spt_pause_demo_on_tick is not available.\n");
 	}
 
 	if (!ORIG_VGui_Paint)
 	{
-		EngineWarning("Speedrun hud is not available.\n");
+		Warning("Speedrun hud is not available.\n");
 	}
-	*/
+	
+	
 	patternContainer.Hook();
 }
 
@@ -242,7 +299,7 @@ int EngineDLL::Demo_GetPlaybackTick() const
 	if (!pDemoplayer)
 		return 0;
 	auto demoplayer = *pDemoplayer;
-	return (*reinterpret_cast<int(__fastcall ***)(void*)>(demoplayer))[2](demoplayer);
+	return (*reinterpret_cast<int(__fastcall ***)(void*)>(demoplayer))[GetPlaybackTick_Offset](demoplayer);
 }
 
 int EngineDLL::Demo_GetTotalTicks() const
@@ -250,7 +307,7 @@ int EngineDLL::Demo_GetTotalTicks() const
 	if (!pDemoplayer)
 		return 0;
 	auto demoplayer = *pDemoplayer;
-	return (*reinterpret_cast<int(__fastcall ***)(void*)>(demoplayer))[3](demoplayer);
+	return (*reinterpret_cast<int(__fastcall ***)(void*)>(demoplayer))[GetTotalTicks_Offset](demoplayer);
 }
 
 bool EngineDLL::Demo_IsPlayingBack() const
@@ -258,7 +315,7 @@ bool EngineDLL::Demo_IsPlayingBack() const
 	if (!pDemoplayer)
 		return false;
 	auto demoplayer = *pDemoplayer;
-	return (*reinterpret_cast<bool(__fastcall ***)(void*)>(demoplayer))[5](demoplayer);
+	return (*reinterpret_cast<bool(__fastcall ***)(void*)>(demoplayer))[IsPlayingBack_Offset](demoplayer);
 }
 
 bool EngineDLL::Demo_IsPlaybackPaused() const
@@ -266,7 +323,7 @@ bool EngineDLL::Demo_IsPlaybackPaused() const
 	if (!pDemoplayer)
 		return false;
 	auto demoplayer = *pDemoplayer;
-	return (*reinterpret_cast<bool(__fastcall ***)(void*)>(demoplayer))[6](demoplayer);
+	return (*reinterpret_cast<bool(__fastcall ***)(void*)>(demoplayer))[IsPlaybackPaused_Offset](demoplayer);
 }
 
 bool __cdecl EngineDLL::HOOKED_SV_ActivateServer_Func()

@@ -66,31 +66,72 @@ void ClientDLL::HOOKED_CViewRender__Render(void* thisptr, int edx, void* rect)
 	clientDLL.HOOKED_CViewRender__Render_Func(thisptr, edx, rect);
 }
 
+#define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::client::##name);
+#define GET_HOOKEDFUTURE(future_name) \
+    { \
+        auto pattern = f##future_name.get(); \
+        if (ORIG_##future_name) { \
+            DevMsg("[client dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
+			patternContainer.AddHook(HOOKED_##future_name, (PVOID*)&ORIG_##future_name); \
+			for(int i=0; true; ++i) { if(patterns::client::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)ORIG_##future_name,i); break; } } \
+        } else { \
+            DevWarning("[client dll] Could not find " #future_name ".\n"); \
+        } \
+    }
+
+#define GET_FUTURE(future_name) \
+    { \
+        auto pattern = f##future_name.get(); \
+        if (ORIG_##future_name) { \
+            DevMsg("[client dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
+			for(int i=0; true; ++i) { if(patterns::client::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)ORIG_##future_name,i); break; } } \
+		} else { \
+			DevWarning("[client dll] Could not find " #future_name ".\n"); \
+		} \
+}
+
 void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* moduleBase, size_t moduleLength, bool needToIntercept)
 {
 	Clear(); // Just in case.
-	uintptr_t pMiddleOfCAM_Think, pCHLClient__CanRecordDemo;
+	m_Name = moduleName;
+	m_Base = moduleBase;
+	m_Length = moduleLength;
+	uintptr_t ORIG_MiddleOfCAM_Think, ORIG_CHLClient__CanRecordDemo;
 
-	patternContainer.Init(moduleName, (int)moduleBase, moduleLength);
+	patternContainer.Init(moduleName);
 
-	/*
-	patternContainer.AddEntry(HOOKED_HudUpdate, (PVOID*)&ORIG_HudUpdate, Patterns::ptnsHudUpdate, "CHLClient::HudUpdate");
-	patternContainer.AddEntry(HOOKED_GetButtonBits, (PVOID*)&ORIG_GetButtonBits, Patterns::ptnsGetButtonBits, "CInput::GetButtonBits");
-	patternContainer.AddEntry(HOOKED_AdjustAngles, (PVOID*)&ORIG_AdjustAngles, Patterns::ptnsAdjustAngles, "CInput::AdjustAngles");
-	patternContainer.AddEntry(HOOKED_CreateMove, (PVOID*)&ORIG_CreateMove, Patterns::ptnsCreateMove, "CInput::CreateMove");
-	patternContainer.AddEntry(HOOKED_CViewRender__OnRenderStart, (PVOID*)&ORIG_CViewRender__OnRenderStart, Patterns::ptnsCViewRender__OnRenderStart, "CViewRender::OnRenderStart");
-	patternContainer.AddEntry(HOOKED_CViewRender__RenderView, (PVOID*)&ORIG_CViewRender__RenderView, Patterns::ptnsCViewRender__RenderView, "CViewRender::RenderView");
-	patternContainer.AddEntry(HOOKED_CViewRender__Render, (PVOID*)&ORIG_CViewRender__Render, Patterns::ptnsCViewRender__Render, "CViewRender::Render");
-	patternContainer.AddEntry(nullptr, (PVOID*)&pMiddleOfCAM_Think, Patterns::ptnsMiddleOfCAM_Think, "GetLocalPlayer");
-	patternContainer.AddEntry(nullptr, (PVOID*)&GetGroundEntity, Patterns::ptnsGetGroundEntity, "GetGroundEntity");
-	patternContainer.AddEntry(nullptr, (PVOID*)&CalcAbsoluteVelocity, Patterns::ptnsCalcAbsoluteVelocity, "CalcAbsoluteVelocity");
-	patternContainer.AddEntry(HOOKED_DoImageSpaceMotionBlur, (PVOID*)&ORIG_DoImageSpaceMotionBlur, Patterns::ptnsDoImageSpaceMotionBlur, "DoImageSpaceMotionBlur");
-	patternContainer.AddEntry(HOOKED_CheckJumpButton, (PVOID*)&ORIG_CheckJumpButton, Patterns::ptnsClientCheckJumpButton, "CheckJumpButton");
-	patternContainer.AddEntry(nullptr, (PVOID*)&pCHLClient__CanRecordDemo, Patterns::ptnsCHLClient__CanRecordDemo, "pCHLClient::CanRecordDemo");
+	DEF_FUTURE(HudUpdate);
+	DEF_FUTURE(GetButtonBits);
+	DEF_FUTURE(AdjustAngles);
+	DEF_FUTURE(CreateMove);
+	DEF_FUTURE(CViewRender__OnRenderStart);
+	DEF_FUTURE(MiddleOfCAM_Think);
+	DEF_FUTURE(GetGroundEntity);
+	DEF_FUTURE(CalcAbsoluteVelocity);
+	DEF_FUTURE(DoImageSpaceMotionBlur);
+	DEF_FUTURE(CheckJumpButton);
+	DEF_FUTURE(CHLClient__CanRecordDemo);
+	DEF_FUTURE(CViewRender__RenderView);
+	DEF_FUTURE(CViewRender__Render);
+
+	GET_HOOKEDFUTURE(HudUpdate);
+	GET_HOOKEDFUTURE(GetButtonBits);
+	GET_HOOKEDFUTURE(AdjustAngles);
+	GET_HOOKEDFUTURE(CreateMove);
+	GET_HOOKEDFUTURE(CViewRender__OnRenderStart);
+	GET_FUTURE(MiddleOfCAM_Think);
+	GET_FUTURE(GetGroundEntity);
+	GET_FUTURE(CalcAbsoluteVelocity);
+	GET_HOOKEDFUTURE(DoImageSpaceMotionBlur);
+	GET_HOOKEDFUTURE(CheckJumpButton);
+	GET_FUTURE(CHLClient__CanRecordDemo);
+	GET_HOOKEDFUTURE(CViewRender__RenderView);
+	GET_HOOKEDFUTURE(CViewRender__Render);
+	
 
 	if (ORIG_DoImageSpaceMotionBlur)
 	{
-		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_DoImageSpaceMotionBlur);
+		int ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_DoImageSpaceMotionBlur);
 
 		switch (ptnNumber)
 		{
@@ -119,16 +160,16 @@ void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 			break;
 		}
 
-		EngineDevMsg("[client dll] pgpGlobals is %p.\n", pgpGlobals);
+		DevMsg("[client dll] pgpGlobals is %p.\n", pgpGlobals);
 	}
 	else
 	{
-		EngineWarning("y_spt_motion_blur_fix has no effect.\n");
+		Warning("y_spt_motion_blur_fix has no effect.\n");
 	}
 
 	if (ORIG_CheckJumpButton)
 	{
-		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_CheckJumpButton);
+		int  ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_CheckJumpButton);
 
 		switch (ptnNumber)
 		{
@@ -188,22 +229,22 @@ void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	}
 	else
 	{
-		EngineWarning("y_spt_autojump has no effect in multiplayer.\n");
+		Warning("y_spt_autojump has no effect in multiplayer.\n");
 	}
 
 	if (!ORIG_HudUpdate)
 	{
-		EngineWarning("_y_spt_afterframes has no effect.\n");
+		Warning("_y_spt_afterframes has no effect.\n");
 	}
 
 	if (!ORIG_GetButtonBits)
 	{
-		EngineWarning("+y_spt_duckspam has no effect.\n");
+		Warning("+y_spt_duckspam has no effect.\n");
 	}
 
 	if (ORIG_CreateMove)
 	{
-		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_CreateMove);
+		int ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_CreateMove);
 
 		switch (ptnNumber) {
 		case 0:
@@ -240,14 +281,14 @@ void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 
 	if (!ORIG_AdjustAngles || !ORIG_CreateMove)
 	{
-		EngineWarning("_y_spt_setangles has no effect.\n");
-		EngineWarning("_y_spt_setpitch and _y_spt_setyaw have no effect.\n");
-		EngineWarning("_y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
+		Warning("_y_spt_setangles has no effect.\n");
+		Warning("_y_spt_setpitch and _y_spt_setyaw have no effect.\n");
+		Warning("_y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
 	}
 
-	if (GetGroundEntity)
+	if (ORIG_GetGroundEntity)
 	{
-		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&GetGroundEntity);
+		int  ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_GetGroundEntity);
 		switch (ptnNumber) {
 		case 0:
 			offMaxspeed = 4136;
@@ -295,43 +336,43 @@ void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 		}
 	}
 
-	if (pMiddleOfCAM_Think)
+	if (ORIG_MiddleOfCAM_Think)
 	{
-		MemUtils::ptnvec_size ptnNumber = patternContainer.FindPatternIndex((PVOID*)&pMiddleOfCAM_Think);
+		int ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_MiddleOfCAM_Think);
 		switch (ptnNumber) {
 		case 0:
-			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 29) + pMiddleOfCAM_Think + 33);
+			ORIG_GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(ORIG_MiddleOfCAM_Think + 29) + ORIG_MiddleOfCAM_Think + 33);
 			break;
 
 		case 1:
-			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 30) + pMiddleOfCAM_Think + 34);
+			ORIG_GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(ORIG_MiddleOfCAM_Think + 30) + ORIG_MiddleOfCAM_Think + 34);
 			break;
 			
 		case 2:
-			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 21) + pMiddleOfCAM_Think + 25);
+			ORIG_GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(ORIG_MiddleOfCAM_Think + 21) + ORIG_MiddleOfCAM_Think + 25);
 			break;
 			
 		case 3:
-			GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(pMiddleOfCAM_Think + 23) + pMiddleOfCAM_Think + 27);
+			ORIG_GetLocalPlayer = (_GetLocalPlayer)(*reinterpret_cast<uintptr_t*>(ORIG_MiddleOfCAM_Think + 23) + ORIG_MiddleOfCAM_Think + 27);
 			break;
 		}
 
-		EngineDevMsg("[client dll] Found GetLocalPlayer at %p.\n", GetLocalPlayer);
+		DevMsg("[client dll] Found GetLocalPlayer at %p.\n", ORIG_GetLocalPlayer);
 	}
 
-	if (pCHLClient__CanRecordDemo)
+	if (ORIG_CHLClient__CanRecordDemo)
 	{
-		int offset = *reinterpret_cast<int*>(pCHLClient__CanRecordDemo + 1);
+		int offset = *reinterpret_cast<int*>(ORIG_CHLClient__CanRecordDemo + 1);
 		const int CALL_INSTRUCTION_LEN = 5;
-		ORIG_GetClientModeNormal = (_GetClientModeNormal)(offset + pCHLClient__CanRecordDemo + CALL_INSTRUCTION_LEN);
-		EngineDevMsg("[client.dll] Found GetClientModeNormal at %p\n", ORIG_GetClientModeNormal);
+		ORIG_GetClientModeNormal = (_GetClientModeNormal)(offset + ORIG_CHLClient__CanRecordDemo + CALL_INSTRUCTION_LEN);
+		DevMsg("[client.dll] Found GetClientModeNormal at %p\n", ORIG_GetClientModeNormal);
 	}
 
 	extern bool FoundEngineServer();
 	if (ORIG_CreateMove
-		&& GetGroundEntity
-		&& CalcAbsoluteVelocity
-		&& GetLocalPlayer
+		&& ORIG_GetGroundEntity
+		&& ORIG_CalcAbsoluteVelocity
+		&& ORIG_GetLocalPlayer
 		&& _sv_airaccelerate
 		&& _sv_accelerate
 		&& _sv_friction
@@ -343,17 +384,17 @@ void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	}
 	else
 	{
-		EngineWarning("The full game TAS solutions are not available.\n");
+		Warning("The full game TAS solutions are not available.\n");
 	}
 
 	if (!ORIG_CViewRender__OnRenderStart)
 	{
-		EngineWarning("_y_spt_force_90fov has no effect.\n");
+		Warning("_y_spt_force_90fov has no effect.\n");
 	}
 
 	if (ORIG_CViewRender__RenderView == nullptr || ORIG_CViewRender__Render == nullptr)
-		EngineWarning("Overlay cameras have no effect.\n");
-		*/
+		Warning("Overlay cameras have no effect.\n");
+	
 	patternContainer.Hook();
 }
 
@@ -372,9 +413,9 @@ void ClientDLL::Clear()
 	ORIG_GetButtonBits = nullptr;
 	ORIG_AdjustAngles = nullptr;
 	ORIG_CreateMove = nullptr;
-	GetLocalPlayer = nullptr;
-	GetGroundEntity = nullptr;
-	CalcAbsoluteVelocity = nullptr;
+	ORIG_GetLocalPlayer = nullptr;
+	ORIG_GetGroundEntity = nullptr;
+	ORIG_CalcAbsoluteVelocity = nullptr;
 	ORIG_CViewRender__RenderView = nullptr;
 	ORIG_CViewRender__Render = nullptr;
 
@@ -424,8 +465,8 @@ void ClientDLL::ResetAfterframesQueue()
 
 MovementVars ClientDLL::GetMovementVars()
 {
-	auto player = GetLocalPlayer();
-	auto onground = (GetGroundEntity(player, 0) != NULL); // TODO: This should really be a proper check.
+	auto player = ORIG_GetLocalPlayer();
+	auto onground = (ORIG_GetGroundEntity(player, 0) != NULL); // TODO: This should really be a proper check.
 	auto maxspeed = *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offMaxspeed);
 
 	if (tas_force_onground.GetBool())
@@ -483,8 +524,8 @@ MovementVars ClientDLL::GetMovementVars()
 
 Vector ClientDLL::GetPlayerVelocity()
 {
-	auto player = GetLocalPlayer();
-	CalcAbsoluteVelocity(player, 0);
+	auto player = ORIG_GetLocalPlayer();
+	ORIG_CalcAbsoluteVelocity(player, 0);
 	float *vel = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offAbsVelocity);
 
 	return Vector(vel[0], vel[1], vel[2]);
@@ -510,12 +551,12 @@ Vector ClientDLL::GetPlayerEyePos()
 
 int ClientDLL::GetPlayerFlags()
 {
-	return (*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(GetLocalPlayer()) + offFlags));
+	return (*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(ORIG_GetLocalPlayer()) + offFlags));
 }
 
 bool ClientDLL::GetFlagsDucking()
 {
-	return (*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(GetLocalPlayer()) + offFlags)) & FL_DUCKING;
+	return (*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(ORIG_GetLocalPlayer()) + offFlags)) & FL_DUCKING;
 }
 
 void ClientDLL::OnFrame()
@@ -541,7 +582,7 @@ void ClientDLL::OnFrame()
 		else
 			++it;
 	}
-
+	
 	if (engineDLL.Demo_IsPlayingBack() && !engineDLL.Demo_IsPlaybackPaused())
 	{
 		auto tick = y_spt_pause_demo_on_tick.GetInt();
@@ -728,8 +769,8 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 
 	if (tasAddressesWereFound && tas_strafe.GetBool())
 	{
-		auto player = GetLocalPlayer();
-		auto onground = (GetGroundEntity(player, 0) != NULL); // TODO: This should really be a proper check.
+		auto player = ORIG_GetLocalPlayer();
+		auto onground = (ORIG_GetGroundEntity(player, 0) != NULL); // TODO: This should really be a proper check.
 		auto maxspeed = *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offMaxspeed);
 
 		if (tas_force_onground.GetBool())
@@ -833,18 +874,20 @@ void ClientDLL::HOOKED_CViewRender__RenderView_Func(void* thisptr, int edx, void
 #ifndef SSDK2007
 	ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
 #else
-	g_OverlayRenderer.modifyView(static_cast<CViewSetup*>(cameraView), renderingOverlay);
-	if (renderingOverlay)
+	if (g_OverlayRenderer.shouldRenderOverlay())
 	{
-		g_OverlayRenderer.modifySmallScreenFlags(nClearFlags, whatToDraw);
-		ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
-		return;
+		g_OverlayRenderer.modifyView(static_cast<CViewSetup*>(cameraView), renderingOverlay);
+		if (renderingOverlay)
+		{
+			g_OverlayRenderer.modifySmallScreenFlags(nClearFlags, whatToDraw);
+		}
+		else
+		{
+			g_OverlayRenderer.modifyBigScreenFlags(nClearFlags, whatToDraw);
+		}
 	}
-	else
-	{
-		g_OverlayRenderer.modifyBigScreenFlags(nClearFlags, whatToDraw);	
-		ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
-	}
+
+	ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
 #endif	
 }
 

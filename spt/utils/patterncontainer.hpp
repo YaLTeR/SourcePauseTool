@@ -10,16 +10,15 @@ class PatternContainer
 {
 public:
 	PatternContainer() {};
-	void Init(const std::wstring& moduleName, int moduleStart, int moduleLength);
+	int FindPatternIndex(PVOID* origPtr);
+	void Init(const std::wstring& moduleName);
 	void AddHook(PVOID functionToHook, PVOID* origPtr);
+	void AddIndex(PVOID* origPtr, int index);
 	void Hook();
 	void Unhook();
-	const char* FindPatternName(PVOID* origPtr);
 private:
-	void PrintFound(const char* name, PVOID* origPtr);
+	std::map<int, int> patterns;
 	std::vector<std::pair<PVOID *, PVOID>> entries;
-	std::map<int, std::string> patternMap;
-	int moduleStart;
-	int moduleLength;
+	std::vector<PVOID*> functions;
 	std::wstring moduleName;
 };

@@ -27,5 +27,6 @@ private:
 	float getFOV();
 };
 
+bool serverActive();
 extern OverlayRenderer g_OverlayRenderer;
 #endif

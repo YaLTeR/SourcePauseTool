@@ -123,7 +123,7 @@ namespace scripts
 
 	void SourceTASReader::OnAfterFrames()
 	{
-		if (currentTick < currentScript.GetScriptLength())
+		if (currentTick <= currentScript.GetScriptLength())
 			++currentTick;
 
 		if (conditions.empty() || iterationFinished)

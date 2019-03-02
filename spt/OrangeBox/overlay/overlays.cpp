@@ -10,10 +10,15 @@
 
 CameraInformation rearViewMirrorOverlay()
 {
+	CameraInformation info;
+
+	if (engineDLL.Demo_IsPlayingBack())
+		return info;
+
 	auto pos = clientDLL.GetPlayerEyePos();
 	float va[3];
 	EngineGetViewAngles(va);
-	CameraInformation info;
+	
 	info.x = pos.x;
 	info.y = pos.y;
 	info.z = pos.z;

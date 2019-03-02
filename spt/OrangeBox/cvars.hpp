@@ -63,9 +63,6 @@ extern ConVar _y_spt_overlay_portal;
 extern ConVar _y_spt_overlay_width;
 extern ConVar _y_spt_overlay_fov;
 extern ConVar _y_spt_overlay_swap;
-extern ConVar _y_spt_overlay_crosshair;
-extern ConVar _y_spt_overlay_crosshair_color;
-extern ConVar _y_spt_overlay_crosshair_size;
 
 #ifdef OE
 extern ConVar y_spt_gamedir;

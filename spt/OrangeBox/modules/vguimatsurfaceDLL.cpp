@@ -13,23 +13,42 @@
 #include "..\..\vgui\vgui_utils.hpp"
 #include "vgui_controls\controls.h"
 #include "..\patterns.hpp"
+#include "..\overlay\portal_camera.hpp"
 
 const int INDEX_MASK = MAX_EDICTS - 1;
 ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement vars hud.\n"); // Putting this in cvars.cpp crashes the game xdddd
+ConVar y_spt_hud_ag_sg_tester("y_spt_hud_ag_sg_tester", "0", FCVAR_CHEAT, "Tests if angle glitch will save glitch you.\n");
+
+#define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::vguimatsurface::##name);
+#define GET_FUTURE(future_name) \
+    { \
+        auto pattern = f##future_name.get(); \
+    }
+
+#define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::vguimatsurface::##name);
+#define GET_FUTURE(future_name) \
+    { \
+        auto pattern = f##future_name.get(); \
+    }
 
 void VGui_MatSurfaceDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* moduleBase, size_t moduleLength, bool needToIntercept)
 {
 	Clear(); // Just in case.
-
+	m_Name = moduleName;
+	m_Base = moduleBase;
+	m_Length = moduleLength;
 	auto icvar = GetCvarInterface();
 	cl_showpos = icvar->FindVar("cl_showpos");
 	cl_showfps = icvar->FindVar("cl_showfps");
 	auto scheme = vgui::GetScheme();
 	font = scheme->GetFont("DefaultFixedOutline", false);
 
-	patternContainer.Init(moduleName, (int)moduleBase, moduleLength);
-	//patternContainer.AddEntry(nullptr, (PVOID*)&ORIG_StartDrawing, Patterns::ptnsStartDrawing, "StartDrawing");
-	//patternContainer.AddEntry(nullptr, (PVOID*)&ORIG_FinishDrawing, Patterns::ptnsFinishDrawing, "FinishDrawing");
+	patternContainer.Init(moduleName);
+
+	DEF_FUTURE(StartDrawing);
+	DEF_FUTURE(FinishDrawing);
+	GET_FUTURE(StartDrawing);
+	GET_FUTURE(FinishDrawing);
 
 	if (!ORIG_FinishDrawing || !ORIG_StartDrawing)
 		Warning("HUD drawing solutions are not available.\n");
@@ -70,14 +89,10 @@ void VGui_MatSurfaceDLL::DrawHUD(vrect_t* screen)
 			y_spt_hud_script_length.GetBool() ||
 			y_spt_hud_accel.GetBool() ||
 			y_spt_hud_vars.GetBool() ||
-			y_spt_hud_portal_bubble.GetBool())
+			y_spt_hud_portal_bubble.GetBool() ||
+			y_spt_hud_ag_sg_tester.GetBool())
 		{
 			DrawTopRightHUD(screen, scheme, surface);
-		}
-
-		if (_y_spt_overlay_crosshair.GetBool())
-		{
-			// WIP, haven't been able to solve how to draw stuff on the overlay without removing everything from the main screen
 		}
 
 	}
@@ -174,7 +189,7 @@ void VGui_MatSurfaceDLL::DrawTopRightHUD(vrect_t * screen, vgui::IScheme * schem
 		DrawFlagsHud(true, L"Move collide", vertIndex, x, MOVECOLLIDE_FLAGS, ARRAYSIZE(MOVECOLLIDE_FLAGS), surface, buffer, BUFFER_SIZE, flags, fontTall);
 	}
 
-	if (y_spt_hud_vars.GetBool())
+	if (y_spt_hud_vars.GetBool() && serverActive())
 	{
 		auto vars = clientDLL.GetMovementVars();
 		DrawSingleFloat(vertIndex, L"accelerate", vars.Accelerate, fontTall, BUFFER_SIZE, x, surface, buffer);
@@ -185,6 +200,17 @@ void VGui_MatSurfaceDLL::DrawTopRightHUD(vrect_t * screen, vgui::IScheme * schem
 		DrawSingleFloat(vertIndex, L"maxspeed", vars.Maxspeed, fontTall, BUFFER_SIZE, x, surface, buffer);
 		DrawSingleFloat(vertIndex, L"stopspeed", vars.Stopspeed, fontTall, BUFFER_SIZE, x, surface, buffer);
 		DrawSingleFloat(vertIndex, L"wishspeed cap", vars.WishspeedCap, fontTall, BUFFER_SIZE, x, surface, buffer);
+	}
+
+	if (y_spt_hud_ag_sg_tester.GetBool() && serverActive())
+	{
+		Vector v = clientDLL.GetPlayerEyePos();
+		QAngle q;
+		std::wstring result = calculateWillAGSG(v, q);
+		swprintf_s(buffer, BUFFER_SIZE, L"ag sg: %s", result.c_str());
+		surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
+		surface->DrawPrintText(buffer, wcslen(buffer));
+		++vertIndex;
 	}
 
 #endif

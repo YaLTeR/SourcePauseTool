@@ -98,9 +98,6 @@
     <ClCompile Include="spt\OrangeBox\modules\vguimatsurfaceDLL.cpp">
       <Filter>spt\OrangeBox\modules</Filter>
     </ClCompile>
-    <ClCompile Include="spt\vgui\tas_gui.cpp">
-      <Filter>spt\OrangeBox\vgui</Filter>
-    </ClCompile>
     <ClCompile Include="spt\vgui\vgui_utils.cpp">
       <Filter>spt\OrangeBox\vgui</Filter>
     </ClCompile>
@@ -291,9 +288,6 @@
     </ClInclude>
     <ClInclude Include="spt\OrangeBox\modules\vguimatsurfaceDLL.hpp">
       <Filter>spt\OrangeBox\modules</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\vgui\tas_gui.hpp">
-      <Filter>spt\OrangeBox\vgui</Filter>
     </ClInclude>
     <ClInclude Include="spt\vgui\vgui_utils.hpp">
       <Filter>spt\OrangeBox\vgui</Filter>

@@ -15,7 +15,7 @@ const int VIEWMODEL_MASK = ~RENDERVIEW_DRAWVIEWMODEL;
 
 bool OverlayRenderer::shouldRenderOverlay()
 {
-	return _y_spt_overlay.GetBool();
+	return _y_spt_overlay.GetBool() && serverActive();
 }
 
 bool OverlayRenderer::shouldFlipScreens()
@@ -114,3 +114,8 @@ float OverlayRenderer::getFOV()
 	return fov;
 }
 #endif // SSDK2007
+
+bool serverActive()
+{
+	return GetEngine()->PEntityOfEntIndex(0);
+}

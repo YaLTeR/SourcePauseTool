@@ -4,16 +4,25 @@
 #include "SPTLib\sptlib.hpp"
 #include "string_parsing.hpp"
 
-void PatternContainer::Init(const std::wstring & moduleName, int moduleStart, int moduleLength)
+int PatternContainer::FindPatternIndex(PVOID * origPtr)
 {
-	this->moduleName = moduleName;
-	this->moduleStart = moduleStart;
-	this->moduleLength = moduleLength;
+	return patterns[(int)origPtr];
 }
 
-void PatternContainer::AddHook(PVOID functionToHook, PVOID * origPtr)
+void PatternContainer::Init(const std::wstring & moduleName)
+{
+	this->moduleName = moduleName;
+}
+
+void PatternContainer::AddHook(PVOID functionToHook, PVOID* origPtr)
 {
 	entries.push_back(std::make_pair(origPtr, functionToHook));
+	functions.push_back(origPtr);
+}
+
+void PatternContainer::AddIndex(PVOID * origPtr, int index)
+{
+	patterns[(int)origPtr] = index;
 }
 
 void PatternContainer::Hook()
@@ -23,23 +32,6 @@ void PatternContainer::Hook()
 
 void PatternContainer::Unhook()
 {
-	DetoursUtils::DetachDetours(moduleName, entries.size(), NULL); // FIXME
+	DetoursUtils::DetachDetours(moduleName, entries.size(), &functions[0]);
 }
 
-const char* PatternContainer::FindPatternName(PVOID* origPtr)
-{
-	if (patternMap.find((int)origPtr) != patternMap.end())
-		return patternMap[(int)origPtr].c_str();
-	else
-		return "error";
-}
-
-void PatternContainer::PrintFound(const char* name, PVOID* origPtr)
-{
-	const char* pattern = FindPatternName(origPtr);
-
-	if (patternMap.find((int)origPtr) != patternMap.end())
-		EngineDevMsg("[%s] Found %s at %p (using the build %s pattern).\n", moduleName.c_str(), name, origPtr, pattern);
-	else
-		EngineDevMsg("[%s] Could not find the %s pattern.\n", moduleName.c_str(), name);
-}
