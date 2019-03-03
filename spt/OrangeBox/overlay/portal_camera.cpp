@@ -12,6 +12,8 @@
 #include "..\cvars.hpp"
 #include "mathlib\vmatrix.h"
 #include "overlay-renderer.hpp"
+#include "..\..\utils\ent_utils.hpp"
+#include "client_class.h"
 
 const int PORTAL_ORIGIN_OFFSET = 1180;
 const int PORTAL_ANGLE_OFFSET = 1192;
@@ -35,8 +37,10 @@ bool getPortal(edict_t** portal_edict, Vector& new_player_origin, QAngle& new_pl
 	auto engine_server = GetEngine();
 	edict_t* portal = nullptr;
 
-	if(portal_index != -1)
+	if (portal_index != -1)
+	{
 		portal = engine_server->PEntityOfEntIndex(portal_index);
+	}
 
 	if (portal_index == -1 || invalidPortal(portal)) {
 		auto& player_origin = clientDLL.GetPlayerEyePos();

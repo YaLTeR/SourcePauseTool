@@ -12,6 +12,7 @@
 #include "scripts\srctas_reader.hpp"
 #include "scripts\tests\test.hpp"
 #include "..\utils\string_parsing.hpp"
+#include "..\utils\ent_utils.hpp"
 
 #include "cdll_int.h"
 #include "engine\iserverplugin.h"
@@ -21,6 +22,7 @@
 #include "vgui\isystem.h"
 #include "vgui\iinput.h"
 #include "vgui\ivgui.h"
+#include "icliententitylist.h"
 
 #if SSDK2007
 #include "mathlib\vmatrix.h"
@@ -295,6 +297,16 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	{
 		DevWarning("SPT: Failed to get the IUniformRandomStream interface.\n");
 	}
+
+	auto clientFactory = Sys_GetFactory("client");
+	IClientEntityList* entList = (IClientEntityList*)clientFactory(VCLIENTENTITYLIST_INTERFACE_VERSION, NULL);
+	if (entList)
+	{
+		utils::SetEntityList(entList);
+	}
+	else
+		DevWarning("Unable to retrieve entitylist interface.\n");
+
 
 	EngineConCmd = CallServerCommand;
 	EngineGetViewAngles = GetViewAngles;
@@ -590,6 +602,11 @@ CON_COMMAND(y_spt_canjb, "Tests if player can jumpbug on a given height, with th
 
 	float height = std::stof(args.Arg(1));
 	TestCanJb(height);
+}
+
+CON_COMMAND(y_spt_print_ents, "Prints all client entity indexes and their corresponding classes.")
+{
+	utils::PrintAllClientEntities();
 }
 
 #if defined( OE )

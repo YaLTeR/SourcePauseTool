@@ -116,6 +116,9 @@
     <ClCompile Include="SPTLib\IHookableNameFilterOrdered.cpp">
       <Filter>SPTLib</Filter>
     </ClCompile>
+    <ClCompile Include="spt\utils\ent_utils.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -303,6 +306,9 @@
     </ClInclude>
     <ClInclude Include="SPTLib\patterns.hpp">
       <Filter>SPTLib</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\ent_utils.hpp">
+      <Filter>spt\utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
