@@ -15,7 +15,7 @@ const int VIEWMODEL_MASK = ~RENDERVIEW_DRAWVIEWMODEL;
 
 bool OverlayRenderer::shouldRenderOverlay()
 {
-	return _y_spt_overlay.GetBool() && serverActive();
+	return _y_spt_overlay.GetBool();
 }
 
 bool OverlayRenderer::shouldFlipScreens()

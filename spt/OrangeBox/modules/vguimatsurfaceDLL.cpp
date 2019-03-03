@@ -161,7 +161,7 @@ void VGui_MatSurfaceDLL::DrawTopRightHUD(vrect_t * screen, vgui::IScheme * schem
 
 	if (y_spt_hud_portal_bubble.GetBool())
 	{
-		int in_bubble = (serverDLL.GetEnviromentPortalHandle() & INDEX_MASK) != INDEX_MASK;
+		int in_bubble = GetEnviromentPortal() != NULL;
 		DrawSingleInt(vertIndex, L"portal bubble", in_bubble, fontTall, BUFFER_SIZE, x, surface, buffer);
 	}
 

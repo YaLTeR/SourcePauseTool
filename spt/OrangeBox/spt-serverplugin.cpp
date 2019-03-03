@@ -300,12 +300,29 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 
 	auto clientFactory = Sys_GetFactory("client");
 	IClientEntityList* entList = (IClientEntityList*)clientFactory(VCLIENTENTITYLIST_INTERFACE_VERSION, NULL);
+	IVModelInfo* modelInfo = (IVModelInfo*)interfaceFactory(VMODELINFO_SERVER_INTERFACE_VERSION, NULL);
+	IBaseClientDLL* clientInterface = (IBaseClientDLL*)clientFactory(CLIENT_DLL_INTERFACE_VERSION, NULL);
+
 	if (entList)
 	{
 		utils::SetEntityList(entList);
 	}
 	else
 		DevWarning("Unable to retrieve entitylist interface.\n");
+
+	if (modelInfo)
+	{
+		utils::SetModelInfo(modelInfo);
+	}
+	else
+		DevWarning("Unable to retrieve the model info interface.\n");
+
+	if (clientInterface)
+	{
+		utils::SetClientDLL(clientInterface);
+	}
+	else
+		DevWarning("Unable to retrieve the client DLL interface.\n");
 
 
 	EngineConCmd = CallServerCommand;
@@ -608,6 +625,27 @@ CON_COMMAND(y_spt_print_ents, "Prints all client entity indexes and their corres
 {
 	utils::PrintAllClientEntities();
 }
+
+CON_COMMAND(y_spt_print_portals, "Prints all portal indexes, their position and angles.")
+{
+	utils::PrintAllPortals();
+}
+
+CON_COMMAND(y_spt_print_ent_props, "Prints all props for a given entity index.")
+{
+#if defined( OE )
+	ArgsWrapper args(engine.get());
+#endif
+	if (args.ArgC() < 2)
+	{
+		Msg("Usage: y_spt_print_ent_props [index]\n");
+	}
+	else
+	{
+		utils::PrintAllProps(std::stoi(args.Arg(1)));
+	}
+}
+
 
 #if defined( OE )
 static void DuckspamDown()
