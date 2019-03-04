@@ -128,6 +128,33 @@ static wchar INFO_ARRAY[MAX_ENTRIES * INFO_BUFFER_SIZE];
 static const char ENT_SEPARATOR = ';';
 static const char PROP_SEPARATOR = ',';
 
+#define DRAW() \
+{ \
+		surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex); \
+		surface->DrawPrintText(buffer, wcslen(buffer)); \
+		++vertIndex; \
+}
+
+#define DRAW_FLOAT(name, floatVal) \
+{ \
+	DrawSingleFloat(vertIndex, name, floatVal, fontTall, BUFFER_SIZE, x, surface, buffer); \
+}
+
+#define DRAW_INT(name, intVal) \
+{ \
+	DrawSingleInt(vertIndex, name, intVal, fontTall, BUFFER_SIZE, x, surface, buffer); \
+}
+
+#define DRAW_TRIPLEFLOAT(name, floatVal1, floatVal2, floatVal3) \
+{ \
+	DrawTripleFloat(vertIndex, name, floatVal1, floatVal2, floatVal3, fontTall, BUFFER_SIZE, x, surface, buffer); \
+}
+
+#define DRAW_FLAGS(name, namesArray, flags, mutuallyExclusive) \
+{ \
+	DrawFlagsHud(mutuallyExclusive, name, vertIndex, x, namesArray, ARRAYSIZE(namesArray), surface, buffer, BUFFER_SIZE, flags, fontTall); \
+}
+
 void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t * screen, vgui::IScheme * scheme, IMatSystemSurface * surface)
 {
 #ifndef OE
@@ -170,65 +197,63 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t * screen, vgui::IScheme * scheme, IM
 
 	if (y_spt_hud_velocity.GetBool())
 	{
-		DrawTripleFloat(vertIndex, L"vel(xyz)", currentVel.x, currentVel.y, currentVel.z, fontTall, BUFFER_SIZE, x, surface, buffer);
-		DrawSingleFloat(vertIndex, L"vel(xy)", currentVel.Length2D(), fontTall, BUFFER_SIZE, x, surface, buffer);
+		DRAW_TRIPLEFLOAT(L"vel(xyz)", currentVel.x, currentVel.y, currentVel.z);
+		DRAW_FLOAT(L"vel(xy)", currentVel.Length2D());
 	}
 
 	if (y_spt_hud_accel.GetBool())
 	{
-		DrawTripleFloat(vertIndex, L"accel(xyz)", accel.x, accel.y, accel.z, fontTall, BUFFER_SIZE, x, surface, buffer);
-		DrawSingleFloat(vertIndex, L"accel(xy)", accel.Length2D(), fontTall, BUFFER_SIZE, x, surface, buffer);
+		DRAW_TRIPLEFLOAT(L"accel(xyz)", accel.x, accel.y, accel.z);
+		DRAW_FLOAT(L"accel(xy)", accel.Length2D());
 	}
 
 	if (y_spt_hud_script_length.GetBool())
 	{
 		swprintf_s(buffer, BUFFER_SIZE, L"frame: %d / %d", scripts::g_TASReader.GetCurrentTick(), scripts::g_TASReader.GetCurrentScriptLength());
-		surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
-		surface->DrawPrintText(buffer, wcslen(buffer));
-		++vertIndex;
+		DRAW();
 	}
 
 	if (y_spt_hud_portal_bubble.GetBool())
 	{
 		int in_bubble = GetEnviromentPortal() != NULL;
-		DrawSingleInt(vertIndex, L"portal bubble", in_bubble, fontTall, BUFFER_SIZE, x, surface, buffer);
+		DRAW_INT(L"portal bubble", in_bubble);
 	}
 
 	if (y_spt_hud_flags.GetBool())
 	{
 		int flags = clientDLL.GetPlayerFlags();
-		DrawFlagsHud(false, NULL, vertIndex, x, FLAGS, ARRAYSIZE(FLAGS), surface, buffer, BUFFER_SIZE, flags, fontTall);
+		DRAW_FLAGS(NULL, FLAGS, flags, false);
 	}
 
 	if (y_spt_hud_moveflags.GetBool())
 	{
 		int flags = serverDLL.GetPlayerMoveType();
-		DrawFlagsHud(true, L"Move type", vertIndex, x, MOVETYPE_FLAGS, ARRAYSIZE(MOVETYPE_FLAGS), surface, buffer, BUFFER_SIZE, flags, fontTall);
+		DRAW_FLAGS(L"Move type", MOVETYPE_FLAGS, flags, true);
 	}
 
 	if (y_spt_hud_collisionflags.GetBool())
 	{
 		int flags = serverDLL.GetPlayerCollisionGroup();
-		DrawFlagsHud(true, L"Collision group", vertIndex, x, COLLISION_GROUPS, ARRAYSIZE(COLLISION_GROUPS), surface, buffer, BUFFER_SIZE, flags, fontTall);
+		DRAW_FLAGS(L"Collision group", COLLISION_GROUPS, flags, true);
 	}
 
 	if (y_spt_hud_movecollideflags.GetBool())
 	{
 		int flags = serverDLL.GetPlayerMoveCollide();
-		DrawFlagsHud(true, L"Move collide", vertIndex, x, MOVECOLLIDE_FLAGS, ARRAYSIZE(MOVECOLLIDE_FLAGS), surface, buffer, BUFFER_SIZE, flags, fontTall);
+		DRAW_FLAGS(L"Move collide", MOVECOLLIDE_FLAGS, flags, true);
 	}
 
 	if (y_spt_hud_vars.GetBool() && serverActive())
 	{
 		auto vars = clientDLL.GetMovementVars();
-		DrawSingleFloat(vertIndex, L"accelerate", vars.Accelerate, fontTall, BUFFER_SIZE, x, surface, buffer);
-		DrawSingleFloat(vertIndex, L"airaccelerate", vars.Airaccelerate, fontTall, BUFFER_SIZE, x, surface, buffer);
-		DrawSingleFloat(vertIndex, L"ent friction", vars.EntFriction, fontTall, BUFFER_SIZE, x, surface, buffer);
-		DrawSingleFloat(vertIndex, L"frametime", vars.Frametime, fontTall, BUFFER_SIZE, x, surface, buffer);
-		DrawSingleFloat(vertIndex, L"friction", vars.Friction, fontTall, BUFFER_SIZE, x, surface, buffer);
-		DrawSingleFloat(vertIndex, L"maxspeed", vars.Maxspeed, fontTall, BUFFER_SIZE, x, surface, buffer);
-		DrawSingleFloat(vertIndex, L"stopspeed", vars.Stopspeed, fontTall, BUFFER_SIZE, x, surface, buffer);
-		DrawSingleFloat(vertIndex, L"wishspeed cap", vars.WishspeedCap, fontTall, BUFFER_SIZE, x, surface, buffer);
+		DRAW_FLOAT(L"accelerate", vars.Accelerate);
+		DRAW_FLOAT(L"airaccelerate", vars.Airaccelerate);
+		DRAW_FLOAT(L"ent friction", vars.EntFriction);
+		DRAW_FLOAT(L"frametime", vars.Frametime);
+		DRAW_FLOAT(L"friction", vars.Friction);
+		DRAW_FLOAT(L"maxspeed", vars.Maxspeed);
+		DRAW_FLOAT(L"stopspeed", vars.Stopspeed);
+		DRAW_FLOAT(L"wishspeed cap", vars.WishspeedCap);
 	}
 
 	if (y_spt_hud_ag_sg_tester.GetBool() && serverActive())
@@ -237,9 +262,7 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t * screen, vgui::IScheme * scheme, IM
 		QAngle q;
 		std::wstring result = calculateWillAGSG(v, q);
 		swprintf_s(buffer, BUFFER_SIZE, L"ag sg: %s", result.c_str());
-		surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
-		surface->DrawPrintText(buffer, wcslen(buffer));
-		++vertIndex;
+		DRAW();
 	}
 
 #endif
@@ -282,34 +305,25 @@ void VGui_MatSurfaceDLL::DrawSingleFloat(int& vertIndex, const wchar * name, flo
 {
 	int width = y_spt_hud_decimals.GetInt();
 	swprintf_s(buffer, bufferCount, L"%s: %.*f", name, width, f);
-	surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
-	surface->DrawPrintText(buffer, wcslen(buffer));
-	++vertIndex;
+	DRAW();
 }
 
 void VGui_MatSurfaceDLL::DrawSingleInt(int & vertIndex, const wchar * name, int i, int fontTall, int bufferCount, int x, IMatSystemSurface * surface, wchar * buffer)
 {
 	swprintf_s(buffer, bufferCount, L"%s: %d", name, i);
-	surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
-	surface->DrawPrintText(buffer, wcslen(buffer));
-	++vertIndex;
+	DRAW();
 }
 
 void VGui_MatSurfaceDLL::DrawTripleFloat(int & vertIndex, const wchar * name, float f1, float f2, float f3, int fontTall, int bufferCount, int x, IMatSystemSurface * surface, wchar * buffer)
 {
 	int width = y_spt_hud_decimals.GetInt();
 	swprintf_s(buffer, bufferCount, L"%s: %.*f %.*f %.*f", name, width, f1, width, f2, width, f3);
-	surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
-	surface->DrawPrintText(buffer, wcslen(buffer));
-	++vertIndex;
+	DRAW();
 }
-
 
 void VGui_MatSurfaceDLL::DrawSingleString(int & vertIndex, const wchar* str, int fontTall, int bufferCount, int x, IMatSystemSurface * surface, wchar * buffer)
 {
 	swprintf_s(buffer, bufferCount, L"%s", str);
-	surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
-	surface->DrawPrintText(buffer, wcslen(buffer));
-	++vertIndex;
+	DRAW();
 }
 

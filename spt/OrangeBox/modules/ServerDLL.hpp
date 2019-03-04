@@ -22,6 +22,10 @@ typedef float(__fastcall *_FirePortal) (void* thisptr, int edx, bool bPortal2, V
 typedef float(__fastcall *_TraceFirePortal) (void* thisptr, int edx, bool bPortal2, const Vector& vTraceStart, const Vector& vDirection, trace_t& tr, Vector& vFinalPosition, QAngle& qFinalAngles, int iPlacedBy, bool bTest);
 typedef void*(__fastcall *_GetActiveWeapon) (void* thisptr);
 typedef void(__fastcall *_SlidingAndOtherStuff) (void* thisptr, int edx, void* a, void* b);
+typedef CBaseEntity*(__cdecl *_CreateEntityByName) (const char* name, int forceEdictIndex);
+typedef int(__fastcall *_CRestore__ReadAll) (void* thisptr, int edx, void* pLeafObject, datamap_t* pLeafMap);
+typedef int(__fastcall *_CRestore__DoReadAll) (void* thisptr, int edx, void* pLeafObject, datamap_t* pLeafMap, datamap_t* pCurMap);
+typedef int(__cdecl *_DispatchSpawn) (void* pEntity);
 
 class ServerDLL : public IHookableNameFilter
 {
@@ -39,6 +43,9 @@ public:
 	static void __fastcall HOOKED_ProcessMovement(void* thisptr, int edx, void* pPlayer, void* pMove);
 	static float __fastcall HOOKED_TraceFirePortal(void* thisptr, int edx, bool bPortal2, const Vector& vTraceStart, const Vector& vDirection, trace_t& tr, Vector& vFinalPosition, QAngle& qFinalAngles, int iPlacedBy, bool bTest);
 	static void __fastcall HOOKED_SlidingAndOtherStuff(void* thisptr, int edx, void* a, void* b);
+	static int __fastcall HOOKED_CRestore__ReadAll(void* thisptr, int edx, void* pLeafObject, datamap_t* pLeafMap);
+	static int __fastcall HOOKED_CRestore__DoReadAll(void* thisptr, int edx, void* pLeafObject, datamap_t* pLeafMap, datamap_t* pCurMap);
+	static int __cdecl HOOKED_DispatchSpawn(void* pEntity);
 	static void HOOKED_MiddleOfSlidingFunction();
 	bool __fastcall HOOKED_CheckJumpButton_Func(void* thisptr, int edx);
 	void __fastcall HOOKED_FinishGravity_Func(void* thisptr, int edx);
@@ -67,7 +74,11 @@ public:
 	double lastTraceFirePortalDistanceSq;
 	Vector lastTraceFirePortalNormal;
 	_GetActiveWeapon GetActiveWeapon;
+	_CreateEntityByName ORIG_CreateEntityByName;
 	int* m_hPortalEnvironmentOffsetPtr;
+	_CRestore__ReadAll ORIG_CRestore__ReadAll;
+	_CRestore__DoReadAll ORIG_CRestore__DoReadAll;
+	_DispatchSpawn ORIG_DispatchSpawn;
 
 protected:
 	PatternContainer patternContainer;

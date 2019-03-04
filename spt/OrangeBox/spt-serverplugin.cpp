@@ -13,6 +13,7 @@
 #include "scripts\tests\test.hpp"
 #include "..\utils\string_parsing.hpp"
 #include "..\utils\ent_utils.hpp"
+#include "..\utils\savestate.hpp"
 
 #include "cdll_int.h"
 #include "engine\iserverplugin.h"
@@ -644,6 +645,24 @@ CON_COMMAND(y_spt_print_ent_props, "Prints all props for a given entity index.")
 	{
 		utils::PrintAllProps(std::stoi(args.Arg(1)));
 	}
+}
+
+CON_COMMAND(y_spt_print_server_ents, "Prints all server entities.")
+{
+	utils::PrintEntities();
+}
+
+CON_COMMAND(y_spt_save_state, "Test")
+{
+	if (args.ArgC() >= 2)
+	{
+		utils::GetSaveState(std::stoi(args.Arg(1)));
+	}
+}
+
+CON_COMMAND(y_spt_load_state, "Test")
+{
+	utils::LoadSaveState();
 }
 
 

@@ -119,6 +119,9 @@
     <ClCompile Include="spt\utils\ent_utils.cpp">
       <Filter>spt\utils</Filter>
     </ClCompile>
+    <ClCompile Include="spt\utils\savestate.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -310,6 +313,9 @@
     <ClInclude Include="spt\utils\ent_utils.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
+    <ClInclude Include="spt\utils\savestate.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">
@@ -365,5 +371,8 @@
     <Filter Include="SPTLib\Windows">
       <UniqueIdentifier>{9a4a9a35-de34-40d0-a01c-057aea6a099d}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

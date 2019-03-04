@@ -928,6 +928,7 @@
     <ClCompile Include="spt\utils\file.cpp" />
     <ClCompile Include="spt\utils\math.cpp" />
     <ClCompile Include="spt\utils\md5.cpp" />
+    <ClCompile Include="spt\utils\savestate.cpp" />
     <ClCompile Include="spt\utils\string_parsing.cpp" />
     <ClCompile Include="spt\vgui\vgui_utils.cpp" />
   </ItemGroup>
@@ -1000,8 +1001,12 @@
     <ClInclude Include="spt\utils\file.hpp" />
     <ClInclude Include="spt\utils\math.hpp" />
     <ClInclude Include="spt\utils\md5.hpp" />
+    <ClInclude Include="spt\utils\savestate.hpp" />
     <ClInclude Include="spt\utils\string_parsing.hpp" />
     <ClInclude Include="spt\vgui\vgui_utils.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

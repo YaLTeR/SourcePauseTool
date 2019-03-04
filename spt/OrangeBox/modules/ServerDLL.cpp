@@ -8,6 +8,7 @@
 #include "ServerDLL.hpp"
 #include "..\patterns.hpp"
 #include "..\overlay\overlays.hpp"
+#include "..\..\utils\savestate.hpp"
 
 using std::uintptr_t;
 using std::size_t;
@@ -50,6 +51,22 @@ float __fastcall ServerDLL::HOOKED_TraceFirePortal(void* thisptr, int edx, bool 
 void __fastcall ServerDLL::HOOKED_SlidingAndOtherStuff(void* thisptr, int edx, void* a, void* b)
 {
 	return serverDLL.HOOKED_SlidingAndOtherStuff_Func(thisptr, edx, a, b);
+}
+
+int __fastcall ServerDLL::HOOKED_CRestore__ReadAll(void * thisptr, int edx, void * pLeafObject, datamap_t * pLeafMap)
+{
+	return serverDLL.ORIG_CRestore__ReadAll(thisptr, edx, pLeafObject, pLeafMap);
+}
+
+int __fastcall ServerDLL::HOOKED_CRestore__DoReadAll(void * thisptr, int edx, void * pLeafObject, datamap_t * pLeafMap, datamap_t * pCurMap)
+{
+	utils::AddDatamap(pLeafMap, pLeafObject);
+	return serverDLL.ORIG_CRestore__DoReadAll(thisptr, edx, pLeafObject, pLeafMap, pCurMap);
+}
+
+int __cdecl ServerDLL::HOOKED_DispatchSpawn(void * pEntity)
+{
+	return serverDLL.ORIG_DispatchSpawn(pEntity);
 }
 
 __declspec(naked) void ServerDLL::HOOKED_MiddleOfSlidingFunction()
@@ -123,16 +140,22 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	DEF_FUTURE(PerformFlyCollisionResolution);
 	DEF_FUTURE(GetStepSoundVelocities);
 	DEF_FUTURE(CBaseEntity__SetCollisionGroup);
+	DEF_FUTURE(CreateEntityByName);
+	DEF_FUTURE(CRestore__DoReadAll);
+	DEF_FUTURE(DispatchSpawn);
 
 	GET_HOOKEDFUTURE(FinishGravity);
 	GET_HOOKEDFUTURE(PlayerRunCommand);
 	GET_HOOKEDFUTURE(CheckStuck);
 	GET_HOOKEDFUTURE(MiddleOfSlidingFunction);
 	GET_HOOKEDFUTURE(CheckJumpButton);
+	GET_HOOKEDFUTURE(CRestore__DoReadAll);
+	GET_HOOKEDFUTURE(DispatchSpawn);
 	GET_FUTURE(CHL2_Player__HandleInteraction);
 	GET_FUTURE(PerformFlyCollisionResolution);
 	GET_FUTURE(GetStepSoundVelocities);
 	GET_FUTURE(CBaseEntity__SetCollisionGroup);
+	GET_FUTURE(CreateEntityByName);
 
 	// Server-side CheckJumpButton
 	if (ORIG_CheckJumpButton)
