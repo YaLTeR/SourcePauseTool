@@ -27,6 +27,9 @@ void PatternContainer::AddIndex(PVOID * origPtr, int index)
 
 void PatternContainer::Hook()
 {
+	for (auto& entry : entries)
+		MemUtils::MarkAsExecutable(*(entry.first));
+
 	DetoursUtils::AttachDetours(moduleName, entries.size(), &entries[0]);
 }
 

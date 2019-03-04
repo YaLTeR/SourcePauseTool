@@ -100,11 +100,8 @@ void calculateAGPosition(Vector& new_player_origin, QAngle& new_player_angles)
 
 	if (getPortal(&enter_portal, new_player_origin, new_player_angles))
 	{
-		int exit_portal_ehandle = *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(enter_portal) + PORTAL_LINKED_OFFSET);
-		int exit_portal_index = exit_portal_ehandle & INDEX_MASK - 1;
-
-		exit_portal = utils::GetClientEntity(exit_portal_index);
-		if (!invalidPortal(exit_portal))
+		exit_portal = GetLinkedPortal(enter_portal);
+		if (exit_portal)
 		{
 			calculateAGOffsetPortal(enter_portal, exit_portal, new_player_origin, new_player_angles);
 		}	
@@ -274,4 +271,6 @@ IClientEntity* getPortal(const char* arg, bool verbose)
 
 	return portal;
 }
+
+
 #endif

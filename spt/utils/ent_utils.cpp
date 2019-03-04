@@ -2,7 +2,9 @@
 #include "ent_utils.hpp"
 #include "client_class.h"
 #include "..\OrangeBox\overlay\portal_camera.hpp"
-#include <map>
+#include <vector>
+#include <regex>
+#include "string_parsing.hpp"
 
 static IClientEntityList* entList;
 static IVModelInfo* modelInfo;
@@ -13,6 +15,15 @@ const int VIEW_ANGLES_OFFSET = 5180;
 
 namespace utils
 {
+	struct propValue
+	{
+		std::string name;
+		std::string value;
+		int offset;
+
+		propValue(const char* name, const char* value, int offset) : name(name), value(value), offset(offset) {}
+	};
+
 	void SetEntityList(IClientEntityList* list)
 	{
 		entList = list;
@@ -99,7 +110,7 @@ namespace utils
 			if (strstr(prop->GetName(), "m_h") != NULL)
 			{
 				ehandle = *reinterpret_cast<int*>(value);
-				sprintf_s(buffer, size, "(index %d, handle %d)", ehandle & INDEX_MASK, ehandle & (~INDEX_MASK));
+				sprintf_s(buffer, size, "(index %d, serial %d)", ehandle & INDEX_MASK, (ehandle & (~INDEX_MASK)) >> MAX_EDICT_BITS);
 			}
 			else
 			{
@@ -113,19 +124,29 @@ namespace utils
 			v = *reinterpret_cast<Vector*>(value);
 			sprintf_s(buffer, size, "(%.3f, %.3f, %.3f)", v.x, v.y, v.z);
 			break;
+		case DPT_String:
+			sprintf_s(buffer, size, "%s", *reinterpret_cast<const char**>(value));
+			break;
 		default:
 			sprintf_s(buffer, size, "unable to parse");
 			break;
 		}
 	}
 
-	void PrintAllProps(RecvTable* table, void* ptr)
+	const size_t BUFFER_SIZE = 256;
+	static char BUFFER[BUFFER_SIZE];
+
+	void AddProp(std::vector<propValue>& props, const char* name, int offset)
+	{
+		props.push_back(propValue(name, BUFFER, offset));
+	}
+
+
+	void GetAllProps(RecvTable* table, void* ptr, std::vector<propValue>& props)
 	{
 		int numProps = table->m_nProps;
-		const size_t BUFFER_SIZE = 80;
-		char buffer[BUFFER_SIZE];
 
-		for (int i = 0; i < table->m_nProps; ++i)
+		for (int i = 0; i < numProps; ++i)
 		{
 			auto prop = table->GetProp(i);
 			
@@ -134,16 +155,29 @@ namespace utils
 				RecvTable* base = prop->GetDataTable();
 				
 				if (base)
-					PrintAllProps(base, ptr);
-				else
-					Msg("Unable to locate base class!");
+					GetAllProps(base, ptr, props);
 			}
-			else if (prop->GetOffset() != 0)
+			else if (prop->GetOffset() != 0) // There's various garbage attributes at offset 0 for a thusfar unbeknownst reason
 			{
-				GetPropValue(prop, ptr, buffer, BUFFER_SIZE);
-				Msg("offset %d, name %s : value: %s\n", prop->GetOffset(), prop->GetName(), buffer);
+				GetPropValue(prop, ptr, BUFFER, BUFFER_SIZE);
+				AddProp(props, prop->GetName(), prop->GetOffset());
 			}				
 		}
+	}
+
+	void GetAllProps(IClientEntity* ent, std::vector<propValue>& props)
+	{
+		props.clear();
+
+		if (ent)
+		{
+			snprintf(BUFFER, BUFFER_SIZE, "(%.3f, %.3f, %.3f)", ent->GetAbsOrigin().x, ent->GetAbsOrigin().y, ent->GetAbsOrigin().z);
+			AddProp(props, "AbsOrigin", -1);
+			snprintf(BUFFER, BUFFER_SIZE, "(%.3f, %.3f, %.3f)", ent->GetAbsAngles().x, ent->GetAbsAngles().y, ent->GetAbsAngles().z);
+			AddProp(props, "AbsAngles", -1);
+			GetAllProps(ent->GetClientClass()->m_pRecvTable, ent, props);
+		}
+
 	}
 
 	void PrintAllProps(int index)
@@ -152,12 +186,14 @@ namespace utils
 
 		if (ent)
 		{
-			Msg("Position (%.3f, %.3f, %.3f)\n", ent->GetAbsOrigin().x, ent->GetAbsOrigin().y, ent->GetAbsOrigin().z);
-			Msg("Angles (%.3f, %.3f, %.3f)\n", ent->GetAbsAngles().x, ent->GetAbsAngles().y, ent->GetAbsAngles().z);
-			auto table = ent->GetClientClass()->m_pRecvTable;
-			int index = 0;
-			PrintAllProps(table, ent);
+			std::vector<propValue> props;
+			GetAllProps(ent, props);
+
+			for (auto& prop : props)
+				Msg("Name: %s, offset %d, value %s\n", prop.name.c_str(), prop.offset, prop.value.c_str());
 		}
+		else
+			Msg("Entity doesn't exist!");
 	}
 
 	Vector GetVector(IClientEntity* ent, int offset)
@@ -216,7 +252,6 @@ namespace utils
 	IClientEntity * FindLinkedPortal(IClientEntity * ent)
 	{
 		int ehandle = *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(ent) + 2536);
-		int isOrange = PortalIsOrange(ent);
 		int index = ehandle & INDEX_MASK;
 
 		// Backup linking thing for fizzled portals(not sure if you can actually properly figure it out using client portals only)
@@ -237,9 +272,107 @@ namespace utils
 			return nullptr;
 	}
 
-	void* GetPropProxy(int iProp, IClientEntity* ent)
+	void GetValuesMatchingRegex(const char* regex, const char* end, int& entries, wchar* arr, int maxEntries, int bufferSize, const std::vector<propValue>& props)
 	{
-		auto table = ent->GetClientClass()->m_pRecvTable;
+		std::regex r(regex, end);
+
+		for (auto& prop : props)
+		{
+			if (entries >= maxEntries)
+				break;
+
+			// Prop name matches regex
+			if (std::regex_match(prop.name.c_str(), r))
+			{
+				std::wstring name = s2ws(prop.name);
+				std::wstring value = s2ws(prop.value);
+
+				swprintf_s(arr + (entries * bufferSize), bufferSize, L"%s : %s", name.c_str(), value.c_str());
+				++entries;
+			}
+		}
 	}
 
+	int FillInfoArray(std::string argString, wchar* arr, int maxEntries, int bufferSize, char sep, char entSep)
+	{
+		int entries = 0;
+		int i = 0;
+		IClientEntity* ent = nullptr;
+		const char* args = argString.c_str();
+		int argSize = argString.size();
+		std::vector<propValue> props;
+
+		while (i < argSize && entries < maxEntries)
+		{
+			bool readEntityIndex = false;
+
+			// Read entity index
+			if (args[i] == entSep)
+			{
+				++i;
+				readEntityIndex = true;
+			}
+			// Also read if at the start of the string. Note: does not increment the index since we're at the start of the string.
+			else if (i == 0)
+			{
+				readEntityIndex = true;
+			}
+			else if(args[i] == sep)
+			{
+				++i;
+			}
+			else // error occurred
+			{
+				i = argSize;
+				arr = L"error occurred in parsing";
+				entries = 1;
+				break;
+			}
+
+			int endIndex = i;
+
+			// Go to the next separator
+			while (args[endIndex] != sep && args[endIndex] != entSep && endIndex < argSize)
+				++endIndex;
+
+			if (readEntityIndex)
+			{
+				int entIndex = atoi(args + i);
+				ent = GetClientEntity(entIndex);
+				// Get all the props for this entity before hand
+				GetAllProps(ent, props);
+
+				if (!ent)
+				{
+					swprintf_s(arr + (entries * bufferSize), bufferSize, L"entity %d does not exist", entIndex);
+					++entries;
+				}
+				else
+				{
+					std::string temp(ent->GetClientClass()->GetName());
+					std::wstring className = s2ws(temp);
+
+					// Add empty line in between entities
+					if (entries != 0)
+					{
+						swprintf_s(arr + (entries * bufferSize), bufferSize, L"");
+						++entries;
+					}
+
+					swprintf_s(arr + (entries * bufferSize), bufferSize, L"entity %d : %s", entIndex, className.c_str());
+					++entries;
+				}
+			}
+			// Read prop regex, make sure entity exists as well
+			else if(ent)
+			{
+				const char* end = args + endIndex;
+				GetValuesMatchingRegex(args + i, end, entries, arr, maxEntries, bufferSize, props);
+			}
+
+			i = endIndex;
+		}
+
+		return entries;
+	}
 }

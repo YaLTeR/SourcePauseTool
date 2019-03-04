@@ -14,10 +14,13 @@
 #include "vgui_controls\controls.h"
 #include "..\patterns.hpp"
 #include "..\overlay\portal_camera.hpp"
+#include "..\..\utils\ent_utils.hpp"
 
 const int INDEX_MASK = MAX_EDICTS - 1;
-ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement vars hud.\n"); // Putting this in cvars.cpp crashes the game xdddd
+ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement vars HUD.\n"); // Putting this in cvars.cpp crashes the game xdddd
 ConVar y_spt_hud_ag_sg_tester("y_spt_hud_ag_sg_tester", "0", FCVAR_CHEAT, "Tests if angle glitch will save glitch you.\n");
+ConVar y_spt_hud_ent_info("y_spt_hud_ent_info", "", FCVAR_CHEAT, "Display entity info on HUD. Format is \"[ent index],[prop regex],[prop regex],...,[prop regex];[ent index],...,[prop regex]\".\n");
+ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT, "When set to 1, displays SPT HUD on the left.\n");
 
 #define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::vguimatsurface::##name);
 #define GET_FUTURE(future_name) \
@@ -90,9 +93,10 @@ void VGui_MatSurfaceDLL::DrawHUD(vrect_t* screen)
 			y_spt_hud_accel.GetBool() ||
 			y_spt_hud_vars.GetBool() ||
 			y_spt_hud_portal_bubble.GetBool() ||
-			y_spt_hud_ag_sg_tester.GetBool())
+			y_spt_hud_ag_sg_tester.GetBool() ||
+			!whiteSpacesOnly(y_spt_hud_ent_info.GetString()))
 		{
-			DrawTopRightHUD(screen, scheme, surface);
+			DrawTopHUD(screen, scheme, surface);
 		}
 
 	}
@@ -118,26 +122,51 @@ const wchar* COLLISION_GROUPS[] = { L"COLLISION_GROUP_NONE", L"COLLISION_GROUP_D
 L"COLLISION_GROUP_VEHICLE_CLIP", L"COLLISION_GROUP_PROJECTILE", L"COLLISION_GROUP_DOOR_BLOCKER", L"COLLISION_GROUP_PASSABLE_DOOR", L"COLLISION_GROUP_DISSOLVING", L"COLLISION_GROUP_PUSHAWAY",
 L"COLLISION_GROUP_NPC_ACTOR", L"COLLISION_GROUP_NPC_SCRIPTED", L"LAST_SHARED_COLLISION_GROUP" };
 
-void VGui_MatSurfaceDLL::DrawTopRightHUD(vrect_t * screen, vgui::IScheme * scheme, IMatSystemSurface * surface)
+static const int MAX_ENTRIES = 128;
+static const int INFO_BUFFER_SIZE = 256;
+static wchar INFO_ARRAY[MAX_ENTRIES * INFO_BUFFER_SIZE];
+static const char ENT_SEPARATOR = ';';
+static const char PROP_SEPARATOR = ',';
+
+void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t * screen, vgui::IScheme * scheme, IMatSystemSurface * surface)
 {
 #ifndef OE
 	int fontTall = surface->GetFontTall(font);
-	int x = screen->width - 300 + 2;
+	int x;
+
+	if (y_spt_hud_left.GetBool())
+		x = 6;
+	else
+		x = screen->width - 300 + 2;
+
 	int vertIndex = 0;
 
 	surface->DrawSetTextFont(font);
 	surface->DrawSetTextColor(255, 255, 255, 255);
 	surface->DrawSetTexture(0);
 
-	if (cl_showpos && cl_showpos->GetBool())
-		vertIndex += 3;
-	if (cl_showfps && cl_showfps->GetBool())
-		++vertIndex;
+	if (!y_spt_hud_left.GetBool())
+	{
+		if (cl_showpos && cl_showpos->GetBool())
+			vertIndex += 3;
+		if (cl_showfps && cl_showfps->GetBool())
+			++vertIndex;
+	}
 
-	const int BUFFER_SIZE = 80;
+	const int BUFFER_SIZE = 256;
 	wchar_t buffer[BUFFER_SIZE];
 	currentVel = clientDLL.GetPlayerVelocity();
 	Vector accel = currentVel - previousVel;
+	std::string info(y_spt_hud_ent_info.GetString());
+
+	if (!whiteSpacesOnly(info))
+	{
+		int entries = utils::FillInfoArray(info, INFO_ARRAY, MAX_ENTRIES, INFO_BUFFER_SIZE, PROP_SEPARATOR, ENT_SEPARATOR);
+		for (int i = 0; i < entries; ++i)
+		{
+			DrawSingleString(vertIndex, INFO_ARRAY + INFO_BUFFER_SIZE * i, fontTall, BUFFER_SIZE, x, surface, buffer);
+		}
+	}
 
 	if (y_spt_hud_velocity.GetBool())
 	{
@@ -270,6 +299,15 @@ void VGui_MatSurfaceDLL::DrawTripleFloat(int & vertIndex, const wchar * name, fl
 {
 	int width = y_spt_hud_decimals.GetInt();
 	swprintf_s(buffer, bufferCount, L"%s: %.*f %.*f %.*f", name, width, f1, width, f2, width, f3);
+	surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
+	surface->DrawPrintText(buffer, wcslen(buffer));
+	++vertIndex;
+}
+
+
+void VGui_MatSurfaceDLL::DrawSingleString(int & vertIndex, const wchar* str, int fontTall, int bufferCount, int x, IMatSystemSurface * surface, wchar * buffer)
+{
+	swprintf_s(buffer, bufferCount, L"%s", str);
 	surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex);
 	surface->DrawPrintText(buffer, wcslen(buffer));
 	++vertIndex;

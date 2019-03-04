@@ -27,11 +27,6 @@ public:
 
 	void NewTick();
 	void DrawHUD(vrect_t* screen);
-	void DrawTopRightHUD(vrect_t* screen, vgui::IScheme* scheme, IMatSystemSurface* surface);
-	void DrawFlagsHud(bool mutuallyExclusiveFlags, const wchar* hudName, int& vertIndex, int x, const wchar** nameArray, int count, IMatSystemSurface* surface, wchar* buffer, int bufferCount, int flags, int fontTall);
-	void DrawSingleFloat(int& vertIndex, const wchar* name, float f, int fontTall, int bufferCount, int x, IMatSystemSurface* surface, wchar* buffer);
-	void DrawSingleInt(int& vertIndex, const wchar* name, int i, int fontTall, int bufferCount, int x, IMatSystemSurface* surface, wchar* buffer);
-	void DrawTripleFloat(int& vertIndex, const wchar* name, float f1, float f2, float f3, int fontTall, int bufferCount, int x, IMatSystemSurface* surface, wchar* buffer);
 
 	_StartDrawing ORIG_StartDrawing;
 	_FinishDrawing ORIG_FinishDrawing;
@@ -43,4 +38,11 @@ protected:
 
 	Vector currentVel;
 	Vector previousVel;
+
+	void DrawTopHUD(vrect_t* screen, vgui::IScheme* scheme, IMatSystemSurface* surface);
+	void DrawFlagsHud(bool mutuallyExclusiveFlags, const wchar* hudName, int& vertIndex, int x, const wchar** nameArray, int count, IMatSystemSurface* surface, wchar* buffer, int bufferCount, int flags, int fontTall);
+	void DrawSingleFloat(int& vertIndex, const wchar* name, float f, int fontTall, int bufferCount, int x, IMatSystemSurface* surface, wchar* buffer);
+	void DrawSingleInt(int& vertIndex, const wchar* name, int i, int fontTall, int bufferCount, int x, IMatSystemSurface* surface, wchar* buffer);
+	void DrawTripleFloat(int& vertIndex, const wchar* name, float f1, float f2, float f3, int fontTall, int bufferCount, int x, IMatSystemSurface* surface, wchar* buffer);
+	void DrawSingleString(int & vertIndex, const wchar* str, int fontTall, int bufferCount, int x, IMatSystemSurface * surface, wchar * buffer);
 };

@@ -21,4 +21,5 @@ namespace utils
 	Vector GetPlayerEyePosition();
 	QAngle GetPlayerEyeAngles();
 	IClientEntity* FindLinkedPortal(IClientEntity* ent);
+	int FillInfoArray(std::string argString, wchar* arr, int maxEntries, int bufferSize, char sep, char entSep);
 }

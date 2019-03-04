@@ -399,7 +399,7 @@ bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool ju
 	if (reduceWishspeed)
 		wishspeed *= 0.33333333f;
 
-	Button usedButton;
+	Button usedButton = Button::FORWARD;
 	bool strafed;
 	strafed = true;
 
