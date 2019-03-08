@@ -2,6 +2,7 @@
 #include <map>
 #include <vector>
 #include "edict.h"
+#include "eiface.h"
 
 #ifdef OE
 #include "mathlib.h"
@@ -15,29 +16,32 @@ namespace utils
 
 	struct Datum
 	{
-		char data[MAX_BYTES_IN_DATUM];
+		char* data;
 		int offset;
 		int count;
 
-		Datum()
-		{
-			offset = 0;
-			count = 0;
-		}
+		Datum();
+		void Reset();
+		void CopyData(void* src, int offset, int count);
+		void Allocate(int count);
+		~Datum();
+		Datum(const Datum& rhs);
+		Datum& operator=(const Datum& rhs) = delete;
 	};
 
-	struct StringDatum
+	struct EHANDLEData
 	{
-		string_t data;
+		int index;
 		int offset;
 
-		StringDatum(const string_t& d, int offset) : data(d), offset(offset) {}
+		EHANDLEData(int index, int offset) : index(index), offset(offset) {}
 	};
 
 	struct SaveStateEntry
 	{
 		std::vector<Datum> data;
-		std::vector<StringDatum> stringData;
+		std::vector<Datum> stringData;
+		std::vector<EHANDLEData> ehandles;
 		std::string className;
 		int serial;
 		int index;
@@ -51,7 +55,7 @@ namespace utils
 		float time;
 	};
 
-	void GetSaveState(int index);
+	void GetSaveState();
 	void LoadSaveState();
 
 	void WriteFloat(edict_t* ent, const std::string& propName, float value);
@@ -61,4 +65,5 @@ namespace utils
 	void PrintEntities();
 	void AddDatamap(datamap_t* map, void* ent);
 	void SpawnEntity(const char* name);
+	void SetGameDLL(IServerGameDLL* serverDll);
 }

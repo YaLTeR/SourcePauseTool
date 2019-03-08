@@ -6,10 +6,18 @@
 #include "edict.h"
 #include "string_parsing.hpp"
 #include "gamestringpool.h"
+#include "server_class.h"
 
 namespace utils
 {
+	const int INDEX_MASK = MAX_EDICTS - 1;
+	static IServerGameDLL* g_serverGameDll;
 	static std::map<std::string, datamap_t*> classToDatamap;
+
+	void SetGameDLL(IServerGameDLL* serverDll)
+	{
+		g_serverGameDll = serverDll;
+	}
 
 	edict_t* FindEntity(void* ent)
 	{
@@ -47,64 +55,13 @@ namespace utils
 	{
 		std::string name(e->GetClassName());
 
-		if (classToDatamap.find(name) != classToDatamap.end())
+		if (classToDatamap.find(name) != classToDatamap.end() && name != "env_soundscape" && name != "info_particle_system" && name != "worldspawn")
 		{
 			return classToDatamap[name];
 		}
 		else
 			return nullptr;
 	}
-
-	void RestoreEntityState(edict_t* e, const SaveStateEntry& entry)
-	{
-		//e->SetChangeInfoSerialNumber(entry.serial);
-		/*
-		for (auto& intEntry : entry.ints)
-		{
-			WriteInt(e, intEntry.first, intEntry.second);
-		}*/
-	}
-
-
-	/*	FIELD_VOID = 0,			// No type or value
-	FIELD_FLOAT,			// Any floating point value
-	FIELD_STRING,			// A string ID (return from ALLOC_STRING)
-	FIELD_VECTOR,			// Any vector, QAngle, or AngularImpulse
-	FIELD_QUATERNION,		// A quaternion
-	FIELD_INTEGER,			// Any integer or enum
-	FIELD_BOOLEAN,			// boolean, implemented as an int, I may use this as a hint for compression
-	FIELD_SHORT,			// 2 byte integer
-	FIELD_CHARACTER,		// a byte
-	FIELD_COLOR32,			// 8-bit per channel r,g,b,a (32bit color)
-	FIELD_EMBEDDED,			// an embedded object with a datadesc, recursively traverse and embedded class/structure based on an additional typedescription
-	FIELD_CUSTOM,			// special type that contains function pointers to it's read/write/parse functions
-
-	FIELD_CLASSPTR,			// CBaseEntity *
-	FIELD_EHANDLE,			// Entity handle
-	FIELD_EDICT,			// edict_t *
-
-	FIELD_POSITION_VECTOR,	// A world coordinate (these are fixed up across level transitions automagically)
-	FIELD_TIME,				// a floating point time (these are fixed up automatically too!)
-	FIELD_TICK,				// an integer tick count( fixed up similarly to time)
-	FIELD_MODELNAME,		// Engine string that is a model name (needs precache)
-	FIELD_SOUNDNAME,		// Engine string that is a sound name (needs precache)
-
-	FIELD_INPUT,			// a list of inputed data fields (all derived from CMultiInputVar)
-	FIELD_FUNCTION,			// A class function pointer (Think, Use, etc)
-
-	FIELD_VMATRIX,			// a vmatrix (output coords are NOT worldspace)
-
-	// NOTE: Use float arrays for local transformations that don't need to be fixed up.
-	FIELD_VMATRIX_WORLDSPACE,// A VMatrix that maps some local space to world space (translation is fixed up on level transitions)
-	FIELD_MATRIX3X4_WORLDSPACE,	// matrix3x4_t that maps some local space to world space (translation is fixed up on level transitions)
-
-	FIELD_INTERVAL,			// a start and range floating point interval ( e.g., 3.2->3.6 == 3.2 and 0.4 )
-	FIELD_MODELINDEX,		// a model index
-	FIELD_MATERIALINDEX,	// a material index (using the material precache string table)
-	
-	FIELD_VECTOR2D,			// 2 floats
-
-	FIELD_TYPECOUNT,		// MUST BE LAST*/
 
 	void GetFields(datamap_t* map, SaveStateEntry& entry, edict_t* edict)
 	{
@@ -122,6 +79,9 @@ namespace utils
 
 			switch (t.fieldType)
 			{
+			case FIELD_EHANDLE:
+				entry.ehandles.push_back(EHANDLEData(*reinterpret_cast<int*>(value) & INDEX_MASK, t.fieldOffset[0]));
+				break;
 			case FIELD_FLOAT:
 			case FIELD_INTEGER:
 			case FIELD_BOOLEAN:
@@ -129,7 +89,6 @@ namespace utils
 			case FIELD_SHORT:
 			case FIELD_CHARACTER:
 			case FIELD_COLOR32:
-			case FIELD_EHANDLE:
 			case FIELD_POSITION_VECTOR:
 			case FIELD_TIME:
 			case FIELD_TICK:
@@ -140,24 +99,24 @@ namespace utils
 			case FIELD_VECTOR2D:
 				if (t.fieldSizeInBytes <= MAX_BYTES_IN_DATUM && t.fieldSizeInBytes > 0)
 				{
-					memcpy(item.data, value, t.fieldSizeInBytes);
-					item.count = t.fieldSizeInBytes;
-					item.offset = t.fieldOffset[0];
+					item.CopyData(value, t.fieldOffset[0], t.fieldSizeInBytes);
 					entry.data.push_back(item);
 				}
 				break;
-			case FIELD_STRING:
+			//case FIELD_STRING:
 			case FIELD_MODELNAME:
 			case FIELD_SOUNDNAME:
-				stringVal = *reinterpret_cast<string_t*>(value);
-				entry.stringData.push_back(StringDatum(stringVal, t.fieldOffset[0]));
+				if (stringVal.ToCStr() && *stringVal.ToCStr())
+				{
+					stringVal = *reinterpret_cast<string_t*>(value);
+					item.CopyData((void*)stringVal.ToCStr(), t.fieldOffset[0], strlen(stringVal.ToCStr()) + 1);
+					entry.stringData.push_back(item);
+				}
 				break;
 			default:
-				if (t.fieldName)
-					Msg("%s : type %d : offset %d : count %d\n", t.fieldName, t.fieldType, t.fieldOffset, t.fieldSizeInBytes);
 				break;
 			}
-				
+
 		}
 	}
 
@@ -174,6 +133,7 @@ namespace utils
 				GetFields(map, entry, edict);
 				entry.className = name;
 				entry.stateFlags = edict->m_fStateFlags;
+				entry.index = edict->GetUnknown()->GetRefEHandle().GetEntryIndex();
 			}
 		}
 
@@ -192,44 +152,114 @@ namespace utils
 		for (int i = 0; i < entry.stringData.size(); ++i)
 		{
 			auto& item = entry.stringData[i];
+			string_t result = serverDLL.ORIG_AllocPooledString(item.data, 0);
 			string_t* value = reinterpret_cast<string_t*>((uintptr_t)ent + item.offset);
-			*value = item.data;
+			*value = result;
 		}
 
 		edict->m_fStateFlags = entry.stateFlags;
-
 	}
 
-	static SaveStateEntry savedEntry;
-
-	void WriteFloat(edict_t * ent, const std::string & propName, float value)
-	{
-	}
-
-	void WriteInt(edict_t * ent, const std::string & propName, int value)
-	{
-	}
-
-	void WriteVector(edict_t * ent, const std::string & propName, const Vector & value)
-	{
-	}
-
-	void GetSaveState(int index)
+	void DeleteSavedEntities()
 	{
 		auto engine = GetEngine();
-		auto edict = engine->PEntityOfEntIndex(index);
-		if (edict && !whiteSpacesOnly(edict->GetClassName()))
+		for (int i = 2; i < MAX_EDICTS; ++i)
 		{
-			savedEntry = GetSaveStateFromEdict(edict);
+			auto edict = engine->PEntityOfEntIndex(i);
+
+			// Make sure this entity is one that can be restored before deleting
+			if (edict && GetDatamap(edict))
+			{
+				edict->SetFree();
+			}
 		}
+
+	}
+
+	void SpawnEntityWithEntry(const SaveStateEntry& entry, std::map<int, int>& indexToNewEhandleMap, std::vector<edict_t*>& edicts)
+	{
+		auto engine = GetEngine();
+		void* ent;
+		edict_t* edict;
+
+		Msg("Spawning %s\n", entry.className.c_str());
+
+		if (entry.index > 1)
+		{
+			ent = serverDLL.ORIG_CreateEntityByName(entry.className.c_str(), -1);
+			edict = FindEntity(ent);
+		}
+		else // Player and worldspawn are not respawned while restoring a savestate
+		{
+			edict = engine->PEntityOfEntIndex(entry.index);
+			ent = edict->GetUnknown();
+		}
+
+		LoadDataFromSaveState(ent, entry, edict);
+		// Respawn entities
+		if (entry.index > 1)
+		{
+			int result = serverDLL.ORIG_DispatchSpawn(ent);
+		}
+
+		indexToNewEhandleMap[entry.index] = edict->GetIServerEntity()->GetRefEHandle().ToInt();
+		edicts.push_back(edict);
+	}
+
+	void MapEHandles(const SaveStateEntry& entry, void* ent, std::map<int, int>& indexToNewEhandleMap)
+	{
+		for (auto& ehandle : entry.ehandles)
+		{
+			if (indexToNewEhandleMap.find(ehandle.index) != indexToNewEhandleMap.end())
+			{
+				int* value = reinterpret_cast<int*>((uintptr_t)ent + ehandle.offset);
+				*value = indexToNewEhandleMap[ehandle.index];
+			}
+		}
+	}
+
+	void LoadSaveState(const SaveState& ss)
+	{
+		DeleteSavedEntities();
+		std::map<int, int> indexToNewEhandleMap;
+		std::vector<edict_t*> edicts;
+
+		for(int i=0; i < ss.entries.size(); ++i)
+		{
+			auto& entry = ss.entries[i];
+			SpawnEntityWithEntry(entry, indexToNewEhandleMap, edicts);
+		}
+
+		for (int i = 0; i < ss.entries.size(); ++i)
+		{
+			auto& entry = ss.entries[i];
+			auto edict = edicts[i];
+
+			MapEHandles(entry, edict->GetUnknown(), indexToNewEhandleMap);
+		}
+	}
+
+	static SaveState ss;
+
+	void GetSaveState()
+	{
+		auto engine = GetEngine();
+		ss.entries.clear();
+
+		for (int i = 0; i < MAX_EDICTS; ++i)
+		{
+			auto edict = engine->PEntityOfEntIndex(i);
+			if (edict && GetDatamap(edict))
+			{
+				ss.entries.push_back(GetSaveStateFromEdict(edict));
+			}
+		}
+
 	}
 
 	void LoadSaveState()
 	{
-		void* ent = serverDLL.ORIG_CreateEntityByName(savedEntry.className.c_str(), -1);
-		edict_t* edict = FindEntity(ent);
-		LoadDataFromSaveState(ent, savedEntry, edict);
-		int result = serverDLL.ORIG_DispatchSpawn(ent);
+		LoadSaveState(ss);
 	}
 
 	void SpawnEntity(const char* name)
@@ -239,12 +269,12 @@ namespace utils
 		e->SetFree();
 		e->freetime = 0;
 
-		
+
 		e = engine->PEntityOfEntIndex(1000);
 		auto handle = e->GetNetworkable()->GetEntityHandle();
 		handle->SetRefEHandle(CBaseHandle(1000, 2048));
 
-		
+
 		Msg("result %d\n");
 	}
 
@@ -272,7 +302,7 @@ namespace utils
 		for (int i = 1; i < MAX_EDICTS; ++i)
 		{
 			auto e = engine->PEntityOfEntIndex(i);
-			if(e)
+			if (e)
 				engine->RemoveEdict(e);
 		}
 
@@ -292,7 +322,40 @@ namespace utils
 			auto e = engine->PEntityOfEntIndex(entry.index);
 			auto handle = e->GetNetworkable()->GetEntityHandle();
 			handle->SetRefEHandle(CBaseHandle(entry.index, entry.serial));
-			RestoreEntityState(e, entry);
+			//RestoreEntityState(e, entry);
 		}
+	}
+	Datum::Datum()
+	{
+		Reset();
+	}
+	void Datum::Reset()
+	{
+		offset = 0;
+		count = 0;
+		data = nullptr;
+	}
+	void Datum::CopyData(void * src, int offset, int count)
+	{
+		Allocate(count);
+		this->offset = offset;
+		this->count = count;
+		memcpy(data, src, count);
+	}
+	void Datum::Allocate(int count)
+	{
+		if (data)
+			delete[] data;
+		data = new char[count];
+	}
+	Datum::~Datum()
+	{
+		if (data)
+			delete[] data;
+	}
+	Datum::Datum(const Datum & rhs)
+	{
+		Reset();
+		CopyData(rhs.data, rhs.offset, rhs.count);
 	}
 }

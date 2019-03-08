@@ -143,6 +143,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	DEF_FUTURE(CreateEntityByName);
 	DEF_FUTURE(CRestore__DoReadAll);
 	DEF_FUTURE(DispatchSpawn);
+	DEF_FUTURE(AllocPooledString);
 
 	GET_HOOKEDFUTURE(FinishGravity);
 	GET_HOOKEDFUTURE(PlayerRunCommand);
@@ -156,6 +157,7 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	GET_FUTURE(GetStepSoundVelocities);
 	GET_FUTURE(CBaseEntity__SetCollisionGroup);
 	GET_FUTURE(CreateEntityByName);
+	GET_FUTURE(AllocPooledString);
 
 	// Server-side CheckJumpButton
 	if (ORIG_CheckJumpButton)

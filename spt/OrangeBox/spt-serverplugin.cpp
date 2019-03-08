@@ -303,6 +303,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	IClientEntityList* entList = (IClientEntityList*)clientFactory(VCLIENTENTITYLIST_INTERFACE_VERSION, NULL);
 	IVModelInfo* modelInfo = (IVModelInfo*)interfaceFactory(VMODELINFO_SERVER_INTERFACE_VERSION, NULL);
 	IBaseClientDLL* clientInterface = (IBaseClientDLL*)clientFactory(CLIENT_DLL_INTERFACE_VERSION, NULL);
+	IServerGameDLL* gameDLL = (IServerGameDLL*)interfaceFactory(INTERFACEVERSION_SERVERGAMEDLL, null);
 
 	if (entList)
 	{
@@ -324,6 +325,13 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	}
 	else
 		DevWarning("Unable to retrieve the client DLL interface.\n");
+
+	if (gameDLL)
+	{
+		utils::SetGameDLL(gameDLL);
+	}
+	else
+		DevWarning("Unable to retrieve the server game DLL interface\n");
 
 
 	EngineConCmd = CallServerCommand;
@@ -654,10 +662,7 @@ CON_COMMAND(y_spt_print_server_ents, "Prints all server entities.")
 
 CON_COMMAND(y_spt_save_state, "Test")
 {
-	if (args.ArgC() >= 2)
-	{
-		utils::GetSaveState(std::stoi(args.Arg(1)));
-	}
+	utils::GetSaveState();
 }
 
 CON_COMMAND(y_spt_load_state, "Test")

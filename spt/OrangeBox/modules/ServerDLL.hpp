@@ -26,6 +26,7 @@ typedef CBaseEntity*(__cdecl *_CreateEntityByName) (const char* name, int forceE
 typedef int(__fastcall *_CRestore__ReadAll) (void* thisptr, int edx, void* pLeafObject, datamap_t* pLeafMap);
 typedef int(__fastcall *_CRestore__DoReadAll) (void* thisptr, int edx, void* pLeafObject, datamap_t* pLeafMap, datamap_t* pCurMap);
 typedef int(__cdecl *_DispatchSpawn) (void* pEntity);
+typedef string_t(__cdecl * _AllocPooledString) (const char *pszValue, int trash);
 
 class ServerDLL : public IHookableNameFilter
 {
@@ -79,6 +80,7 @@ public:
 	_CRestore__ReadAll ORIG_CRestore__ReadAll;
 	_CRestore__DoReadAll ORIG_CRestore__DoReadAll;
 	_DispatchSpawn ORIG_DispatchSpawn;
+	_AllocPooledString ORIG_AllocPooledString;
 
 protected:
 	PatternContainer patternContainer;
