@@ -12,6 +12,7 @@
 
 namespace utils
 {
+	/*
 	const int MAX_BYTES_IN_DATUM = 64;
 
 	struct Datum
@@ -65,5 +66,5 @@ namespace utils
 	void PrintEntities();
 	void AddDatamap(datamap_t* map, void* ent);
 	void SpawnEntity(const char* name);
-	void SetGameDLL(IServerGameDLL* serverDll);
+	void SetGameDLL(IServerGameDLL* serverDll);*/
 }

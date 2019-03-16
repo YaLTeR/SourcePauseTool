@@ -24,7 +24,6 @@ namespace scripts
 
 	const int RESET_VARS_COUNT = ARRAYSIZE(RESET_VARS);
 
-
 	SourceTASReader::SourceTASReader()
 	{
 		InitPropertyHandlers();

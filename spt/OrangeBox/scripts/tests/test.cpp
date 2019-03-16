@@ -5,6 +5,7 @@
 #include "..\..\spt-serverplugin.hpp"
 #include "..\srctas_reader.hpp"
 #include <filesystem>
+#include "..\..\..\sptlib-wrapper.hpp"
 
 namespace scripts
 {
@@ -19,12 +20,12 @@ namespace scripts
 		trackers[ANG_NO] = std::unique_ptr<Tracker>(new AngTracker(9));
 	}
 
-	void Tester::LoadTest(const std::string& testName, bool generating)
+	void Tester::LoadTest(const std::string& testName, bool generating, bool automatedTest)
 	{
 		std::string folder(GetFolder(testName));
 		if (std::experimental::filesystem::is_directory(folder))
 		{
-			RunAllTests(folder, generating);
+			RunAllTests(folder, generating, automatedTest);
 			return;
 		}
 
@@ -48,7 +49,9 @@ namespace scripts
 		catch(const std::exception& ex)
 		{
 			successfulTest = false;
-			Msg("[TEST] Error loading test: %s\n", ex.what());
+			std::ostringstream oss;
+			oss << "Error in loading test: " << ex.what();
+			PrintTestMessage(oss.str());
 		}
 	}
 
@@ -88,7 +91,9 @@ namespace scripts
 		}
 		catch (const std::exception& ex)
 		{
-			Msg("[TEST] Error in test iteration: %s\n", ex.what());
+			std::ostringstream oss;
+			oss << "Error in test iteration: " << ex.what();
+			PrintTestMessage(oss.str());
 		}
 	}
 
@@ -106,7 +111,9 @@ namespace scripts
 		}
 		catch (const std::exception& ex)
 		{
-			Msg("Error in test: %s\n", ex.what());
+			std::ostringstream oss;
+			oss << "Error in test : " << ex.what();
+			PrintTestMessage(oss.str());
 			successfulTest = false;
 		}
 	}
@@ -168,33 +175,50 @@ namespace scripts
 		++currentTestIndex;
 
 		if (successfulTest && runningTest)
-			Msg("[TEST] Test ran successfully\n");
+			PrintTestMessage("Test ran successfully");
 		else if (runningTest)
-			Msg("[TEST] Test was unsuccesful\n");
+			PrintTestMessage("Test was unsuccessful");
 		else
-			Msg("[TEST] Data automatically generated for test\n");
+			PrintTestMessage("Data automatically generated for test");
 
 		if (currentTestIndex >= testNames.size())
 		{
 			if (!testNames.empty())
 			{
+				std::ostringstream oss;
+
 				if (runningTest)
-					Msg("[TEST] %d / %d tests ran successfully\n", successfulTests, testNames.size());
+					oss << successfulTest << " / " << testNames.size() << " tests ran successfully";
 				else
-					Msg("[TEST] Data automatically generated for %d tests\n", testNames.size());
+					oss << "Data automatically generated for " << testNames.size() << " tests ran successfully";
+
+				PrintTestMessage(oss.str());
 			}
-				
+			
 			ResetIteration();
 			Reset();
+
+			if (automatedTest)
+			{
+				CloseLogFile();
+				EngineConCmd("quit");
+			}
 		}
 		else
 		{
-			LoadTest(testNames[currentTestIndex], generatingData);
+			LoadTest(testNames[currentTestIndex], generatingData, automatedTest);
 		}
 	}
 
-	void Tester::RunAllTests(const std::string& folder, bool generating)
+	void Tester::RunAutomatedTest(const std::string & folder, bool generating, const std::string & testFileName)
 	{
+		OpenLogFile(testFileName);
+		LoadTest(folder, generating, true);
+	}
+
+	void Tester::RunAllTests(const std::string& folder, bool generating, bool automatedTest)
+	{
+		this->automatedTest = automatedTest;
 		Reset();
 
 		for (auto& entry : std::experimental::filesystem::recursive_directory_iterator(folder))
@@ -215,9 +239,9 @@ namespace scripts
 		}
 
 		if (!testNames.empty())
-			LoadTest(testNames[0], generating);
+			LoadTest(testNames[0], generating, automatedTest);
 		else
-			Msg("No valid tests found in the folder.\n");
+			PrintTestMessage("No valid tests found in the folder.");
 	}
 
 	void Tester::ResetIteration()
@@ -238,5 +262,39 @@ namespace scripts
 		failedTests.clear();
 		currentTestIndex = 0;
 		successfulTests = 0;
+	}
+	void Tester::PrintTestMessage(const std::string& msg)
+	{
+		PrintTestMessage(msg.c_str());
+	}
+	void Tester::PrintTestMessage(const char * msg)
+	{
+		std::string testName;
+
+		if (currentTestIndex >= 0)
+			testName = GetCurrentTestName();
+		else
+			testName = "";
+
+		if (automatedTest)
+		{
+			logFileStream << "[TEST] " << testName << ":" << msg << '\n';
+		}
+		else
+		{
+			Msg("[TEST] %s:%s\n", testName.c_str(), msg);
+		}
+	}
+	void Tester::OpenLogFile(const std::string& testFileName)
+	{
+		logFileStream.open(testFileName);
+	}
+	void Tester::CloseLogFile()
+	{
+		logFileStream.close();
+	}
+	const std::string & Tester::GetCurrentTestName()
+	{
+		return testNames[currentTestIndex];
 	}
 }

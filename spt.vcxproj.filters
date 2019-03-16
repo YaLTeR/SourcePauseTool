@@ -122,6 +122,9 @@
     <ClCompile Include="spt\utils\savestate.cpp">
       <Filter>spt\utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SourcePauseTool\spt\OrangeBox\module_hooks.cpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -316,6 +319,15 @@
     <ClInclude Include="spt\utils\savestate.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SourcePauseTool\Signals\Delegate.h">
+      <Filter>Signals</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SourcePauseTool\Signals\Signal.h">
+      <Filter>Signals</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SourcePauseTool\spt\OrangeBox\module_hooks.hpp">
+      <Filter>spt\OrangeBox</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">
@@ -371,5 +383,13 @@
     <Filter Include="SPTLib\Windows">
       <UniqueIdentifier>{9a4a9a35-de34-40d0-a01c-057aea6a099d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Signals">
+      <UniqueIdentifier>{680a4130-6128-4d4a-b6a7-4abfb255dea6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\..\SourcePauseTool\Signals\example.txt">
+      <Filter>Signals</Filter>
+    </Text>
   </ItemGroup>
 </Project>

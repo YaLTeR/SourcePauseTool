@@ -3,6 +3,7 @@
 #include <vector>
 #include "tracker.hpp"
 #include "test_item.hpp"
+#include <fstream>
 
 // Test contains the data describing a test
 // Store trackers as a vector of unique_ptrs to the abstract base class
@@ -18,7 +19,7 @@
 
 // TestItem
 //	- A simple tracker number - value pairing
-// A vector of these can be loaded from a file/written to a file using a utility function provided in the same header
+// A vector of these can be loaded/written from/to a file using a utility function provided in test_item.hpp
 // The test data can be edited post generation
 
 
@@ -34,7 +35,7 @@ namespace scripts
 	{
 	public:
 		Tester();
-		void LoadTest(const std::string& testName, bool generating);
+		void LoadTest(const std::string& testName, bool generating, bool automatedTest = false);
 		static bool RequiredFilesExist(const std::string& testName, bool generating);
 		static std::string TestDataFile(const std::string& testName);
 		static std::string ScriptFile(const std::string& testName);
@@ -46,21 +47,31 @@ namespace scripts
 		void GenerationIteration();
 		void TestDone();
 
-		void RunAllTests(const std::string& folder, bool generating);
+		void RunAutomatedTest(const std::string& folder, bool generating, const std::string& testFileName);
+		void RunAllTests(const std::string& folder, bool generating, bool automatedTest = false);
 		void ResetIteration();
 		void Reset();
 	private:
+		void PrintTestMessage(const std::string& msg);
+		void PrintTestMessage(const char* msg);
+		void OpenLogFile(const std::string& testFileName);
+		void CloseLogFile();
+		const std::string& GetCurrentTestName();
+
 		std::map<int, std::unique_ptr<Tracker>> trackers;
 		std::vector<TestItem> testItems;
 		std::vector<std::string> testNames;
 		std::vector<int> failedTests;
 		std::string currentTest;
+		std::ofstream logFileStream;
 
 		std::size_t currentTestIndex;
 		int successfulTests;
 		bool runningTest;
 		bool generatingData;
+		bool automatedTest;
 
+		std::string testFileName;
 		std::size_t currentTestItem;
 		int afterFramesTick;
 		int dataTick;

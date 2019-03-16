@@ -1,0 +1,41 @@
+demo 01_2
+save 01_1
+playspeed 1
+//search low
+//tickend 0|1
+//posx 1222.860840|1300
+
+vars
+var strafe_yaw -0.375
+var drop_wait 11
+var anglespeed 21.25
+var end_yaw 18.68
+var end_pitch 79.58
+var backtick 1
+var back_yaw -175
+
+frames
+// grab radio
+----------|------|-du---|110|65|0|_y_spt_anglesetspeed 360; tas_strafe_allow_jump_override 0
+s01-------|------|-du---|[strafe_yaw]|65|2|tas_strafe_vectorial 1; tas_strafe_vectorial_increment 0;
+ 
+----------|------|-d----|-170.86|29.5|0|
+s01-------|------|-d----|[strafe_yaw]|0|80|tas_strafe_vectorial_offset 180; tas_strafe_vectorial_increment 2.5; _y_spt_anglesetspeed 3
+----------|f-----|------|-|-|10|
+s01-------|------|-d----|0|-|27|
+s01-j-----|------|-d----|0|-|1|tas_strafe_vectorial_increment 0
+----------|------|------|[end_yaw]|[end_pitch]|0|_y_spt_anglesetspeed [anglespeed]; tas_strafe_allow_jump_override 1
+s01-j-----|------|-d----|0|-|[drop_wait]|
+s01-j-----|------|-du---|0|0|1|tas_strafe_vectorial_increment [anglespeed]
+s01-j-----|------|-d----|0|-|20|
+s01-j-----|------|------|0|-|25|
+----------|-l-b--|------|-|-|100|
+----------|------|-d----|[back_yaw]|-|27|_y_spt_anglesetspeed 2.5
+----------|---b--|-d----|-|-|[backtick]|
+----------|------|------|-4|0|100|
+----j-----|------|j-----|-4|0|1|
+----------|------|------|-4|0|1|
+----------|------|------|-4|0|725|
+----------|------|------|-|-|0|
+----------|------|------|-|-|100|
+----------|------|------|-|-|0|stop;pause

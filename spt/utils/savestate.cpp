@@ -10,6 +10,7 @@
 
 namespace utils
 {
+	/*
 	const int INDEX_MASK = MAX_EDICTS - 1;
 	static IServerGameDLL* g_serverGameDll;
 	static std::map<std::string, datamap_t*> classToDatamap;
@@ -45,7 +46,6 @@ namespace utils
 			if (classToDatamap.find(name) == classToDatamap.end())
 			{
 				classToDatamap[name] = map;
-				Msg("Added class %s\n", name.c_str());
 			}
 		}
 
@@ -357,5 +357,5 @@ namespace utils
 	{
 		Reset();
 		CopyData(rhs.data, rhs.offset, rhs.count);
-	}
+	}*/
 }

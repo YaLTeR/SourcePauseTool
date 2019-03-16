@@ -60,7 +60,7 @@ int __fastcall ServerDLL::HOOKED_CRestore__ReadAll(void * thisptr, int edx, void
 
 int __fastcall ServerDLL::HOOKED_CRestore__DoReadAll(void * thisptr, int edx, void * pLeafObject, datamap_t * pLeafMap, datamap_t * pCurMap)
 {
-	utils::AddDatamap(pLeafMap, pLeafObject);
+	//utils::AddDatamap(pLeafMap, pLeafObject);
 	return serverDLL.ORIG_CRestore__DoReadAll(thisptr, edx, pLeafObject, pLeafMap, pCurMap);
 }
 
@@ -140,9 +140,9 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	DEF_FUTURE(PerformFlyCollisionResolution);
 	DEF_FUTURE(GetStepSoundVelocities);
 	DEF_FUTURE(CBaseEntity__SetCollisionGroup);
-	DEF_FUTURE(CreateEntityByName);
-	DEF_FUTURE(CRestore__DoReadAll);
-	DEF_FUTURE(DispatchSpawn);
+	//DEF_FUTURE(CreateEntityByName);
+	//DEF_FUTURE(CRestore__DoReadAll);
+	//DEF_FUTURE(DispatchSpawn);
 	DEF_FUTURE(AllocPooledString);
 
 	GET_HOOKEDFUTURE(FinishGravity);
@@ -150,13 +150,13 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	GET_HOOKEDFUTURE(CheckStuck);
 	GET_HOOKEDFUTURE(MiddleOfSlidingFunction);
 	GET_HOOKEDFUTURE(CheckJumpButton);
-	GET_HOOKEDFUTURE(CRestore__DoReadAll);
-	GET_HOOKEDFUTURE(DispatchSpawn);
+	//GET_HOOKEDFUTURE(CRestore__DoReadAll);
+	//GET_HOOKEDFUTURE(DispatchSpawn);
 	GET_FUTURE(CHL2_Player__HandleInteraction);
 	GET_FUTURE(PerformFlyCollisionResolution);
 	GET_FUTURE(GetStepSoundVelocities);
 	GET_FUTURE(CBaseEntity__SetCollisionGroup);
-	GET_FUTURE(CreateEntityByName);
+	//GET_FUTURE(CreateEntityByName);
 	GET_FUTURE(AllocPooledString);
 
 	// Server-side CheckJumpButton

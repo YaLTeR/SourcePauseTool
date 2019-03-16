@@ -32,6 +32,7 @@
 #include "overlay\overlay-renderer.hpp"
 #include "overlay\overlays.hpp"
 #include "..\vgui\vgui_utils.hpp"
+#include "module_hooks.hpp"
 #include "tier0\memdbgoff.h" // YaLTeR - switch off the memory debugging.
 
 using namespace std::literals;
@@ -325,13 +326,13 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	}
 	else
 		DevWarning("Unable to retrieve the client DLL interface.\n");
-
+	/*
 	if (gameDLL)
 	{
 		utils::SetGameDLL(gameDLL);
 	}
 	else
-		DevWarning("Unable to retrieve the server game DLL interface\n");
+		DevWarning("Unable to retrieve the server game DLL interface\n");*/
 
 
 	EngineConCmd = CallServerCommand;
@@ -347,8 +348,8 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	Hooks::AddToHookedModules(&clientDLL);
 	Hooks::AddToHookedModules(&serverDLL);
 	Hooks::AddToHookedModules(&vgui_matsurfaceDLL);
-
 	Hooks::Init(true);
+	modulehooks::ConnectSignals();
 
 	auto loadTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
 	std::ostringstream out;
@@ -655,6 +656,7 @@ CON_COMMAND(y_spt_print_ent_props, "Prints all props for a given entity index.")
 	}
 }
 
+/*
 CON_COMMAND(y_spt_print_server_ents, "Prints all server entities.")
 {
 	utils::PrintEntities();
@@ -668,7 +670,7 @@ CON_COMMAND(y_spt_save_state, "Test")
 CON_COMMAND(y_spt_load_state, "Test")
 {
 	utils::LoadSaveState();
-}
+}*/
 
 
 #if defined( OE )
@@ -892,7 +894,6 @@ CON_COMMAND(tas_test_generate, "Generates test data for given test.")
 
 	ArgsWrapper args(engine.get());
 #endif
-	Vector target;
 
 	if (args.ArgC() > 1)
 	{
@@ -908,13 +909,28 @@ CON_COMMAND(tas_test_validate, "Validates a test.")
 
 	ArgsWrapper args(engine.get());
 #endif
-	Vector target;
 
 	if (args.ArgC() > 1)
 	{
 		scripts::g_Tester.LoadTest(args.Arg(1), false);
 	}
 }
+
+CON_COMMAND(tas_test_automated_validate, "Validates a test, produces a log file and exits the game.")
+{
+#if defined( OE )
+	if (!engine)
+		return;
+
+	ArgsWrapper args(engine.get());
+#endif
+
+	if (args.ArgC() > 2)
+	{
+		scripts::g_Tester.RunAutomatedTest(args.Arg(1), false, args.Arg(2));
+	}
+}
+
 
 #if SSDK2007
 // TODO: remove fixed offsets.

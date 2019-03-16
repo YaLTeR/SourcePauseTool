@@ -586,6 +586,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\SourcePauseTool\spt\OrangeBox\module_hooks.cpp" />
     <ClCompile Include="..\..\public\vgui_controls\vgui_controls.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">NotUsing</PrecompiledHeader>
@@ -940,6 +941,9 @@
     <Library Include="..\..\lib\public\vstdlib.lib" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\SourcePauseTool\Signals\Delegate.h" />
+    <ClInclude Include="..\..\..\SourcePauseTool\Signals\Signal.h" />
+    <ClInclude Include="..\..\..\SourcePauseTool\spt\OrangeBox\module_hooks.hpp" />
     <ClInclude Include="..\..\public\tier0\basetypes.h" />
     <ClInclude Include="..\..\public\Color.h" />
     <ClInclude Include="..\..\public\tier0\dbg.h" />
@@ -1004,6 +1008,9 @@
     <ClInclude Include="spt\utils\savestate.hpp" />
     <ClInclude Include="spt\utils\string_parsing.hpp" />
     <ClInclude Include="spt\vgui\vgui_utils.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\..\SourcePauseTool\Signals\example.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

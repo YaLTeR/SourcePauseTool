@@ -582,22 +582,8 @@ void ClientDLL::OnFrame()
 		else
 			++it;
 	}
-	
-	if (engineDLL.Demo_IsPlayingBack() && !engineDLL.Demo_IsPlaybackPaused())
-	{
-		auto tick = y_spt_pause_demo_on_tick.GetInt();
-		if (tick != 0)
-		{
-			if (tick < 0)
-				tick += engineDLL.Demo_GetTotalTicks();
 
-			if (tick == engineDLL.Demo_GetPlaybackTick())
-				EngineConCmd("demo_pause");
-		}
-	}
-
-	scripts::g_TASReader.OnAfterFrames();
-	scripts::g_Tester.OnAfterFrames();
+	AfterFramesSignal();
 }
 
 void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, int y, int w, int h)
@@ -841,8 +827,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 	}
 
 	EngineSetViewAngles(va);
-	scripts::g_Tester.DataIteration();
-	vgui_matsurfaceDLL.NewTick();
+	TickSignal();
 }
 
 void __fastcall ClientDLL::HOOKED_CreateMove_Func(void* thisptr, int edx, int sequence_number, float input_sample_frametime, bool active)

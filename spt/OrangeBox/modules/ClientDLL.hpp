@@ -9,6 +9,7 @@
 #include "..\..\SDK\igamemovement.h"
 #include "..\public\cdll_int.h"
 #include "..\..\strafestuff.hpp"
+#include "Signals/Signal.h"
 
 using std::uintptr_t;
 using std::size_t;
@@ -86,6 +87,9 @@ public:
 	Vector GetPlayerEyePos();
 	int GetPlayerFlags();
 	bool GetFlagsDucking();
+
+	Gallant::Signal0<void> AfterFramesSignal;
+	Gallant::Signal0<void> TickSignal;
 	bool renderingOverlay;
 	void* screenRect;
 	_GetClientModeNormal ORIG_GetClientModeNormal;

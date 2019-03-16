@@ -18,6 +18,7 @@ Release P2/
 *.suo
 *.user
 *.sln.docstates
+.Tests/config.ini
 
 # Build results
 
@@ -167,3 +168,4 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
+/Tests/config.ini
