@@ -22,6 +22,7 @@ namespace scripts
 
 	void Tester::LoadTest(const std::string& testName, bool generating, bool automatedTest)
 	{
+		this->automatedTest = automatedTest;
 		std::string folder(GetFolder(testName));
 		if (std::experimental::filesystem::is_directory(folder))
 		{
@@ -44,7 +45,7 @@ namespace scripts
 			}
 			
 			g_TASReader.ExecuteScript(testName);
-			lastTick = g_TASReader.GetCurrentScriptLength() - 1;
+			lastTick = g_TASReader.GetCurrentScriptLength();
 		}
 		catch(const std::exception& ex)
 		{
@@ -104,10 +105,15 @@ namespace scripts
 		try
 		{
 			if (runningTest)
+			{
 				TestIteration();
+				++dataTick;
+			}			
 			else if (generatingData)
+			{
 				GenerationIteration();
-			++dataTick;
+				++dataTick;
+			}
 		}
 		catch (const std::exception& ex)
 		{
@@ -115,6 +121,7 @@ namespace scripts
 			oss << "Error in test : " << ex.what();
 			PrintTestMessage(oss.str());
 			successfulTest = false;
+			++dataTick;
 		}
 	}
 
@@ -172,14 +179,14 @@ namespace scripts
 			WriteTestDataToFile(testItems, TestDataFile(currentTest));
 		}
 
-		++currentTestIndex;
-
 		if (successfulTest && runningTest)
 			PrintTestMessage("Test ran successfully");
 		else if (runningTest)
 			PrintTestMessage("Test was unsuccessful");
 		else
 			PrintTestMessage("Data automatically generated for test");
+
+		++currentTestIndex;
 
 		if (currentTestIndex >= testNames.size())
 		{
@@ -188,7 +195,7 @@ namespace scripts
 				std::ostringstream oss;
 
 				if (runningTest)
-					oss << successfulTest << " / " << testNames.size() << " tests ran successfully";
+					oss << successfulTests << " / " << testNames.size() << " tests ran successfully";
 				else
 					oss << "Data automatically generated for " << testNames.size() << " tests ran successfully";
 
@@ -263,26 +270,26 @@ namespace scripts
 		currentTestIndex = 0;
 		successfulTests = 0;
 	}
-	void Tester::PrintTestMessage(const std::string& msg)
+	void Tester::PrintTestMessage(std::string msg)
 	{
 		PrintTestMessage(msg.c_str());
 	}
-	void Tester::PrintTestMessage(const char * msg)
+	void Tester::PrintTestMessage(const char* msg)
 	{
 		std::string testName;
 
-		if (currentTestIndex >= 0)
+		if (currentTestIndex >= 0 && currentTestIndex < testNames.size())
 			testName = GetCurrentTestName();
 		else
 			testName = "";
 
 		if (automatedTest)
 		{
-			logFileStream << "[TEST] " << testName << ":" << msg << '\n';
+			logFileStream << "[TEST] " << testName << " : " << msg << '\n';
 		}
 		else
 		{
-			Msg("[TEST] %s:%s\n", testName.c_str(), msg);
+			Msg("[TEST] %s : %s\n", testName.c_str(), msg);
 		}
 	}
 	void Tester::OpenLogFile(const std::string& testFileName)
@@ -293,7 +300,7 @@ namespace scripts
 	{
 		logFileStream.close();
 	}
-	const std::string & Tester::GetCurrentTestName()
+	const std::string& Tester::GetCurrentTestName()
 	{
 		return testNames[currentTestIndex];
 	}

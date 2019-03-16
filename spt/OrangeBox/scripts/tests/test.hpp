@@ -52,7 +52,7 @@ namespace scripts
 		void ResetIteration();
 		void Reset();
 	private:
-		void PrintTestMessage(const std::string& msg);
+		void PrintTestMessage(std::string msg);
 		void PrintTestMessage(const char* msg);
 		void OpenLogFile(const std::string& testFileName);
 		void CloseLogFile();

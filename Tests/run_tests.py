@@ -60,7 +60,6 @@ class GameBuild:
         exec_path = os.path.join(self.path, self.executable)
         cmd = "%s -game \"%s\" -w 640 -h 480 -novid -console +volume 0 +plugin_load %s +tas_test_automated_validate \"test %s\"" % (exec_path, self.game, self.spt_name, self.output_filename)
         subprocess.run(cmd)
-        print(cmd)
 
     def set_path(self, path, executable, spt_path, spt_name):
         """Set path and some other info."""

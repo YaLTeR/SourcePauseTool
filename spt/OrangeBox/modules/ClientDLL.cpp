@@ -793,6 +793,18 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 				cantjump = true;
 			}
 
+			auto djt = (*reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offDuckJumpTime));
+			djt -= vars.Frametime * 1000;
+			djt = std::max(0.f, djt);
+			float flDuckMilliseconds = std::max(0.0f, 1000.f - djt);
+			float flDuckSeconds = flDuckMilliseconds * 0.001f;
+			if (flDuckSeconds > 0.2) {
+				djt = 0;
+			}
+			if (djt > 0) {
+				cantjump = true;
+			}
+
 			if (!cantjump && onground) {
 				if (tas_strafe_lgagst.GetBool()) {
 					LgagstJump(pl, vars, curState, onground, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW] * M_DEG2RAD, out, reduceWishspeed, btns, false);
