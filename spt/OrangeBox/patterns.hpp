@@ -113,13 +113,13 @@ namespace patterns
 			"4044-episodic",
 			"83 EC 10 56 8B F1 8B 4E 08 80 B9 ?? ?? ?? ?? ?? 0F 85 ?? ?? ?? ?? D9 05 ?? ?? ?? ?? D9 81",
 			"1910503",
-			"55 8B EC 83 EC 14 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5"/*,
+			"55 8B EC 83 EC 14 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5",
 			"6879",
 			"55 8B EC 83 EC 0C 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 07 32 C0 5E 8B E5 5D C3 53 BB",
 			"missinginfo1_4_7",
 			"55 8B EC 83 EC 3C 56 89 4D D8 8B 45 D8 8B 48 08 81 C1 ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B6 C8 85 C9",
 			"missinginfo1_6",
-			"55 8B EC 83 EC 18 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5"*/);
+			"55 8B EC 83 EC 18 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5");
 
 		PATTERNS(HudUpdate,
 			"5135",
@@ -234,7 +234,7 @@ namespace patterns
 			"bms",
 			"55 8B EC 83 EC 0C 56 8B F1 8B 46 04 80 B8 10 0A 00 00 00 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5 5D C3 E8 08 F9 FF FF 84 C0 75 F0",
 			"estranged",
-			"55 8B EC 83 EC ?? 56 8B F1 8B 4E 04 80 B9 44 0A 00 00 00 74 0E 8B ?? 08 83 ?? 28 02 32 C0 5E 8B E5 5D C3 F3 0F 10 89 B0 0D 00 00 0F 57 C0 0F 2E"/*,
+			"55 8B EC 83 EC ?? 56 8B F1 8B 4E 04 80 B9 44 0A 00 00 00 74 0E 8B ?? 08 83 ?? 28 02 32 C0 5E 8B E5 5D C3 F3 0F 10 89 B0 0D 00 00 0F 57 C0 0F 2E",
 			"2707",
 			"83 EC 10 53 56 8B F1 8B 4E 08 8A 81 ?? ?? ?? ?? 84 C0 74 0F 8B 76 04 83 4E ?? 02 5E 32 C0 5B 83 C4 10 C3 D9 81 30 0C 00 00 D8 1D",
 			"BMS-Retail",
@@ -252,7 +252,7 @@ namespace patterns
 			"missinginfo1_4_7",
 			"55 8B EC 83 EC 44 56 89 4D D0 8B 45 D0 8B 48 08 81 C1 ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B6 C8 85 C9",
 			"missinginfo1_6",
-			"55 8B EC 83 EC 1C 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5"*/);
+			"55 8B EC 83 EC 1C 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5");
 		PATTERNS(FinishGravity,
 			"bms",
 			"8B 51 04 F3 0F 10 82 7C 0D 00 00 0F 57 C9 0F 2E C1 9F F6 C4 44 7A 51 F3 0F 10 82 28 02 00 00 0F 2E C1 9F F6 C4 44",
@@ -269,9 +269,9 @@ namespace patterns
 			"6879",
 			"8B 51 04 F3 0F 10 8A ?? ?? ?? ?? 0F 57 C0 0F 2E C8 9F F6 C4 44 0F 8A ?? ?? ?? ?? F3 0F 10 8A",
 			"missinginfo1_4_7",
-			"55 8B EC 83 EC 0C 89 4D F8 8B 45 F8 8B 48 08 D9 05 ?? ?? ?? ?? D9 81 ?? ?? ?? ?? DA E9 DF E0 F6 C4 44"/*,
+			"55 8B EC 83 EC 0C 89 4D F8 8B 45 F8 8B 48 08 D9 05 ?? ?? ?? ?? D9 81 ?? ?? ?? ?? DA E9 DF E0 F6 C4 44",
 			"missinginfo1_6",
-			"8B 51 04 D9 82 ?? ?? ?? ?? D9 EE D9 C0 DD EA DF E0 DD D9 F6 C4 44 7A 3F D9 82 ?? ?? ?? ?? DA E9"*/);
+			"8B 51 04 D9 82 ?? ?? ?? ?? D9 EE D9 C0 DD EA DF E0 DD D9 F6 C4 44 7A 3F D9 82 ?? ?? ?? ?? DA E9");
 		PATTERNS(PlayerRunCommand,
 			"5135",
 			"56 8B 74 24 08 57 8B F9 33 C9 39 8F 18 0A 00 00 88 8F 74 0B 00 00 75 1B D9 46 0C D9 9F 08 0A 00 00 D9 46 10 D9 9F 0C 0A 00 00 D9 46 14 D9 9F 10",
@@ -288,7 +288,7 @@ namespace patterns
 			"estranged",
 			"55 8B EC 56 8B 75 08 57 8B F9 33 C0 88 87 B4 0B 00 00 39 87 58 0A 00 00 75 1B D9 46 0C D9 9F 48 0A 00 00 D9 46 10 D9 9F 4C 0A 00 00 D9 46 14 D9",
 			"estranged-second",
-			"55 8B EC 56 8B 75 08 57 8B F9 33 C0 88 87 B4 0B 00 00 39 87 58 0A 00 00 75 1B D9 46 0C D9 9F 48 0A 00 00 D9 46 10 D9 9F 4C 0A 00 00 D9 46 14 D9"/*,
+			"55 8B EC 56 8B 75 08 57 8B F9 33 C0 88 87 B4 0B 00 00 39 87 58 0A 00 00 75 1B D9 46 0C D9 9F 48 0A 00 00 D9 46 10 D9 9F 4C 0A 00 00 D9 46 14 D9",
 			"2707",
 			"8B 81 ?? ?? ?? ?? 8B 54 24 04 53 33 DB 3B C3 88 99 ?? ?? ?? ?? 75 1B 8B 42 0C 89 81",
 			"4044",
@@ -296,7 +296,7 @@ namespace patterns
 			"6879",
 			"55 8B EC 56 8B 75 08 57 8B F9 33 C0 88 87 ?? ?? ?? ?? 39 87 ?? ?? ?? ?? 75 1B D9 46 0C D9 9F",
 			"missinginfo1_6",
-			"55 8B EC 56 8B 75 08 57 8B F9 33 C9 88 8F ?? ?? ?? ?? 39 8F ?? ?? ?? ?? 75 1B D9 46 0C D9 9F"*/);
+			"55 8B EC 56 8B 75 08 57 8B F9 33 C9 88 8F ?? ?? ?? ?? 39 8F ?? ?? ?? ?? 75 1B D9 46 0C D9 9F");
 		PATTERNS(CheckStuck,
 			"5135",
 			"81 EC 80 00 00 00 56 8B F1 C7 44 24 04 FF FF FF FF E8 ?? ?? ?? ?? 8B 46 08 8B 16 8B 92 BC 00 00 00 8D 4C 24 30 51 05 98 00 00 00 6A 08 50 8D 44",
@@ -313,13 +313,13 @@ namespace patterns
 			"4044-episodic",
 			"81 EC ?? ?? ?? ?? 56 57 8B F1 C7 44 24 ?? ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 4E 04 8D 44 24 34 50 6A 08",
 			"2257546",
-			"55 8B EC 81 EC ?? ?? ?? ?? 56 8B F1 C7 45 ?? ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 46 08 8D 4D 80 8B 16"/*,
+			"55 8B EC 81 EC ?? ?? ?? ?? 56 8B F1 C7 45 ?? ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 46 08 8D 4D 80 8B 16",
 			"6879",
 			"55 8B EC 81 EC ?? ?? ?? ?? 53 56 57 8B F1 C7 45 ?? ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 46 08 8B 16 8B 92",
 			"missinginfo1_4_7",
 			"55 8B EC 81 EC ?? ?? ?? ?? 89 8D ?? ?? ?? ?? 8D 4D EC E8 ?? ?? ?? ?? 8D 4D 80 E8 ?? ?? ?? ?? 8D 8D",
 			"missinginfo1_6",
-			"55 8B EC 81 EC ?? ?? ?? ?? 56 8B F1 C7 45 ?? ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 46 08 8B 16 8B 92"*/);
+			"55 8B EC 81 EC ?? ?? ?? ?? 56 8B F1 C7 45 ?? ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 46 08 8B 16 8B 92");
 		PATTERNS(MiddleOfSlidingFunction,
 			"dmomm",
 			"8B 16 8B CE FF 92 ?? ?? ?? ?? 8B 08 89 4C 24 1C 8B 50 04 89 54 24 20 8B 40 08 8D 4C 24 10 51 8D 54 24 20")

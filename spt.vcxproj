@@ -973,6 +973,7 @@
     <ClInclude Include="SPTLib\IHookableNameFilterOrdered.hpp" />
     <ClInclude Include="sptlib\memutils.hpp" />
     <ClInclude Include="SPTLib\patterns.hpp" />
+    <ClInclude Include="SPTLib\patterns_macros.hpp" />
     <ClInclude Include="SPTLib\Windows\DetoursUtils.hpp" />
     <ClInclude Include="spt\utils\ent_utils.hpp" />
     <ClInclude Include="spt\utils\patterncontainer.hpp" />

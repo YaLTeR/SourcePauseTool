@@ -328,6 +328,9 @@
     <ClInclude Include="..\..\..\SourcePauseTool\spt\OrangeBox\module_hooks.hpp">
       <Filter>spt\OrangeBox</Filter>
     </ClInclude>
+    <ClInclude Include="SPTLib\patterns_macros.hpp">
+      <Filter>SPTLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">
