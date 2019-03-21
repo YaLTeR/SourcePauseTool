@@ -526,6 +526,7 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 		// We jumped.
 		if (_y_spt_autojump_ensure_legit.GetBool())
 		{
+			JumpSignal();
 			cantJumpNextTime = true; // Prevent consecutive jumps.
 		}
 

@@ -25,20 +25,34 @@ public:
 	virtual void Unhook();
 	virtual void Clear();
 
+	void Jump();
+	void OnGround(bool ground);
 	void NewTick();
 	void DrawHUD(vrect_t* screen);
+	void CalculateAbhVel();
 
 	_StartDrawing ORIG_StartDrawing;
 	_FinishDrawing ORIG_FinishDrawing;
 protected:
+	int displayHop;
+	float loss;
+	float percentage;
+
+	bool velNotCalced;
+	int lastHop;
+	float maxVel;
+
+	int sinceLanded;
 	PatternContainer patternContainer;
 	ConVar* cl_showpos;
 	ConVar* cl_showfps;
 	vgui::HFont font;
+	vgui::HFont hopsFont;
 
 	Vector currentVel;
 	Vector previousVel;
 
+	void DrawHopHud(vrect_t* screen, vgui::IScheme* scheme, IMatSystemSurface* surface);
 	void DrawTopHUD(vrect_t* screen, vgui::IScheme* scheme, IMatSystemSurface* surface);
 	void DrawFlagsHud(bool mutuallyExclusiveFlags, const wchar* hudName, int& vertIndex, int x, const wchar** nameArray, int count, IMatSystemSurface* surface, wchar* buffer, int bufferCount, int flags, int fontTall);
 	void DrawSingleFloat(int& vertIndex, const wchar* name, float f, int fontTall, int bufferCount, int x, IMatSystemSurface* surface, wchar* buffer);

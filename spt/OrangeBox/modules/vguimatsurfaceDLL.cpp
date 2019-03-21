@@ -21,6 +21,9 @@ ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement
 ConVar y_spt_hud_ag_sg_tester("y_spt_hud_ag_sg_tester", "0", FCVAR_CHEAT, "Tests if angle glitch will save glitch you.\n");
 ConVar y_spt_hud_ent_info("y_spt_hud_ent_info", "", FCVAR_CHEAT, "Display entity info on HUD. Format is \"[ent index],[prop regex],[prop regex],...,[prop regex];[ent index],...,[prop regex]\".\n");
 ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT, "When set to 1, displays SPT HUD on the left.\n");
+ConVar y_spt_hud_hops("y_spt_hud_hops", "0", FCVAR_CHEAT, "When set to 1, displays the hop practice HUD.");
+ConVar y_spt_hud_hops_x("y_spt_hud_hops_x", "-85", FCVAR_CHEAT, "Hops HUD x offset");
+ConVar y_spt_hud_hops_y("y_spt_hud_hops_y", "100", FCVAR_CHEAT, "Hops HUD y offset");
 
 #define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::vguimatsurface::##name);
 #define GET_FUTURE(future_name) \
@@ -45,6 +48,7 @@ void VGui_MatSurfaceDLL::Hook(const std::wstring& moduleName, void* moduleHandle
 	cl_showfps = icvar->FindVar("cl_showfps");
 	auto scheme = vgui::GetScheme();
 	font = scheme->GetFont("DefaultFixedOutline", false);
+	hopsFont = scheme->GetFont("Trebuchet24", false);
 
 	patternContainer.Init(moduleName);
 
@@ -66,6 +70,52 @@ void VGui_MatSurfaceDLL::Unhook()
 
 void VGui_MatSurfaceDLL::Clear()
 {
+	sinceLanded = 0;
+	displayHop = 0;
+	loss = 0;
+	percentage = 0;
+}
+
+void VGui_MatSurfaceDLL::Jump()
+{
+	if(sinceLanded == 0)
+		CalculateAbhVel();
+
+	velNotCalced = true;
+	lastHop = sinceLanded;
+}
+
+void VGui_MatSurfaceDLL::OnGround(bool onground)
+{
+	if (!onground)
+	{
+		sinceLanded = 0;
+
+		if (velNotCalced)
+		{
+			velNotCalced = false;
+
+			// Don't count very delayed hops
+			if (lastHop > 15)
+				return;
+
+			auto vel = clientDLL.GetPlayerVelocity().Length2D();
+			loss = maxVel - vel;
+			percentage = (vel / maxVel) * 100;
+			displayHop = lastHop - 1;
+			displayHop = max(0, displayHop);			
+		}
+
+	}
+	else
+	{
+		if (sinceLanded == 0)
+		{
+			CalculateAbhVel();
+		}
+		++sinceLanded;
+	}
+		
 }
 
 void VGui_MatSurfaceDLL::NewTick()
@@ -84,6 +134,11 @@ void VGui_MatSurfaceDLL::DrawHUD(vrect_t* screen)
 
 	try
 	{
+		if (y_spt_hud_hops.GetBool())
+		{
+			DrawHopHud(screen, scheme, surface);
+		}
+
 		if (y_spt_hud_velocity.GetBool() || 
 			y_spt_hud_flags.GetBool() || 
 			y_spt_hud_moveflags.GetBool() ||
@@ -106,6 +161,19 @@ void VGui_MatSurfaceDLL::DrawHUD(vrect_t* screen)
 	}
 
 	ORIG_FinishDrawing();
+}
+
+void VGui_MatSurfaceDLL::CalculateAbhVel()
+{
+	auto vel = clientDLL.GetPlayerVelocity().Length2D();
+	auto ducked = clientDLL.GetFlagsDucking();
+	float jspeed;
+	if (ducked)
+		jspeed = 165.0f;
+	else
+		jspeed = 225.0f;
+	maxVel = vel + (vel - jspeed);
+	maxVel = max(maxVel, jspeed);
 }
 
 const wchar* FLAGS[] = { L"FL_ONGROUND", L"FL_DUCKING", L"FL_WATERJUMP", L"FL_ONTRAIN", L"FL_INRAIN", L"FL_FROZEN", L"FL_ATCONTROLS", L"FL_CLIENT", L"FL_FAKECLIENT"
@@ -153,6 +221,34 @@ static const char PROP_SEPARATOR = ',';
 #define DRAW_FLAGS(name, namesArray, flags, mutuallyExclusive) \
 { \
 	DrawFlagsHud(mutuallyExclusive, name, vertIndex, x, namesArray, ARRAYSIZE(namesArray), surface, buffer, BUFFER_SIZE, flags, fontTall); \
+}
+
+void VGui_MatSurfaceDLL::DrawHopHud(vrect_t * screen, vgui::IScheme * scheme, IMatSystemSurface * surface)
+{
+#ifndef OE
+	surface->DrawSetTextFont(hopsFont);
+	surface->DrawSetTextColor(255, 255, 255, 255);
+	surface->DrawSetTexture(0);
+	int fontTall = surface->GetFontTall(hopsFont);
+
+	const int MARGIN = 2;
+	const int BUFFER_SIZE = 256;
+	wchar_t buffer[BUFFER_SIZE];
+
+	int width = y_spt_hud_decimals.GetInt();
+	swprintf_s(buffer, BUFFER_SIZE, L"Timing: %d", displayHop);
+	surface->DrawSetTextPos(screen->width / 2 + y_spt_hud_hops_x.GetFloat(), screen->height / 2 + y_spt_hud_hops_y.GetFloat());
+	surface->DrawPrintText(buffer, wcslen(buffer));
+
+	swprintf_s(buffer, BUFFER_SIZE, L"Speed loss: %.*f", width, loss);
+	surface->DrawSetTextPos(screen->width / 2 + y_spt_hud_hops_x.GetFloat(), screen->height / 2 + y_spt_hud_hops_y.GetFloat() + (fontTall + MARGIN));
+	surface->DrawPrintText(buffer, wcslen(buffer));
+
+	swprintf_s(buffer, BUFFER_SIZE, L"Percentage: %.*f", width, percentage);
+	surface->DrawSetTextPos(screen->width / 2 + y_spt_hud_hops_x.GetFloat(), screen->height / 2 + y_spt_hud_hops_y.GetFloat() + (fontTall + MARGIN) * 2);
+	surface->DrawPrintText(buffer, wcslen(buffer));
+
+#endif
 }
 
 void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t * screen, vgui::IScheme * scheme, IMatSystemSurface * surface)

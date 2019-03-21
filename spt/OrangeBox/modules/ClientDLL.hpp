@@ -90,6 +90,7 @@ public:
 
 	Gallant::Signal0<void> AfterFramesSignal;
 	Gallant::Signal0<void> TickSignal;
+	Gallant::Signal1<bool> OngroundSignal;
 	bool renderingOverlay;
 	void* screenRect;
 	_GetClientModeNormal ORIG_GetClientModeNormal;
@@ -137,6 +138,7 @@ protected:
 	bool cantJumpNextTime;
 
 	void OnFrame();
+	bool IsOnGround();
 
 	int afterframesDelay;
 	PatternContainer patternContainer;

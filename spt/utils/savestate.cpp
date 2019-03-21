@@ -10,7 +10,6 @@
 
 namespace utils
 {
-	/*
 	const int INDEX_MASK = MAX_EDICTS - 1;
 	static IServerGameDLL* g_serverGameDll;
 	static std::map<std::string, datamap_t*> classToDatamap;
@@ -18,6 +17,14 @@ namespace utils
 	void SetGameDLL(IServerGameDLL* serverDll)
 	{
 		g_serverGameDll = serverDll;
+	}
+
+	ServerClass* GetServerClass(edict_t* e)
+	{
+		if (!e || !e->GetNetworkable())
+			return nullptr;
+
+		return e->GetNetworkable()->GetServerClass();
 	}
 
 	edict_t* FindEntity(void* ent)
@@ -55,7 +62,7 @@ namespace utils
 	{
 		std::string name(e->GetClassName());
 
-		if (classToDatamap.find(name) != classToDatamap.end() && name != "env_soundscape" && name != "info_particle_system" && name != "worldspawn")
+		if (classToDatamap.find(name) != classToDatamap.end())
 		{
 			return classToDatamap[name];
 		}
@@ -97,13 +104,13 @@ namespace utils
 			case FIELD_MATRIX3X4_WORLDSPACE:
 			case FIELD_INTERVAL:
 			case FIELD_VECTOR2D:
-				if (t.fieldSizeInBytes <= MAX_BYTES_IN_DATUM && t.fieldSizeInBytes > 0)
+				if (t.fieldSizeInBytes > 0)
 				{
 					item.CopyData(value, t.fieldOffset[0], t.fieldSizeInBytes);
 					entry.data.push_back(item);
 				}
 				break;
-			//case FIELD_STRING:
+			case FIELD_STRING:
 			case FIELD_MODELNAME:
 			case FIELD_SOUNDNAME:
 				if (stringVal.ToCStr() && *stringVal.ToCStr())
@@ -125,16 +132,14 @@ namespace utils
 		SaveStateEntry entry;
 		std::string name(edict->GetClassName());
 
-		if (classToDatamap.find(name) != classToDatamap.end())
+		auto map = GetDatamap(edict);
+		if (map)
 		{
-			auto map = classToDatamap[name];
-			if (map)
-			{
-				GetFields(map, entry, edict);
-				entry.className = name;
-				entry.stateFlags = edict->m_fStateFlags;
-				entry.index = edict->GetUnknown()->GetRefEHandle().GetEntryIndex();
-			}
+			Msg("index %d : class %s\n", edict->GetIServerEntity()->GetRefEHandle().GetEntryIndex(), map->dataClassName);
+			GetFields(map, entry, edict);
+			entry.className = name;
+			entry.stateFlags = edict->m_fStateFlags;
+			entry.index = edict->GetUnknown()->GetRefEHandle().GetEntryIndex();
 		}
 
 		return entry;
@@ -249,7 +254,7 @@ namespace utils
 		for (int i = 0; i < MAX_EDICTS; ++i)
 		{
 			auto edict = engine->PEntityOfEntIndex(i);
-			if (edict && GetDatamap(edict))
+			if (edict)
 			{
 				ss.entries.push_back(GetSaveStateFromEdict(edict));
 			}
@@ -284,9 +289,11 @@ namespace utils
 		for (int i = 0; i < MAX_EDICTS; ++i)
 		{
 			auto e = engine->PEntityOfEntIndex(i);
-			if (e && !whiteSpacesOnly(e->GetClassName()))
+			auto c = GetDatamap(e);
+
+			if (c)
 			{
-				Msg("%d : %s : %d\n", i, e->GetClassName(), GetDatamap(e) != nullptr);
+				Msg("%d : %s : %d\n", i, e->GetClassName(), c->dataClassName);
 			}
 		}
 	}
@@ -295,7 +302,7 @@ namespace utils
 	{
 		if (!serverDLL.ORIG_CreateEntityByName)
 		{
-			Msg("CreateEntityByName function not hooked! Unable to load savestate.");
+			Msg("CreateEntityByName function not hooked! Unable to load savestate.\n");
 		}
 
 		auto engine = GetEngine();
@@ -313,7 +320,7 @@ namespace utils
 				CBaseEntity* ent = serverDLL.ORIG_CreateEntityByName(entry.className.c_str(), entry.index);
 				if (!ent)
 				{
-					Msg("Loading savestate failed! Unable to create entity.");
+					Msg("Loading savestate failed! Unable to create entity.\n");
 					return; // This will probably crash the game so an instant disconnect would be a good idea
 				}
 
@@ -357,5 +364,5 @@ namespace utils
 	{
 		Reset();
 		CopyData(rhs.data, rhs.offset, rhs.count);
-	}*/
+	}
 }

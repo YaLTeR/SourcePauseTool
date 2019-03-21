@@ -13,6 +13,8 @@ struct MovementVars {
 	float Maxspeed;
 	float Stopspeed;
 	float WishspeedCap;
+	bool OnGround;
+	bool ReduceWishspeed;
 };
 
 struct PlayerData {
@@ -110,10 +112,10 @@ double YawStrafeMaxAccel(PlayerData& player, const MovementVars& vars, bool ongr
 double YawStrafeMaxAngle(PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons, Button& usedButton,
 	double vel_yaw, double yaw);
 
-void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool onground, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed, bool lockCamera);
+void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool lockCamera);
 
-bool Strafe(PlayerData& player, const MovementVars& vars, bool onground, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons);
+bool Strafe(PlayerData& player, const MovementVars& vars, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, const StrafeButtons& strafeButtons, bool useGivenButtons);
 
 void Friction(PlayerData& player, bool onground, const MovementVars& vars);
 
-void LgagstJump(const PlayerData& player, const MovementVars& vars, const CurrentState& curState, bool onground, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool reduceWishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons);
+void LgagstJump(const PlayerData& player, const MovementVars& vars, const CurrentState& curState, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, const StrafeButtons& strafeButtons, bool useGivenButtons);

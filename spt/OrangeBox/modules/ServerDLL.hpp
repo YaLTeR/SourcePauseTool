@@ -81,6 +81,7 @@ public:
 	_CRestore__DoReadAll ORIG_CRestore__DoReadAll;
 	_DispatchSpawn ORIG_DispatchSpawn;
 	_AllocPooledString ORIG_AllocPooledString;
+	Gallant::Signal0<void> JumpSignal;
 
 protected:
 	PatternContainer patternContainer;

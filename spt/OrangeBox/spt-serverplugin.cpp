@@ -326,13 +326,12 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	}
 	else
 		DevWarning("Unable to retrieve the client DLL interface.\n");
-	/*
 	if (gameDLL)
 	{
 		utils::SetGameDLL(gameDLL);
 	}
 	else
-		DevWarning("Unable to retrieve the server game DLL interface\n");*/
+		DevWarning("Unable to retrieve the server game DLL interface\n");
 
 
 	EngineConCmd = CallServerCommand;
@@ -656,7 +655,7 @@ CON_COMMAND(y_spt_print_ent_props, "Prints all props for a given entity index.")
 	}
 }
 
-/*
+
 CON_COMMAND(y_spt_print_server_ents, "Prints all server entities.")
 {
 	utils::PrintEntities();
@@ -670,7 +669,7 @@ CON_COMMAND(y_spt_save_state, "Test")
 CON_COMMAND(y_spt_load_state, "Test")
 {
 	utils::LoadSaveState();
-}*/
+}
 
 
 #if defined( OE )
@@ -861,6 +860,11 @@ CON_COMMAND(tas_script_result_success, "Signals a successful result in a variabl
 CON_COMMAND(tas_script_result_fail, "Signals an unsuccessful result in a variable search.")
 {
 	scripts::g_TASReader.SearchResult(scripts::SearchResult::Fail);
+}
+
+CON_COMMAND(tas_script_result_stop, "Signals a stop in a variable search.")
+{
+	scripts::g_TASReader.SearchResult(scripts::SearchResult::NoSearch);
 }
 
 CON_COMMAND(_y_spt_findangle, "Finds the yaw/pitch angle required to look at the given position from player's current position.")

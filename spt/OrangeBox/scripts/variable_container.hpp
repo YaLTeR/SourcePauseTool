@@ -38,6 +38,7 @@ namespace scripts
 	{
 	public:	
 		std::string lastSuccessPrint;
+		int lastSuccessTick;
 		std::string iterationPrint;
 		SearchType searchType;
 		std::map<std::string, ScriptVariable> variableMap;
@@ -49,6 +50,7 @@ namespace scripts
 		void SetResult(SearchResult result);
 		void PrintState();
 	private:
+		bool Successful(SearchResult result);
 		SearchResult lastResult;
 	};
 }

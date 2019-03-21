@@ -473,6 +473,8 @@ MovementVars ClientDLL::GetMovementVars()
 		onground = true;
 
 	auto vars = MovementVars();
+	vars.OnGround = onground;
+	vars.ReduceWishspeed = onground && GetFlagsDucking();
 	vars.Accelerate = _sv_accelerate->GetFloat();
 
 	if (tas_force_airaccelerate.GetString()[0] != '\0')
@@ -584,6 +586,12 @@ void ClientDLL::OnFrame()
 	}
 
 	AfterFramesSignal();
+}
+
+bool ClientDLL::IsOnGround()
+{
+	auto player = ORIG_GetLocalPlayer();
+	return (ORIG_GetGroundEntity(player, 0) != NULL); // TODO: This should really be a proper check.
 }
 
 void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, int y, int w, int h)
@@ -756,11 +764,6 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 	if (tasAddressesWereFound && tas_strafe.GetBool())
 	{
 		auto player = ORIG_GetLocalPlayer();
-		auto onground = (ORIG_GetGroundEntity(player, 0) != NULL); // TODO: This should really be a proper check.
-
-		if (tas_force_onground.GetBool())
-			onground = true;
-
 		auto vars = GetMovementVars();
 
 		// Lgagst requires more prediction that is done here for correct operation.
@@ -775,7 +778,6 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		//DevMsg("[Strafing] velocity pre-friction: %.8f %.8f %.8f\n", pl.Velocity.x, pl.Velocity.y, pl.Velocity.z);
 		//EngineConCmd("getpos");
 
-		bool reduceWishspeed = onground && ((*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(player) + offFlags)) & FL_DUCKING);
 		bool jumped = false;
 		const int IN_JUMP = (1 << 1);
 
@@ -805,28 +807,28 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 				cantjump = true;
 			}
 
-			if (!cantjump && onground) {
+			if (!cantjump && vars.OnGround) {
 				if (tas_strafe_lgagst.GetBool()) {
-					LgagstJump(pl, vars, curState, onground, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW] * M_DEG2RAD, out, reduceWishspeed, btns, false);
+					LgagstJump(pl, vars, curState, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW] * M_DEG2RAD, out, btns, false);
 					if (out.Jump) {
-						onground = false;
+						vars.OnGround = false;
 						jumped = true;
 					}
 				}
 
 				if (ORIG_GetButtonBits(thisptr, 0, 0) & IN_JUMP) {
-					onground = false;
+					vars.OnGround = false;
 					jumped = true;
 				}
 			}
 		}
 
-		Friction(pl, onground, vars);
+		Friction(pl, vars.OnGround, vars);
 
 		if (tas_strafe_vectorial.GetBool()) // Can do vectorial strafing even with locked camera, provided we are not jumping
-			StrafeVectorial(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, yawChanged);
+			StrafeVectorial(pl, vars, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, yawChanged);
 		else if(!yawChanged) // not changing yaw, can do regular strafe
-			Strafe(pl, vars, onground, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, reduceWishspeed, btns, usingButtons);
+			Strafe(pl, vars, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, btns, usingButtons);
 
 		// This bool is set if strafing should occur
 		if (out.Processed)
@@ -839,6 +841,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 	}
 
 	EngineSetViewAngles(va);
+	OngroundSignal(IsOnGround());
 	TickSignal();
 }
 

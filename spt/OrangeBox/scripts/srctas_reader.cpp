@@ -458,6 +458,10 @@ namespace scripts
 			searchType = SearchType::Highest;
 		else if (value == "random")
 			searchType = SearchType::Random;
+		else if (value == "randomlow")
+			searchType = SearchType::RandomLowest;
+		else if (value == "randomhigh")
+			searchType = SearchType::RandomHighest;
 		else
 			throw std::exception("Search type was invalid");
 	}
