@@ -7,9 +7,8 @@
 #include "vguimatsurface\imatsystemsurface.h"
 #include "vgui\ischeme.h"
 #include "convar.h"
-#ifdef OE
-#include "vector.h"
-#endif
+
+#ifndef OE
 
 using std::uintptr_t;
 using std::size_t;
@@ -60,3 +59,5 @@ protected:
 	void DrawTripleFloat(int& vertIndex, const wchar* name, float f1, float f2, float f3, int fontTall, int bufferCount, int x, IMatSystemSurface* surface, wchar* buffer);
 	void DrawSingleString(int & vertIndex, const wchar* str, int fontTall, int bufferCount, int x, IMatSystemSurface * surface, wchar * buffer);
 };
+
+#endif

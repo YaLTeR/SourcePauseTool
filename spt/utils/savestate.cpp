@@ -5,8 +5,9 @@
 #include "..\OrangeBox\modules\ServerDLL.hpp"
 #include "edict.h"
 #include "string_parsing.hpp"
-#include "gamestringpool.h"
 #include "server_class.h"
+
+#ifndef OE
 
 namespace utils
 {
@@ -147,14 +148,14 @@ namespace utils
 
 	void LoadDataFromSaveState(void* ent, const SaveStateEntry& entry, edict_t* edict)
 	{
-		for (int i = 0; i < entry.data.size(); ++i)
+		for (size_t i = 0; i < entry.data.size(); ++i)
 		{
 			auto& item = entry.data[i];
 			void* value = reinterpret_cast<void*>((uintptr_t)ent + item.offset);
 			memcpy(value, item.data, item.count);
 		}
 
-		for (int i = 0; i < entry.stringData.size(); ++i)
+		for (size_t i = 0; i < entry.stringData.size(); ++i)
 		{
 			auto& item = entry.stringData[i];
 			string_t result = serverDLL.ORIG_AllocPooledString(item.data, 0);
@@ -229,13 +230,13 @@ namespace utils
 		std::map<int, int> indexToNewEhandleMap;
 		std::vector<edict_t*> edicts;
 
-		for(int i=0; i < ss.entries.size(); ++i)
+		for(size_t i=0; i < ss.entries.size(); ++i)
 		{
 			auto& entry = ss.entries[i];
 			SpawnEntityWithEntry(entry, indexToNewEhandleMap, edicts);
 		}
 
-		for (int i = 0; i < ss.entries.size(); ++i)
+		for (size_t i = 0; i < ss.entries.size(); ++i)
 		{
 			auto& entry = ss.entries[i];
 			auto edict = edicts[i];
@@ -366,3 +367,5 @@ namespace utils
 		CopyData(rhs.data, rhs.offset, rhs.count);
 	}
 }
+
+#endif

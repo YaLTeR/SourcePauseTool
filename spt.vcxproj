@@ -187,7 +187,7 @@
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>Detours\lib.X86;..\..\lib\common;..\..\lib\public;SPTLib\Windows\minhook\build\VC14\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>Detours\lib.X86;..\..\lib\common;..\..\lib\public;SPTLib\Windows\minhook\build\VC15\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -257,7 +257,7 @@
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>Detours\lib.X86;..\..\lib\common;..\..\lib\public;SPTLib\Windows\minhook\build\VC14\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>Detours\lib.X86;..\..\lib\common;..\..\lib\public;SPTLib\Windows\minhook\build\VC15\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -328,7 +328,7 @@
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>Detours\lib.X86;..\..\lib\common;..\..\lib\public;SPTLib\Windows\minhook\build\VC14\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>Detours\lib.X86;..\..\lib\common;..\..\lib\public;SPTLib\Windows\minhook\build\VC15\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -403,7 +403,7 @@
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>Detours\lib.X86;..\..\lib\common;..\..\lib\public;SPTLib\Windows\minhook\build\VC14\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>Detours\lib.X86;..\..\lib\common;..\..\lib\public;SPTLib\Windows\minhook\build\VC15\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -479,7 +479,7 @@
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>Detours\lib.X86;..\..\lib\common;..\..\lib\public;SPTLib\Windows\minhook\build\VC14\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>Detours\lib.X86;..\..\lib\common;..\..\lib\public;SPTLib\Windows\minhook\build\VC15\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -555,7 +555,7 @@
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>Detours\lib.X86;..\..\lib\common;..\..\lib\public;SPTLib\Windows\minhook\build\VC14\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>Detours\lib.X86;..\..\lib\common;..\..\lib\public;SPTLib\Windows\minhook\build\VC15\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -586,15 +586,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\SourcePauseTool\spt\OrangeBox\module_hooks.cpp" />
-    <ClCompile Include="..\..\public\vgui_controls\vgui_controls.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="sptlib\Hooks.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">sptlib-stdafx.hpp</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">sptlib-stdafx.hpp</PrecompiledHeaderFile>
@@ -745,6 +736,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="spt\OrangeBox\module_hooks.cpp" />
     <ClCompile Include="spt\utils\ent_utils.cpp" />
     <ClCompile Include="spt\utils\patterncontainer.cpp" />
     <ClCompile Include="sptlib\sptlib.cpp">
@@ -943,7 +935,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\SourcePauseTool\Signals\Delegate.h" />
     <ClInclude Include="..\..\..\SourcePauseTool\Signals\Signal.h" />
-    <ClInclude Include="..\..\..\SourcePauseTool\spt\OrangeBox\module_hooks.hpp" />
     <ClInclude Include="..\..\public\tier0\basetypes.h" />
     <ClInclude Include="..\..\public\Color.h" />
     <ClInclude Include="..\..\public\tier0\dbg.h" />
@@ -975,6 +966,7 @@
     <ClInclude Include="SPTLib\patterns.hpp" />
     <ClInclude Include="SPTLib\patterns_macros.hpp" />
     <ClInclude Include="SPTLib\Windows\DetoursUtils.hpp" />
+    <ClInclude Include="spt\OrangeBox\module_hooks.hpp" />
     <ClInclude Include="spt\utils\ent_utils.hpp" />
     <ClInclude Include="spt\utils\patterncontainer.hpp" />
     <ClInclude Include="sptlib\sptlib.hpp" />

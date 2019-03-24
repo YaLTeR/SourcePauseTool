@@ -114,8 +114,3 @@ float OverlayRenderer::getFOV()
 	return fov;
 }
 #endif // SSDK2007
-
-bool serverActive()
-{
-	return GetEngine()->PEntityOfEntIndex(0);
-}

@@ -6,4 +6,6 @@
 EngineDLL engineDLL;
 ClientDLL clientDLL;
 ServerDLL serverDLL;
+#ifndef OE
 VGui_MatSurfaceDLL vgui_matsurfaceDLL;
+#endif

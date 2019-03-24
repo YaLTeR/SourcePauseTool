@@ -1,5 +1,7 @@
 #pragma once
 
+
+
 #include "icliententitylist.h"
 #include "icliententity.h"
 #include "engine\ivmodelinfo.h"
@@ -7,6 +9,7 @@
 
 namespace utils
 {
+#ifndef OE
 	void SetEntityList(IClientEntityList* list);
 	void SetModelInfo(IVModelInfo* modelInfo);
 	void SetClientDLL(IBaseClientDLL* interf);
@@ -21,5 +24,8 @@ namespace utils
 	Vector GetPlayerEyePosition();
 	QAngle GetPlayerEyeAngles();
 	IClientEntity* FindLinkedPortal(IClientEntity* ent);
-	int FillInfoArray(std::string argString, wchar* arr, int maxEntries, int bufferSize, char sep, char entSep);
+	int FillInfoArray(std::string argString, wchar* arr, int maxEntries, int bufferSize, char sep, char entSep); 
+#endif
+	bool serverActive();
 }
+

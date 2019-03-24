@@ -9,6 +9,7 @@
 #include "..\patterns.hpp"
 #include "..\overlay\overlays.hpp"
 #include "..\..\utils\savestate.hpp"
+#include "..\..\utils\ent_utils.hpp"
 
 using std::uintptr_t;
 using std::size_t;
@@ -687,7 +688,7 @@ void ServerDLL::HOOKED_MiddleOfSlidingFunction_Func()
 
 int ServerDLL::GetPlayerPhysicsFlags() const
 {
-	if (!serverActive())
+	if (!utils::serverActive())
 		return -1;
 	else 
 		return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_afPhysicsFlags));
@@ -695,7 +696,7 @@ int ServerDLL::GetPlayerPhysicsFlags() const
 
 int ServerDLL::GetPlayerMoveType() const
 {
-	if (!serverActive())
+	if (!utils::serverActive())
 		return -1;
 	else 
 		return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_moveType)) & 0xF;
@@ -703,7 +704,7 @@ int ServerDLL::GetPlayerMoveType() const
 
 int ServerDLL::GetPlayerMoveCollide() const
 {
-	if (!serverActive())
+	if (!utils::serverActive())
 		return -1;
 	else
 		return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_moveCollide)) & 0x7;
@@ -711,7 +712,7 @@ int ServerDLL::GetPlayerMoveCollide() const
 
 int ServerDLL::GetPlayerCollisionGroup() const
 {
-	if (!serverActive())
+	if (!utils::serverActive())
 		return -1;
 	else
 		return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_collisionGroup));
@@ -719,7 +720,7 @@ int ServerDLL::GetPlayerCollisionGroup() const
 
 int ServerDLL::GetEnviromentPortalHandle() const
 {
-	if (!serverActive())
+	if (!utils::serverActive())
 		return -1;
 	else
 	{

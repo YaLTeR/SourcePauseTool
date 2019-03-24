@@ -94,7 +94,6 @@
     <ClCompile Include="spt\OrangeBox\scripts\tests\tracker.cpp">
       <Filter>spt\OrangeBox\scripts\tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\public\vgui_controls\vgui_controls.cpp" />
     <ClCompile Include="spt\OrangeBox\modules\vguimatsurfaceDLL.cpp">
       <Filter>spt\OrangeBox\modules</Filter>
     </ClCompile>
@@ -122,7 +121,7 @@
     <ClCompile Include="spt\utils\savestate.cpp">
       <Filter>spt\utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SourcePauseTool\spt\OrangeBox\module_hooks.cpp">
+    <ClCompile Include="spt\OrangeBox\module_hooks.cpp">
       <Filter>spt\OrangeBox</Filter>
     </ClCompile>
   </ItemGroup>
@@ -325,11 +324,11 @@
     <ClInclude Include="..\..\..\SourcePauseTool\Signals\Signal.h">
       <Filter>Signals</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SourcePauseTool\spt\OrangeBox\module_hooks.hpp">
-      <Filter>spt\OrangeBox</Filter>
-    </ClInclude>
     <ClInclude Include="SPTLib\patterns_macros.hpp">
       <Filter>SPTLib</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\module_hooks.hpp">
+      <Filter>spt\OrangeBox</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -16,6 +16,8 @@
 #include "..\overlay\portal_camera.hpp"
 #include "..\..\utils\ent_utils.hpp"
 
+#ifndef OE
+
 const int INDEX_MASK = MAX_EDICTS - 1;
 ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement vars HUD.\n"); // Putting this in cvars.cpp crashes the game xdddd
 ConVar y_spt_hud_ag_sg_tester("y_spt_hud_ag_sg_tester", "0", FCVAR_CHEAT, "Tests if angle glitch will save glitch you.\n");
@@ -309,11 +311,13 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t * screen, vgui::IScheme * scheme, IM
 		DRAW();
 	}
 
+#if SSDK2007
 	if (y_spt_hud_portal_bubble.GetBool())
 	{
 		int in_bubble = GetEnviromentPortal() != NULL;
 		DRAW_INT(L"portal bubble", in_bubble);
 	}
+#endif
 
 	if (y_spt_hud_flags.GetBool())
 	{
@@ -339,7 +343,7 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t * screen, vgui::IScheme * scheme, IM
 		DRAW_FLAGS(L"Move collide", MOVECOLLIDE_FLAGS, flags, true);
 	}
 
-	if (y_spt_hud_vars.GetBool() && serverActive())
+	if (y_spt_hud_vars.GetBool() && utils::serverActive())
 	{
 		auto vars = clientDLL.GetMovementVars();
 		DRAW_FLOAT(L"accelerate", vars.Accelerate);
@@ -352,7 +356,8 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t * screen, vgui::IScheme * scheme, IM
 		DRAW_FLOAT(L"wishspeed cap", vars.WishspeedCap);
 	}
 
-	if (y_spt_hud_ag_sg_tester.GetBool() && serverActive())
+#ifdef SSDK2007
+	if (y_spt_hud_ag_sg_tester.GetBool() && utils::serverActive())
 	{
 		Vector v = clientDLL.GetPlayerEyePos();
 		QAngle q;
@@ -360,6 +365,7 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t * screen, vgui::IScheme * scheme, IM
 		swprintf_s(buffer, BUFFER_SIZE, L"ag sg: %s", result.c_str());
 		DRAW();
 	}
+#endif
 
 #endif
 }
@@ -423,3 +429,4 @@ void VGui_MatSurfaceDLL::DrawSingleString(int & vertIndex, const wchar* str, int
 	DRAW();
 }
 
+#endif

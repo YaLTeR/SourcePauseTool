@@ -300,6 +300,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		DevWarning("SPT: Failed to get the IUniformRandomStream interface.\n");
 	}
 
+#ifndef OE
 	auto clientFactory = Sys_GetFactory("client");
 	IClientEntityList* entList = (IClientEntityList*)clientFactory(VCLIENTENTITYLIST_INTERFACE_VERSION, NULL);
 	IVModelInfo* modelInfo = (IVModelInfo*)interfaceFactory(VMODELINFO_SERVER_INTERFACE_VERSION, NULL);
@@ -326,12 +327,15 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	}
 	else
 		DevWarning("Unable to retrieve the client DLL interface.\n");
+
+
 	if (gameDLL)
 	{
 		utils::SetGameDLL(gameDLL);
 	}
 	else
 		DevWarning("Unable to retrieve the server game DLL interface\n");
+#endif
 
 
 	EngineConCmd = CallServerCommand;
@@ -346,7 +350,9 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	Hooks::AddToHookedModules(&engineDLL);
 	Hooks::AddToHookedModules(&clientDLL);
 	Hooks::AddToHookedModules(&serverDLL);
+#ifndef OE
 	Hooks::AddToHookedModules(&vgui_matsurfaceDLL);
+#endif
 	Hooks::Init(true);
 	modulehooks::ConnectSignals();
 
@@ -630,6 +636,8 @@ CON_COMMAND(y_spt_canjb, "Tests if player can jumpbug on a given height, with th
 	TestCanJb(height);
 }
 
+#ifndef OE
+
 CON_COMMAND(y_spt_print_ents, "Prints all client entity indexes and their corresponding classes.")
 {
 	utils::PrintAllClientEntities();
@@ -639,6 +647,10 @@ CON_COMMAND(y_spt_print_portals, "Prints all portal indexes, their position and 
 {
 	utils::PrintAllPortals();
 }
+
+#endif
+
+#ifndef OE
 
 CON_COMMAND(y_spt_print_ent_props, "Prints all props for a given entity index.")
 {
@@ -655,7 +667,9 @@ CON_COMMAND(y_spt_print_ent_props, "Prints all props for a given entity index.")
 	}
 }
 
+#endif
 
+#ifndef OE
 CON_COMMAND(y_spt_print_server_ents, "Prints all server entities.")
 {
 	utils::PrintEntities();
@@ -670,6 +684,7 @@ CON_COMMAND(y_spt_load_state, "Test")
 {
 	utils::LoadSaveState();
 }
+#endif
 
 
 #if defined( OE )

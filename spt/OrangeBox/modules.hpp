@@ -8,4 +8,6 @@
 extern EngineDLL engineDLL;
 extern ClientDLL clientDLL;
 extern ServerDLL serverDLL;
+#ifndef OE
 extern VGui_MatSurfaceDLL vgui_matsurfaceDLL;
+#endif

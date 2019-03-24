@@ -10,6 +10,8 @@
 #include "mathlib/mathlib.h"
 #endif
 
+
+#ifndef OE
 namespace utils
 {
 	struct Datum
@@ -65,3 +67,5 @@ namespace utils
 	void SpawnEntity(const char* name);
 	void SetGameDLL(IServerGameDLL* serverDll);
 }
+
+#endif

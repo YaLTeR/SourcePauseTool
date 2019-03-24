@@ -20,13 +20,13 @@ namespace scripts
 		trackers[ANG_NO] = std::unique_ptr<Tracker>(new AngTracker(9));
 	}
 
-	void Tester::LoadTest(const std::string& testName, bool generating, bool automatedTest)
+	void Tester::LoadTest(const std::string& testName, bool generating, bool autoTest)
 	{
-		this->automatedTest = automatedTest;
+		this->automatedTest = autoTest;
 		std::string folder(GetFolder(testName));
 		if (std::experimental::filesystem::is_directory(folder))
 		{
-			RunAllTests(folder, generating, automatedTest);
+			RunAllTests(folder, generating, autoTest);
 			return;
 		}
 

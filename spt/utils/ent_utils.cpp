@@ -1,20 +1,27 @@
 #include "stdafx.h"
+
 #include "ent_utils.hpp"
 #include "client_class.h"
 #include "..\OrangeBox\overlay\portal_camera.hpp"
 #include <vector>
 #include <regex>
 #include "string_parsing.hpp"
+#include "..\OrangeBox\spt-serverplugin.hpp"
 
+#ifndef OE
 static IClientEntityList* entList;
 static IVModelInfo* modelInfo;
 static IBaseClientDLL* clientInterface;
 const int INDEX_MASK = MAX_EDICTS - 1;
 const int VIEW_OFFSET_OFFSET = 224;
 const int VIEW_ANGLES_OFFSET = 5180;
+#endif
 
 namespace utils
 {
+
+	#ifndef OE
+
 	struct propValue
 	{
 		std::string name;
@@ -61,6 +68,7 @@ namespace utils
 
 	void PrintAllPortals()
 	{
+#ifdef SSDK2007
 		int maxIndex = entList->GetHighestEntityIndex();
 
 		for (int i = 0; i <= maxIndex; ++i)
@@ -73,6 +81,7 @@ namespace utils
 				Msg("%d : %s, position (%.3f, %.3f, %.3f), angles (%.3f, %.3f, %.3f)\n", i, ent->GetClientClass()->m_pNetworkName, pos.x, pos.y, pos.z, angles.x, angles.y, angles.z);
 			}
 		}
+#endif
 	}
 
 	IClientEntity * GetPlayer()
@@ -375,4 +384,12 @@ namespace utils
 
 		return entries;
 	}
+	#endif
+
+	bool serverActive()
+	{
+		return GetEngine()->PEntityOfEntIndex(0);
+	}
+
 }
+

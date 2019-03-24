@@ -8,6 +8,7 @@
 
 namespace vgui
 {
+#ifndef OE
 	IClientMode* GetClientMode()
 	{
 		return (IClientMode*)clientDLL.ORIG_GetClientModeNormal();
@@ -16,4 +17,5 @@ namespace vgui
 	{
 		return scheme()->GetIScheme(scheme()->GetDefaultScheme());
 	}
+#endif
 }
