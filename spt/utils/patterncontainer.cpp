@@ -9,6 +9,11 @@ int PatternContainer::FindPatternIndex(PVOID * origPtr)
 	return patterns[(int)origPtr];
 }
 
+const std::string& PatternContainer::FindPatternName(PVOID * origPtr)
+{
+	return patternNames[(int)origPtr];
+}
+
 void PatternContainer::Init(const std::wstring & moduleName)
 {
 	this->moduleName = moduleName;
@@ -20,9 +25,10 @@ void PatternContainer::AddHook(PVOID functionToHook, PVOID* origPtr)
 	functions.push_back(origPtr);
 }
 
-void PatternContainer::AddIndex(PVOID * origPtr, int index)
+void PatternContainer::AddIndex(PVOID * origPtr, int index, std::string name)
 {
 	patterns[(int)origPtr] = index;
+	patternNames[(int)origPtr] = name;
 }
 
 void PatternContainer::Hook()

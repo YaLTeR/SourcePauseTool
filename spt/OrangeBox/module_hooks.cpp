@@ -10,6 +10,7 @@ namespace modulehooks
 {
 	void PauseOnDemoTick()
 	{
+#ifdef OE
 		if (engineDLL.Demo_IsPlayingBack() && !engineDLL.Demo_IsPlaybackPaused())
 		{
 			auto tick = y_spt_pause_demo_on_tick.GetInt();
@@ -22,6 +23,24 @@ namespace modulehooks
 					EngineConCmd("demo_pause");
 			}
 		}
+#endif
+	}
+
+	float jumpTime = 0;
+
+	float GetJumpTime()
+	{
+		return jumpTime;
+	}
+
+	void TimeJump()
+	{
+		jumpTime = 510.0f;
+	}
+
+	void JumpTickElapsed()
+	{
+		jumpTime -= 1000.0f * engineDLL.GetTickrate();
 	}
 
 	void ConnectSignals()
@@ -31,6 +50,9 @@ namespace modulehooks
 		clientDLL.AfterFramesSignal.Connect(&PauseOnDemoTick);
 
 		clientDLL.TickSignal.Connect(&scripts::g_Tester, &scripts::Tester::DataIteration);
+		clientDLL.TickSignal.Connect(&JumpTickElapsed);
+		serverDLL.JumpSignal.Connect(&TimeJump);
+
 #ifndef OE
 		clientDLL.TickSignal.Connect(&vgui_matsurfaceDLL, &VGui_MatSurfaceDLL::NewTick);
 		clientDLL.OngroundSignal.Connect(&vgui_matsurfaceDLL, &VGui_MatSurfaceDLL::OnGround);

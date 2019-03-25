@@ -11,3 +11,9 @@ extern ServerDLL serverDLL;
 #ifndef OE
 extern VGui_MatSurfaceDLL vgui_matsurfaceDLL;
 #endif
+
+#ifdef TRACE
+#define TRACE_MSG(X) DevMsg(X)
+#else
+#define TRACE_MSG(X)
+ #endif

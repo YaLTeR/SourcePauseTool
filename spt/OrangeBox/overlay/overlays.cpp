@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#ifdef SSDK2007
+#ifndef OE
 #include "overlays.hpp"
 #include "..\modules\ClientDLL.hpp"
 #include "..\modules.hpp"

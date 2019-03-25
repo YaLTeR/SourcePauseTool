@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef SSDK2007
+#ifndef OE
 #include "engine\iserverplugin.h"
 #include "tier2\tier2.h"
 #include <string>

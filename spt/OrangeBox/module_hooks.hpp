@@ -6,4 +6,5 @@
 namespace modulehooks
 {
 	void ConnectSignals();
+	float GetJumpTime();
 }

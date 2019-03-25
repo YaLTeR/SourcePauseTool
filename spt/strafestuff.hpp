@@ -4,118 +4,156 @@
 // go take a look at that instead:
 // https://github.com/HLTAS/hlstrafe
 
-struct MovementVars {
-	float Accelerate;
-	float Airaccelerate;
-	float EntFriction;
-	float Frametime;
-	float Friction;
-	float Maxspeed;
-	float Stopspeed;
-	float WishspeedCap;
-	bool OnGround;
-	bool ReduceWishspeed;
-};
+namespace Strafe
+{
+	struct TraceResult {
+		bool AllSolid;
+		bool StartSolid;
+		float Fraction;
+		Vector EndPos;
+		Vector PlaneNormal;
+		int Entity;
+	};
 
-struct PlayerData {
-	Vector Velocity;
-};
+	struct MovementVars {
+		float Accelerate;
+		float Airaccelerate;
+		float EntFriction;
+		float Frametime;
+		float Friction;
+		float Maxspeed;
+		float Stopspeed;
+		float WishspeedCap;
 
-enum class Button : unsigned char {
-	FORWARD = 0,
-	FORWARD_LEFT,
-	LEFT,
-	BACK_LEFT,
-	BACK,
-	BACK_RIGHT,
-	RIGHT,
-	FORWARD_RIGHT
-};
+		float EntGravity;
+		float Maxvelocity;
+		float Gravity;
+		float Stepsize;
+		float Bounce;
 
-struct StrafeButtons {
-	StrafeButtons() :
-		AirLeft(Button::FORWARD),
-		AirRight(Button::FORWARD),
-		GroundLeft(Button::FORWARD),
-		GroundRight(Button::FORWARD) {}
+		bool OnGround;
+		bool ReduceWishspeed;
+	};
 
-	Button AirLeft;
-	Button AirRight;
-	Button GroundLeft;
-	Button GroundRight;
-};
+	struct PlayerData {
+		Vector Origin;
+		Vector Velocity;
+		Vector Basevelocity;
+		bool Ducking;
+	};
 
-struct ProcessedFrame {
-	bool Processed; // Should apply strafing in ClientDLL?
-	bool Forward;
-	bool Back;
-	bool Right;
-	bool Left;
-	bool Jump;
+	enum class Button : unsigned char {
+		FORWARD = 0,
+		FORWARD_LEFT,
+		LEFT,
+		BACK_LEFT,
+		BACK,
+		BACK_RIGHT,
+		RIGHT,
+		FORWARD_RIGHT
+	};
 
-	double Yaw;
-	float ForwardSpeed;
-	float SideSpeed;
+	struct StrafeButtons {
+		StrafeButtons() :
+			AirLeft(Button::FORWARD),
+			AirRight(Button::FORWARD),
+			GroundLeft(Button::FORWARD),
+			GroundRight(Button::FORWARD) {}
 
-	ProcessedFrame()
-		: Processed(false)
-		, Forward(false)
-		, Back(false)
-		, Right(false)
-		, Left(false)
-		, Jump(false)
-		, Yaw(0)
-		, ForwardSpeed(0)
-		, SideSpeed(0)
-	{
-	}
-};
+		Button AirLeft;
+		Button AirRight;
+		Button GroundLeft;
+		Button GroundRight;
+	};
 
-struct CurrentState {
-	float LgagstMinSpeed;
-	bool LgagstFullMaxspeed;
-};
+	struct ProcessedFrame {
+		bool Processed; // Should apply strafing in ClientDLL?
+		bool Forward;
+		bool Back;
+		bool Right;
+		bool Left;
+		bool Jump;
 
-enum class StrafeType {
-	MAXACCEL = 0,
-	MAXANGLE = 1,
-	CAPPED = 2
-};
+		double Yaw;
+		float ForwardSpeed;
+		float SideSpeed;
 
-enum class StrafeDir {
-	LEFT = 0,
-	RIGHT = 1,
-	YAW = 3
-};
+		ProcessedFrame()
+			: Processed(false)
+			, Forward(false)
+			, Back(false)
+			, Right(false)
+			, Left(false)
+			, Jump(false)
+			, Yaw(0)
+			, ForwardSpeed(0)
+			, SideSpeed(0)
+		{
+		}
+	};
 
-// Convert both arguments to doubles.
-double Atan2(double a, double b);
+	struct CurrentState {
+		float LgagstMinSpeed;
+		bool LgagstFullMaxspeed;
+	};
 
-double MaxAccelTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed);
+	enum class StrafeType {
+		MAXACCEL = 0,
+		MAXANGLE = 1,
+		CAPPED = 2
+	};
 
-double MaxAccelIntoYawTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, double vel_yaw, double yaw);
+	enum class StrafeDir {
+		LEFT = 0,
+		RIGHT = 1,
+		YAW = 3
+	};
 
-double MaxAngleTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, bool& safeguard_yaw);
+	enum class PositionType {
+		GROUND = 0,
+		AIR,
+		WATER
+	};
 
-void VectorFME(PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, const Vector2D& a);
+	enum class HullType : int {
+		NORMAL = 0,
+		DUCKED = 1,
+		POINT = 2
+	};
 
-double ButtonsPhi(Button button);
+	PositionType GetPositionType(PlayerData& player);
 
-Button GetBestButtons(double theta, bool right);
+	PositionType Move(PlayerData& player, const MovementVars& vars);
 
-void SideStrafeGeneral(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed,
-	const StrafeButtons& strafeButtons, bool useGivenButtons, Button& usedButton, double vel_yaw, double theta, bool right, Vector2D& velocity, double& yaw);
+	// Convert both arguments to doubles.
+	double Atan2(double a, double b);
 
-double YawStrafeMaxAccel(PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons, Button& usedButton,
-	double vel_yaw, double yaw);
+	double MaxAccelTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed);
 
-double YawStrafeMaxAngle(PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons, Button& usedButton,
-	double vel_yaw, double yaw);
+	double MaxAccelIntoYawTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, double vel_yaw, double yaw);
 
-void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool lockCamera);
+	double MaxAngleTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, bool& safeguard_yaw);
 
-bool Strafe(PlayerData& player, const MovementVars& vars, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, const StrafeButtons& strafeButtons, bool useGivenButtons);
+	void VectorFME(PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, const Vector2D& a);
 
-void Friction(PlayerData& player, bool onground, const MovementVars& vars);
+	double ButtonsPhi(Button button);
 
-void LgagstJump(const PlayerData& player, const MovementVars& vars, const CurrentState& curState, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, const StrafeButtons& strafeButtons, bool useGivenButtons);
+	Button GetBestButtons(double theta, bool right);
+
+	void SideStrafeGeneral(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed,
+		const StrafeButtons& strafeButtons, bool useGivenButtons, Button& usedButton, double vel_yaw, double theta, bool right, Vector2D& velocity, double& yaw);
+
+	double YawStrafeMaxAccel(PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons, Button& usedButton,
+		double vel_yaw, double yaw);
+
+	double YawStrafeMaxAngle(PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons, Button& usedButton,
+		double vel_yaw, double yaw);
+
+	void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool lockCamera);
+
+	bool Strafe(PlayerData& player, const MovementVars& vars, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, const StrafeButtons& strafeButtons, bool useGivenButtons);
+
+	void Friction(PlayerData& player, bool onground, const MovementVars& vars);
+
+	void LgagstJump(const PlayerData& player, const MovementVars& vars, const CurrentState& curState, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, const StrafeButtons& strafeButtons, bool useGivenButtons);
+}

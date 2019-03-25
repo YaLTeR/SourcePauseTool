@@ -64,6 +64,8 @@ namespace scripts
 		void HandlePlaybackSpeed(const std::string& value);
 		void HandleTickRange(const std::string& value);
 		void HandleTicksFromEndRange(const std::string& value);
+		void HandleJBCondition(const std::string& value);
+		void HandleAliveCondition(const std::string& value);
 		
 		void HandleXPos(const std::string& value) { HandlePosVel(value, Axis::AxisX, true); }
 		void HandleYPos(const std::string& value) { HandlePosVel(value, Axis::AxisY, true); }

@@ -27,6 +27,9 @@ typedef void(__fastcall *_CalcAbsoluteVelocity) (void* thisptr, int edx);
 typedef void(__fastcall *_CViewRender__RenderView) (void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw);
 typedef void(__fastcall *_CViewRender__Render) (void* thisptr, int edx, void* rect);
 typedef void*(__cdecl *_GetClientModeNormal) ();
+typedef void(__cdecl * _UTIL_TraceLine) (const Vector& vecAbsStart, const Vector& vecAbsEnd, unsigned int mask, ITraceFilter *pFilter, trace_t* ptr);
+typedef void(__fastcall * _UTIL_TracePlayerBBox) (void* thisptr, int edx, const Vector& vecAbsStart, const Vector& vecAbsEnd, unsigned int mask, int collisionGroup, trace_t& ptr);
+typedef bool(__fastcall * _CGameMovement__CanUnDuckJump) (void* thisptr, int edx, trace_t& ptr);
 
 struct afterframes_entry_t
 {
@@ -82,11 +85,15 @@ public:
 	void SetPitch(float pitch) { setPitch.angle = pitch; setPitch.set = true; }
 	void SetYaw(float yaw)     { setYaw.angle   = yaw;   setYaw.set   = true; }
 	void ResetPitchYawCommands() { setYaw.set = false; setPitch.set = false; }
-	MovementVars GetMovementVars();
+	Strafe::MovementVars GetMovementVars();
+	Strafe::PlayerData GetPlayerData();
 	Vector GetPlayerVelocity();
 	Vector GetPlayerEyePos();
 	int GetPlayerFlags();
 	bool GetFlagsDucking();
+	double GetDuckJumpTime();
+	void Trace(const Vector& vecAbsStart, const Vector& vecAbsEnd, unsigned int mask, int collisionGroup, trace_t& ptr);
+	bool CanUnDuckJump(trace_t& ptr);
 
 	Gallant::Signal0<void> AfterFramesSignal;
 	Gallant::Signal0<void> TickSignal;
@@ -94,6 +101,7 @@ public:
 	bool renderingOverlay;
 	void* screenRect;
 	_GetClientModeNormal ORIG_GetClientModeNormal;
+	_UTIL_TraceLine ORIG_UTIL_TraceLine;	
 
 protected:
 	_DoImageSpaceMotionBlur ORIG_DoImageSpaceMotionBlur;
@@ -108,6 +116,8 @@ protected:
 	_CalcAbsoluteVelocity ORIG_CalcAbsoluteVelocity;
 	_CViewRender__RenderView ORIG_CViewRender__RenderView;
 	_CViewRender__Render ORIG_CViewRender__Render;
+	_UTIL_TracePlayerBBox ORIG_UTIL_TracePlayerBBox;
+	_CGameMovement__CanUnDuckJump ORIG_CGameMovement__CanUnDuckJump;
 
 	uintptr_t* pgpGlobals;
 	ptrdiff_t offM_pCommands;

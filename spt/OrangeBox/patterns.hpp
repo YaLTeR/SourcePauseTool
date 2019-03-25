@@ -214,6 +214,15 @@ namespace patterns
 		PATTERNS(CHLClient__CanRecordDemo,
 			"5135",
 			"E8 ?? ?? ?? ?? 85 C0 74 11 E8 ?? ?? ?? ?? 8B 10 8B C8 8B 92 84 00 00 00 FF E2");
+		PATTERNS(UTIL_TraceLine,
+			"5135",
+			"55 8B EC 83 E4 F0 8B 45 0C 8B 4D 08 83 EC 5C 56 50 51 8D 4C 24 18 E8 ?? ?? ?? ?? 8B 75 18 8B 45 14 8B 0D ?? ?? ?? ?? 8B 11 8B 52 10 56 50");
+		PATTERNS(UTIL_TracePlayerBBox,
+			"5135",
+			"55 8B EC 83 E4 F0 83 EC 5C 56 8B F1 8B 06 8B 50 24 FF D2 50 8B 06 8B 50 20 8B CE FF D2");
+		PATTERNS(CGameMovement__CanUnDuckJump,
+			"5135",
+			"83 EC 60 53 55 8B 6C 24 6C 56 57 8B F1 8B 7E 08 8B 87 98 00 00 00 8B 1E 81 C7 98 00 00 00");
 	}
 
 	namespace server

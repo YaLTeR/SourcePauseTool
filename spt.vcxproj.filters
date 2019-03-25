@@ -118,11 +118,11 @@
     <ClCompile Include="spt\utils\ent_utils.cpp">
       <Filter>spt\utils</Filter>
     </ClCompile>
-    <ClCompile Include="spt\utils\savestate.cpp">
-      <Filter>spt\utils</Filter>
-    </ClCompile>
     <ClCompile Include="spt\OrangeBox\module_hooks.cpp">
       <Filter>spt\OrangeBox</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\utils\property_getter.cpp">
+      <Filter>spt\utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -315,9 +315,6 @@
     <ClInclude Include="spt\utils\ent_utils.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
-    <ClInclude Include="spt\utils\savestate.hpp">
-      <Filter>spt\utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\SourcePauseTool\Signals\Delegate.h">
       <Filter>Signals</Filter>
     </ClInclude>
@@ -329,6 +326,12 @@
     </ClInclude>
     <ClInclude Include="spt\OrangeBox\module_hooks.hpp">
       <Filter>spt\OrangeBox</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\property_getter.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="strafe_utils.hpp">
+      <Filter>spt</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

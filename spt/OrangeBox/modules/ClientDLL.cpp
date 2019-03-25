@@ -10,6 +10,7 @@
 #include "..\scripts\srctas_reader.hpp"
 #include "..\scripts\tests\test.hpp"
 #include "..\patterns.hpp"
+#include "bspflags.h"
 
 #ifdef max
 #undef max
@@ -23,46 +24,55 @@ using std::size_t;
 
 void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur(void* view, int x, int y, int w, int h)
 {
+	TRACE_MSG("HOOKED_DoImageSpaceMotionBlur\n");
 	return clientDLL.HOOKED_DoImageSpaceMotionBlur_Func(view, x, y, w, h);
 }
 
 bool __fastcall ClientDLL::HOOKED_CheckJumpButton(void* thisptr, int edx)
 {
+	TRACE_MSG("HOOKED_CheckJumpButton\n");
 	return clientDLL.HOOKED_CheckJumpButton_Func(thisptr, edx);
 }
 
 void __stdcall ClientDLL::HOOKED_HudUpdate(bool bActive)
 {
+	TRACE_MSG("HOOKED_HudUpdate\n");
 	return clientDLL.HOOKED_HudUpdate_Func(bActive);
 }
 
 int __fastcall ClientDLL::HOOKED_GetButtonBits(void* thisptr, int edx, int bResetState)
 {
+	TRACE_MSG("HOOKED_GetButtonBits\n");
 	return clientDLL.HOOKED_GetButtonBits_Func(thisptr, edx, bResetState);
 }
 
 void __fastcall ClientDLL::HOOKED_AdjustAngles(void* thisptr, int edx, float frametime)
 {
+	TRACE_MSG("HOOKED_AdjustAngles\n");
 	return clientDLL.HOOKED_AdjustAngles_Func(thisptr, edx, frametime);
 }
 
 void __fastcall ClientDLL::HOOKED_CreateMove(void* thisptr, int edx, int sequence_number, float input_sample_frametime, bool active)
 {
+	TRACE_MSG("HOOKED_CreateMove\n");
 	return clientDLL.HOOKED_CreateMove_Func(thisptr, edx, sequence_number, input_sample_frametime, active);
 }
 
 void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart(void* thisptr, int edx)
 {
+	TRACE_MSG("HOOKED_CViewRender__OnRenderStart\n");
 	return clientDLL.HOOKED_CViewRender__OnRenderStart_Func(thisptr, edx);
 }
 
 void ClientDLL::HOOKED_CViewRender__RenderView(void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw)
 {
+	TRACE_MSG("HOOKED_CViewRender__RenderView\n");
 	clientDLL.HOOKED_CViewRender__RenderView_Func(thisptr, edx, cameraView, nClearFlags, whatToDraw);
 }
 
 void ClientDLL::HOOKED_CViewRender__Render(void* thisptr, int edx, void* rect)
 {
+	TRACE_MSG("HOOKED_CViewRender__Render\n");
 	clientDLL.HOOKED_CViewRender__Render_Func(thisptr, edx, rect);
 }
 
@@ -73,7 +83,7 @@ void ClientDLL::HOOKED_CViewRender__Render(void* thisptr, int edx, void* rect)
         if (ORIG_##future_name) { \
             DevMsg("[client dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
 			patternContainer.AddHook(HOOKED_##future_name, (PVOID*)&ORIG_##future_name); \
-			for(int i=0; true; ++i) { if(patterns::client::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)ORIG_##future_name,i); break; } } \
+			for(int i=0; true; ++i) { if(patterns::client::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)&ORIG_##future_name, i, pattern->name()); break; } } \
         } else { \
             DevWarning("[client dll] Could not find " #future_name ".\n"); \
         } \
@@ -84,7 +94,7 @@ void ClientDLL::HOOKED_CViewRender__Render(void* thisptr, int edx, void* rect)
         auto pattern = f##future_name.get(); \
         if (ORIG_##future_name) { \
             DevMsg("[client dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
-			for(int i=0; true; ++i) { if(patterns::client::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)ORIG_##future_name,i); break; } } \
+			for(int i=0; true; ++i) { if(patterns::client::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)&ORIG_##future_name, i, pattern->name()); break; } } \
 		} else { \
 			DevWarning("[client dll] Could not find " #future_name ".\n"); \
 		} \
@@ -113,6 +123,9 @@ void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	DEF_FUTURE(CHLClient__CanRecordDemo);
 	DEF_FUTURE(CViewRender__RenderView);
 	DEF_FUTURE(CViewRender__Render);
+	DEF_FUTURE(UTIL_TraceLine);
+	DEF_FUTURE(UTIL_TracePlayerBBox);
+	DEF_FUTURE(CGameMovement__CanUnDuckJump);
 
 	GET_HOOKEDFUTURE(HudUpdate);
 	GET_HOOKEDFUTURE(GetButtonBits);
@@ -127,6 +140,9 @@ void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	GET_FUTURE(CHLClient__CanRecordDemo);
 	GET_HOOKEDFUTURE(CViewRender__RenderView);
 	GET_HOOKEDFUTURE(CViewRender__Render);
+	GET_FUTURE(UTIL_TraceLine);
+	GET_FUTURE(UTIL_TracePlayerBBox);
+	GET_FUTURE(CGameMovement__CanUnDuckJump);
 	
 
 	if (ORIG_DoImageSpaceMotionBlur)
@@ -169,7 +185,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 
 	if (ORIG_CheckJumpButton)
 	{
-		int  ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_CheckJumpButton);
+		int ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_CheckJumpButton);
 
 		switch (ptnNumber)
 		{
@@ -311,7 +327,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 			offServerPreviouslyPredictedOrigin = 3628;
 			offServerAbsOrigin = 580;
 			break;
-			
+
 		case 2:
 			offMaxspeed = 4312;
 			offFlags = 844;
@@ -322,7 +338,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 			offServerPreviouslyPredictedOrigin = 3752;
 			offServerAbsOrigin = 636;
 			break;
-			
+
 		case 3:
 			offMaxspeed = 4320;
 			offFlags = 844;
@@ -333,7 +349,10 @@ void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 			offServerPreviouslyPredictedOrigin = 3752;
 			offServerAbsOrigin = 636;
 			break;
-		}
+		default:
+			Warning("GetGroundEntity did not contain matching if statement for pattern!\n");
+			break;
+		}		
 	}
 
 	if (ORIG_MiddleOfCAM_Think)
@@ -463,16 +482,16 @@ void ClientDLL::ResetAfterframesQueue()
 	afterframesQueue.clear();
 }
 
-MovementVars ClientDLL::GetMovementVars()
+Strafe::MovementVars ClientDLL::GetMovementVars()
 {
 	auto player = ORIG_GetLocalPlayer();
-	auto onground = (ORIG_GetGroundEntity(player, 0) != NULL); // TODO: This should really be a proper check.
+	auto onground = IsOnGround(); // TODO: This should really be a proper check.
 	auto maxspeed = *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offMaxspeed);
 
 	if (tas_force_onground.GetBool())
 		onground = true;
 
-	auto vars = MovementVars();
+	auto vars = Strafe::MovementVars();
 	vars.OnGround = onground;
 	vars.ReduceWishspeed = onground && GetFlagsDucking();
 	vars.Accelerate = _sv_accelerate->GetFloat();
@@ -493,8 +512,7 @@ MovementVars ClientDLL::GetMovementVars()
 	else
 		vars.WishspeedCap = 30;
 
-	auto pl = PlayerData();
-	pl.Velocity = GetPlayerVelocity();
+	auto pl = GetPlayerData();
 
 	extern IServerUnknown* GetServerPlayer();
 	auto server_player = GetServerPlayer();
@@ -521,7 +539,25 @@ MovementVars ClientDLL::GetMovementVars()
 		}
 	}
 
+	vars.EntGravity = 1.0f;
+	vars.Maxvelocity = _sv_maxvelocity->GetFloat();
+	vars.Gravity = _sv_gravity->GetFloat();
+	vars.Stepsize = _sv_stepsize->GetFloat();
+	vars.Bounce = _sv_bounce->GetFloat();
+
 	return vars;
+}
+
+Strafe::PlayerData ClientDLL::GetPlayerData()
+{
+	Strafe::PlayerData data;
+
+	data.Origin = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + offServerAbsOrigin);
+	data.Velocity = GetPlayerVelocity();
+	data.Ducking = GetFlagsDucking();
+	data.Basevelocity = Vector();
+
+	return data;
 }
 
 Vector ClientDLL::GetPlayerVelocity()
@@ -561,6 +597,34 @@ bool ClientDLL::GetFlagsDucking()
 	return (*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(ORIG_GetLocalPlayer()) + offFlags)) & FL_DUCKING;
 }
 
+double ClientDLL::GetDuckJumpTime()
+{
+	auto player = ORIG_GetLocalPlayer();
+	return *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offDuckJumpTime);
+}
+
+void ClientDLL::Trace(const Vector & vecAbsStart, const Vector & vecAbsEnd, unsigned int mask, int collisionGroup, trace_t& ptr)
+{
+	if (!ORIG_UTIL_TracePlayerBBox)
+	{
+		Warning("Trace ran without trace function!\n");
+		return;
+	}
+
+	ORIG_UTIL_TracePlayerBBox(GetGamemovement(), 0, vecAbsStart, vecAbsEnd, mask, collisionGroup, ptr);
+}
+
+bool ClientDLL::CanUnDuckJump(trace_t & ptr)
+{
+	if (!ORIG_CGameMovement__CanUnDuckJump)
+	{
+		Warning("Tried to run CanUnduckJump without the pattern!\n");
+		return false;
+	}
+
+	return ORIG_CGameMovement__CanUnDuckJump(GetGamemovement(), 0, ptr);
+}
+
 void ClientDLL::OnFrame()
 {
 	if (afterframesPaused)
@@ -590,6 +654,9 @@ void ClientDLL::OnFrame()
 
 bool ClientDLL::IsOnGround()
 {
+	if (ORIG_GetGroundEntity == nullptr || ORIG_GetLocalPlayer == nullptr)
+		return false;
+
 	auto player = ORIG_GetLocalPlayer();
 	return (ORIG_GetGroundEntity(player, 0) != NULL); // TODO: This should really be a proper check.
 }
@@ -740,7 +807,6 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 	float va[3];
 	EngineGetViewAngles(va);
 	bool yawChanged = false;
-
 	double pitchSpeed = atof(_y_spt_pitchspeed.GetString()),
 		yawSpeed = atof(_y_spt_yawspeed.GetString());
 
@@ -765,28 +831,28 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 	{
 		auto player = ORIG_GetLocalPlayer();
 		auto vars = GetMovementVars();
+		auto pl = GetPlayerData();
+
+		if (Strafe::Move(GetPlayerData(), vars) == Strafe::PositionType::GROUND)
+		{
+			vars.OnGround = true;
+			Msg("Trace based on ground check.\n");
+		}
 
 		// Lgagst requires more prediction that is done here for correct operation.
-		auto curState = CurrentState();
+		auto curState = Strafe::CurrentState();
 		curState.LgagstMinSpeed = tas_strafe_lgagst_minspeed.GetFloat();
 		curState.LgagstFullMaxspeed = tas_strafe_lgagst_fullmaxspeed.GetBool();
-
-		auto pl = PlayerData();
-		pl.Velocity = GetPlayerVelocity();
-
-		//DevMsg("[Strafing] speed pre-friction = %.8f\n", pl.Velocity.Length2D());
-		//DevMsg("[Strafing] velocity pre-friction: %.8f %.8f %.8f\n", pl.Velocity.x, pl.Velocity.y, pl.Velocity.z);
-		//EngineConCmd("getpos");
-
+	
 		bool jumped = false;
 		const int IN_JUMP = (1 << 1);
 
-		auto btns = StrafeButtons();
+		auto btns = Strafe::StrafeButtons();
 		bool usingButtons = (sscanf(tas_strafe_buttons.GetString(), "%hhu %hhu %hhu %hhu", &btns.AirLeft, &btns.AirRight, &btns.GroundLeft, &btns.GroundRight) == 4);
-		auto type = static_cast<StrafeType>(tas_strafe_type.GetInt());
-		auto dir = static_cast<StrafeDir>(tas_strafe_dir.GetInt());
+		auto type = static_cast<Strafe::StrafeType>(tas_strafe_type.GetInt());
+		auto dir = static_cast<Strafe::StrafeDir>(tas_strafe_dir.GetInt());
 		
-		ProcessedFrame out;
+		Strafe::ProcessedFrame out;
 		out.Jump = false;
 		{
 			bool cantjump = false;
@@ -826,9 +892,9 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		Friction(pl, vars.OnGround, vars);
 
 		if (tas_strafe_vectorial.GetBool()) // Can do vectorial strafing even with locked camera, provided we are not jumping
-			StrafeVectorial(pl, vars, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, yawChanged);
+			Strafe::StrafeVectorial(pl, vars, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, yawChanged);
 		else if(!yawChanged) // not changing yaw, can do regular strafe
-			Strafe(pl, vars, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, btns, usingButtons);
+			Strafe::Strafe(pl, vars, jumped, GetFlagsDucking(), type, dir, tas_strafe_yaw.GetFloat(), va[YAW], out, btns, usingButtons);
 
 		// This bool is set if strafing should occur
 		if (out.Processed)
@@ -843,6 +909,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 	EngineSetViewAngles(va);
 	OngroundSignal(IsOnGround());
 	TickSignal();
+
 }
 
 void __fastcall ClientDLL::HOOKED_CreateMove_Func(void* thisptr, int edx, int sequence_number, float input_sample_frametime, bool active)

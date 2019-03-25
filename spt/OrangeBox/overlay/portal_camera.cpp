@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#ifdef SSDK2007
+#ifndef OE
 #include "portal_camera.hpp"
 #include "..\modules.hpp"
 #include "..\spt-serverplugin.hpp"
@@ -13,16 +13,10 @@
 #include "mathlib\vmatrix.h"
 #include "overlay-renderer.hpp"
 #include "..\..\utils\ent_utils.hpp"
+#include "..\..\utils\property_getter.hpp"
 #include "client_class.h"
 
-const int PORTAL_ORIGIN_OFFSET = 1180;
-const int PORTAL_ANGLE_OFFSET = 1192;
-const int PORTAL_LINKED_OFFSET = 2536;
-const int PORTAL_TRANSITION_OFFSET = 0x7A4;
-const int PLAYER_ANGLES_OFFSET = 2568;
-const int PORTAL_IS_ORANGE_OFFSET = 1137;
 const int INDEX_MASK = MAX_EDICTS - 1;
-const int PORTAL_ENVIROMENT_OFFSET = 5508;
 
 IClientEntity* getPortal(const char* arg, bool verbose);
 
@@ -64,7 +58,7 @@ bool invalidPortal(IClientEntity* portal)
 IClientEntity* GetEnviromentPortal()
 {
 	auto player = utils::GetPlayer();
-	int handle = *reinterpret_cast<int*>((reinterpret_cast<uintptr_t>(player) + PORTAL_ENVIROMENT_OFFSET));
+	int handle = utils::GetProperty<int>(0, "m_hPortalEnvironment");
 	int index = (handle & INDEX_MASK) - 1;
 
 	return utils::GetClientEntity(index);

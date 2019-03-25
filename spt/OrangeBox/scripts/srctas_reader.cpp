@@ -487,6 +487,17 @@ namespace scripts
 		conditions.push_back(std::unique_ptr<Condition>(new TickRangeCondition(min, max, true)));
 	}
 
+	void SourceTASReader::HandleJBCondition(const std::string & value)
+	{
+		auto height = ParseValue<float>(value);
+		conditions.push_back(std::unique_ptr<Condition>(new JBCondition(height)));
+	}
+
+	void SourceTASReader::HandleAliveCondition(const std::string & value)
+	{
+		conditions.push_back(std::unique_ptr<Condition>(new AliveCondition()));
+	}
+
 	void SourceTASReader::HandlePosVel(const std::string & value, Axis axis, bool isPos)
 	{
 		float min, max;

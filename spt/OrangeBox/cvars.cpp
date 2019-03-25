@@ -59,6 +59,14 @@ ConVar y_spt_hud_accel("y_spt_hud_accel", "0", FCVAR_CHEAT, "Turns on the accele
 ConVar y_spt_hud_script_length("y_spt_hud_script_progress", "0", FCVAR_CHEAT, "Turns on the script progress hud.\n");
 ConVar y_spt_hud_portal_bubble("y_spt_hud_portal_bubble", "0", FCVAR_CHEAT, "Turns on portal bubble index hud.\n");
 ConVar y_spt_hud_decimals("y_spt_hud_decimals", "2", FCVAR_CHEAT, "Determines the number of decimals in the SPT HUD.\n");
+ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement vars HUD.\n"); // Putting this in cvars.cpp crashes the game xdddd
+ConVar y_spt_hud_ag_sg_tester("y_spt_hud_ag_sg_tester", "0", FCVAR_CHEAT, "Tests if angle glitch will save glitch you.\n");
+ConVar y_spt_hud_ent_info("y_spt_hud_ent_info", "", FCVAR_CHEAT, "Display entity info on HUD. Format is \"[ent index],[prop regex],[prop regex],...,[prop regex];[ent index],...,[prop regex]\".\n");
+ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT, "When set to 1, displays SPT HUD on the left.\n");
+ConVar y_spt_hud_hops("y_spt_hud_hops", "0", FCVAR_CHEAT, "When set to 1, displays the hop practice HUD.");
+ConVar y_spt_hud_hops_x("y_spt_hud_hops_x", "-85", FCVAR_CHEAT, "Hops HUD x offset");
+ConVar y_spt_hud_hops_y("y_spt_hud_hops_y", "100", FCVAR_CHEAT, "Hops HUD y offset");
+
 
 ConVar _y_spt_overlay("_y_spt_overlay", "0", FCVAR_CHEAT, "Enables the overlay camera in the top left of the screen.\n");
 ConVar _y_spt_overlay_type("_y_spt_overlay_type", "0", FCVAR_CHEAT, "Overlay type. 0 = save glitch body, 1 = angle glitch simulation, 2 = rear view mirror.\n");
@@ -77,3 +85,7 @@ ConVar *_sv_airaccelerate = nullptr;
 ConVar *_sv_friction = nullptr;
 ConVar *_sv_maxspeed = nullptr;
 ConVar *_sv_stopspeed = nullptr;
+ConVar *_sv_stepsize = nullptr;
+ConVar *_sv_gravity = nullptr;
+ConVar *_sv_maxvelocity = nullptr;
+ConVar *_sv_bounce = nullptr;

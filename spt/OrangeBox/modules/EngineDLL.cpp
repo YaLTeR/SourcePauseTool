@@ -9,47 +9,56 @@
 #include "vguimatsurfaceDLL.hpp"
 #include "..\overlay\overlay-renderer.hpp"
 #include "..\patterns.hpp"
+#include "..\..\utils\ent_utils.hpp"
 
 using std::uintptr_t;
 using std::size_t;
 
 bool __cdecl EngineDLL::HOOKED_SV_ActivateServer()
 {
+	TRACE_MSG("HOOKED_SV_ActivateServer\n");
 	return engineDLL.HOOKED_SV_ActivateServer_Func();
 }
 
 void __fastcall EngineDLL::HOOKED_FinishRestore(void* thisptr, int edx)
 {
+	TRACE_MSG("HOOKED_FinishRestore\n");
 	return engineDLL.HOOKED_FinishRestore_Func(thisptr, edx);
 }
 
 void __fastcall EngineDLL::HOOKED_SetPaused(void* thisptr, int edx, bool paused)
 {
+	TRACE_MSG("HOOKED_SetPaused\n");
 	return engineDLL.HOOKED_SetPaused_Func(thisptr, edx, paused);
 }
 
 void __cdecl EngineDLL::HOOKED__Host_RunFrame(float time)
 {
+	TRACE_MSG("HOOKED__Host_RunFrame\n");
 	return engineDLL.HOOKED__Host_RunFrame_Func(time);
 }
 
 void __cdecl EngineDLL::HOOKED__Host_RunFrame_Input(float accumulated_extra_samples, int bFinalTick)
 {
+	TRACE_MSG("HOOKED__Host_RunFrame_Input\n");
 	return engineDLL.HOOKED__Host_RunFrame_Input_Func(accumulated_extra_samples, bFinalTick);
 }
 
 void __cdecl EngineDLL::HOOKED__Host_RunFrame_Server(int bFinalTick)
 {
+	TRACE_MSG("HOOKED__Host_RunFrame_Server\n");
 	return engineDLL.HOOKED__Host_RunFrame_Server_Func(bFinalTick);
 }
 
 void __cdecl EngineDLL::HOOKED_Cbuf_Execute()
 {
+	TRACE_MSG("HOOKED_Cbuf_Execute\n");
 	return engineDLL.HOOKED_Cbuf_Execute_Func();
 }
 
 void __fastcall EngineDLL::HOOKED_VGui_Paint(void * thisptr, int edx, int mode)
 {
+	TRACE_MSG("HOOKED_VGui_Paint\n");
 	engineDLL.HOOKED_VGui_Paint_Func(thisptr, edx, mode);
 }
 
@@ -60,7 +69,7 @@ void __fastcall EngineDLL::HOOKED_VGui_Paint(void * thisptr, int edx, int mode)
         if (ORIG_##future_name) { \
             DevMsg("[engine dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
 			patternContainer.AddHook(HOOKED_##future_name, (PVOID*)&ORIG_##future_name); \
-			for(int i=0; true; ++i) { if(patterns::engine::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)ORIG_##future_name,i); break; } } \
+			for(int i=0; true; ++i) { if(patterns::engine::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)&ORIG_##future_name, i, pattern->name()); break; } } \
         } else { \
             DevWarning("[engine dll] Could not find " #future_name ".\n"); \
         } \
@@ -71,7 +80,7 @@ void __fastcall EngineDLL::HOOKED_VGui_Paint(void * thisptr, int edx, int mode)
         auto pattern = f##future_name.get(); \
         if (ORIG_##future_name) { \
             DevMsg("[engine dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
-			for(int i=0; true; ++i) { if(patterns::engine::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)ORIG_##future_name,i); break; } } \
+			for(int i=0; true; ++i) { if(patterns::engine::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)&ORIG_##future_name, i, pattern->name()); break; } } \
 		} else { \
 			DevWarning("[engine dll] Could not find " #future_name ".\n"); \
 		} \
@@ -91,9 +100,9 @@ void EngineDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 
 	DEF_FUTURE(SV_ActivateServer);
 	DEF_FUTURE(FinishRestore);
+	DEF_FUTURE(Record);
 	DEF_FUTURE(SetPaused);
 	DEF_FUTURE(MiddleOfSV_InitGameDLL);
-	DEF_FUTURE(Record);
 	DEF_FUTURE(VGui_Paint);
 	DEF_FUTURE(SpawnPlayer);
 
@@ -140,6 +149,10 @@ void EngineDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 		case 5: // 6879 is the same as 5339 here.
 			pM_bLoadgame = (*(bool **)(ORIG_SpawnPlayer + 8));
 			pGameServer = (*(void **)(ORIG_SpawnPlayer + 21));
+			break;
+		
+		default:
+			Warning("Spawnplayer did not have a matching switch-case statement!\n");
 			break;
 		}
 
@@ -296,6 +309,7 @@ void EngineDLL::SetTickrate(float value)
 
 int EngineDLL::Demo_GetPlaybackTick() const
 {
+	TRACE_MSG("Demo_GetPlaybackTick\n");
 	if (!pDemoplayer)
 		return 0;
 	auto demoplayer = *pDemoplayer;
@@ -304,6 +318,7 @@ int EngineDLL::Demo_GetPlaybackTick() const
 
 int EngineDLL::Demo_GetTotalTicks() const
 {
+	TRACE_MSG("EngineDLL::Demo_GetTotalTicks\n");
 	if (!pDemoplayer)
 		return 0;
 	auto demoplayer = *pDemoplayer;
@@ -312,6 +327,7 @@ int EngineDLL::Demo_GetTotalTicks() const
 
 bool EngineDLL::Demo_IsPlayingBack() const
 {
+	TRACE_MSG("EngineDLL::Demo_IsPlayingBack\n");
 	if (!pDemoplayer)
 		return false;
 	auto demoplayer = *pDemoplayer;
@@ -320,6 +336,7 @@ bool EngineDLL::Demo_IsPlayingBack() const
 
 bool EngineDLL::Demo_IsPlaybackPaused() const
 {
+	TRACE_MSG("EngineDLL::Demo_IsPlaybackPaused\n");
 	if (!pDemoplayer)
 		return false;
 	auto demoplayer = *pDemoplayer;

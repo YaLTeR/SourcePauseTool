@@ -324,7 +324,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies);libMinHook.x86.lib</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies);libMinHook.x86.lib;raytrace.lib;tier0.lib;tier1.lib;tier2.lib;vmpi.lib;vstdlib.lib;mathlib.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -921,7 +921,7 @@
     <ClCompile Include="spt\utils\file.cpp" />
     <ClCompile Include="spt\utils\math.cpp" />
     <ClCompile Include="spt\utils\md5.cpp" />
-    <ClCompile Include="spt\utils\savestate.cpp" />
+    <ClCompile Include="spt\utils\property_getter.cpp" />
     <ClCompile Include="spt\utils\string_parsing.cpp" />
     <ClCompile Include="spt\vgui\vgui_utils.cpp" />
   </ItemGroup>
@@ -998,9 +998,10 @@
     <ClInclude Include="spt\utils\file.hpp" />
     <ClInclude Include="spt\utils\math.hpp" />
     <ClInclude Include="spt\utils\md5.hpp" />
-    <ClInclude Include="spt\utils\savestate.hpp" />
+    <ClInclude Include="spt\utils\property_getter.hpp" />
     <ClInclude Include="spt\utils\string_parsing.hpp" />
     <ClInclude Include="spt\vgui\vgui_utils.hpp" />
+    <ClInclude Include="strafe_utils.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\..\SourcePauseTool\Signals\example.txt" />

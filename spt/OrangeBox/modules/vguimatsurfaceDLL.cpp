@@ -15,17 +15,11 @@
 #include "..\patterns.hpp"
 #include "..\overlay\portal_camera.hpp"
 #include "..\..\utils\ent_utils.hpp"
+#include "..\..\utils\property_getter.hpp"
+#include "..\module_hooks.hpp"
 
 #ifndef OE
-
 const int INDEX_MASK = MAX_EDICTS - 1;
-ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement vars HUD.\n"); // Putting this in cvars.cpp crashes the game xdddd
-ConVar y_spt_hud_ag_sg_tester("y_spt_hud_ag_sg_tester", "0", FCVAR_CHEAT, "Tests if angle glitch will save glitch you.\n");
-ConVar y_spt_hud_ent_info("y_spt_hud_ent_info", "", FCVAR_CHEAT, "Display entity info on HUD. Format is \"[ent index],[prop regex],[prop regex],...,[prop regex];[ent index],...,[prop regex]\".\n");
-ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT, "When set to 1, displays SPT HUD on the left.\n");
-ConVar y_spt_hud_hops("y_spt_hud_hops", "0", FCVAR_CHEAT, "When set to 1, displays the hop practice HUD.");
-ConVar y_spt_hud_hops_x("y_spt_hud_hops_x", "-85", FCVAR_CHEAT, "Hops HUD x offset");
-ConVar y_spt_hud_hops_y("y_spt_hud_hops_y", "100", FCVAR_CHEAT, "Hops HUD y offset");
 
 #define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::vguimatsurface::##name);
 #define GET_FUTURE(future_name) \
@@ -169,11 +163,20 @@ void VGui_MatSurfaceDLL::CalculateAbhVel()
 {
 	auto vel = clientDLL.GetPlayerVelocity().Length2D();
 	auto ducked = clientDLL.GetFlagsDucking();
-	float jspeed;
+	auto sprinting = utils::GetProperty<bool>(0, "m_fIsSprinting");
+	auto vars = clientDLL.GetMovementVars();
+
+	float modifier;
+	
 	if (ducked)
-		jspeed = 165.0f;
+		modifier = 0.1;
+	else if (sprinting)
+		modifier = 0.5;
 	else
-		jspeed = 225.0f;
+		modifier = 1;
+
+	float jspeed = vars.Maxspeed + (vars.Maxspeed * modifier);
+
 	maxVel = vel + (vel - jspeed);
 	maxVel = max(maxVel, jspeed);
 }
@@ -248,6 +251,10 @@ void VGui_MatSurfaceDLL::DrawHopHud(vrect_t * screen, vgui::IScheme * scheme, IM
 
 	swprintf_s(buffer, BUFFER_SIZE, L"Percentage: %.*f", width, percentage);
 	surface->DrawSetTextPos(screen->width / 2 + y_spt_hud_hops_x.GetFloat(), screen->height / 2 + y_spt_hud_hops_y.GetFloat() + (fontTall + MARGIN) * 2);
+	surface->DrawPrintText(buffer, wcslen(buffer));
+
+	swprintf_s(buffer, BUFFER_SIZE, L"Duck jump time: %.*f", width, modulehooks::GetJumpTime());
+	surface->DrawSetTextPos(screen->width / 2 + y_spt_hud_hops_x.GetFloat(), screen->height / 2 + y_spt_hud_hops_y.GetFloat() + (fontTall + MARGIN) * 3);
 	surface->DrawPrintText(buffer, wcslen(buffer));
 
 #endif
@@ -356,7 +363,7 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t * screen, vgui::IScheme * scheme, IM
 		DRAW_FLOAT(L"wishspeed cap", vars.WishspeedCap);
 	}
 
-#ifdef SSDK2007
+#ifndef OE
 	if (y_spt_hud_ag_sg_tester.GetBool() && utils::serverActive())
 	{
 		Vector v = clientDLL.GetPlayerEyePos();

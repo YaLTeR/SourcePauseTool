@@ -7,30 +7,25 @@
 #include <regex>
 #include "string_parsing.hpp"
 #include "..\OrangeBox\spt-serverplugin.hpp"
+#include "..\OrangeBox\modules\ClientDLL.hpp"
+#include "..\OrangeBox\modules\ServerDLL.hpp"
+#include "..\OrangeBox\modules.hpp"
+#include <limits>
+#include "property_getter.hpp"
+#include "..\strafestuff.hpp"
+#undef max
 
 #ifndef OE
 static IClientEntityList* entList;
 static IVModelInfo* modelInfo;
 static IBaseClientDLL* clientInterface;
 const int INDEX_MASK = MAX_EDICTS - 1;
-const int VIEW_OFFSET_OFFSET = 224;
-const int VIEW_ANGLES_OFFSET = 5180;
 #endif
 
 namespace utils
 {
 
-	#ifndef OE
-
-	struct propValue
-	{
-		std::string name;
-		std::string value;
-		int offset;
-
-		propValue(const char* name, const char* value, int offset) : name(name), value(value), offset(offset) {}
-	};
-
+#ifndef OE
 	void SetEntityList(IClientEntityList* list)
 	{
 		entList = list;
@@ -68,7 +63,6 @@ namespace utils
 
 	void PrintAllPortals()
 	{
-#ifdef SSDK2007
 		int maxIndex = entList->GetHighestEntityIndex();
 
 		for (int i = 0; i <= maxIndex; ++i)
@@ -81,7 +75,6 @@ namespace utils
 				Msg("%d : %s, position (%.3f, %.3f, %.3f), angles (%.3f, %.3f, %.3f)\n", i, ent->GetClientClass()->m_pNetworkName, pos.x, pos.y, pos.z, angles.x, angles.y, angles.z);
 			}
 		}
-#endif
 	}
 
 	IClientEntity * GetPlayer()
@@ -198,6 +191,8 @@ namespace utils
 			std::vector<propValue> props;
 			GetAllProps(ent, props);
 
+			Msg("Class %s props:\n\n", ent->GetClientClass()->m_pNetworkName);
+
 			for (auto& prop : props)
 				Msg("Name: %s, offset %d, value %s\n", prop.name.c_str(), prop.offset, prop.value.c_str());
 		}
@@ -205,28 +200,12 @@ namespace utils
 			Msg("Entity doesn't exist!");
 	}
 
-	Vector GetVector(IClientEntity* ent, int offset)
-	{
-		if (ent)
-			return *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(ent) + VIEW_OFFSET_OFFSET);
-		else
-			return Vector();
-	}
-
-	QAngle GetQAngle(IClientEntity* ent, int offset)
-	{
-		if (ent)
-			return *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(ent) + offset);
-		else
-			return QAngle();
-	}
-
-	Vector GetPortalPosition(IClientEntity * ent)
+	Vector GetPortalPosition(IClientEntity* ent)
 	{
 		return ent->GetAbsOrigin();
 	}
 
-	QAngle GetPortalAngles(IClientEntity * ent)
+	QAngle GetPortalAngles(IClientEntity* ent)
 	{
 		return ent->GetAbsAngles();
 	}
@@ -237,7 +216,7 @@ namespace utils
 
 		if (ply)
 		{
-			auto offset = GetVector(ply, VIEW_OFFSET_OFFSET);
+			auto offset = utils::GetProperty<Vector>(0, "m_vecViewOffset[0]");
 
 			return ply->GetAbsOrigin() + offset;
 		}
@@ -247,12 +226,12 @@ namespace utils
 
 	QAngle GetPlayerEyeAngles()
 	{
-		return GetQAngle(GetPlayer(), VIEW_ANGLES_OFFSET);
+		return utils::GetProperty<QAngle>(0, "m_angEyeAngles[0]");
 	}
 
 	int PortalIsOrange(IClientEntity* ent)
 	{
-		return *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(ent) + 2528);
+		return utils::GetProperty<int>(ent->entindex() - 1, "m_bIsPortal2");
 	}
 
 	static IClientEntity* prevPortal = nullptr;
@@ -260,7 +239,7 @@ namespace utils
 
 	IClientEntity * FindLinkedPortal(IClientEntity * ent)
 	{
-		int ehandle = *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(ent) + 2536);
+		int ehandle = utils::GetProperty<int>(ent->entindex() - 1, "m_hLinkedPortal");
 		int index = ehandle & INDEX_MASK;
 
 		// Backup linking thing for fizzled portals(not sure if you can actually properly figure it out using client portals only)
@@ -384,12 +363,86 @@ namespace utils
 
 		return entries;
 	}
-	#endif
+
+	void SimulateFrames(int frames)
+	{
+		auto vars = clientDLL.GetMovementVars();
+		auto player = clientDLL.GetPlayerData();
+		auto type = Strafe::GetPositionType(player);
+
+		for (int i = 0; i < frames; ++i)
+		{
+			Msg("%d: pos: (%.3f, %.3f, %.3f), vel: (%.3f, %.3f, %.3f), ducked %d, onground %d\n", i, player.Origin.x, player.Origin.y, player.Origin.z,
+				player.Velocity.x, player.Velocity.y, player.Velocity.z, player.Ducking, type == Strafe::PositionType::GROUND);
+			auto type = Strafe::Move(player, vars);
+		}
+	}
+	int GetIndex(void* ent)
+	{
+		if (!ent)
+			return -1;
+
+		auto engine = GetEngine();
+
+		for (int i = 0; i < MAX_EDICTS; ++i)
+		{
+			auto e = engine->PEntityOfEntIndex(i);
+			if (e && e->GetUnknown() == ent)
+				return i;
+		}
+
+		return -1;
+	}
+#endif
+
+	JBData CanJB(float height)
+	{
+		JBData data;
+		data.ticks = -1;
+		data.canJB = false;
+		data.landingHeight = std::numeric_limits<float>::max();
+
+		Vector player_origin = clientDLL.GetPlayerEyePos();
+		Vector vel = serverDLL.GetLastVelocity();
+
+		constexpr float gravity = 600;
+		constexpr float groundThreshold = 2.0f;
+		float ticktime = engineDLL.GetTickrate();
+		constexpr int maxIterations = 1000;
+
+		for (int i = 0; i < maxIterations; ++i)
+		{
+			auto absDiff = std::abs(player_origin.z - height);
+
+			// If distance to ground is closer than any other attempt, update the data
+			if (absDiff < std::abs(data.landingHeight - height) && vel.z < 0)
+			{
+				data.landingHeight = player_origin.z;
+				data.ticks = i;
+			
+				// Can jb, exit the loop
+				if (player_origin.z - height <= groundThreshold && player_origin.z - height >= 0)
+				{
+					data.canJB = true;
+					break;
+				}
+				else if (player_origin.z < height && vel.z < 0) // fell past the jb point
+				{
+					break;
+				}
+			}
+
+			vel.z -= (gravity * ticktime / 2);
+			player_origin.z += vel.z * ticktime;
+			vel.z -= (gravity * ticktime / 2);
+		}
+
+		return data;
+	}
 
 	bool serverActive()
 	{
 		return GetEngine()->PEntityOfEntIndex(0);
 	}
-
 }
 

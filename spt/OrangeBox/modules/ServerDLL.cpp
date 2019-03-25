@@ -8,7 +8,6 @@
 #include "ServerDLL.hpp"
 #include "..\patterns.hpp"
 #include "..\overlay\overlays.hpp"
-#include "..\..\utils\savestate.hpp"
 #include "..\..\utils\ent_utils.hpp"
 
 using std::uintptr_t;
@@ -16,57 +15,67 @@ using std::size_t;
 
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton(void* thisptr, int edx)
 {
+	TRACE_MSG("HOOKED_CheckJumpButton\n");
 	return serverDLL.HOOKED_CheckJumpButton_Func(thisptr, edx);
 }
 
 void __fastcall ServerDLL::HOOKED_FinishGravity(void* thisptr, int edx)
 {
+	TRACE_MSG("HOOKED_FinishGravity\n");
 	return serverDLL.HOOKED_FinishGravity_Func(thisptr, edx);
 }
 
 void __fastcall ServerDLL::HOOKED_PlayerRunCommand(void* thisptr, int edx, void* ucmd, void* moveHelper)
 {
+	TRACE_MSG("HOOKED_PlayerRunCommand\n");
 	return serverDLL.HOOKED_PlayerRunCommand_Func(thisptr, edx, ucmd, moveHelper);
 }
 
 int __fastcall ServerDLL::HOOKED_CheckStuck(void* thisptr, int edx)
 {
+	TRACE_MSG("HOOKED_CheckStuck\n");
 	return serverDLL.HOOKED_CheckStuck_Func(thisptr, edx);
 }
 
 void __fastcall ServerDLL::HOOKED_AirAccelerate(void* thisptr, int edx, Vector* wishdir, float wishspeed, float accel)
 {
+	TRACE_MSG("HOOKED_AirAccelerate\n");
 	return serverDLL.HOOKED_AirAccelerate_Func(thisptr, edx, wishdir, wishspeed, accel);
 }
 
 void __fastcall ServerDLL::HOOKED_ProcessMovement(void* thisptr, int edx, void* pPlayer, void* pMove)
 {
+	TRACE_MSG("HOOKED_ProcessMovement\n");
 	return serverDLL.HOOKED_ProcessMovement_Func(thisptr, edx, pPlayer, pMove);
 }
 
 float __fastcall ServerDLL::HOOKED_TraceFirePortal(void* thisptr, int edx, bool bPortal2, const Vector& vTraceStart, const Vector& vDirection, trace_t& tr, Vector& vFinalPosition, QAngle& qFinalAngles, int iPlacedBy, bool bTest)
 {
+	TRACE_MSG("HOOKED_TraceFirePortal\n");
 	return serverDLL.HOOKED_TraceFirePortal_Func(thisptr, edx, bPortal2, vTraceStart, vDirection, tr, vFinalPosition, qFinalAngles, iPlacedBy, bTest);
 }
 
 void __fastcall ServerDLL::HOOKED_SlidingAndOtherStuff(void* thisptr, int edx, void* a, void* b)
 {
+	TRACE_MSG("HOOKED_SlidingAndOtherStuff\n");
 	return serverDLL.HOOKED_SlidingAndOtherStuff_Func(thisptr, edx, a, b);
 }
 
 int __fastcall ServerDLL::HOOKED_CRestore__ReadAll(void * thisptr, int edx, void * pLeafObject, datamap_t * pLeafMap)
 {
+	TRACE_MSG("HOOKED_CRestore__ReadAll\n");
 	return serverDLL.ORIG_CRestore__ReadAll(thisptr, edx, pLeafObject, pLeafMap);
 }
 
 int __fastcall ServerDLL::HOOKED_CRestore__DoReadAll(void * thisptr, int edx, void * pLeafObject, datamap_t * pLeafMap, datamap_t * pCurMap)
 {
-	//utils::AddDatamap(pLeafMap, pLeafObject);
+	TRACE_MSG("HOOKED_CRestore__DoReadAll\n");
 	return serverDLL.ORIG_CRestore__DoReadAll(thisptr, edx, pLeafObject, pLeafMap, pCurMap);
 }
 
 int __cdecl ServerDLL::HOOKED_DispatchSpawn(void * pEntity)
 {
+	TRACE_MSG("HOOKED_DispatchSpawn\n");
 	return serverDLL.ORIG_DispatchSpawn(pEntity);
 }
 
@@ -103,7 +112,10 @@ __declspec(naked) void ServerDLL::HOOKED_MiddleOfSlidingFunction()
         if (ORIG_##future_name) { \
             DevMsg("[server dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
 			patternContainer.AddHook(HOOKED_##future_name, (PVOID*)&ORIG_##future_name); \
-			for(int i=0; true; ++i) { if(patterns::server::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)ORIG_##future_name,i); break; } } \
+			for(int i=0; true; ++i) \
+				{ \
+				if(patterns::server::##future_name.at(i).name() == pattern->name()) \
+				{ patternContainer.AddIndex((PVOID*)&ORIG_##future_name, i, pattern->name()); break; } } \
         } else { \
             DevWarning("[server dll] Could not find " #future_name ".\n"); \
         } \
@@ -114,7 +126,7 @@ __declspec(naked) void ServerDLL::HOOKED_MiddleOfSlidingFunction()
         auto pattern = f##future_name.get(); \
         if (ORIG_##future_name) { \
             DevMsg("[server dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
-			for(int i=0; true; ++i) { if(patterns::server::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)ORIG_##future_name,i); break; } } \
+			for(int i=0; true; ++i) { if(patterns::server::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)&ORIG_##future_name,i, pattern->name()); break; } } \
 		} else { \
 			DevWarning("[server dll] Could not find " #future_name ".\n"); \
 		} \
@@ -141,9 +153,6 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	DEF_FUTURE(PerformFlyCollisionResolution);
 	DEF_FUTURE(GetStepSoundVelocities);
 	DEF_FUTURE(CBaseEntity__SetCollisionGroup);
-	//DEF_FUTURE(CreateEntityByName);
-	//DEF_FUTURE(CRestore__DoReadAll);
-	//DEF_FUTURE(DispatchSpawn);
 	DEF_FUTURE(AllocPooledString);
 
 	GET_HOOKEDFUTURE(FinishGravity);
@@ -151,13 +160,10 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	GET_HOOKEDFUTURE(CheckStuck);
 	GET_HOOKEDFUTURE(MiddleOfSlidingFunction);
 	GET_HOOKEDFUTURE(CheckJumpButton);
-	//GET_HOOKEDFUTURE(CRestore__DoReadAll);
-	//GET_HOOKEDFUTURE(DispatchSpawn);
 	GET_FUTURE(CHL2_Player__HandleInteraction);
 	GET_FUTURE(PerformFlyCollisionResolution);
 	GET_FUTURE(GetStepSoundVelocities);
 	GET_FUTURE(CBaseEntity__SetCollisionGroup);
-	//GET_FUTURE(CreateEntityByName);
 	GET_FUTURE(AllocPooledString);
 
 	// Server-side CheckJumpButton

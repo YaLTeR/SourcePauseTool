@@ -13,7 +13,6 @@
 #include "scripts\tests\test.hpp"
 #include "..\utils\string_parsing.hpp"
 #include "..\utils\ent_utils.hpp"
-#include "..\utils\savestate.hpp"
 
 #include "cdll_int.h"
 #include "engine\iserverplugin.h"
@@ -118,6 +117,11 @@ void DefaultFOVChangeCallback(ConVar *var, char const *pOldString)
 IVEngineServer* GetEngine()
 {
 	return engine_server;
+}
+
+void* GetGamemovement()
+{
+	return gm;
 }
 
 IMatSystemSurface * GetSurface()
@@ -243,11 +247,17 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 #else
 	else
 	{
-		_sv_airaccelerate = g_pCVar->FindVar("sv_airaccelerate");
-		_sv_accelerate = g_pCVar->FindVar("sv_accelerate");
-		_sv_friction = g_pCVar->FindVar("sv_friction");
-		_sv_maxspeed = g_pCVar->FindVar("sv_maxspeed");
-		_sv_stopspeed = g_pCVar->FindVar("sv_stopspeed");
+#define GETCVAR(x) _##x = g_pCVar->FindVar(#x);
+
+		GETCVAR(sv_airaccelerate);
+		GETCVAR(sv_accelerate);
+		GETCVAR(sv_friction);
+		GETCVAR(sv_maxspeed);
+		GETCVAR(sv_stopspeed);
+		GETCVAR(sv_stepsize);
+		GETCVAR(sv_gravity);
+		GETCVAR(sv_maxvelocity);
+		GETCVAR(sv_bounce);
 	}
 
 	ConVar_Register(0);
@@ -305,7 +315,6 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	IClientEntityList* entList = (IClientEntityList*)clientFactory(VCLIENTENTITYLIST_INTERFACE_VERSION, NULL);
 	IVModelInfo* modelInfo = (IVModelInfo*)interfaceFactory(VMODELINFO_SERVER_INTERFACE_VERSION, NULL);
 	IBaseClientDLL* clientInterface = (IBaseClientDLL*)clientFactory(CLIENT_DLL_INTERFACE_VERSION, NULL);
-	IServerGameDLL* gameDLL = (IServerGameDLL*)interfaceFactory(INTERFACEVERSION_SERVERGAMEDLL, null);
 
 	if (entList)
 	{
@@ -328,13 +337,6 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	else
 		DevWarning("Unable to retrieve the client DLL interface.\n");
 
-
-	if (gameDLL)
-	{
-		utils::SetGameDLL(gameDLL);
-	}
-	else
-		DevWarning("Unable to retrieve the server game DLL interface\n");
 #endif
 
 
@@ -592,31 +594,6 @@ CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of 
 }
 #endif
 
-void TestCanJb(float height)
-{
-	Vector player_origin = clientDLL.GetPlayerEyePos();
-	Vector vel = serverDLL.GetLastVelocity();
-
-	constexpr float gravity = 600;
-	constexpr float groundThreshold = 2.0f;
-	float ticktime = engineDLL.GetTickrate();
-	constexpr int maxIterations = 1000;
-
-	for (int i = 0; i < maxIterations && (vel.z > 0 || player_origin.z >= height); ++i)
-	{
-		if (vel.z < 0 && player_origin.z - height <= groundThreshold)
-		{
-			Msg("Yes, projected landing height %.6f in %d ticks\n", player_origin.z, i);
-			return;
-		}
-
-		vel.z -= (gravity * ticktime / 2);
-		player_origin.z += vel.z * ticktime;
-		vel.z -= (gravity * ticktime / 2);
-	}
-	Msg("Jumpbug impossible\n");
-}
-
 CON_COMMAND(y_spt_canjb, "Tests if player can jumpbug on a given height, with the current position and speed.")
 {
 	if (!engine)
@@ -633,7 +610,12 @@ CON_COMMAND(y_spt_canjb, "Tests if player can jumpbug on a given height, with th
 	}
 
 	float height = std::stof(args.Arg(1));
-	TestCanJb(height);
+	auto can = utils::CanJB(height);
+
+	if (can.canJB)
+		Msg("Yes, projected landing height %.6f in %d ticks\n", can.landingHeight - height, can.ticks);
+	else
+		Msg("No, missed by %.6f in %d ticks.\n", can.landingHeight - height, can.ticks);
 }
 
 #ifndef OE
@@ -667,23 +649,6 @@ CON_COMMAND(y_spt_print_ent_props, "Prints all props for a given entity index.")
 	}
 }
 
-#endif
-
-#ifndef OE
-CON_COMMAND(y_spt_print_server_ents, "Prints all server entities.")
-{
-	utils::PrintEntities();
-}
-
-CON_COMMAND(y_spt_save_state, "Test")
-{
-	utils::GetSaveState();
-}
-
-CON_COMMAND(y_spt_load_state, "Test")
-{
-	utils::LoadSaveState();
-}
 #endif
 
 
@@ -947,6 +912,21 @@ CON_COMMAND(tas_test_automated_validate, "Validates a test, produces a log file 
 	if (args.ArgC() > 2)
 	{
 		scripts::g_Tester.RunAutomatedTest(args.Arg(1), false, args.Arg(2));
+	}
+}
+
+CON_COMMAND(tas_simulate_frames, "Simulates frames.")
+{
+#if defined( OE )
+	if (!engine)
+		return;
+
+	ArgsWrapper args(engine.get());
+#endif
+
+	if (args.ArgC() == 2)
+	{
+		utils::SimulateFrames(std::stoi(args.Arg(1)));
 	}
 }
 
