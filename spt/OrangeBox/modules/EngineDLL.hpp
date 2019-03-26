@@ -3,6 +3,7 @@
 
 #include <SPTLib\IHookableNameFilter.hpp>
 #include "..\..\utils\patterncontainer.hpp"
+#include "mathlib.h"
 
 using std::uintptr_t;
 using std::size_t;
@@ -16,6 +17,7 @@ typedef void(__cdecl *__Host_RunFrame_Server) (int bFinalTick);
 typedef void(__cdecl *_Cbuf_Execute) ();
 typedef void(__fastcall *_VGui_Paint) (void* thisptr, int edx, int mode);
 typedef int(__fastcall *DemoPlayer__Func)(void* thisptr);
+typedef bool(__fastcall *_CEngineTrace__PointOutsideWorld)(void* thisptr, int edx, const Vector& pt);
 
 
 class EngineDLL : public IHookableNameFilter
@@ -50,6 +52,7 @@ public:
 	int Demo_GetTotalTicks() const;
 	bool Demo_IsPlayingBack() const;
 	bool Demo_IsPlaybackPaused() const;
+	_CEngineTrace__PointOutsideWorld ORIG_CEngineTrace__PointOutsideWorld;
 
 protected:
 	PatternContainer patternContainer;

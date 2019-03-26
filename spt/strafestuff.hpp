@@ -1,5 +1,7 @@
 #pragma once
 
+#include "cmodel.h"
+
 // This code is a messed up version of hlstrafe,
 // go take a look at that instead:
 // https://github.com/HLTAS/hlstrafe
@@ -36,10 +38,11 @@ namespace Strafe
 	};
 
 	struct PlayerData {
-		Vector Origin;
+		Vector UnduckedOrigin;
 		Vector Velocity;
 		Vector Basevelocity;
 		bool Ducking;
+		bool DuckPressed;
 	};
 
 	enum class Button : unsigned char {
@@ -121,7 +124,11 @@ namespace Strafe
 		POINT = 2
 	};
 
-	PositionType GetPositionType(PlayerData& player);
+	void Trace(trace_t& trace, const Vector& start, const Vector& end, HullType hull);
+
+	bool CanUnduck(const PlayerData& player);
+
+	PositionType GetPositionType(PlayerData& player, HullType hull);
 
 	PositionType Move(PlayerData& player, const MovementVars& vars);
 

@@ -368,11 +368,11 @@ namespace utils
 	{
 		auto vars = clientDLL.GetMovementVars();
 		auto player = clientDLL.GetPlayerData();
-		auto type = Strafe::GetPositionType(player);
+		auto type = Strafe::GetPositionType(player, Strafe::HullType::NORMAL);
 
 		for (int i = 0; i < frames; ++i)
 		{
-			Msg("%d: pos: (%.3f, %.3f, %.3f), vel: (%.3f, %.3f, %.3f), ducked %d, onground %d\n", i, player.Origin.x, player.Origin.y, player.Origin.z,
+			Msg("%d: pos: (%.3f, %.3f, %.3f), vel: (%.3f, %.3f, %.3f), ducked %d, onground %d\n", i, player.UnduckedOrigin.x, player.UnduckedOrigin.y, player.UnduckedOrigin.z,
 				player.Velocity.x, player.Velocity.y, player.Velocity.z, player.Ducking, type == Strafe::PositionType::GROUND);
 			auto type = Strafe::Move(player, vars);
 		}

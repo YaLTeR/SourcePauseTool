@@ -915,21 +915,6 @@ CON_COMMAND(tas_test_automated_validate, "Validates a test, produces a log file 
 	}
 }
 
-CON_COMMAND(tas_simulate_frames, "Simulates frames.")
-{
-#if defined( OE )
-	if (!engine)
-		return;
-
-	ArgsWrapper args(engine.get());
-#endif
-
-	if (args.ArgC() == 2)
-	{
-		utils::SimulateFrames(std::stoi(args.Arg(1)));
-	}
-}
-
 
 #if SSDK2007
 // TODO: remove fixed offsets.

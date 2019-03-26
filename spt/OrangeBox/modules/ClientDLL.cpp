@@ -124,6 +124,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	DEF_FUTURE(CViewRender__RenderView);
 	DEF_FUTURE(CViewRender__Render);
 	DEF_FUTURE(UTIL_TraceLine);
+	DEF_FUTURE(UTIL_TraceRay);
 	DEF_FUTURE(UTIL_TracePlayerBBox);
 	DEF_FUTURE(CGameMovement__CanUnDuckJump);
 
@@ -141,6 +142,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	GET_HOOKEDFUTURE(CViewRender__RenderView);
 	GET_HOOKEDFUTURE(CViewRender__Render);
 	GET_FUTURE(UTIL_TraceLine);
+	GET_FUTURE(UTIL_TraceRay);
 	GET_FUTURE(UTIL_TracePlayerBBox);
 	GET_FUTURE(CGameMovement__CanUnDuckJump);
 	
@@ -492,7 +494,14 @@ Strafe::MovementVars ClientDLL::GetMovementVars()
 		onground = true;
 
 	auto vars = Strafe::MovementVars();
+	auto pl = GetPlayerData();
+
 	vars.OnGround = onground;
+
+	if(!vars.OnGround)
+		vars.OnGround = Strafe::GetPositionType(pl,
+			pl.Ducking ? Strafe::HullType::DUCKED : Strafe::HullType::NORMAL) == Strafe::PositionType::GROUND;
+
 	vars.ReduceWishspeed = onground && GetFlagsDucking();
 	vars.Accelerate = _sv_accelerate->GetFloat();
 
@@ -511,8 +520,6 @@ Strafe::MovementVars ClientDLL::GetMovementVars()
 		vars.WishspeedCap = tas_force_wishspeed_cap.GetFloat();
 	else
 		vars.WishspeedCap = 30;
-
-	auto pl = GetPlayerData();
 
 	extern IServerUnknown* GetServerPlayer();
 	auto server_player = GetServerPlayer();
@@ -551,11 +558,21 @@ Strafe::MovementVars ClientDLL::GetMovementVars()
 Strafe::PlayerData ClientDLL::GetPlayerData()
 {
 	Strafe::PlayerData data;
+	const int IN_DUCK = 1 << 2;
 
-	data.Origin = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + offServerAbsOrigin);
-	data.Velocity = GetPlayerVelocity();
 	data.Ducking = GetFlagsDucking();
+	data.DuckPressed = (ORIG_GetButtonBits(cinput_thisptr, 0, 0) & IN_DUCK);
+	data.UnduckedOrigin = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + offServerAbsOrigin);
+	data.Velocity = GetPlayerVelocity();
 	data.Basevelocity = Vector();
+
+	if (data.Ducking)
+	{
+		data.UnduckedOrigin.z -= 36;
+
+		if (Strafe::CanUnduck(data))
+			data.Ducking = false;
+	}
 
 	return data;
 }
@@ -800,6 +817,7 @@ bool DoAngleChange(float& angle, float target)
 
 void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, float frametime)
 {
+	cinput_thisptr = thisptr;
 	ORIG_AdjustAngles(thisptr, edx, frametime);
 
 	if (!pCmd)
@@ -832,12 +850,6 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		auto player = ORIG_GetLocalPlayer();
 		auto vars = GetMovementVars();
 		auto pl = GetPlayerData();
-
-		if (Strafe::Move(GetPlayerData(), vars) == Strafe::PositionType::GROUND)
-		{
-			vars.OnGround = true;
-			Msg("Trace based on ground check.\n");
-		}
 
 		// Lgagst requires more prediction that is done here for correct operation.
 		auto curState = Strafe::CurrentState();

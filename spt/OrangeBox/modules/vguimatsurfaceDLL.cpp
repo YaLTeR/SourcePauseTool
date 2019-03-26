@@ -145,7 +145,8 @@ void VGui_MatSurfaceDLL::DrawHUD(vrect_t* screen)
 			y_spt_hud_vars.GetBool() ||
 			y_spt_hud_portal_bubble.GetBool() ||
 			y_spt_hud_ag_sg_tester.GetBool() ||
-			!whiteSpacesOnly(y_spt_hud_ent_info.GetString()))
+			!whiteSpacesOnly(y_spt_hud_ent_info.GetString()) ||
+			y_spt_hud_oob.GetBool())
 		{
 			DrawTopHUD(screen, scheme, surface);
 		}
@@ -251,10 +252,6 @@ void VGui_MatSurfaceDLL::DrawHopHud(vrect_t * screen, vgui::IScheme * scheme, IM
 
 	swprintf_s(buffer, BUFFER_SIZE, L"Percentage: %.*f", width, percentage);
 	surface->DrawSetTextPos(screen->width / 2 + y_spt_hud_hops_x.GetFloat(), screen->height / 2 + y_spt_hud_hops_y.GetFloat() + (fontTall + MARGIN) * 2);
-	surface->DrawPrintText(buffer, wcslen(buffer));
-
-	swprintf_s(buffer, BUFFER_SIZE, L"Duck jump time: %.*f", width, modulehooks::GetJumpTime());
-	surface->DrawSetTextPos(screen->width / 2 + y_spt_hud_hops_x.GetFloat(), screen->height / 2 + y_spt_hud_hops_y.GetFloat() + (fontTall + MARGIN) * 3);
 	surface->DrawPrintText(buffer, wcslen(buffer));
 
 #endif
@@ -368,11 +365,23 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t * screen, vgui::IScheme * scheme, IM
 	{
 		Vector v = clientDLL.GetPlayerEyePos();
 		QAngle q;
+
 		std::wstring result = calculateWillAGSG(v, q);
 		swprintf_s(buffer, BUFFER_SIZE, L"ag sg: %s", result.c_str());
 		DRAW();
 	}
 #endif
+
+	if (y_spt_hud_oob.GetBool())
+	{
+		Vector v = clientDLL.GetPlayerEyePos();
+		trace_t tr;
+		Strafe::Trace(tr, v, v + 1, Strafe::HullType::POINT);
+
+		bool oob = engineDLL.ORIG_CEngineTrace__PointOutsideWorld(nullptr, 0, v) && !tr.startsolid;
+		swprintf_s(buffer, BUFFER_SIZE, L"oob: %d", oob);
+		DRAW();
+	}
 
 #endif
 }

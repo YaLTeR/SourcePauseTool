@@ -105,6 +105,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	DEF_FUTURE(MiddleOfSV_InitGameDLL);
 	DEF_FUTURE(VGui_Paint);
 	DEF_FUTURE(SpawnPlayer);
+	DEF_FUTURE(CEngineTrace__PointOutsideWorld);
 
 	GET_HOOKEDFUTURE(SV_ActivateServer);
 	GET_HOOKEDFUTURE(FinishRestore);
@@ -112,6 +113,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	GET_FUTURE(MiddleOfSV_InitGameDLL);
 	GET_HOOKEDFUTURE(VGui_Paint);
 	GET_FUTURE(SpawnPlayer);
+	GET_FUTURE(CEngineTrace__PointOutsideWorld);
 	
 
 	// m_bLoadgame and pGameServer (&sv)

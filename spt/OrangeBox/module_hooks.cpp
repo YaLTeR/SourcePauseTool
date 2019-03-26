@@ -26,23 +26,6 @@ namespace modulehooks
 #endif
 	}
 
-	float jumpTime = 0;
-
-	float GetJumpTime()
-	{
-		return jumpTime;
-	}
-
-	void TimeJump()
-	{
-		jumpTime = 510.0f;
-	}
-
-	void JumpTickElapsed()
-	{
-		jumpTime -= 1000.0f * engineDLL.GetTickrate();
-	}
-
 	void ConnectSignals()
 	{
 		clientDLL.AfterFramesSignal.Connect(&scripts::g_TASReader, &scripts::SourceTASReader::OnAfterFrames);
@@ -50,8 +33,6 @@ namespace modulehooks
 		clientDLL.AfterFramesSignal.Connect(&PauseOnDemoTick);
 
 		clientDLL.TickSignal.Connect(&scripts::g_Tester, &scripts::Tester::DataIteration);
-		clientDLL.TickSignal.Connect(&JumpTickElapsed);
-		serverDLL.JumpSignal.Connect(&TimeJump);
 
 #ifndef OE
 		clientDLL.TickSignal.Connect(&vgui_matsurfaceDLL, &VGui_MatSurfaceDLL::NewTick);

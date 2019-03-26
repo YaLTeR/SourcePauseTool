@@ -80,6 +80,9 @@ namespace patterns
 		PATTERNS(VGui_Paint,
 			"5135",
 			"E8 ?? ?? ?? ?? 8B 10 8B 52 34 8B C8 FF E2 CC CC");
+		PATTERNS(CEngineTrace__PointOutsideWorld,
+			"5135",
+			"8B 44 24 04 50 E8 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? C1 E0 04 83 C4 04 66 83 7C 08 04 FF 0F 94 C0 C2 04 00")
 	}
 
 	namespace client
@@ -223,6 +226,9 @@ namespace patterns
 		PATTERNS(CGameMovement__CanUnDuckJump,
 			"5135",
 			"83 EC 60 53 55 8B 6C 24 6C 56 57 8B F1 8B 7E 08 8B 87 98 00 00 00 8B 1E 81 C7 98 00 00 00");
+		PATTERNS(UTIL_TraceRay,
+			"5135",
+			"8B 44 24 10  8B 4C 24 0C 83 EC 10 56 6A 00 50 51 8D 4C 24 10 E8 ?? ?? ?? ?? 8B 74 24 28 8B 0D ?? ?? ?? ?? 8B 11 8B 52 10");
 	}
 
 	namespace server

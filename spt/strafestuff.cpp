@@ -35,38 +35,66 @@
 
 namespace Strafe
 {
-	void Trace(trace_t& trace, const Vector& start, const Vector& end)
+	void Trace(trace_t& trace, const Vector& start, const Vector& end, HullType hull)
 	{
 #define VECELEMENTS(V) V.x, V.y, V.z
+		Vector mins(-16, -16, 0);
+		Vector maxs(16, 16, 72);
 
-		clientDLL.Trace(start, end, MASK_PLAYERSOLID_BRUSHONLY, COLLISION_GROUP_PLAYER_MOVEMENT, trace);
-		Msg("Trace from (%.3f, %.3f, %.3f) to (%.3f, %.3f, %.3f) landed at (%.3f, %.3f, %.3f), fraction %.3f, m_pEnt %p, normal %.3f\n", VECELEMENTS(start), VECELEMENTS(end), VECELEMENTS(trace.endpos), 
-			trace.fraction, trace.m_pEnt, trace.plane.normal[2]);
+		if (hull == HullType::DUCKED)
+			mins.z = 36;
+
+		Ray_t ray;
+
+		if (hull == HullType::POINT)
+			ray.Init(start, end);
+		else
+			ray.Init(start, end, mins, maxs);
+
+		clientDLL.ORIG_UTIL_TraceRay(ray, MASK_PLAYERSOLID_BRUSHONLY, utils::GetClientEntity(0), COLLISION_GROUP_PLAYER_MOVEMENT, &trace);
+		//Msg("Trace from (%.3f, %.3f, %.3f) to (%.3f, %.3f, %.3f) landed at (%.3f, %.3f, %.3f), fraction %.3f, m_pEnt %p, normal %.3fn", VECELEMENTS(start), VECELEMENTS(end), VECELEMENTS(trace.endpos), 
+			//trace.fraction, trace.m_pEnt, trace.plane.normal[2]);
 	}
 
 	void FlyMove(PlayerData& player, const MovementVars& vars, PositionType postype);
 	int ClipVelocity(Vector& velocty, const Vector& normal, float overbounce);
 	static const constexpr double SAFEGUARD_THETA_DIFFERENCE_RAD = M_PI / 65536;
 
-	PositionType GetPositionType(PlayerData& player)
+	bool CanUnduck(const PlayerData& player)
+	{
+		if (player.DuckPressed)
+			return false;
+		else
+		{
+			trace_t tr;
+			Vector duckedOrigin(player.UnduckedOrigin);
+			duckedOrigin.z -= 36;
+			Trace(tr, duckedOrigin, player.UnduckedOrigin, Strafe::HullType::DUCKED);
+
+			return tr.fraction == 1.0f;
+		}
+	}
+
+	PositionType GetPositionType(PlayerData& player, HullType hull)
 	{
 		// TODO: Check water. If we're under water, return here.
 		// Check ground.
+
 		auto type = PositionType::AIR;
 		if (player.Velocity[2] > 140.f)
 			return  PositionType::AIR;
 
 		trace_t tr;
 		Vector point;
-		VecCopy(player.Origin, point);
+		VecCopy(player.UnduckedOrigin, point);
 		point[2] -= 2;
 
-		Trace(tr, player.Origin, point);
-		if (tr.plane.normal[2] < 0.7 || tr.m_pEnt == NULL)
-			return  PositionType::AIR;
+		Trace(tr, player.UnduckedOrigin, point, hull);
+		if (tr.plane.normal[2] < 0.7 || tr.m_pEnt == NULL || tr.startsolid)
+			return PositionType::AIR;
 
 		if (!tr.startsolid && !tr.allsolid)
-			VecCopy<Vector, 3>(tr.endpos, player.Origin);
+			VecCopy<Vector, 3>(tr.endpos, player.UnduckedOrigin);
 		return PositionType::GROUND;
 	}
 
@@ -103,8 +131,10 @@ namespace Strafe
 	PositionType Move(PlayerData& player, const MovementVars& vars)
 	{
 		trace_t tr;
-		PositionType postype = GetPositionType(player);	
-		bool onground = (postype == PositionType::GROUND);
+			
+		auto hull = player.Ducking ? HullType::DUCKED : HullType::NORMAL;
+		PositionType postype = GetPositionType(player, hull);
+		bool onground = (postype == PositionType::GROUND);	
 		CheckVelocity(player, vars);
 
 		// AddCorrectGravity
@@ -130,46 +160,46 @@ namespace Strafe
 			}
 			else {
 				Vector dest;
-				VecCopy(player.Origin, dest);
+				VecCopy(player.UnduckedOrigin, dest);
 				dest[0] += player.Velocity[0] * vars.Frametime;
 				dest[1] += player.Velocity[1] * vars.Frametime;
 
-				Trace(tr, player.Origin, dest);
+				Trace(tr, player.UnduckedOrigin, dest, hull);
 				if (tr.fraction == 1.0f) {
-					VecCopy(tr.endpos, player.Origin);
+					VecCopy(tr.endpos, player.UnduckedOrigin);
 				}
 				else {
 					// Figure out the end position when trying to walk up a step.
 					auto playerUp = PlayerData(player);
 					dest[2] += vars.Stepsize;
-					Trace(tr, playerUp.Origin, dest);
+					Trace(tr, playerUp.UnduckedOrigin, dest, hull);
 					if (!tr.startsolid && !tr.allsolid)
-						VecCopy(tr.endpos, playerUp.Origin);
+						VecCopy(tr.endpos, playerUp.UnduckedOrigin);
 
 					FlyMove(playerUp, vars, postype);
-					VecCopy(playerUp.Origin, dest);
+					VecCopy(playerUp.UnduckedOrigin, dest);
 					dest[2] -= vars.Stepsize;
 
-					Trace(tr, playerUp.Origin, dest);
+					Trace(tr, playerUp.UnduckedOrigin, dest, hull);
 					if (!tr.startsolid && !tr.allsolid)
-						VecCopy(tr.endpos, playerUp.Origin);
+						VecCopy(tr.endpos, playerUp.UnduckedOrigin);
 
 					// Figure out the end position when _not_ trying to walk up a step.
 					auto playerDown = PlayerData(player);
 					FlyMove(playerDown, vars, postype);
 
 					// Take whichever move was the furthest.
-					auto downdist = (playerDown.Origin[0] - player.Origin[0]) * (playerDown.Origin[0] - player.Origin[0])
-						+ (playerDown.Origin[1] - player.Origin[1]) * (playerDown.Origin[1] - player.Origin[1]);
-					auto updist = (playerUp.Origin[0] - player.Origin[0]) * (playerUp.Origin[0] - player.Origin[0])
-						+ (playerUp.Origin[1] - player.Origin[1]) * (playerUp.Origin[1] - player.Origin[1]);
+					auto downdist = (playerDown.UnduckedOrigin[0] - player.UnduckedOrigin[0]) * (playerDown.UnduckedOrigin[0] - player.UnduckedOrigin[0])
+						+ (playerDown.UnduckedOrigin[1] - player.UnduckedOrigin[1]) * (playerDown.UnduckedOrigin[1] - player.UnduckedOrigin[1]);
+					auto updist = (playerUp.UnduckedOrigin[0] - player.UnduckedOrigin[0]) * (playerUp.UnduckedOrigin[0] - player.UnduckedOrigin[0])
+						+ (playerUp.UnduckedOrigin[1] - player.UnduckedOrigin[1]) * (playerUp.UnduckedOrigin[1] - player.UnduckedOrigin[1]);
 
 					if ((tr.plane.normal[2] < 0.7) || (downdist > updist)) {
-						VecCopy(playerDown.Origin, player.Origin);
+						VecCopy(playerDown.UnduckedOrigin, player.UnduckedOrigin);
 						VecCopy(playerDown.Velocity, player.Velocity);
 					}
 					else {
-						VecCopy(playerUp.Origin, player.Origin);
+						VecCopy(playerUp.UnduckedOrigin, player.UnduckedOrigin);
 						VecCopy<Vector, 2>(playerUp.Velocity, player.Velocity);
 						player.Velocity[2] = playerDown.Velocity[2];
 					}
@@ -181,7 +211,7 @@ namespace Strafe
 			FlyMove(player, vars, postype);
 		}
 
-		postype = GetPositionType(player);
+		postype = GetPositionType(player, hull);
 		VecSubtract(player.Velocity, player.Basevelocity, player.Velocity);
 		CheckVelocity(player, vars);
 		if (postype != PositionType::GROUND && postype != PositionType::WATER) {
@@ -197,6 +227,7 @@ namespace Strafe
 	{
 		const auto MAX_BUMPS = 4;
 		const auto MAX_CLIP_PLANES = 5;
+		auto hull = player.Ducking ? HullType::DUCKED : HullType::NORMAL;
 
 		trace_t tr;
 		Vector originalVelocity, savedVelocity;
@@ -215,9 +246,9 @@ namespace Strafe
 
 			Vector end;
 			for (size_t i = 0; i < 3; ++i)
-				end[i] = player.Origin[i] + timeLeft * player.Velocity[i];
+				end[i] = player.UnduckedOrigin[i] + timeLeft * player.Velocity[i];
 
-			Trace(tr, player.Origin, end);
+			Trace(tr, player.UnduckedOrigin, end, hull);
 
 			allFraction += tr.fraction;
 			if (tr.allsolid) {
@@ -226,7 +257,7 @@ namespace Strafe
 				break;
 			}
 			if (tr.fraction > 0) {
-				VecCopy(tr.endpos, player.Origin);
+				VecCopy(tr.endpos, player.UnduckedOrigin);
 				VecCopy(player.Velocity, savedVelocity);
 				numPlanes = 0;
 			}

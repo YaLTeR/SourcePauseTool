@@ -10,6 +10,7 @@
 #include "..\public\cdll_int.h"
 #include "..\..\strafestuff.hpp"
 #include "Signals/Signal.h"
+#include "cmodel.h"
 
 using std::uintptr_t;
 using std::size_t;
@@ -29,6 +30,7 @@ typedef void(__fastcall *_CViewRender__Render) (void* thisptr, int edx, void* re
 typedef void*(__cdecl *_GetClientModeNormal) ();
 typedef void(__cdecl * _UTIL_TraceLine) (const Vector& vecAbsStart, const Vector& vecAbsEnd, unsigned int mask, ITraceFilter *pFilter, trace_t* ptr);
 typedef void(__fastcall * _UTIL_TracePlayerBBox) (void* thisptr, int edx, const Vector& vecAbsStart, const Vector& vecAbsEnd, unsigned int mask, int collisionGroup, trace_t& ptr);
+typedef void(__cdecl * _UTIL_TraceRay) (const Ray_t& ray, unsigned int mask, const IHandleEntity* ignore, int collisionGroup, trace_t* ptr);
 typedef bool(__fastcall * _CGameMovement__CanUnDuckJump) (void* thisptr, int edx, trace_t& ptr);
 
 struct afterframes_entry_t
@@ -100,8 +102,10 @@ public:
 	Gallant::Signal1<bool> OngroundSignal;
 	bool renderingOverlay;
 	void* screenRect;
+	void* cinput_thisptr;
 	_GetClientModeNormal ORIG_GetClientModeNormal;
 	_UTIL_TraceLine ORIG_UTIL_TraceLine;	
+	_UTIL_TraceRay ORIG_UTIL_TraceRay;
 
 protected:
 	_DoImageSpaceMotionBlur ORIG_DoImageSpaceMotionBlur;
