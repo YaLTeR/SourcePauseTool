@@ -37,9 +37,25 @@ namespace Strafe
 {
 	void Trace(trace_t& trace, const Vector& start, const Vector& end, HullType hull)
 	{
-#define VECELEMENTS(V) V.x, V.y, V.z
-		Vector mins(-16, -16, 0);
-		Vector maxs(16, 16, 72);
+#ifndef OE
+        if (!clientDLL.ORIG_UTIL_TraceRay)
+			return;
+
+
+		float minH;
+		float maxH;
+
+		if (tas_strafe_hull_is_line.GetBool()) {
+			minH = 0;
+			maxH = 0;
+		}
+		else {
+              minH = -16;
+			  maxH = 16;
+		}
+
+		Vector mins(minH, minH, 0);
+        Vector maxs(maxH, maxH, 72);
 
 		if (hull == HullType::DUCKED)
 			mins.z = 36;
@@ -52,8 +68,7 @@ namespace Strafe
 			ray.Init(start, end, mins, maxs);
 
 		clientDLL.ORIG_UTIL_TraceRay(ray, MASK_PLAYERSOLID_BRUSHONLY, utils::GetClientEntity(0), COLLISION_GROUP_PLAYER_MOVEMENT, &trace);
-		//Msg("Trace from (%.3f, %.3f, %.3f) to (%.3f, %.3f, %.3f) landed at (%.3f, %.3f, %.3f), fraction %.3f, m_pEnt %p, normal %.3fn", VECELEMENTS(start), VECELEMENTS(end), VECELEMENTS(trace.endpos), 
-			//trace.fraction, trace.m_pEnt, trace.plane.normal[2]);
+#endif
 	}
 
 	void FlyMove(PlayerData& player, const MovementVars& vars, PositionType postype);
@@ -62,7 +77,7 @@ namespace Strafe
 
 	bool CanUnduck(const PlayerData& player)
 	{
-		if (player.DuckPressed)
+		if (player.DuckPressed || !tas_strafe_use_tracing.GetBool())
 			return false;
 		else
 		{

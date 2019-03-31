@@ -403,7 +403,7 @@ namespace utils
 		data.landingHeight = std::numeric_limits<float>::max();
 
 		Vector player_origin = clientDLL.GetPlayerEyePos();
-		Vector vel = serverDLL.GetLastVelocity();
+        Vector vel = clientDLL.GetPlayerVelocity();
 
 		constexpr float gravity = 600;
 		constexpr float groundThreshold = 2.0f;

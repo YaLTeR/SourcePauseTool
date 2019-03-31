@@ -330,7 +330,7 @@
     <ClInclude Include="spt\utils\property_getter.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
-    <ClInclude Include="strafe_utils.hpp">
+    <ClInclude Include="spt\strafe_utils.hpp">
       <Filter>spt</Filter>
     </ClInclude>
   </ItemGroup>

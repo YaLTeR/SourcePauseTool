@@ -36,6 +36,8 @@ extern ConVar tas_strafe_lgagst_minspeed;
 extern ConVar tas_strafe_lgagst_fullmaxspeed;
 extern ConVar tas_strafe_jumptype;
 extern ConVar tas_strafe_capped_limit;
+extern ConVar tas_strafe_hull_is_line;
+extern ConVar tas_strafe_use_tracing;
 
 extern ConVar tas_script_printvars;
 extern ConVar tas_script_savestates;

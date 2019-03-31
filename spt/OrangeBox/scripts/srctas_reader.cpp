@@ -433,6 +433,8 @@ namespace scripts
 		propertyHandlers["velz"] = &SourceTASReader::HandleZVel;
 		propertyHandlers["vel2d"] = &SourceTASReader::Handle2DVel;
 		propertyHandlers["velabs"] = &SourceTASReader::HandleAbsVel;
+        propertyHandlers["alive"] = &SourceTASReader::HandleAliveCondition;
+        propertyHandlers["jb"] = &SourceTASReader::HandleJBCondition;
 	}
 
 	void SourceTASReader::HandleSave(const std::string& value)

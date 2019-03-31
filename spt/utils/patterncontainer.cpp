@@ -36,11 +36,13 @@ void PatternContainer::Hook()
 	for (auto& entry : entries)
 		MemUtils::MarkAsExecutable(*(entry.first));
 
-	DetoursUtils::AttachDetours(moduleName, entries.size(), &entries[0]);
+	if (!entries.empty())
+		DetoursUtils::AttachDetours(moduleName, entries.size(), &entries[0]);
 }
 
 void PatternContainer::Unhook()
 {
-	DetoursUtils::DetachDetours(moduleName, entries.size(), &functions[0]);
+    if (!entries.empty())
+		DetoursUtils::DetachDetours(moduleName, entries.size(), &functions[0]);
 }
 

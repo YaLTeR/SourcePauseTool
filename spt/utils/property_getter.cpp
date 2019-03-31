@@ -6,6 +6,7 @@
 namespace utils
 {
 	static std::map<std::string, OffsetMap> classToOffsetsMap;
+#ifndef OE
 	OffsetMap FindOffsets(IClientEntity* ent)
 	{
 		OffsetMap out;
@@ -27,6 +28,7 @@ namespace utils
 		out.foundOffsets = true;
 		return out;
 	}
+#endif
 
 	int GetOffset(int entindex, const std::string& key)
 	{

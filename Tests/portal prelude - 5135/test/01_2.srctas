@@ -1,9 +1,7 @@
 demo 01_2
 save 01_1
 playspeed 1
-//search low
-//tickend 0|1
-//posx 1222.860840|1300
+settings tas_strafe_hull_is_line 1
 
 vars
 var strafe_yaw -0.375

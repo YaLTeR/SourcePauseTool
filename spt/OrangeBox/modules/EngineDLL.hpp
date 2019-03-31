@@ -3,7 +3,11 @@
 
 #include <SPTLib\IHookableNameFilter.hpp>
 #include "..\..\utils\patterncontainer.hpp"
+#ifdef OE
 #include "mathlib.h"
+#else
+#include "mathlib/mathlib.h"
+#endif
 
 using std::uintptr_t;
 using std::size_t;

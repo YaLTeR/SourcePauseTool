@@ -478,7 +478,6 @@ void ServerDLL::Clear()
 	off1M_bDucked = 0;
 	off2M_bDucked = 0;
 	offM_vecAbsVelocity = 0;
-	lastVelocity.Init();
 	ticksPassed = 0;
 	timerRunning = false;
 	sliding = false;
@@ -598,10 +597,6 @@ void __fastcall ServerDLL::HOOKED_FinishGravity_Func(void* thisptr, int edx)
 void __fastcall ServerDLL::HOOKED_PlayerRunCommand_Func(void* thisptr, int edx, void* ucmd, void* moveHelper)
 {
 	ORIG_PlayerRunCommand(thisptr, edx, ucmd, moveHelper);
-
-	auto prevVelocity = lastVelocity;
-	lastVelocity = *(Vector*)((uintptr_t)thisptr + offM_vecAbsVelocity);
-	//DevMsg("Gain: %.8f\n", lastVelocity.Length2D() - prevVelocity.Length2D());
 
 	if (timerRunning)
 		ticksPassed++;

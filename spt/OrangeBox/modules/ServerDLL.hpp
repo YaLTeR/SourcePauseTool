@@ -58,8 +58,6 @@ public:
 	void __fastcall HOOKED_SlidingAndOtherStuff_Func(void* thisptr, int edx, void* a, void* b);
 	void HOOKED_MiddleOfSlidingFunction_Func();
 
-	const Vector& GetLastVelocity() const { return lastVelocity; }
-
 	void StartTimer() { timerRunning = true; }
 	void StopTimer() { timerRunning = false; }
 	void ResetTimer() { ticksPassed = 0; timerRunning = false; }
@@ -106,8 +104,6 @@ protected:
 	ptrdiff_t offM_moveType;
 	ptrdiff_t offM_moveCollide;
 	ptrdiff_t offM_collisionGroup;
-
-	Vector lastVelocity;
 
 	unsigned ticksPassed;
 	bool timerRunning;

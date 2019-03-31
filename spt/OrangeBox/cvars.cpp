@@ -29,6 +29,8 @@ ConVar tas_strafe_vectorial_offset("tas_strafe_vectorial_offset", "0", FCVAR_TAS
 ConVar tas_strafe_vectorial_snap("tas_strafe_vectorial_snap", "170", FCVAR_TAS_RESET, "Determines when the yaw angle snaps to the target yaw. Mainly used to prevent ABHing from resetting the yaw angle to the back on every jump.\n");
 ConVar tas_strafe_allow_jump_override("tas_strafe_allow_jump_override", "0", FCVAR_TAS_RESET, "Determines if the setyaw/pitch commands are ignored when jumping + TAS strafing. Primarily used in search mode for stucklaunches when the exact time of the jump isn't known prior to running the script.\n");
 ConVar tas_strafe_capped_limit("tas_strafe_capped_limit", "299.99", FCVAR_TAS_RESET, "Determines the speed cap while using capped strafing(type 2).\n");
+ConVar tas_strafe_hull_is_line("tas_strafe_hull_is_line", "0", FCVAR_TAS_RESET, "Treats the collision hull as a line for ground checks. A hack to fix ground detections while going through portals.");
+ConVar tas_strafe_use_tracing("tas_strafe_use_tracing", "1", FCVAR_TAS_RESET, "Use tracing for detecting the ground and whether or not the player can unduck. Only turn off to enable backwards compability with old scripts.");
 
 ConVar tas_force_airaccelerate("tas_force_airaccelerate", "", 0, "Sets the value of airaccelerate used in TAS calculations. If empty, uses the value of sv_airaccelerate.\n\nShould be set to 15 for Portal.\n");
 ConVar tas_force_wishspeed_cap("tas_force_wishspeed_cap", "", 0, "Sets the value of the wishspeed cap used in TAS calculations. If empty, uses the default value: 30.\n\nShould be set to 60 for Portal.\n");
@@ -59,7 +61,7 @@ ConVar y_spt_hud_accel("y_spt_hud_accel", "0", FCVAR_CHEAT, "Turns on the accele
 ConVar y_spt_hud_script_length("y_spt_hud_script_progress", "0", FCVAR_CHEAT, "Turns on the script progress hud.\n");
 ConVar y_spt_hud_portal_bubble("y_spt_hud_portal_bubble", "0", FCVAR_CHEAT, "Turns on portal bubble index hud.\n");
 ConVar y_spt_hud_decimals("y_spt_hud_decimals", "2", FCVAR_CHEAT, "Determines the number of decimals in the SPT HUD.\n");
-ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement vars HUD.\n"); // Putting this in cvars.cpp crashes the game xdddd
+ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement vars HUD.\n");
 ConVar y_spt_hud_ag_sg_tester("y_spt_hud_ag_sg_tester", "0", FCVAR_CHEAT, "Tests if angle glitch will save glitch you.\n");
 ConVar y_spt_hud_ent_info("y_spt_hud_ent_info", "", FCVAR_CHEAT, "Display entity info on HUD. Format is \"[ent index],[prop regex],[prop regex],...,[prop regex];[ent index],...,[prop regex]\".\n");
 ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT, "When set to 1, displays SPT HUD on the left.\n");

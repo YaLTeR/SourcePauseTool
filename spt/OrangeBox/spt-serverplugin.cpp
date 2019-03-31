@@ -737,7 +737,7 @@ CON_COMMAND(_y_spt_setangles, "Sets the angles. Usage: _y_spt_setangles <pitch> 
 
 CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 {
-	const Vector vel = serverDLL.GetLastVelocity();
+	const Vector vel = clientDLL.GetPlayerVelocity();
 
 	Warning("Velocity (x, y, z): %f %f %f\n", vel.x, vel.y, vel.z);
 	Warning("Velocity (xy): %f\n", vel.Length2D());
@@ -913,6 +913,28 @@ CON_COMMAND(tas_test_automated_validate, "Validates a test, produces a log file 
 	{
 		scripts::g_Tester.RunAutomatedTest(args.Arg(1), false, args.Arg(2));
 	}
+}
+
+
+CON_COMMAND(tas_print_movement_vars, "Prints movement vars.") {
+
+   auto vars = clientDLL.GetMovementVars();
+
+   Msg("Accelerate %f\n", vars.Accelerate);
+   Msg("AirAccelerate %f\n", vars.Airaccelerate);
+   Msg("Bounce %f\n", vars.Bounce);
+   Msg("EntFriction %f\n", vars.EntFriction);
+   Msg("EntGrav %f\n", vars.EntGravity);
+   Msg("Frametime %f\n", vars.Frametime);
+   Msg("Friction %f\n", vars.Friction);
+   Msg("Grav %f\n", vars.Gravity);
+   Msg("Maxspeed %f\n", vars.Maxspeed);
+   Msg("Maxvelocity %f\n", vars.Maxvelocity);
+   Msg("OnGround %d\n", vars.OnGround);
+   Msg("ReduceWishspeed %d\n", vars.ReduceWishspeed);
+   Msg("Stepsize %f\n", vars.Stepsize);
+   Msg("Stopspeed %f\n", vars.Stopspeed);
+   Msg("WS cap %f\n", vars.WishspeedCap);
 }
 
 

@@ -78,22 +78,22 @@ void ClientDLL::HOOKED_CViewRender__Render(void* thisptr, int edx, void* rect)
 
 #define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::client::##name);
 #define GET_HOOKEDFUTURE(future_name) \
-    { \
-        auto pattern = f##future_name.get(); \
-        if (ORIG_##future_name) { \
-            DevMsg("[client dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
+	{ \
+		auto pattern = f##future_name.get(); \
+		if (ORIG_##future_name) { \
+			DevMsg("[client dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
 			patternContainer.AddHook(HOOKED_##future_name, (PVOID*)&ORIG_##future_name); \
 			for(int i=0; true; ++i) { if(patterns::client::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)&ORIG_##future_name, i, pattern->name()); break; } } \
-        } else { \
-            DevWarning("[client dll] Could not find " #future_name ".\n"); \
-        } \
-    }
+		} else { \
+			DevWarning("[client dll] Could not find " #future_name ".\n"); \
+		} \
+	}
 
 #define GET_FUTURE(future_name) \
-    { \
-        auto pattern = f##future_name.get(); \
-        if (ORIG_##future_name) { \
-            DevMsg("[client dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
+	{ \
+		auto pattern = f##future_name.get(); \
+		if (ORIG_##future_name) { \
+			DevMsg("[client dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
 			for(int i=0; true; ++i) { if(patterns::client::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)&ORIG_##future_name, i, pattern->name()); break; } } \
 		} else { \
 			DevWarning("[client dll] Could not find " #future_name ".\n"); \
@@ -123,9 +123,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	DEF_FUTURE(CHLClient__CanRecordDemo);
 	DEF_FUTURE(CViewRender__RenderView);
 	DEF_FUTURE(CViewRender__Render);
-	DEF_FUTURE(UTIL_TraceLine);
 	DEF_FUTURE(UTIL_TraceRay);
-	DEF_FUTURE(UTIL_TracePlayerBBox);
 	DEF_FUTURE(CGameMovement__CanUnDuckJump);
 
 	GET_HOOKEDFUTURE(HudUpdate);
@@ -141,9 +139,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	GET_FUTURE(CHLClient__CanRecordDemo);
 	GET_HOOKEDFUTURE(CViewRender__RenderView);
 	GET_HOOKEDFUTURE(CViewRender__Render);
-	GET_FUTURE(UTIL_TraceLine);
 	GET_FUTURE(UTIL_TraceRay);
-	GET_FUTURE(UTIL_TracePlayerBBox);
 	GET_FUTURE(CGameMovement__CanUnDuckJump);
 	
 
@@ -486,6 +482,15 @@ void ClientDLL::ResetAfterframesQueue()
 
 Strafe::MovementVars ClientDLL::GetMovementVars()
 {
+	TRACE_MSG("IN_GetMovementVars");
+    auto vars = Strafe::MovementVars();
+
+	if (!tasAddressesWereFound)
+	{
+		TRACE_MSG("OUT_GetMovementVars\n");
+		return Strafe::MovementVars();
+	}
+
 	auto player = ORIG_GetLocalPlayer();
 	auto onground = IsOnGround(); // TODO: This should really be a proper check.
 	auto maxspeed = *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offMaxspeed);
@@ -493,12 +498,11 @@ Strafe::MovementVars ClientDLL::GetMovementVars()
 	if (tas_force_onground.GetBool())
 		onground = true;
 
-	auto vars = Strafe::MovementVars();
+	
 	auto pl = GetPlayerData();
-
 	vars.OnGround = onground;
 
-	if(!vars.OnGround)
+	if (!vars.OnGround && ORIG_UTIL_TraceRay && tas_strafe_use_tracing.GetBool())
 		vars.OnGround = Strafe::GetPositionType(pl,
 			pl.Ducking ? Strafe::HullType::DUCKED : Strafe::HullType::NORMAL) == Strafe::PositionType::GROUND;
 
@@ -552,11 +556,16 @@ Strafe::MovementVars ClientDLL::GetMovementVars()
 	vars.Stepsize = _sv_stepsize->GetFloat();
 	vars.Bounce = _sv_bounce->GetFloat();
 
+	TRACE_MSG("OUT_MOVEMENTVARS");
+
 	return vars;
 }
 
 Strafe::PlayerData ClientDLL::GetPlayerData()
 {
+	if (!tasAddressesWereFound)
+		return Strafe::PlayerData();
+
 	Strafe::PlayerData data;
 	const int IN_DUCK = 1 << 2;
 
@@ -570,7 +579,7 @@ Strafe::PlayerData ClientDLL::GetPlayerData()
 	{
 		data.UnduckedOrigin.z -= 36;
 
-		if (Strafe::CanUnduck(data))
+		if (tas_strafe_use_tracing.GetBool() && Strafe::CanUnduck(data))
 			data.Ducking = false;
 	}
 
@@ -618,17 +627,6 @@ double ClientDLL::GetDuckJumpTime()
 {
 	auto player = ORIG_GetLocalPlayer();
 	return *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offDuckJumpTime);
-}
-
-void ClientDLL::Trace(const Vector & vecAbsStart, const Vector & vecAbsEnd, unsigned int mask, int collisionGroup, trace_t& ptr)
-{
-	if (!ORIG_UTIL_TracePlayerBBox)
-	{
-		Warning("Trace ran without trace function!\n");
-		return;
-	}
-
-	ORIG_UTIL_TracePlayerBBox(GetGamemovement(), 0, vecAbsStart, vecAbsEnd, mask, collisionGroup, ptr);
 }
 
 bool ClientDLL::CanUnDuckJump(trace_t & ptr)

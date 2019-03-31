@@ -94,7 +94,6 @@ public:
 	int GetPlayerFlags();
 	bool GetFlagsDucking();
 	double GetDuckJumpTime();
-	void Trace(const Vector& vecAbsStart, const Vector& vecAbsEnd, unsigned int mask, int collisionGroup, trace_t& ptr);
 	bool CanUnDuckJump(trace_t& ptr);
 
 	Gallant::Signal0<void> AfterFramesSignal;
@@ -104,7 +103,6 @@ public:
 	void* screenRect;
 	void* cinput_thisptr;
 	_GetClientModeNormal ORIG_GetClientModeNormal;
-	_UTIL_TraceLine ORIG_UTIL_TraceLine;	
 	_UTIL_TraceRay ORIG_UTIL_TraceRay;
 
 protected:
@@ -120,7 +118,6 @@ protected:
 	_CalcAbsoluteVelocity ORIG_CalcAbsoluteVelocity;
 	_CViewRender__RenderView ORIG_CViewRender__RenderView;
 	_CViewRender__Render ORIG_CViewRender__Render;
-	_UTIL_TracePlayerBBox ORIG_UTIL_TracePlayerBBox;
 	_CGameMovement__CanUnDuckJump ORIG_CGameMovement__CanUnDuckJump;
 
 	uintptr_t* pgpGlobals;
