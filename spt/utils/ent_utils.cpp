@@ -374,7 +374,7 @@ namespace utils
 		{
 			Msg("%d: pos: (%.3f, %.3f, %.3f), vel: (%.3f, %.3f, %.3f), ducked %d, onground %d\n", i, player.UnduckedOrigin.x, player.UnduckedOrigin.y, player.UnduckedOrigin.z,
 				player.Velocity.x, player.Velocity.y, player.Velocity.z, player.Ducking, type == Strafe::PositionType::GROUND);
-			auto type = Strafe::Move(player, vars);
+			type = Strafe::Move(player, vars);
 		}
 	}
 	int GetIndex(void* ent)
