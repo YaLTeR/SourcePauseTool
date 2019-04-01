@@ -78,13 +78,13 @@ extern ConVar _y_spt_overlay_swap;
 extern ConVar y_spt_gamedir;
 #endif
 
-extern ConVar *_viewmodel_fov;
-extern ConVar *_sv_accelerate;
-extern ConVar *_sv_airaccelerate;
-extern ConVar *_sv_friction;
-extern ConVar *_sv_maxspeed;
-extern ConVar *_sv_stopspeed;
-extern ConVar *_sv_stepsize;
-extern ConVar *_sv_gravity;
-extern ConVar *_sv_maxvelocity;
-extern ConVar *_sv_bounce;
+extern ConVar* _viewmodel_fov;
+extern ConVar* _sv_accelerate;
+extern ConVar* _sv_airaccelerate;
+extern ConVar* _sv_friction;
+extern ConVar* _sv_maxspeed;
+extern ConVar* _sv_stopspeed;
+extern ConVar* _sv_stepsize;
+extern ConVar* _sv_gravity;
+extern ConVar* _sv_maxvelocity;
+extern ConVar* _sv_bounce;

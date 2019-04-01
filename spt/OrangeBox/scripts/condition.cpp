@@ -1,13 +1,14 @@
 #include "stdafx.h"
 #include "condition.hpp"
-#include "..\modules\ClientDLL.hpp"
-#include "..\modules.hpp"
-#include "..\..\utils\property_getter.hpp"
 #include "..\..\utils\ent_utils.hpp"
+#include "..\..\utils\property_getter.hpp"
+#include "..\modules.hpp"
+#include "..\modules\ClientDLL.hpp"
 
 namespace scripts
 {
-	TickRangeCondition::TickRangeCondition(int low, int high, bool reverse) : lowTick(low), highTick(high), reverse(reverse)
+	TickRangeCondition::TickRangeCondition(int low, int high, bool reverse)
+	    : lowTick(low), highTick(high), reverse(reverse)
 	{
 		if (low >= high)
 			throw std::exception("Low tick should be lower than high");
@@ -33,7 +34,8 @@ namespace scripts
 			return tick > highTick;
 	}
 
-	PosSpeedCondition::PosSpeedCondition(float low, float high, Axis axis, bool isPos) : low(low), high(high), axis(axis), isPos(isPos)
+	PosSpeedCondition::PosSpeedCondition(float low, float high, Axis axis, bool isPos)
+	    : low(low), high(high), axis(axis), isPos(isPos)
 	{
 		if (low >= high)
 			throw std::exception("Low value should be lower than high");
@@ -79,9 +81,7 @@ namespace scripts
 		return false;
 	}
 
-	JBCondition::JBCondition(float z) : height(z)
-	{
-	}
+	JBCondition::JBCondition(float z) : height(z) {}
 
 	bool JBCondition::IsTrue(int tick, int totalTicks) const
 	{
@@ -93,9 +93,7 @@ namespace scripts
 		return false;
 	}
 
-	AliveCondition::AliveCondition()
-	{
-	}
+	AliveCondition::AliveCondition() {}
 
 	bool AliveCondition::IsTrue(int tick, int totalTicks) const
 	{
@@ -106,4 +104,4 @@ namespace scripts
 	{
 		return utils::GetProperty<int>(0, "m_iHealth") <= 0;
 	}
-}
+} // namespace scripts

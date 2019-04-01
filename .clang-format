@@ -1,7 +1,8 @@
 Language:        Cpp
 BasedOnStyle:  Google
 
-AccessModifierOffset: -4
+AccessModifierOffset: -8
+AlignEscapedNewlines: DontAlign
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: false
@@ -9,10 +10,28 @@ AllowShortLoopsOnASingleLine: false
 BinPackArguments: false
 BinPackParameters: false
 BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBraces: Allman
 BreakConstructorInitializersBeforeComma: true
+BreakStringLiterals: false
 ColumnLimit: 120
-IndentWidth: 4
+DerivePointerAlignment: false
+IncludeCategories:
+  - Regex: '^("|<).*stdafx\.h(pp)?("|>)'
+    Priority: -1
+  - Regex: '^("|<)(W|w)indows\.h("|>)'
+    Priority: 1
+  - Regex: '^<.*'
+    Priority: 2
+  - Regex: '.*spt-serverplugin.hpp("|>)'
+    Priority: 3
+  - Regex: '.*'
+    Priority: 10
+IndentCaseLabels: false
+IndentWidth: 8
+MaxEmptyLinesToKeep: 1
 NamespaceIndentation: All
 PenaltyBreakBeforeFirstCallParameter: 300
 ReflowComments: false
 SpaceAfterTemplateKeyword: false
+SpacesBeforeTrailingComments: 1
+UseTab: ForIndentation

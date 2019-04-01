@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "variable_container.hpp"
-#include "dbg.h"
 #include "..\cvars.hpp"
+#include "dbg.h"
 #include "srctas_reader.hpp"
 
-namespace scripts 
+namespace scripts
 {
 	const int FAIL_TICK = -1;
 
@@ -50,16 +50,17 @@ namespace scripts
 
 			if (changes > maxChanges)
 			{
-				if(type == SearchType::None)
+				if (type == SearchType::None)
 					throw std::exception("Not in search mode, range variables are illegal");
-				else 
+				else
 					throw std::exception("Binary search only accepts one range variable");
 			}
-				
 		}
 	}
 
-	void VariableContainer::AddNewVariable(const std::string& type, const std::string& name, const std::string& value)
+	void VariableContainer::AddNewVariable(const std::string& type,
+	                                       const std::string& name,
+	                                       const std::string& value)
 	{
 		auto newVar = ScriptVariable(type, value);
 		variableMap[name] = newVar;
@@ -80,8 +81,7 @@ namespace scripts
 			lastSuccessPrint = iterationPrint + "\t- tick: " + std::to_string(lastSuccessTick) + "\n";
 			if (searchType == SearchType::Random)
 				throw SearchDoneException();
-		}			
-		
+		}
 	}
 
 	void VariableContainer::PrintState()
@@ -134,7 +134,7 @@ namespace scripts
 		{
 			variableType = VariableType::IntRange;
 			data.intRange.ParseInput(value, false);
-		}			
+		}
 		else if (type == "float")
 		{
 			variableType = VariableType::FloatRange;
@@ -157,7 +157,8 @@ namespace scripts
 			return data.value;
 		case VariableType::IntRange:
 			return data.intRange.GetRangeString();
-		case VariableType::FloatRange: case VariableType::AngleRange:
+		case VariableType::FloatRange:
+		case VariableType::AngleRange:
 			return data.floatRange.GetRangeString();
 		default:
 			throw std::exception("Unexpected variable type while printing");
@@ -172,7 +173,8 @@ namespace scripts
 			return data.value;
 		case VariableType::IntRange:
 			return data.intRange.GetValue();
-		case VariableType::FloatRange: case VariableType::AngleRange:
+		case VariableType::FloatRange:
+		case VariableType::AngleRange:
 			return data.floatRange.GetValue();
 		default:
 			throw std::exception("Unexpected variable type while getting value");
@@ -188,11 +190,12 @@ namespace scripts
 		case VariableType::IntRange:
 			data.intRange.Select(search, type);
 			return true;
-		case VariableType::FloatRange: case VariableType::AngleRange:
+		case VariableType::FloatRange:
+		case VariableType::AngleRange:
 			data.floatRange.Select(search, type);
 			return true;
 		default:
 			throw std::exception("Unexpected variable type while starting iteration");
 		}
 	}
-}
+} // namespace scripts

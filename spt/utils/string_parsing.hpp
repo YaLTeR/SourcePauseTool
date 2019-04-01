@@ -86,7 +86,12 @@ inline void GetTriplet(std::istringstream& stream, std::string& out1, std::strin
 	std::getline(stream, out3);
 }
 
-inline void GetQuadlet(std::istringstream& stream, std::string& out1, std::string& out2, std::string& out3, std::string& out4, char delim)
+inline void GetQuadlet(std::istringstream& stream,
+                       std::string& out1,
+                       std::string& out2,
+                       std::string& out3,
+                       std::string& out4,
+                       char delim)
 {
 	std::getline(stream, out1, delim);
 	if (!stream.good())

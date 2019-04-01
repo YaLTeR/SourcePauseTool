@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "parsed_script.hpp"
-#include "..\..\utils\md5.hpp"
 #include "..\spt-serverplugin.hpp"
-#include "framebulk_handler.hpp"
-#include "..\cvars.hpp"
 #include "..\..\utils\file.hpp"
+#include "..\..\utils\md5.hpp"
+#include "..\cvars.hpp"
+#include "framebulk_handler.hpp"
 
 namespace scripts
 {
@@ -54,7 +54,8 @@ namespace scripts
 		afterFramesTick = 0;
 		afterFramesEntries.clear();
 		saveStateIndexes.clear();
-		initCommand = "sv_cheats 1; y_spt_pause 0;_y_spt_afterframes_await_load; _y_spt_afterframes_reset_on_server_activate 0; _y_spt_resetpitchyaw";
+		initCommand =
+		    "sv_cheats 1; y_spt_pause 0;_y_spt_afterframes_await_load; _y_spt_afterframes_reset_on_server_activate 0; _y_spt_resetpitchyaw";
 		duringLoad.clear();
 		saveName.clear();
 		saveStates.clear();
@@ -90,9 +91,8 @@ namespace scripts
 						afterframes_entry_t copy = afterFramesEntries[i];
 						copy.framesLeft = NO_AFTERFRAMES_BULK;
 						afterFramesEntries.push_back(copy);
-						
 					}
-					
+
 					afterFramesEntries[i].framesLeft -= tick;
 				}
 				else
@@ -100,7 +100,6 @@ namespace scripts
 					afterFramesEntries.erase(afterFramesEntries.begin() + i);
 					--i;
 				}
-					
 			}
 		}
 
@@ -122,11 +121,13 @@ namespace scripts
 			data += std::to_string(entry.framesLeft);
 			data += entry.command;
 		}
-		
+
 		MD5 hash(data);
 		std::string digest = hash.hexdigest();
 
-		return Savestate(afterFramesTick, afterFramesEntries.size(), "ss-" + digest + "-" + std::to_string(afterFramesTick));
+		return Savestate(afterFramesTick,
+		                 afterFramesEntries.size(),
+		                 "ss-" + digest + "-" + std::to_string(afterFramesTick));
 	}
 
 	Savestate::Savestate(int tick, int index, std::string key) : tick(tick), index(index), key(std::move(key))
@@ -138,4 +139,4 @@ namespace scripts
 	{
 		exists = FileExists(GetGameDir() + "\\SAVE\\" + key + ".sav");
 	}
-}
+} // namespace scripts

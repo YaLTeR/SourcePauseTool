@@ -1,64 +1,65 @@
 #include <chrono>
+#include <functional>
 #include <sstream>
 #include <time.h>
 
-#include "spt-serverplugin.hpp"
-#include "modules.hpp"
-#include "cvars.hpp"
-#include "..\sptlib-wrapper.hpp"
 #include <SPTLib\Hooks.hpp>
+#include "spt-serverplugin.hpp"
+#include "..\sptlib-wrapper.hpp"
+#include "..\utils\ent_utils.hpp"
+#include "..\utils\string_parsing.hpp"
 #include "custom_interfaces.hpp"
-#include "vstdlib\random.h"
+#include "cvars.hpp"
+#include "modules.hpp"
 #include "scripts\srctas_reader.hpp"
 #include "scripts\tests\test.hpp"
-#include "..\utils\string_parsing.hpp"
-#include "..\utils\ent_utils.hpp"
+#include "vstdlib\random.h"
 
 #include "cdll_int.h"
-#include "engine\iserverplugin.h"
 #include "eiface.h"
+#include "engine\iserverplugin.h"
+#include "icliententitylist.h"
 #include "tier2\tier2.h"
 #include "tier3\tier3.h"
-#include "vgui\isystem.h"
 #include "vgui\iinput.h"
+#include "vgui\isystem.h"
 #include "vgui\ivgui.h"
-#include "icliententitylist.h"
 
 #if SSDK2007
 #include "mathlib\vmatrix.h"
 #endif
 
+#include "..\vgui\vgui_utils.hpp"
+#include "SPTLib\sptlib.hpp"
+#include "module_hooks.hpp"
 #include "overlay\overlay-renderer.hpp"
 #include "overlay\overlays.hpp"
-#include "..\vgui\vgui_utils.hpp"
-#include "module_hooks.hpp"
-#include "SPTLib\sptlib.hpp"
 #include "tier0\memdbgoff.h" // YaLTeR - switch off the memory debugging.
 
 using namespace std::literals;
 
 // useful helper func
-inline bool FStrEq( const char *sz1, const char *sz2 )
+inline bool FStrEq(const char* sz1, const char* sz2)
 {
-	return(Q_stricmp( sz1, sz2 ) == 0);
+	return (Q_stricmp(sz1, sz2) == 0);
 }
 
 // Interfaces from the engine
 std::unique_ptr<EngineClientWrapper> engine;
-IVEngineServer *engine_server = nullptr;
+IVEngineServer* engine_server = nullptr;
 IUniformRandomStream* random = nullptr;
 IMatSystemSurface* surface = nullptr;
 vgui::ISchemeManager* scheme = nullptr;
-void *gm = nullptr;
+void* gm = nullptr;
 
 int lastSeed = 0;
 
 // For OE CVar and ConCommand registering.
-#if defined( OE )
+#if defined(OE)
 class CPluginConVarAccessor : public IConCommandBaseAccessor
 {
 public:
-	virtual bool	RegisterConCommandBase(ConCommandBase *pCommand)
+	virtual bool RegisterConCommandBase(ConCommandBase* pCommand)
 	{
 		pCommand->AddFlags(FCVAR_PLUGIN);
 
@@ -69,13 +70,12 @@ public:
 		g_pCVar->RegisterConCommandBase(pCommand);
 		return true;
 	}
-
 };
 
 CPluginConVarAccessor g_ConVarAccessor;
 
 // OE: For correct linking in VS 2015.
-int (WINAPIV * __vsnprintf) (char*, size_t, const char*, va_list) = _vsnprintf;
+int(WINAPIV* __vsnprintf)(char*, size_t, const char*, va_list) = _vsnprintf;
 #endif
 
 void CallServerCommand(const char* cmd)
@@ -106,7 +106,7 @@ void SetViewAngles(const float viewangles[3])
 	}
 }
 
-void DefaultFOVChangeCallback(ConVar *var, char const *pOldString)
+void DefaultFOVChangeCallback(ConVar* var, char const* pOldString)
 {
 	if (FStrEq(var->GetString(), "75") && FStrEq(pOldString, "90"))
 	{
@@ -125,12 +125,12 @@ void* GetGamemovement()
 	return gm;
 }
 
-IMatSystemSurface * GetSurface()
+IMatSystemSurface* GetSurface()
 {
 	return surface;
 }
 
-vgui::IScheme * GetIScheme()
+vgui::IScheme* GetIScheme()
 {
 	return scheme->GetIScheme(scheme->GetDefaultScheme());
 }
@@ -173,14 +173,16 @@ IServerUnknown* GetServerPlayer()
 bool DoesGameLookLikePortal()
 {
 #ifndef OE
-	if (g_pCVar) {
+	if (g_pCVar)
+	{
 		if (g_pCVar->FindCommand("upgrade_portalgun"))
 			return true;
 
 		return false;
 	}
 
-	if (engine) {
+	if (engine)
+	{
 		auto game_dir = engine->GetGameDirectory();
 		return (GetFileName(Convert(game_dir)) == L"portal"s);
 	}
@@ -192,7 +194,8 @@ bool DoesGameLookLikePortal()
 bool DoesGameLookLikeDMoMM()
 {
 #ifdef OE
-	if (g_pCVar) {
+	if (g_pCVar)
+	{
 		if (g_pCVar->FindVar("mm_xana_fov"))
 			return true;
 	}
@@ -210,9 +213,12 @@ bool FoundEngineServer()
 // The plugin is a static singleton that is exported as an interface
 //
 CSourcePauseTool g_SourcePauseTool;
-EXPOSE_SINGLE_INTERFACE_GLOBALVAR( CSourcePauseTool, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, g_SourcePauseTool );
+EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CSourcePauseTool,
+                                  IServerPluginCallbacks,
+                                  INTERFACEVERSION_ISERVERPLUGINCALLBACKS,
+                                  g_SourcePauseTool);
 
-bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory )
+bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory)
 {
 	auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -220,9 +226,12 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	ConnectTier3Libraries(&interfaceFactory, 1);
 
 	gm = gameServerFactory(INTERFACENAME_GAMEMOVEMENT, NULL);
-	if (gm) {
+	if (gm)
+	{
 		DevMsg("SPT: Found IGameMovement at %p.\n", gm);
-	} else {
+	}
+	else
+	{
 		DevWarning("SPT: Could not find IGameMovement.\n");
 		DevWarning("SPT: ProcessMovement logging with tas_log is unavailable.\n");
 	}
@@ -233,7 +242,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		Warning("SPT: Could not register any CVars and ConCommands.\n");
 		Warning("SPT: y_spt_cvar has no effect.\n");
 	}
-#if defined( OE )
+#if defined(OE)
 	else
 	{
 		ConCommandBaseMgr::OneTimeInit(&g_ConVarAccessor);
@@ -270,15 +279,18 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	auto ptr = interfaceFactory("VEngineClient015", NULL);
 #endif
 
-	if (ptr) {
+	if (ptr)
+	{
 #ifdef OE
 		if (DoesGameLookLikeDMoMM())
-			engine = std::make_unique<IVEngineClientWrapper<IVEngineClientDMoMM>>(reinterpret_cast<IVEngineClientDMoMM*>(ptr));
+			engine = std::make_unique<IVEngineClientWrapper<IVEngineClientDMoMM>>(
+			    reinterpret_cast<IVEngineClientDMoMM*>(ptr));
 #endif
 
 		// Check if we assigned it in the ifdef above.
 		if (!engine)
-			engine = std::make_unique<IVEngineClientWrapper<IVEngineClient>>(reinterpret_cast<IVEngineClient*>(ptr));
+			engine = std::make_unique<IVEngineClientWrapper<IVEngineClient>>(
+			    reinterpret_cast<IVEngineClient*>(ptr));
 	}
 
 	if (!engine)
@@ -340,7 +352,6 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 
 #endif
 
-
 	EngineConCmd = CallServerCommand;
 	EngineGetViewAngles = GetViewAngles;
 	EngineSetViewAngles = SetViewAngles;
@@ -359,7 +370,9 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	Hooks::Init(true);
 	ModuleHooks::ConnectSignals();
 
-	auto loadTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
+	auto loadTime =
+	    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime)
+	        .count();
 	std::ostringstream out;
 	out << "SourcePauseTool version " SPT_VERSION " was loaded in " << loadTime << "ms.\n";
 
@@ -368,11 +381,11 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	return true;
 }
 
-void CSourcePauseTool::Unload( void )
+void CSourcePauseTool::Unload(void)
 {
 	Hooks::Free();
 
-#if !defined( OE )
+#if !defined(OE)
 	ConVar_Unregister();
 #endif
 
@@ -380,7 +393,7 @@ void CSourcePauseTool::Unload( void )
 	DisconnectTier3Libraries();
 }
 
-const char *CSourcePauseTool::GetPluginDescription( void )
+const char* CSourcePauseTool::GetPluginDescription(void)
 {
 	return "SourcePauseTool v" SPT_VERSION ", Ivan \"YaLTeR\" Molodetskikh";
 }
@@ -390,7 +403,7 @@ CON_COMMAND(_y_spt_afterframes_wait, "Delays the afterframes queue. Usage: _y_sp
 	if (!engine)
 		return;
 
-#if defined( OE )
+#if defined(OE)
 	ArgsWrapper args(engine.get());
 #endif
 
@@ -410,7 +423,7 @@ CON_COMMAND(_y_spt_afterframes, "Add a command into an afterframes queue. Usage:
 	if (!engine)
 		return;
 
-#if defined( OE )
+#if defined(OE)
 	ArgsWrapper args(engine.get());
 #endif
 
@@ -429,8 +442,10 @@ CON_COMMAND(_y_spt_afterframes, "Add a command into an afterframes queue. Usage:
 	clientDLL.AddIntoAfterframesQueue(entry);
 }
 
-#if !defined( OE )
-CON_COMMAND(_y_spt_afterframes2, "Add everything after count as a command into the queue. Do not insert the command in quotes. Usage: _y_spt_afterframes2 <count> <command>")
+#if !defined(OE)
+CON_COMMAND(
+    _y_spt_afterframes2,
+    "Add everything after count as a command into the queue. Do not insert the command in quotes. Usage: _y_spt_afterframes2 <count> <command>")
 {
 	if (!engine)
 		return;
@@ -445,14 +460,16 @@ CON_COMMAND(_y_spt_afterframes2, "Add everything after count as a command into t
 
 	std::istringstream ss(args.Arg(1));
 	ss >> entry.framesLeft;
-	const char *cmd = args.ArgS() + strlen(args.Arg(1)) + 1;
+	const char* cmd = args.ArgS() + strlen(args.Arg(1)) + 1;
 	entry.command.assign(cmd);
 
 	clientDLL.AddIntoAfterframesQueue(entry);
 }
 #endif
 
-CON_COMMAND(_y_spt_afterframes_await_load, "Pause reading from the afterframes queue until the next load or changelevel. Useful for writing scripts spanning multiple maps or save-load segments.")
+CON_COMMAND(
+    _y_spt_afterframes_await_load,
+    "Pause reading from the afterframes queue until the next load or changelevel. Useful for writing scripts spanning multiple maps or save-load segments.")
 {
 	clientDLL.PauseAfterframesQueue();
 }
@@ -467,7 +484,7 @@ CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 	if (!engine || !g_pCVar)
 		return;
 
-#if defined( OE )
+#if defined(OE)
 	ArgsWrapper args(engine.get());
 #endif
 
@@ -477,7 +494,7 @@ CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 		return;
 	}
 
-	ConVar *cvar = g_pCVar->FindVar(args.Arg(1));
+	ConVar* cvar = g_pCVar->FindVar(args.Arg(1));
 	if (!cvar)
 	{
 		Warning("Couldn't find the cvar: %s\n", args.Arg(1));
@@ -499,15 +516,15 @@ CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 		{
 			Msg("Max: %f\n", val);
 		}
-		
-		const char *helpText = cvar->GetHelpText();
+
+		const char* helpText = cvar->GetHelpText();
 		if (helpText[0] != '\0')
 			Msg("- %s\n", cvar->GetHelpText());
 
 		return;
 	}
 
-	const char *value = args.Arg(2);
+	const char* value = args.Arg(2);
 	cvar->SetValue(value);
 }
 
@@ -516,7 +533,7 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 	if (!engine || !g_pCVar)
 		return;
 
-#if defined( OE )
+#if defined(OE)
 	ArgsWrapper args(engine.get());
 #endif
 
@@ -526,7 +543,7 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 		return;
 	}
 
-	ConVar *cvar = g_pCVar->FindVar(args.Arg(1));
+	ConVar* cvar = g_pCVar->FindVar(args.Arg(1));
 	if (!cvar)
 	{
 		Warning("Couldn't find the cvar: %s\n", args.Arg(1));
@@ -537,7 +554,7 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 	float max = std::stof(args.Arg(3));
 
 	int t = time(NULL);
-	
+
 	if (lastSeed != t)
 	{
 		random->SetSeed(t);
@@ -548,7 +565,7 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 	cvar->SetValue(r);
 }
 
-#if !defined( OE )
+#if !defined(OE)
 CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of the argument string.")
 {
 	if (!engine || !g_pCVar)
@@ -560,7 +577,7 @@ CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of 
 		return;
 	}
 
-	ConVar *cvar = g_pCVar->FindVar(args.Arg(1));
+	ConVar* cvar = g_pCVar->FindVar(args.Arg(1));
 	if (!cvar)
 	{
 		Warning("Couldn't find the cvar: %s\n", args.Arg(1));
@@ -582,15 +599,15 @@ CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of 
 		{
 			Msg("Max: %f\n", val);
 		}
-		
-		const char *helpText = cvar->GetHelpText();
+
+		const char* helpText = cvar->GetHelpText();
 		if (helpText[0] != '\0')
 			Msg("- %s\n", cvar->GetHelpText());
 
 		return;
 	}
 
-	const char *value = args.ArgS() + strlen(args.Arg(1)) + 1;
+	const char* value = args.ArgS() + strlen(args.Arg(1)) + 1;
 	cvar->SetValue(value);
 }
 #endif
@@ -600,7 +617,7 @@ CON_COMMAND(y_spt_canjb, "Tests if player can jumpbug on a given height, with th
 	if (!engine)
 		return;
 
-#if defined( OE )
+#if defined(OE)
 	ArgsWrapper args(engine.get());
 #endif
 
@@ -637,7 +654,7 @@ CON_COMMAND(y_spt_print_portals, "Prints all portal indexes, their position and 
 
 CON_COMMAND(y_spt_print_ent_props, "Prints all props for a given entity index.")
 {
-#if defined( OE )
+#if defined(OE)
 	ArgsWrapper args(engine.get());
 #endif
 	if (args.ArgC() < 2)
@@ -652,21 +669,20 @@ CON_COMMAND(y_spt_print_ent_props, "Prints all props for a given entity index.")
 
 #endif
 
-
-#if defined( OE )
+#if defined(OE)
 static void DuckspamDown()
 #else
-static void DuckspamDown(const CCommand &args)
+static void DuckspamDown(const CCommand& args)
 #endif
 {
 	clientDLL.EnableDuckspam();
 }
 static ConCommand DuckspamDown_Command("+y_spt_duckspam", DuckspamDown, "Enables the duckspam.");
 
-#if defined( OE )
+#if defined(OE)
 static void DuckspamUp()
 #else
-static void DuckspamUp(const CCommand &args)
+static void DuckspamUp(const CCommand& args)
 #endif
 {
 	clientDLL.DisableDuckspam();
@@ -678,7 +694,7 @@ CON_COMMAND(_y_spt_setpitch, "Sets the pitch. Usage: _y_spt_setpitch <pitch>")
 	if (!engine)
 		return;
 
-#if defined( OE )
+#if defined(OE)
 	ArgsWrapper args(engine.get());
 #endif
 
@@ -688,7 +704,7 @@ CON_COMMAND(_y_spt_setpitch, "Sets the pitch. Usage: _y_spt_setpitch <pitch>")
 		return;
 	}
 
-	clientDLL.SetPitch( atof(args.Arg(1)) );
+	clientDLL.SetPitch(atof(args.Arg(1)));
 }
 
 CON_COMMAND(_y_spt_setyaw, "Sets the yaw. Usage: _y_spt_setyaw <yaw>")
@@ -696,7 +712,7 @@ CON_COMMAND(_y_spt_setyaw, "Sets the yaw. Usage: _y_spt_setyaw <yaw>")
 	if (!engine)
 		return;
 
-#if defined( OE )
+#if defined(OE)
 	ArgsWrapper args(engine.get());
 #endif
 
@@ -706,7 +722,7 @@ CON_COMMAND(_y_spt_setyaw, "Sets the yaw. Usage: _y_spt_setyaw <yaw>")
 		return;
 	}
 
-	clientDLL.SetYaw( atof(args.Arg(1)) );
+	clientDLL.SetYaw(atof(args.Arg(1)));
 }
 
 CON_COMMAND(_y_spt_resetpitchyaw, "Resets pitch/yaw commands.")
@@ -722,7 +738,7 @@ CON_COMMAND(_y_spt_setangles, "Sets the angles. Usage: _y_spt_setangles <pitch> 
 	if (!engine)
 		return;
 
-#if defined( OE )
+#if defined(OE)
 	ArgsWrapper args(engine.get());
 #endif
 
@@ -731,9 +747,9 @@ CON_COMMAND(_y_spt_setangles, "Sets the angles. Usage: _y_spt_setangles <pitch> 
 		Msg("Usage: _y_spt_setangles <pitch> <yaw>\n");
 		return;
 	}
-	
-	clientDLL.SetPitch( atof(args.Arg(1)) );
-	clientDLL.SetYaw( atof(args.Arg(2)) );
+
+	clientDLL.SetPitch(atof(args.Arg(1)));
+	clientDLL.SetYaw(atof(args.Arg(2)));
 }
 
 CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
@@ -751,7 +767,7 @@ CON_COMMAND(_y_spt_getangles, "Gets the view angles of the player.")
 
 	QAngle va;
 	engine->GetViewAngles(va);
-	
+
 	Warning("View Angle (x): %f\n", va.x);
 	Warning("View Angle (y): %f\n", va.y);
 	Warning("View Angle (z): %f\n", va.z);
@@ -760,10 +776,10 @@ CON_COMMAND(_y_spt_getangles, "Gets the view angles of the player.")
 
 CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [tickrate]")
 {
-#if defined( OE )
+#if defined(OE)
 	if (!engine)
 		return;
-	
+
 	ArgsWrapper args(engine.get());
 #endif
 
@@ -774,7 +790,7 @@ CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [t
 		break;
 
 	case 2:
-		engineDLL.SetTickrate( atof(args.Arg(1)) );
+		engineDLL.SetTickrate(atof(args.Arg(1)));
 		break;
 
 	default:
@@ -805,7 +821,7 @@ CON_COMMAND(y_spt_timer_print, "Prints the current time of the SPT timer.")
 
 CON_COMMAND(tas_script_load, "Loads and executes an .srctas script. Usage: tas_load_script [script]")
 {
-#if defined( OE )
+#if defined(OE)
 	if (!engine)
 		return;
 
@@ -820,7 +836,7 @@ CON_COMMAND(tas_script_load, "Loads and executes an .srctas script. Usage: tas_l
 
 CON_COMMAND(tas_script_search, "Starts a variable search for an .srctas script. Usage: tas_load_search [script]")
 {
-#if defined( OE )
+#if defined(OE)
 	if (!engine)
 		return;
 
@@ -848,9 +864,10 @@ CON_COMMAND(tas_script_result_stop, "Signals a stop in a variable search.")
 	scripts::g_TASReader.SearchResult(scripts::SearchResult::NoSearch);
 }
 
-CON_COMMAND(_y_spt_findangle, "Finds the yaw/pitch angle required to look at the given position from player's current position.")
+CON_COMMAND(_y_spt_findangle,
+            "Finds the yaw/pitch angle required to look at the given position from player's current position.")
 {
-#if defined( OE )
+#if defined(OE)
 	if (!engine)
 		return;
 
@@ -873,7 +890,7 @@ CON_COMMAND(_y_spt_findangle, "Finds the yaw/pitch angle required to look at the
 
 CON_COMMAND(tas_test_generate, "Generates test data for given test.")
 {
-#if defined( OE )
+#if defined(OE)
 	if (!engine)
 		return;
 
@@ -888,7 +905,7 @@ CON_COMMAND(tas_test_generate, "Generates test data for given test.")
 
 CON_COMMAND(tas_test_validate, "Validates a test.")
 {
-#if defined( OE )
+#if defined(OE)
 	if (!engine)
 		return;
 
@@ -903,7 +920,7 @@ CON_COMMAND(tas_test_validate, "Validates a test.")
 
 CON_COMMAND(tas_test_automated_validate, "Validates a test, produces a log file and exits the game.")
 {
-#if defined( OE )
+#if defined(OE)
 	if (!engine)
 		return;
 
@@ -916,28 +933,26 @@ CON_COMMAND(tas_test_automated_validate, "Validates a test, produces a log file 
 	}
 }
 
+CON_COMMAND(tas_print_movement_vars, "Prints movement vars.")
+{
+	auto vars = clientDLL.GetMovementVars();
 
-CON_COMMAND(tas_print_movement_vars, "Prints movement vars.") {
-
-   auto vars = clientDLL.GetMovementVars();
-
-   Msg("Accelerate %f\n", vars.Accelerate);
-   Msg("AirAccelerate %f\n", vars.Airaccelerate);
-   Msg("Bounce %f\n", vars.Bounce);
-   Msg("EntFriction %f\n", vars.EntFriction);
-   Msg("EntGrav %f\n", vars.EntGravity);
-   Msg("Frametime %f\n", vars.Frametime);
-   Msg("Friction %f\n", vars.Friction);
-   Msg("Grav %f\n", vars.Gravity);
-   Msg("Maxspeed %f\n", vars.Maxspeed);
-   Msg("Maxvelocity %f\n", vars.Maxvelocity);
-   Msg("OnGround %d\n", vars.OnGround);
-   Msg("ReduceWishspeed %d\n", vars.ReduceWishspeed);
-   Msg("Stepsize %f\n", vars.Stepsize);
-   Msg("Stopspeed %f\n", vars.Stopspeed);
-   Msg("WS cap %f\n", vars.WishspeedCap);
+	Msg("Accelerate %f\n", vars.Accelerate);
+	Msg("AirAccelerate %f\n", vars.Airaccelerate);
+	Msg("Bounce %f\n", vars.Bounce);
+	Msg("EntFriction %f\n", vars.EntFriction);
+	Msg("EntGrav %f\n", vars.EntGravity);
+	Msg("Frametime %f\n", vars.Frametime);
+	Msg("Friction %f\n", vars.Friction);
+	Msg("Grav %f\n", vars.Gravity);
+	Msg("Maxspeed %f\n", vars.Maxspeed);
+	Msg("Maxvelocity %f\n", vars.Maxvelocity);
+	Msg("OnGround %d\n", vars.OnGround);
+	Msg("ReduceWishspeed %d\n", vars.ReduceWishspeed);
+	Msg("Stepsize %f\n", vars.Stepsize);
+	Msg("Stopspeed %f\n", vars.Stopspeed);
+	Msg("WS cap %f\n", vars.WishspeedCap);
 }
-
 
 #if SSDK2007
 // TODO: remove fixed offsets.
@@ -948,13 +963,20 @@ CON_COMMAND(y_spt_find_portals, "Yes")
 	if (clientDLL.offServerAbsOrigin == 0)
 		return;
 
-	for (int i = 0; i < MAX_EDICTS; ++i) {
+	for (int i = 0; i < MAX_EDICTS; ++i)
+	{
 		auto ent = engine_server->PEntityOfEntIndex(i);
 
-		if (ent && !ent->IsFree() && !strcmp(ent->GetClassName(), "prop_portal")) {
-			auto& origin = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(ent->GetUnknown()) + clientDLL.offServerAbsOrigin);
+		if (ent && !ent->IsFree() && !strcmp(ent->GetClassName(), "prop_portal"))
+		{
+			auto& origin = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(ent->GetUnknown())
+			                                          + clientDLL.offServerAbsOrigin);
 
-			Msg("SPT: There's a portal with index %d at %.8f %.8f %.8f.\n", i, origin.x, origin.y, origin.z);
+			Msg("SPT: There's a portal with index %d at %.8f %.8f %.8f.\n",
+			    i,
+			    origin.x,
+			    origin.y,
+			    origin.z);
 		}
 	}
 }
@@ -963,7 +985,8 @@ void calculate_offset_player_pos(edict_t* saveglitch_portal, Vector& new_player_
 {
 	// Here we make sure that the eye position and the eye angles match up.
 	const Vector view_offset(0, 0, 64);
-	auto& player_origin = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + clientDLL.offServerAbsOrigin);
+	auto& player_origin =
+	    *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + clientDLL.offServerAbsOrigin);
 	auto& player_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(GetServerPlayer()) + 2568);
 
 	auto& matrix = *reinterpret_cast<VMatrix*>(reinterpret_cast<uintptr_t>(saveglitch_portal->GetUnknown()) + 1072);
@@ -978,55 +1001,71 @@ void calculate_offset_player_pos(edict_t* saveglitch_portal, Vector& new_player_
 	new_player_angles.z = AngleNormalizePositive(new_player_angles.z);
 }
 
-CON_COMMAND(y_spt_calc_relative_position, "y_spt_calc_relative_position <index of the save glitch portal | \"blue\" | \"orange\"> [1 if you want to teleport there instead of just printing]")
+CON_COMMAND(
+    y_spt_calc_relative_position,
+    "y_spt_calc_relative_position <index of the save glitch portal | \"blue\" | \"orange\"> [1 if you want to teleport there instead of just printing]")
 {
-	if (args.ArgC() != 2 && args.ArgC() != 3) {
+	if (args.ArgC() != 2 && args.ArgC() != 3)
+	{
 		Msg("Usage: y_spt_calc_relative_position <index of the save glitch portal | \"blue\" | \"orange\"> [1 if you want to teleport there instead of just printing]\n");
 		return;
 	}
 
-	if (clientDLL.offServerAbsOrigin == 0) {
+	if (clientDLL.offServerAbsOrigin == 0)
+	{
 		Warning("Could not find the required offset in the client DLL.\n");
 		return;
 	}
 
 	int portal_index = atoi(args.Arg(1));
 
-	if (!strcmp(args.Arg(1), "blue") || !strcmp(args.Arg(1), "orange")) {
+	if (!strcmp(args.Arg(1), "blue") || !strcmp(args.Arg(1), "orange"))
+	{
 		std::vector<int> indices;
 
-		for (int i = 0; i < MAX_EDICTS; ++i) {
+		for (int i = 0; i < MAX_EDICTS; ++i)
+		{
 			auto ent = engine_server->PEntityOfEntIndex(i);
 
-			if (ent && !ent->IsFree() && !strcmp(ent->GetClassName(), "prop_portal")) {
-				auto is_orange_portal = *reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(ent->GetUnknown()) + 1137);
+			if (ent && !ent->IsFree() && !strcmp(ent->GetClassName(), "prop_portal"))
+			{
+				auto is_orange_portal =
+				    *reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(ent->GetUnknown()) + 1137);
 
 				if (is_orange_portal == (args.Arg(1)[0] == 'o'))
 					indices.push_back(i);
 			}
 		}
 
-		if (indices.size() > 1) {
+		if (indices.size() > 1)
+		{
 			Msg("There are multiple %s portals, please use the index:\n", args.Arg(1));
 
-			for (auto i : indices) {
+			for (auto i : indices)
+			{
 				auto ent = engine_server->PEntityOfEntIndex(i);
-				auto& origin = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(ent->GetUnknown()) + clientDLL.offServerAbsOrigin);
+				auto& origin = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(ent->GetUnknown())
+				                                          + clientDLL.offServerAbsOrigin);
 
 				Msg("%d located at %.8f %.8f %.8f\n", i, origin.x, origin.y, origin.z);
 			}
 
 			return;
-		} else if (indices.size() == 0) {
+		}
+		else if (indices.size() == 0)
+		{
 			Msg("There are no %s portals.\n", args.Arg(1));
 			return;
-		} else {
+		}
+		else
+		{
 			portal_index = indices[0];
 		}
 	}
 
 	auto portal = engine_server->PEntityOfEntIndex(portal_index);
-	if (!portal || portal->IsFree() || strcmp(portal->GetClassName(), "prop_portal") != 0) {
+	if (!portal || portal->IsFree() || strcmp(portal->GetClassName(), "prop_portal") != 0)
+	{
 		Warning("The portal index is invalid.\n");
 		return;
 	}
@@ -1035,18 +1074,28 @@ CON_COMMAND(y_spt_calc_relative_position, "y_spt_calc_relative_position <index o
 	QAngle new_player_angles;
 	calculate_offset_player_pos(portal, new_player_origin, new_player_angles);
 
-	if (args.ArgC() == 2) {
-		Msg(
-			"setpos %.8f %.8f %.8f;setang %.8f %.8f %.8f\n",
-			new_player_origin.x, new_player_origin.y, new_player_origin.z,
-			new_player_angles.x, new_player_angles.y, new_player_angles.z
-		);
-	} else {
+	if (args.ArgC() == 2)
+	{
+		Msg("setpos %.8f %.8f %.8f;setang %.8f %.8f %.8f\n",
+		    new_player_origin.x,
+		    new_player_origin.y,
+		    new_player_origin.z,
+		    new_player_angles.x,
+		    new_player_angles.y,
+		    new_player_angles.z);
+	}
+	else
+	{
 		char buf[256];
-		snprintf(buf, ARRAYSIZE(buf), "setpos %.8f %.8f %.8f;setang %.8f %.8f %.8f\n",
-			new_player_origin.x, new_player_origin.y, new_player_origin.z,
-			new_player_angles.x, new_player_angles.y, new_player_angles.z
-		);
+		snprintf(buf,
+		         ARRAYSIZE(buf),
+		         "setpos %.8f %.8f %.8f;setang %.8f %.8f %.8f\n",
+		         new_player_origin.x,
+		         new_player_origin.y,
+		         new_player_origin.z,
+		         new_player_angles.x,
+		         new_player_angles.y,
+		         new_player_angles.z);
 
 		engine->ClientCmd(buf);
 	}
@@ -1056,7 +1105,8 @@ CON_COMMAND(y_spt_calc_relative_position, "y_spt_calc_relative_position <index o
 void setang_exact(const QAngle& angles)
 {
 	auto player = GetServerPlayer();
-	auto teleport = reinterpret_cast<void (__fastcall *)(void*, int, const Vector*, const QAngle*, const Vector*)>((*reinterpret_cast<uintptr_t**>(player))[105]);
+	auto teleport = reinterpret_cast<void(__fastcall*)(void*, int, const Vector*, const QAngle*, const Vector*)>(
+	    (*reinterpret_cast<uintptr_t**>(player))[105]);
 
 	teleport(player, 0, nullptr, &angles, nullptr);
 	serverDLL.SnapEyeAngles(player, 0, angles);
@@ -1076,26 +1126,35 @@ double trace_fire_portal(QAngle angles, Vector& normal)
 QAngle firstAngle;
 bool firstInvocation = true;
 
-CON_COMMAND(y_spt_find_seam_shot, "y_spt_find_seam_shot [<pitch1> <yaw1> <pitch2> <yaw2> <epsilon>] - tries to find a seam shot on a \"line\" between viewangles (pitch1; yaw1) and (pitch2; yaw2) with binary search. Decreasing epsilon will result in more viewangles checked. A default value is 0.00001. If no arguments are given, first invocation selects the first point, second invocation selects the second point and searches between them.")
+CON_COMMAND(
+    y_spt_find_seam_shot,
+    "y_spt_find_seam_shot [<pitch1> <yaw1> <pitch2> <yaw2> <epsilon>] - tries to find a seam shot on a \"line\" between viewangles (pitch1; yaw1) and (pitch2; yaw2) with binary search. Decreasing epsilon will result in more viewangles checked. A default value is 0.00001. If no arguments are given, first invocation selects the first point, second invocation selects the second point and searches between them.")
 {
 	QAngle a, b;
 	double eps = 0.00001 * 0.00001;
 
-	if (args.ArgC() == 1) {
-		if (firstInvocation) {
+	if (args.ArgC() == 1)
+	{
+		if (firstInvocation)
+		{
 			engine->GetViewAngles(firstAngle);
 			firstInvocation = !firstInvocation;
 
 			Msg("First point set.\n");
 			return;
-		} else {
+		}
+		else
+		{
 			firstInvocation = !firstInvocation;
 
 			a = firstAngle;
 			engine->GetViewAngles(b);
 		}
-	} else {
-		if (args.ArgC() != 5 && args.ArgC() != 6) {
+	}
+	else
+	{
+		if (args.ArgC() != 5 && args.ArgC() != 6)
+		{
 			Msg("Usage: y_spt_find_seam_shot <pitch1> <yaw1> <pitch2> <yaw2> <epsilon> - tries to find a seam shot on a \"line\" between viewangles (pitch1; yaw1) and (pitch2; yaw2) with binary search. Decreasing epsilon will result in more viewangles checked. A default value is 0.00001. If no arguments are given, first invocation selects the first point, second invocation selects the second point and searches between them.\n");
 			return;
 		}
@@ -1105,7 +1164,8 @@ CON_COMMAND(y_spt_find_seam_shot, "y_spt_find_seam_shot [<pitch1> <yaw1> <pitch2
 		eps = (args.ArgC() == 5) ? eps : std::pow(atof(args.Arg(5)), 2);
 	}
 
-	if (!serverDLL.GetActiveWeapon(GetServerPlayer())) {
+	if (!serverDLL.GetActiveWeapon(GetServerPlayer()))
+	{
 		Msg("You need to be holding a portal gun.\n");
 		return;
 	}
@@ -1119,20 +1179,25 @@ CON_COMMAND(y_spt_find_seam_shot, "y_spt_find_seam_shot [<pitch1> <yaw1> <pitch2
 	QAngle test = a + (b - a) / 2;
 	double difference;
 
-	do {
+	do
+	{
 		Vector test_normal;
 
-		if (trace_fire_portal(test, test_normal) - distance > GOOD_DISTANCE_DIFFERENCE) {
+		if (trace_fire_portal(test, test_normal) - distance > GOOD_DISTANCE_DIFFERENCE)
+		{
 			Msg("Found a seam shot at setang %.8f %.8f 0\n", test.x, test.y);
 			return;
 		}
 
-		if (test_normal == a_normal) {
+		if (test_normal == a_normal)
+		{
 			a = test;
 			test += (b - a) / 2;
 
 			difference = (test - a).LengthSqr();
-		} else {
+		}
+		else
+		{
 			b = test;
 			test += (a - b) / 2;
 

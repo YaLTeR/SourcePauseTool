@@ -1,19 +1,19 @@
 #include "stdafx.h"
 
-#include "ent_utils.hpp"
-#include "client_class.h"
-#include "..\OrangeBox\overlay\portal_camera.hpp"
-#include <vector>
+#include <limits>
 #include <regex>
-#include "string_parsing.hpp"
+#include <vector>
 #include "..\OrangeBox\spt-serverplugin.hpp"
+#include "..\OrangeBox\modules.hpp"
 #include "..\OrangeBox\modules\ClientDLL.hpp"
 #include "..\OrangeBox\modules\ServerDLL.hpp"
-#include "..\OrangeBox\modules.hpp"
-#include <limits>
-#include "property_getter.hpp"
+#include "..\OrangeBox\overlay\portal_camera.hpp"
 #include "..\strafestuff.hpp"
 #include "SPTLib\sptlib.hpp"
+#include "client_class.h"
+#include "ent_utils.hpp"
+#include "property_getter.hpp"
+#include "string_parsing.hpp"
 #undef max
 
 #ifndef OE
@@ -25,7 +25,6 @@ const int INDEX_MASK = MAX_EDICTS - 1;
 
 namespace utils
 {
-
 #ifndef OE
 	void SetEntityList(IClientEntityList* list)
 	{
@@ -42,9 +41,9 @@ namespace utils
 		clientInterface = interf;
 	}
 
-	IClientEntity * GetClientEntity(int index)
+	IClientEntity* GetClientEntity(int index)
 	{
-		return entList->GetClientEntity(index+1);
+		return entList->GetClientEntity(index + 1);
 	}
 
 	void PrintAllClientEntities()
@@ -59,7 +58,6 @@ namespace utils
 				Msg("%d : %s\n", i, ent->GetClientClass()->m_pNetworkName);
 			}
 		}
-
 	}
 
 	void PrintAllPortals()
@@ -73,17 +71,25 @@ namespace utils
 			{
 				auto& pos = ent->GetAbsOrigin();
 				auto& angles = ent->GetAbsAngles();
-				Msg("%d : %s, position (%.3f, %.3f, %.3f), angles (%.3f, %.3f, %.3f)\n", i, ent->GetClientClass()->m_pNetworkName, pos.x, pos.y, pos.z, angles.x, angles.y, angles.z);
+				Msg("%d : %s, position (%.3f, %.3f, %.3f), angles (%.3f, %.3f, %.3f)\n",
+				    i,
+				    ent->GetClientClass()->m_pNetworkName,
+				    pos.x,
+				    pos.y,
+				    pos.z,
+				    angles.x,
+				    angles.y,
+				    angles.z);
 			}
 		}
 	}
 
-	IClientEntity * GetPlayer()
+	IClientEntity* GetPlayer()
 	{
 		return GetClientEntity(0);
 	}
 
-	const char * GetModelName(IClientEntity * ent)
+	const char* GetModelName(IClientEntity* ent)
 	{
 		if (ent)
 			return modelInfo->GetModelName(ent->GetModel());
@@ -113,7 +119,11 @@ namespace utils
 			if (strstr(prop->GetName(), "m_h") != NULL)
 			{
 				ehandle = *reinterpret_cast<int*>(value);
-				sprintf_s(buffer, size, "(index %d, serial %d)", ehandle & INDEX_MASK, (ehandle & (~INDEX_MASK)) >> MAX_EDICT_BITS);
+				sprintf_s(buffer,
+				          size,
+				          "(index %d, serial %d)",
+				          ehandle & INDEX_MASK,
+				          (ehandle & (~INDEX_MASK)) >> MAX_EDICT_BITS);
 			}
 			else
 			{
@@ -144,7 +154,6 @@ namespace utils
 		props.push_back(propValue(name, BUFFER, offset));
 	}
 
-
 	void GetAllProps(RecvTable* table, void* ptr, std::vector<propValue>& props)
 	{
 		int numProps = table->m_nProps;
@@ -152,19 +161,21 @@ namespace utils
 		for (int i = 0; i < numProps; ++i)
 		{
 			auto prop = table->GetProp(i);
-			
+
 			if (strcmp(prop->GetName(), "baseclass") == 0)
 			{
 				RecvTable* base = prop->GetDataTable();
-				
+
 				if (base)
 					GetAllProps(base, ptr, props);
 			}
-			else if (prop->GetOffset() != 0) // There's various garbage attributes at offset 0 for a thusfar unbeknownst reason
+			else if (
+			    prop->GetOffset()
+			    != 0) // There's various garbage attributes at offset 0 for a thusfar unbeknownst reason
 			{
 				GetPropValue(prop, ptr, BUFFER, BUFFER_SIZE);
 				AddProp(props, prop->GetName(), prop->GetOffset());
-			}				
+			}
 		}
 	}
 
@@ -174,13 +185,22 @@ namespace utils
 
 		if (ent)
 		{
-			snprintf(BUFFER, BUFFER_SIZE, "(%.3f, %.3f, %.3f)", ent->GetAbsOrigin().x, ent->GetAbsOrigin().y, ent->GetAbsOrigin().z);
+			snprintf(BUFFER,
+			         BUFFER_SIZE,
+			         "(%.3f, %.3f, %.3f)",
+			         ent->GetAbsOrigin().x,
+			         ent->GetAbsOrigin().y,
+			         ent->GetAbsOrigin().z);
 			AddProp(props, "AbsOrigin", -1);
-			snprintf(BUFFER, BUFFER_SIZE, "(%.3f, %.3f, %.3f)", ent->GetAbsAngles().x, ent->GetAbsAngles().y, ent->GetAbsAngles().z);
+			snprintf(BUFFER,
+			         BUFFER_SIZE,
+			         "(%.3f, %.3f, %.3f)",
+			         ent->GetAbsAngles().x,
+			         ent->GetAbsAngles().y,
+			         ent->GetAbsAngles().z);
 			AddProp(props, "AbsAngles", -1);
 			GetAllProps(ent->GetClientClass()->m_pRecvTable, ent, props);
 		}
-
 	}
 
 	void PrintAllProps(int index)
@@ -195,7 +215,10 @@ namespace utils
 			Msg("Class %s props:\n\n", ent->GetClientClass()->m_pNetworkName);
 
 			for (auto& prop : props)
-				Msg("Name: %s, offset %d, value %s\n", prop.name.c_str(), prop.offset, prop.value.c_str());
+				Msg("Name: %s, offset %d, value %s\n",
+				    prop.name.c_str(),
+				    prop.offset,
+				    prop.value.c_str());
 		}
 		else
 			Msg("Entity doesn't exist!");
@@ -238,7 +261,7 @@ namespace utils
 	static IClientEntity* prevPortal = nullptr;
 	static IClientEntity* prevLinkedPortal = nullptr;
 
-	IClientEntity * FindLinkedPortal(IClientEntity * ent)
+	IClientEntity* FindLinkedPortal(IClientEntity* ent)
 	{
 		int ehandle = utils::GetProperty<int>(ent->entindex() - 1, "m_hLinkedPortal");
 		int index = ehandle & INDEX_MASK;
@@ -261,7 +284,13 @@ namespace utils
 			return nullptr;
 	}
 
-	void GetValuesMatchingRegex(const char* regex, const char* end, int& entries, wchar* arr, int maxEntries, int bufferSize, const std::vector<propValue>& props)
+	void GetValuesMatchingRegex(const char* regex,
+	                            const char* end,
+	                            int& entries,
+	                            wchar* arr,
+	                            int maxEntries,
+	                            int bufferSize,
+	                            const std::vector<propValue>& props)
 	{
 		std::regex r(regex, end);
 
@@ -276,7 +305,11 @@ namespace utils
 				std::wstring name = Convert(prop.name);
 				std::wstring value = Convert(prop.value);
 
-				swprintf_s(arr + (entries * bufferSize), bufferSize, L"%s : %s", name.c_str(), value.c_str());
+				swprintf_s(arr + (entries * bufferSize),
+				           bufferSize,
+				           L"%s : %s",
+				           name.c_str(),
+				           value.c_str());
 				++entries;
 			}
 		}
@@ -306,7 +339,7 @@ namespace utils
 			{
 				readEntityIndex = true;
 			}
-			else if(args[i] == sep)
+			else if (args[i] == sep)
 			{
 				++i;
 			}
@@ -333,7 +366,10 @@ namespace utils
 
 				if (!ent)
 				{
-					swprintf_s(arr + (entries * bufferSize), bufferSize, L"entity %d does not exist", entIndex);
+					swprintf_s(arr + (entries * bufferSize),
+					           bufferSize,
+					           L"entity %d does not exist",
+					           entIndex);
 					++entries;
 				}
 				else
@@ -348,12 +384,16 @@ namespace utils
 						++entries;
 					}
 
-					swprintf_s(arr + (entries * bufferSize), bufferSize, L"entity %d : %s", entIndex, className.c_str());
+					swprintf_s(arr + (entries * bufferSize),
+					           bufferSize,
+					           L"entity %d : %s",
+					           entIndex,
+					           className.c_str());
 					++entries;
 				}
 			}
 			// Read prop regex, make sure entity exists as well
-			else if(ent)
+			else if (ent)
 			{
 				const char* end = args + endIndex;
 				GetValuesMatchingRegex(args + i, end, entries, arr, maxEntries, bufferSize, props);
@@ -373,8 +413,16 @@ namespace utils
 
 		for (int i = 0; i < frames; ++i)
 		{
-			Msg("%d: pos: (%.3f, %.3f, %.3f), vel: (%.3f, %.3f, %.3f), ducked %d, onground %d\n", i, player.UnduckedOrigin.x, player.UnduckedOrigin.y, player.UnduckedOrigin.z,
-				player.Velocity.x, player.Velocity.y, player.Velocity.z, player.Ducking, type == Strafe::PositionType::GROUND);
+			Msg("%d: pos: (%.3f, %.3f, %.3f), vel: (%.3f, %.3f, %.3f), ducked %d, onground %d\n",
+			    i,
+			    player.UnduckedOrigin.x,
+			    player.UnduckedOrigin.y,
+			    player.UnduckedOrigin.z,
+			    player.Velocity.x,
+			    player.Velocity.y,
+			    player.Velocity.z,
+			    player.Ducking,
+			    type == Strafe::PositionType::GROUND);
 			type = Strafe::Move(player, vars);
 		}
 	}
@@ -405,7 +453,7 @@ namespace utils
 		data.landingHeight = std::numeric_limits<float>::max();
 
 		Vector player_origin = clientDLL.GetPlayerEyePos();
-        Vector vel = clientDLL.GetPlayerVelocity();
+		Vector vel = clientDLL.GetPlayerVelocity();
 
 		constexpr float gravity = 600;
 		constexpr float groundThreshold = 2.0f;
@@ -421,7 +469,7 @@ namespace utils
 			{
 				data.landingHeight = player_origin.z;
 				data.ticks = i;
-			
+
 				// Can jb, exit the loop
 				if (player_origin.z - height <= groundThreshold && player_origin.z - height >= 0)
 				{
@@ -450,5 +498,4 @@ namespace utils
 		return GetEngine()->PEntityOfEntIndex(0);
 #endif
 	}
-}
-
+} // namespace utils

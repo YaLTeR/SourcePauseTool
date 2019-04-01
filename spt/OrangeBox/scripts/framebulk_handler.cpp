@@ -4,7 +4,7 @@
 
 namespace scripts
 {
-	typedef void(*CommandCallback) (FrameBulkInfo& frameBulkInfo);
+	typedef void (*CommandCallback)(FrameBulkInfo& frameBulkInfo);
 	std::vector<CommandCallback> frameBulkHandlers;
 
 	const std::string FIELD0_FILLED = "s**ljdbcgu";
@@ -70,19 +70,24 @@ namespace scripts
 
 		// todo
 #pragma warning(push)
-#pragma warning(disable:4390)
-		if (frameBulkInfo.ContainsFlag(USE_SPAM, "u"));
-		if (frameBulkInfo.ContainsFlag(LGAGST, "l"));
-		if (frameBulkInfo.ContainsFlag(JUMPBUG, "b"));
-		if (frameBulkInfo.ContainsFlag(DUCK_BEFORE_COLLISION, "c"));
-		if (frameBulkInfo.ContainsFlag(DUCK_BEFORE_GROUND, "g"));
+#pragma warning(disable : 4390)
+		if (frameBulkInfo.ContainsFlag(USE_SPAM, "u"))
+			;
+		if (frameBulkInfo.ContainsFlag(LGAGST, "l"))
+			;
+		if (frameBulkInfo.ContainsFlag(JUMPBUG, "b"))
+			;
+		if (frameBulkInfo.ContainsFlag(DUCK_BEFORE_COLLISION, "c"))
+			;
+		if (frameBulkInfo.ContainsFlag(DUCK_BEFORE_GROUND, "g"))
+			;
 #pragma warning(pop)
 	}
 
 	void Field2(FrameBulkInfo& frameBulkInfo)
 	{
-		frameBulkInfo.AddPlusMinusCmd("forward", frameBulkInfo.ContainsFlag(FORWARD,"f"));
-		frameBulkInfo.AddPlusMinusCmd("moveleft", frameBulkInfo.ContainsFlag(LEFT,"l"));
+		frameBulkInfo.AddPlusMinusCmd("forward", frameBulkInfo.ContainsFlag(FORWARD, "f"));
+		frameBulkInfo.AddPlusMinusCmd("moveleft", frameBulkInfo.ContainsFlag(LEFT, "l"));
 		frameBulkInfo.AddPlusMinusCmd("moveright", frameBulkInfo.ContainsFlag(RIGHT, "r"));
 		frameBulkInfo.AddPlusMinusCmd("back", frameBulkInfo.ContainsFlag(BACK, "b"));
 		frameBulkInfo.AddPlusMinusCmd("moveup", frameBulkInfo.ContainsFlag(UP, "u"));
@@ -91,7 +96,9 @@ namespace scripts
 
 	void Field3(FrameBulkInfo& frameBulkInfo)
 	{
-		frameBulkInfo.AddPlusMinusCmd("jump", frameBulkInfo.ContainsFlag(JUMP, "j") || frameBulkInfo.ContainsFlag(AUTOJUMP, "j"));
+		frameBulkInfo.AddPlusMinusCmd("jump",
+		                              frameBulkInfo.ContainsFlag(JUMP, "j")
+		                                  || frameBulkInfo.ContainsFlag(AUTOJUMP, "j"));
 		frameBulkInfo.AddPlusMinusCmd("duck", frameBulkInfo.ContainsFlag(DUCK, "d"));
 		frameBulkInfo.AddPlusMinusCmd("use", frameBulkInfo.ContainsFlag(USE, "u"));
 		frameBulkInfo.AddPlusMinusCmd("attack", frameBulkInfo.ContainsFlag(ATTACK1, "1"));
@@ -132,7 +139,7 @@ namespace scripts
 	{
 		if (!frameBulkInfo[COMMANDS].empty())
 			frameBulkInfo.data.repeatingCommand.push_back(';');
-			frameBulkInfo.data.repeatingCommand += frameBulkInfo[COMMANDS];
+		frameBulkInfo.data.repeatingCommand += frameBulkInfo[COMMANDS];
 	}
 
 	void ValidateFieldFlags(FrameBulkInfo& frameBulkInfo)
@@ -251,8 +258,8 @@ namespace scripts
 			}
 		}
 	}
-	bool FrameBulkInfo::ContainsFlag(const std::pair<int, int>& key, const std::string & flag)
+	bool FrameBulkInfo::ContainsFlag(const std::pair<int, int>& key, const std::string& flag)
 	{
 		return dataMap.find(key) != dataMap.end() && this->operator[](key) == flag;
 	}
-}
+} // namespace scripts

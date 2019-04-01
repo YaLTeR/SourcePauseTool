@@ -1,11 +1,12 @@
 #include "stdafx.h"
 
 #ifndef OE
-#include "overlay-renderer.hpp"
-#include "..\modules\ClientDLL.hpp"
-#include "..\modules.hpp"
-#include <SDK\hl_movedata.h>
+#include "..\spt-serverplugin.hpp"
 #include "..\cvars.hpp"
+#include "..\modules.hpp"
+#include "..\modules\ClientDLL.hpp"
+#include "SDK\hl_movedata.h"
+#include "overlay-renderer.hpp"
 #include "overlays.hpp"
 
 OverlayRenderer g_OverlayRenderer;

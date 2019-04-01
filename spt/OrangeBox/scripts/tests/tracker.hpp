@@ -25,6 +25,7 @@ namespace scripts
 		std::string GenerateTestData() const override;
 		ValidationResult Validate(const std::string& expectedValue) const override;
 		std::string TrackerName() const override;
+
 	private:
 		int decimals;
 	};
@@ -36,6 +37,7 @@ namespace scripts
 		std::string GenerateTestData() const override;
 		ValidationResult Validate(const std::string& expectedValue) const override;
 		std::string TrackerName() const override;
+
 	private:
 		int decimals;
 	};
@@ -47,7 +49,8 @@ namespace scripts
 		std::string GenerateTestData() const override;
 		ValidationResult Validate(const std::string& expectedValue) const override;
 		std::string TrackerName() const override;
+
 	private:
 		int decimals;
 	};
-}
+} // namespace scripts

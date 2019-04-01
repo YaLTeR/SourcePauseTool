@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "tracker.hpp"
-#include "..\..\modules\ClientDLL.hpp"
-#include "..\..\modules.hpp"
-#include "..\..\..\utils\string_parsing.hpp"
 #include "..\..\..\sptlib-wrapper.hpp"
+#include "..\..\..\utils\string_parsing.hpp"
+#include "..\..\modules.hpp"
+#include "..\..\modules\ClientDLL.hpp"
 
 namespace scripts
 {
@@ -44,9 +44,7 @@ namespace scripts
 		return oss.str();
 	}
 
-	VelocityTracker::VelocityTracker(int decimals) : decimals(decimals)
-	{
-	}
+	VelocityTracker::VelocityTracker(int decimals) : decimals(decimals) {}
 
 	std::string VelocityTracker::GenerateTestData() const
 	{
@@ -83,9 +81,7 @@ namespace scripts
 		return "position";
 	}
 
-	AngTracker::AngTracker(int decimals) : decimals(decimals)
-	{
-	}
+	AngTracker::AngTracker(int decimals) : decimals(decimals) {}
 
 	std::string AngTracker::GenerateTestData() const
 	{
@@ -107,4 +103,4 @@ namespace scripts
 	{
 		return "angle";
 	}
-}
+} // namespace scripts

@@ -15,4 +15,4 @@ namespace scripts
 
 	std::vector<TestItem> GetTestData(const std::string& fileName);
 	void WriteTestDataToFile(const std::vector<TestItem>& testData, const std::string& fileName);
-}
+} // namespace scripts

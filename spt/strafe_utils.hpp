@@ -16,10 +16,10 @@ namespace Strafe
 	const double M_INVU_DEG = 65536.0 / 360;
 	const double M_U_DEG_HALF = 180.0 / 65536;
 
-	const float VEC_HULL_MIN[3] = { -16, -16, -36 };
-	const float VEC_HULL_MAX[3] = { 16,  16,  36 };
-	const float VEC_DUCK_HULL_MIN[3] = { -16, -16, -18 };
-	const float VEC_DUCK_HULL_MAX[3] = { 16,  16,  18 };
+	const float VEC_HULL_MIN[3] = {-16, -16, -36};
+	const float VEC_HULL_MAX[3] = {16, 16, 36};
+	const float VEC_DUCK_HULL_MIN[3] = {-16, -16, -18};
+	const float VEC_DUCK_HULL_MAX[3] = {16, 16, 18};
 
 	template<typename T, std::size_t size = 3>
 	inline void VecCopy(const T& from, T& to)
@@ -103,11 +103,11 @@ namespace Strafe
 		assert((!IsZero<T1, size>(a) && !IsZero<T2, size>(b)));
 		assert((Distance<T1, T2, size>(a, b) != 0));
 
-		double ls[] = { Length<T1, size>(a), Length<T2, size>(b) };
+		double ls[] = {Length<T1, size>(a), Length<T2, size>(b)};
 		return (DotProduct<T1, T2, size>(a, b) / (ls[0] * ls[1]));
 	}
 
-	template <typename T1, typename T2>
+	template<typename T1, typename T2>
 	inline void CrossProduct(const T1& a, const T2& b, typename std::common_type<T1, T2>::type& out)
 	{
 		out[0] = a[1] * b[2] - a[2] * b[1];
@@ -151,4 +151,4 @@ namespace Strafe
 	{
 		return std::atan2(a, b);
 	}
-}
+} // namespace Strafe

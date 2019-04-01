@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
-#include "math.hpp"
 #include <algorithm>
+#include "math.hpp"
 
 // Return angle in [-180; 180).
 double NormalizeDeg(double a)

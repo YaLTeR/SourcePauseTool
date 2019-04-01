@@ -6,7 +6,8 @@ namespace scripts
 	{
 	public:
 		virtual bool IsTrue(int tick, int totalTicks) const = 0; // Does the condition currently hold?
-		virtual bool ShouldTerminate(int tick, int totalTicks) const = 0; // Should the current result be set to fail?
+		virtual bool ShouldTerminate(int tick,
+		                             int totalTicks) const = 0; // Should the current result be set to fail?
 	};
 
 	class TickRangeCondition : public Condition
@@ -15,13 +16,21 @@ namespace scripts
 		TickRangeCondition(int low, int high, bool reverse);
 		bool IsTrue(int tick, int totalTicks) const override;
 		bool ShouldTerminate(int tick, int totalTicks) const override;
+
 	private:
 		bool reverse;
 		int lowTick;
 		int highTick;
 	};
 
-	enum class Axis {AxisX, AxisY, AxisZ, TwoD, Abs};
+	enum class Axis
+	{
+		AxisX,
+		AxisY,
+		AxisZ,
+		TwoD,
+		Abs
+	};
 
 	class PosSpeedCondition : public Condition
 	{
@@ -29,6 +38,7 @@ namespace scripts
 		PosSpeedCondition(float low, float high, Axis axis, bool IsPos);
 		bool IsTrue(int tick, int totalTicks) const override;
 		bool ShouldTerminate(int tick, int totalTicks) const override;
+
 	private:
 		bool isPos;
 		float low;
@@ -42,6 +52,7 @@ namespace scripts
 		JBCondition(float z);
 		bool IsTrue(int tick, int totalTicks) const override;
 		bool ShouldTerminate(int tick, int totalTicks) const override;
+
 	private:
 		float height;
 	};
@@ -53,4 +64,4 @@ namespace scripts
 		bool IsTrue(int tick, int totalTicks) const override;
 		bool ShouldTerminate(int tick, int totalTicks) const override;
 	};
-}
+} // namespace scripts

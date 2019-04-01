@@ -9,7 +9,7 @@ struct CameraInformation
 	float pitch, yaw;
 };
 
-typedef CameraInformation(*_CameraCallback) ();
+typedef CameraInformation (*_CameraCallback)();
 
 class ITexture;
 
@@ -23,6 +23,7 @@ public:
 	void modifySmallScreenFlags(int& clearFlags, int& drawFlags);
 	void modifyView(CViewSetup* view, bool overlay);
 	Rect_t getRect();
+
 private:
 	float getFOV();
 };

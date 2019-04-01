@@ -1,12 +1,12 @@
 #pragma once
-#include <string>
 #include <fstream>
-#include <sstream>
 #include <map>
-#include "variable_container.hpp"
+#include <sstream>
+#include <string>
 #include "condition.hpp"
-#include "range_variable.hpp"
 #include "parsed_script.hpp"
+#include "range_variable.hpp"
+#include "variable_container.hpp"
 
 namespace scripts
 {
@@ -22,6 +22,7 @@ namespace scripts
 		void OnAfterFrames();
 		int GetCurrentTick();
 		int GetCurrentScriptLength();
+
 	private:
 		bool iterationFinished;
 		bool freezeVariables;
@@ -39,7 +40,7 @@ namespace scripts
 
 		VariableContainer variables;
 		ParsedScript currentScript;
-		std::map<std::string, void(SourceTASReader::*)(const std::string&)> propertyHandlers;
+		std::map<std::string, void (SourceTASReader::*)(const std::string&)> propertyHandlers;
 		std::vector<std::unique_ptr<Condition>> conditions;
 
 		void CommonExecuteScript(bool search);
@@ -66,16 +67,40 @@ namespace scripts
 		void HandleTicksFromEndRange(const std::string& value);
 		void HandleJBCondition(const std::string& value);
 		void HandleAliveCondition(const std::string& value);
-		
-		void HandleXPos(const std::string& value) { HandlePosVel(value, Axis::AxisX, true); }
-		void HandleYPos(const std::string& value) { HandlePosVel(value, Axis::AxisY, true); }
-		void HandleZPos(const std::string& value) { HandlePosVel(value, Axis::AxisZ, true); }
 
-		void HandleXVel(const std::string& value) { HandlePosVel(value, Axis::AxisX, false); }
-		void HandleYVel(const std::string& value) { HandlePosVel(value, Axis::AxisY, false); }
-		void HandleZVel(const std::string& value) { HandlePosVel(value, Axis::AxisZ, false); }
-		void HandleAbsVel(const std::string& value) { HandlePosVel(value, Axis::Abs, false); }
-		void Handle2DVel(const std::string& value) { HandlePosVel(value, Axis::TwoD, false); }
+		void HandleXPos(const std::string& value)
+		{
+			HandlePosVel(value, Axis::AxisX, true);
+		}
+		void HandleYPos(const std::string& value)
+		{
+			HandlePosVel(value, Axis::AxisY, true);
+		}
+		void HandleZPos(const std::string& value)
+		{
+			HandlePosVel(value, Axis::AxisZ, true);
+		}
+
+		void HandleXVel(const std::string& value)
+		{
+			HandlePosVel(value, Axis::AxisX, false);
+		}
+		void HandleYVel(const std::string& value)
+		{
+			HandlePosVel(value, Axis::AxisY, false);
+		}
+		void HandleZVel(const std::string& value)
+		{
+			HandlePosVel(value, Axis::AxisZ, false);
+		}
+		void HandleAbsVel(const std::string& value)
+		{
+			HandlePosVel(value, Axis::Abs, false);
+		}
+		void Handle2DVel(const std::string& value)
+		{
+			HandlePosVel(value, Axis::TwoD, false);
+		}
 
 		void HandlePosVel(const std::string& value, Axis axis, bool isPos);
 
@@ -92,4 +117,4 @@ namespace scripts
 
 	std::string GetVarIdentifier(std::string name);
 	extern SourceTASReader g_TASReader;
-}
+} // namespace scripts

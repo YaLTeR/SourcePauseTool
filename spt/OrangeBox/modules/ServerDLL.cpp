@@ -2,16 +2,16 @@
 #include "..\cvars.hpp"
 #include "..\modules.hpp"
 
-#include "..\..\sptlib-wrapper.hpp"
-#include <SPTLib\memutils.hpp>
 #include <SPTLib\hooks.hpp>
-#include "ServerDLL.hpp"
-#include "..\patterns.hpp"
-#include "..\overlay\overlays.hpp"
+#include <SPTLib\memutils.hpp>
+#include "..\..\sptlib-wrapper.hpp"
 #include "..\..\utils\ent_utils.hpp"
+#include "..\overlay\overlays.hpp"
+#include "..\patterns.hpp"
+#include "ServerDLL.hpp"
 
-using std::uintptr_t;
 using std::size_t;
+using std::uintptr_t;
 
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton(void* thisptr, int edx)
 {
@@ -48,10 +48,20 @@ void __fastcall ServerDLL::HOOKED_ProcessMovement(void* thisptr, int edx, void* 
 	TRACE_ENTER();
 	return serverDLL.HOOKED_ProcessMovement_Func(thisptr, edx, pPlayer, pMove);
 }
-float __fastcall ServerDLL::HOOKED_TraceFirePortal(void* thisptr, int edx, bool bPortal2, const Vector& vTraceStart, const Vector& vDirection, trace_t& tr, Vector& vFinalPosition, QAngle& qFinalAngles, int iPlacedBy, bool bTest)
+float __fastcall ServerDLL::HOOKED_TraceFirePortal(void* thisptr,
+                                                   int edx,
+                                                   bool bPortal2,
+                                                   const Vector& vTraceStart,
+                                                   const Vector& vDirection,
+                                                   trace_t& tr,
+                                                   Vector& vFinalPosition,
+                                                   QAngle& qFinalAngles,
+                                                   int iPlacedBy,
+                                                   bool bTest)
 {
 	TRACE_ENTER();
-	return serverDLL.HOOKED_TraceFirePortal_Func(thisptr, edx, bPortal2, vTraceStart, vDirection, tr, vFinalPosition, qFinalAngles, iPlacedBy, bTest);
+	return serverDLL.HOOKED_TraceFirePortal_Func(
+	    thisptr, edx, bPortal2, vTraceStart, vDirection, tr, vFinalPosition, qFinalAngles, iPlacedBy, bTest);
 }
 
 void __fastcall ServerDLL::HOOKED_SlidingAndOtherStuff(void* thisptr, int edx, void* a, void* b)
@@ -60,19 +70,23 @@ void __fastcall ServerDLL::HOOKED_SlidingAndOtherStuff(void* thisptr, int edx, v
 	return serverDLL.HOOKED_SlidingAndOtherStuff_Func(thisptr, edx, a, b);
 }
 
-int __fastcall ServerDLL::HOOKED_CRestore__ReadAll(void * thisptr, int edx, void * pLeafObject, datamap_t * pLeafMap)
+int __fastcall ServerDLL::HOOKED_CRestore__ReadAll(void* thisptr, int edx, void* pLeafObject, datamap_t* pLeafMap)
 {
 	TRACE_ENTER();
 	return serverDLL.ORIG_CRestore__ReadAll(thisptr, edx, pLeafObject, pLeafMap);
 }
 
-int __fastcall ServerDLL::HOOKED_CRestore__DoReadAll(void * thisptr, int edx, void * pLeafObject, datamap_t * pLeafMap, datamap_t * pCurMap)
+int __fastcall ServerDLL::HOOKED_CRestore__DoReadAll(void* thisptr,
+                                                     int edx,
+                                                     void* pLeafObject,
+                                                     datamap_t* pLeafMap,
+                                                     datamap_t* pCurMap)
 {
 	TRACE_ENTER();
 	return serverDLL.ORIG_CRestore__DoReadAll(thisptr, edx, pLeafObject, pLeafMap, pCurMap);
 }
 
-int __cdecl ServerDLL::HOOKED_DispatchSpawn(void * pEntity)
+int __cdecl ServerDLL::HOOKED_DispatchSpawn(void* pEntity)
 {
 	TRACE_ENTER();
 	return serverDLL.ORIG_DispatchSpawn(pEntity);
@@ -106,41 +120,64 @@ __declspec(naked) void ServerDLL::HOOKED_MiddleOfSlidingFunction()
 
 #define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::server::##name);
 #define GET_HOOKEDFUTURE(future_name) \
-    { \
-        auto pattern = f##future_name.get(); \
-        if (ORIG_##future_name) { \
-            DevMsg("[server dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
+	{ \
+		auto pattern = f##future_name.get(); \
+		if (ORIG_##future_name) \
+		{ \
+			DevMsg("[server dll] Found " #future_name " at %p (using the %s pattern).\n", \
+			       ORIG_##future_name, \
+			       pattern->name()); \
 			patternContainer.AddHook(HOOKED_##future_name, (PVOID*)&ORIG_##future_name); \
-			for(int i=0; true; ++i) \
+			for (int i = 0; true; ++i) \
+			{ \
+				if (patterns::server::##future_name.at(i).name() == pattern->name()) \
 				{ \
-				if(patterns::server::##future_name.at(i).name() == pattern->name()) \
-				{ patternContainer.AddIndex((PVOID*)&ORIG_##future_name, i, pattern->name()); break; } } \
-        } else { \
-            DevWarning("[server dll] Could not find " #future_name ".\n"); \
-        } \
-    }
-
-#define GET_FUTURE(future_name) \
-    { \
-        auto pattern = f##future_name.get(); \
-        if (ORIG_##future_name) { \
-            DevMsg("[server dll] Found " #future_name " at %p (using the %s pattern).\n", ORIG_##future_name, pattern->name()); \
-			for(int i=0; true; ++i) { if(patterns::server::##future_name.at(i).name() == pattern->name()) { patternContainer.AddIndex((PVOID*)&ORIG_##future_name,i, pattern->name()); break; } } \
-		} else { \
+					patternContainer.AddIndex((PVOID*)&ORIG_##future_name, i, pattern->name()); \
+					break; \
+				} \
+			} \
+		} \
+		else \
+		{ \
 			DevWarning("[server dll] Could not find " #future_name ".\n"); \
 		} \
-}
+	}
 
-void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* moduleBase, size_t moduleLength, bool needToIntercept)
+#define GET_FUTURE(future_name) \
+	{ \
+		auto pattern = f##future_name.get(); \
+		if (ORIG_##future_name) \
+		{ \
+			DevMsg("[server dll] Found " #future_name " at %p (using the %s pattern).\n", \
+			       ORIG_##future_name, \
+			       pattern->name()); \
+			for (int i = 0; true; ++i) \
+			{ \
+				if (patterns::server::##future_name.at(i).name() == pattern->name()) \
+				{ \
+					patternContainer.AddIndex((PVOID*)&ORIG_##future_name, i, pattern->name()); \
+					break; \
+				} \
+			} \
+		} \
+		else \
+		{ \
+			DevWarning("[server dll] Could not find " #future_name ".\n"); \
+		} \
+	}
+
+void ServerDLL::Hook(const std::wstring& moduleName,
+                     void* moduleHandle,
+                     void* moduleBase,
+                     size_t moduleLength,
+                     bool needToIntercept)
 {
 	Clear(); // Just in case.
 	m_Name = moduleName;
 	m_Base = moduleBase;
 	m_Length = moduleLength;
-	uintptr_t ORIG_CHL2_Player__HandleInteraction = NULL,
-		ORIG_PerformFlyCollisionResolution = NULL,
-		ORIG_GetStepSoundVelocities = NULL,
-		ORIG_CBaseEntity__SetCollisionGroup = NULL;
+	uintptr_t ORIG_CHL2_Player__HandleInteraction = NULL, ORIG_PerformFlyCollisionResolution = NULL,
+	          ORIG_GetStepSoundVelocities = NULL, ORIG_CBaseEntity__SetCollisionGroup = NULL;
 	patternContainer.Init(moduleName);
 
 	DEF_FUTURE(FinishGravity);
@@ -245,12 +282,12 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 			off1M_nOldButtons = 2;
 			off2M_nOldButtons = 40;
 			break;
-			
+
 		case 15:
 			off1M_nOldButtons = 1;
 			off2M_nOldButtons = 40;
 			break;
-			
+
 		case 16:
 			off1M_nOldButtons = 2;
 			off2M_nOldButtons = 40;
@@ -277,37 +314,37 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 			off1M_bDucked = 2;
 			off2M_bDucked = 3120;
 			break;
-			
+
 		case 2:
 			off1M_bDucked = 2;
 			off2M_bDucked = 3184;
 			break;
-			
+
 		case 3:
 			off1M_bDucked = 2;
 			off2M_bDucked = 3376;
 			break;
-			
+
 		case 4:
 			off1M_bDucked = 1;
 			off2M_bDucked = 3440;
 			break;
-			
+
 		case 5:
 			off1M_bDucked = 1;
 			off2M_bDucked = 3500;
 			break;
-			
+
 		case 6:
 			off1M_bDucked = 1;
 			off2M_bDucked = 3724;
 			break;
-			
+
 		case 7:
 			off1M_bDucked = 2;
 			off2M_bDucked = 3112;
 			break;
-			
+
 		case 8:
 			off1M_bDucked = 1;
 			off2M_bDucked = 3416;
@@ -360,15 +397,15 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 		case 8:
 			offM_vecAbsVelocity = 592;
 			break;
-			
+
 		case 9:
 			offM_vecAbsVelocity = 556;
 			break;
-			
+
 		case 10:
 			offM_vecAbsVelocity = 364;
 			break;
-			
+
 		case 12:
 			offM_vecAbsVelocity = 476;
 			break;
@@ -424,10 +461,12 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	}
 
 	extern void* gm;
-	if (gm) {
+	if (gm)
+	{
 		auto vftable = reinterpret_cast<void**>(gm);
 		//ORIG_AirAccelerate = reinterpret_cast<_AirAccelerate>(MemUtils::HookVTable(vftable, 17, reinterpret_cast<uintptr_t>(HOOKED_AirAccelerate)));
-		ORIG_ProcessMovement = reinterpret_cast<_ProcessMovement>(MemUtils::HookVTable(vftable, 1, reinterpret_cast<void*>(HOOKED_ProcessMovement)));
+		ORIG_ProcessMovement = reinterpret_cast<_ProcessMovement>(
+		    MemUtils::HookVTable(vftable, 1, reinterpret_cast<void*>(HOOKED_ProcessMovement)));
 
 		DevMsg("[server dll] Hooked ProcessMovement through the vftable.\n");
 	}
@@ -435,14 +474,14 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	// TODO: remove fixed offsets.
 #ifdef SSDK2007
 	SnapEyeAngles = reinterpret_cast<_SnapEyeAngles>((unsigned int)moduleBase + 0x1B92F0);
-    GetActiveWeapon = reinterpret_cast<_GetActiveWeapon>((unsigned int)moduleBase + 0xCCE90);
+	GetActiveWeapon = reinterpret_cast<_GetActiveWeapon>((unsigned int)moduleBase + 0xCCE90);
 
 	if (DoesGameLookLikePortal())
 	{
-            FirePortal = reinterpret_cast<_FirePortal>((unsigned int)moduleBase + 0x442090);
-            m_hPortalEnvironmentOffsetPtr = reinterpret_cast<int*>((unsigned int)FirePortal + 0xA3);
-            ORIG_TraceFirePortal = reinterpret_cast<_TraceFirePortal>((unsigned int)moduleBase + 0x441730);
-            patternContainer.AddHook(HOOKED_TraceFirePortal, (PVOID*)&ORIG_TraceFirePortal);
+		FirePortal = reinterpret_cast<_FirePortal>((unsigned int)moduleBase + 0x442090);
+		m_hPortalEnvironmentOffsetPtr = reinterpret_cast<int*>((unsigned int)FirePortal + 0xA3);
+		ORIG_TraceFirePortal = reinterpret_cast<_TraceFirePortal>((unsigned int)moduleBase + 0x441730);
+		patternContainer.AddHook(HOOKED_TraceFirePortal, (PVOID*)&ORIG_TraceFirePortal);
 	}
 #endif
 	patternContainer.Hook();
@@ -451,14 +490,14 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 void ServerDLL::Unhook()
 {
 	extern void* gm;
-	if (gm) {
+	if (gm)
+	{
 		auto vftable = reinterpret_cast<void**>(gm);
 		//MemUtils::HookVTable(vftable, 17, reinterpret_cast<uintptr_t>(ORIG_AirAccelerate));
 		MemUtils::HookVTable(vftable, 1, reinterpret_cast<void*>(ORIG_ProcessMovement));
 
 		DevMsg("[server dll] Unhooked ProcessMovement through the vftable.\n");
 	}
-
 
 	patternContainer.Unhook();
 	Clear();
@@ -491,18 +530,22 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 {
 	const int IN_JUMP = (1 << 1);
 
-	int *pM_nOldButtons = NULL;
+	int* pM_nOldButtons = NULL;
 	int origM_nOldButtons = 0;
 
-	CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
+	CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t*)thisptr + off1M_nOldButtons));
 	if (tas_log.GetBool())
 		DevMsg("[CheckJumpButton PRE ] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
-			mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z,
-			mv->m_vecVelocity.x, mv->m_vecVelocity.y, mv->m_vecVelocity.z);
+		       mv->GetAbsOrigin().x,
+		       mv->GetAbsOrigin().y,
+		       mv->GetAbsOrigin().z,
+		       mv->m_vecVelocity.x,
+		       mv->m_vecVelocity.y,
+		       mv->m_vecVelocity.z);
 
 	if (y_spt_autojump.GetBool())
 	{
-		pM_nOldButtons = (int *)(*((uintptr_t *)thisptr + off1M_nOldButtons) + off2M_nOldButtons);
+		pM_nOldButtons = (int*)(*((uintptr_t*)thisptr + off1M_nOldButtons) + off2M_nOldButtons);
 		// EngineMsg("thisptr: %p, pM_nOldButtons: %p, difference: %x\n", thisptr, pM_nOldButtons, (pM_nOldButtons - thisptr));
 		origM_nOldButtons = *pM_nOldButtons;
 
@@ -549,8 +592,12 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 
 	if (tas_log.GetBool())
 		DevMsg("[CheckJumpButton POST] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
-			mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z,
-			mv->m_vecVelocity.x, mv->m_vecVelocity.y, mv->m_vecVelocity.z);
+		       mv->GetAbsOrigin().x,
+		       mv->GetAbsOrigin().y,
+		       mv->GetAbsOrigin().z,
+		       mv->m_vecVelocity.x,
+		       mv->m_vecVelocity.y,
+		       mv->m_vecVelocity.z);
 
 	return rv;
 }
@@ -559,8 +606,8 @@ void __fastcall ServerDLL::HOOKED_FinishGravity_Func(void* thisptr, int edx)
 {
 	if (insideCheckJumpButton && y_spt_additional_jumpboost.GetBool())
 	{
-		CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
-		bool ducked = *(bool*)(*((uintptr_t *)thisptr + off1M_bDucked) + off2M_bDucked);
+		CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t*)thisptr + off1M_nOldButtons));
+		bool ducked = *(bool*)(*((uintptr_t*)thisptr + off1M_bDucked) + off2M_bDucked);
 
 		// <stolen from gamemovement.cpp>
 		{
@@ -589,7 +636,7 @@ void __fastcall ServerDLL::HOOKED_FinishGravity_Func(void* thisptr, int edx)
 			}
 
 			// Add it on
-			VectorAdd((vecForward*flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity);
+			VectorAdd((vecForward * flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity);
 		}
 		// </stolen from gamemovement.cpp>
 	}
@@ -620,13 +667,22 @@ int __fastcall ServerDLL::HOOKED_CheckStuck_Func(void* thisptr, int edx)
 	return ret;
 }
 
-void __fastcall ServerDLL::HOOKED_AirAccelerate_Func(void* thisptr, int edx, Vector* wishdir, float wishspeed, float accel)
+void __fastcall ServerDLL::HOOKED_AirAccelerate_Func(void* thisptr,
+                                                     int edx,
+                                                     Vector* wishdir,
+                                                     float wishspeed,
+                                                     float accel)
 {
 	const double M_RAD2DEG = 180 / M_PI;
 
-	CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
+	CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t*)thisptr + off1M_nOldButtons));
 	DevMsg("[AA Pre ] velocity: %.8f %.8f %.8f\n", mv->m_vecVelocity.x, mv->m_vecVelocity.y, mv->m_vecVelocity.z);
-	DevMsg("[AA Pre ] speed = %.8f; wishspeed = %.8f; accel = %.8f; wishdir = %.8f; surface friction = %.8f\n", mv->m_vecVelocity.Length2D(), wishspeed, accel, atan2(wishdir->y, wishdir->x) * M_RAD2DEG, *(float*)(*(uintptr_t*)((uintptr_t)thisptr + 4) + 3812));
+	DevMsg("[AA Pre ] speed = %.8f; wishspeed = %.8f; accel = %.8f; wishdir = %.8f; surface friction = %.8f\n",
+	       mv->m_vecVelocity.Length2D(),
+	       wishspeed,
+	       accel,
+	       atan2(wishdir->y, wishdir->x) * M_RAD2DEG,
+	       *(float*)(*(uintptr_t*)((uintptr_t)thisptr + 4) + 3812));
 
 	ORIG_AirAccelerate(thisptr, edx, wishdir, wishspeed, accel);
 
@@ -635,22 +691,40 @@ void __fastcall ServerDLL::HOOKED_AirAccelerate_Func(void* thisptr, int edx, Vec
 
 void __fastcall ServerDLL::HOOKED_ProcessMovement_Func(void* thisptr, int edx, void* pPlayer, void* pMove)
 {
-	CHLMoveData *mv = reinterpret_cast<CHLMoveData*>(pMove);
+	CHLMoveData* mv = reinterpret_cast<CHLMoveData*>(pMove);
 	if (tas_log.GetBool())
 		DevMsg("[ProcessMovement PRE ] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
-			mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z,
-			mv->m_vecVelocity.x, mv->m_vecVelocity.y, mv->m_vecVelocity.z);
+		       mv->GetAbsOrigin().x,
+		       mv->GetAbsOrigin().y,
+		       mv->GetAbsOrigin().z,
+		       mv->m_vecVelocity.x,
+		       mv->m_vecVelocity.y,
+		       mv->m_vecVelocity.z);
 
 	ORIG_ProcessMovement(thisptr, edx, pPlayer, pMove);
 
 	if (tas_log.GetBool())
 		DevMsg("[ProcessMovement POST] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
-			mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z,
-			mv->m_vecVelocity.x, mv->m_vecVelocity.y, mv->m_vecVelocity.z);
+		       mv->GetAbsOrigin().x,
+		       mv->GetAbsOrigin().y,
+		       mv->GetAbsOrigin().z,
+		       mv->m_vecVelocity.x,
+		       mv->m_vecVelocity.y,
+		       mv->m_vecVelocity.z);
 }
-float __fastcall ServerDLL::HOOKED_TraceFirePortal_Func(void* thisptr, int edx, bool bPortal2, const Vector& vTraceStart, const Vector& vDirection, trace_t& tr, Vector& vFinalPosition, QAngle& qFinalAngles, int iPlacedBy, bool bTest)
+float __fastcall ServerDLL::HOOKED_TraceFirePortal_Func(void* thisptr,
+                                                        int edx,
+                                                        bool bPortal2,
+                                                        const Vector& vTraceStart,
+                                                        const Vector& vDirection,
+                                                        trace_t& tr,
+                                                        Vector& vFinalPosition,
+                                                        QAngle& qFinalAngles,
+                                                        int iPlacedBy,
+                                                        bool bTest)
 {
-	const auto rv = ORIG_TraceFirePortal(thisptr, edx, bPortal2, vTraceStart, vDirection, tr, vFinalPosition, qFinalAngles, iPlacedBy, bTest);
+	const auto rv = ORIG_TraceFirePortal(
+	    thisptr, edx, bPortal2, vTraceStart, vDirection, tr, vFinalPosition, qFinalAngles, iPlacedBy, bTest);
 
 	lastTraceFirePortalDistanceSq = (vFinalPosition - vTraceStart).LengthSqr();
 	lastTraceFirePortalNormal = tr.plane.normal;
@@ -660,10 +734,13 @@ float __fastcall ServerDLL::HOOKED_TraceFirePortal_Func(void* thisptr, int edx, 
 
 void __fastcall ServerDLL::HOOKED_SlidingAndOtherStuff_Func(void* thisptr, int edx, void* a, void* b)
 {
-	if (sliding) {
+	if (sliding)
+	{
 		sliding = false;
 		wasSliding = true;
-	} else {
+	}
+	else
+	{
 		wasSliding = false;
 	}
 
@@ -676,9 +753,11 @@ void ServerDLL::HOOKED_MiddleOfSlidingFunction_Func()
 
 	sliding = true;
 
-	if (!wasSliding) {
+	if (!wasSliding)
+	{
 		const auto pauseFor = y_spt_on_slide_pause_for.GetInt();
-		if (pauseFor > 0) {
+		if (pauseFor > 0)
+		{
 			EngineConCmd("setpause");
 
 			afterframes_entry_t entry;
@@ -693,7 +772,7 @@ int ServerDLL::GetPlayerPhysicsFlags() const
 {
 	if (!utils::serverActive())
 		return -1;
-	else 
+	else
 		return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_afPhysicsFlags));
 }
 
@@ -701,7 +780,7 @@ int ServerDLL::GetPlayerMoveType() const
 {
 	if (!utils::serverActive())
 		return -1;
-	else 
+	else
 		return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_moveType)) & 0xF;
 }
 

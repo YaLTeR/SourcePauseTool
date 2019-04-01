@@ -1,10 +1,10 @@
 #pragma once
 
-#include "icliententitylist.h"
-#include "icliententity.h"
-#include "engine\ivmodelinfo.h"
 #include "cdll_int.h"
 #include "client_class.h"
+#include "engine\ivmodelinfo.h"
+#include "icliententity.h"
+#include "icliententitylist.h"
 
 namespace utils
 {
@@ -46,5 +46,4 @@ namespace utils
 
 	JBData CanJB(float height);
 	bool serverActive();
-}
-
+} // namespace utils

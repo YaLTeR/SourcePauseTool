@@ -6,24 +6,22 @@
 #include "mathlib/mathlib.h"
 #endif
 
-#include <sstream>
 #include <iomanip>
+#include <sstream>
 
 #include "OrangeBox/cvars.hpp"
-#include "strafestuff.hpp"
-#include "utils/math.hpp"
-#include "utils/ent_utils.hpp"
-#include "strafe_utils.hpp"
-#include "OrangeBox/modules/ClientDLL.hpp"
-#include "OrangeBox/modules.hpp"
-#include "const.h"
 #include "OrangeBox/module_hooks.hpp"
-
+#include "OrangeBox/modules.hpp"
+#include "OrangeBox/modules/ClientDLL.hpp"
+#include "const.h"
+#include "strafe_utils.hpp"
+#include "strafestuff.hpp"
+#include "utils/ent_utils.hpp"
+#include "utils/math.hpp"
 
 #ifdef max
 #undef max
 #endif
-
 
 #ifdef min
 #undef min
@@ -38,24 +36,25 @@ namespace Strafe
 	void Trace(trace_t& trace, const Vector& start, const Vector& end, HullType hull)
 	{
 #ifndef OE
-        if (!clientDLL.ORIG_UTIL_TraceRay)
+		if (!clientDLL.ORIG_UTIL_TraceRay)
 			return;
-
 
 		float minH;
 		float maxH;
 
-		if (tas_strafe_hull_is_line.GetBool()) {
+		if (tas_strafe_hull_is_line.GetBool())
+		{
 			minH = 0;
 			maxH = 0;
 		}
-		else {
-              minH = -16;
-			  maxH = 16;
+		else
+		{
+			minH = -16;
+			maxH = 16;
 		}
 
 		Vector mins(minH, minH, 0);
-        Vector maxs(maxH, maxH, 72);
+		Vector maxs(maxH, maxH, 72);
 
 		if (hull == HullType::DUCKED)
 			mins.z = 36;
@@ -67,7 +66,11 @@ namespace Strafe
 		else
 			ray.Init(start, end, mins, maxs);
 
-		clientDLL.ORIG_UTIL_TraceRay(ray, MASK_PLAYERSOLID_BRUSHONLY, utils::GetClientEntity(0), COLLISION_GROUP_PLAYER_MOVEMENT, &trace);
+		clientDLL.ORIG_UTIL_TraceRay(ray,
+		                             MASK_PLAYERSOLID_BRUSHONLY,
+		                             utils::GetClientEntity(0),
+		                             COLLISION_GROUP_PLAYER_MOVEMENT,
+		                             &trace);
 #endif
 	}
 
@@ -97,7 +100,7 @@ namespace Strafe
 
 		auto type = PositionType::AIR;
 		if (player.Velocity[2] > 140.f)
-			return  PositionType::AIR;
+			return PositionType::AIR;
 
 		trace_t tr;
 		Vector point;
@@ -113,8 +116,11 @@ namespace Strafe
 		return PositionType::GROUND;
 	}
 
-	
-	void VectorFME(PlayerData& player, const MovementVars& vars, PositionType postype, double wishspeed, const Vector& a)
+	void VectorFME(PlayerData& player,
+	               const MovementVars& vars,
+	               PositionType postype,
+	               double wishspeed,
+	               const Vector& a)
 	{
 		assert(postype != PositionType::WATER);
 
@@ -135,7 +141,8 @@ namespace Strafe
 
 	void CheckVelocity(PlayerData& player, const MovementVars& vars)
 	{
-		for (std::size_t i = 0; i < 3; ++i) {
+		for (std::size_t i = 0; i < 3; ++i)
+		{
 			if (player.Velocity[i] > vars.Maxvelocity)
 				player.Velocity[i] = vars.Maxvelocity;
 			if (player.Velocity[i] < -vars.Maxvelocity)
@@ -146,10 +153,10 @@ namespace Strafe
 	PositionType Move(PlayerData& player, const MovementVars& vars)
 	{
 		trace_t tr;
-			
+
 		auto hull = player.Ducking ? HullType::DUCKED : HullType::NORMAL;
 		PositionType postype = GetPositionType(player, hull);
-		bool onground = (postype == PositionType::GROUND);	
+		bool onground = (postype == PositionType::GROUND);
 		CheckVelocity(player, vars);
 
 		// AddCorrectGravity
@@ -167,23 +174,28 @@ namespace Strafe
 
 		// Move
 		VecAdd(player.Velocity, player.Basevelocity, player.Velocity);
-		if (onground) {
+		if (onground)
+		{
 			// WalkMove
 			auto spd = Length(player.Velocity);
-			if (spd < 1) {
+			if (spd < 1)
+			{
 				VecScale(player.Velocity, 0, player.Velocity); // Clear velocity.
 			}
-			else {
+			else
+			{
 				Vector dest;
 				VecCopy(player.UnduckedOrigin, dest);
 				dest[0] += player.Velocity[0] * vars.Frametime;
 				dest[1] += player.Velocity[1] * vars.Frametime;
 
 				Trace(tr, player.UnduckedOrigin, dest, hull);
-				if (tr.fraction == 1.0f) {
+				if (tr.fraction == 1.0f)
+				{
 					VecCopy(tr.endpos, player.UnduckedOrigin);
 				}
-				else {
+				else
+				{
 					// Figure out the end position when trying to walk up a step.
 					auto playerUp = PlayerData(player);
 					dest[2] += vars.Stepsize;
@@ -204,16 +216,23 @@ namespace Strafe
 					FlyMove(playerDown, vars, postype);
 
 					// Take whichever move was the furthest.
-					auto downdist = (playerDown.UnduckedOrigin[0] - player.UnduckedOrigin[0]) * (playerDown.UnduckedOrigin[0] - player.UnduckedOrigin[0])
-						+ (playerDown.UnduckedOrigin[1] - player.UnduckedOrigin[1]) * (playerDown.UnduckedOrigin[1] - player.UnduckedOrigin[1]);
-					auto updist = (playerUp.UnduckedOrigin[0] - player.UnduckedOrigin[0]) * (playerUp.UnduckedOrigin[0] - player.UnduckedOrigin[0])
-						+ (playerUp.UnduckedOrigin[1] - player.UnduckedOrigin[1]) * (playerUp.UnduckedOrigin[1] - player.UnduckedOrigin[1]);
+					auto downdist =
+					    (playerDown.UnduckedOrigin[0] - player.UnduckedOrigin[0])
+					        * (playerDown.UnduckedOrigin[0] - player.UnduckedOrigin[0])
+					    + (playerDown.UnduckedOrigin[1] - player.UnduckedOrigin[1])
+					          * (playerDown.UnduckedOrigin[1] - player.UnduckedOrigin[1]);
+					auto updist = (playerUp.UnduckedOrigin[0] - player.UnduckedOrigin[0])
+					                  * (playerUp.UnduckedOrigin[0] - player.UnduckedOrigin[0])
+					              + (playerUp.UnduckedOrigin[1] - player.UnduckedOrigin[1])
+					                    * (playerUp.UnduckedOrigin[1] - player.UnduckedOrigin[1]);
 
-					if ((tr.plane.normal[2] < 0.7) || (downdist > updist)) {
+					if ((tr.plane.normal[2] < 0.7) || (downdist > updist))
+					{
 						VecCopy(playerDown.UnduckedOrigin, player.UnduckedOrigin);
 						VecCopy(playerDown.Velocity, player.Velocity);
 					}
-					else {
+					else
+					{
 						VecCopy(playerUp.UnduckedOrigin, player.UnduckedOrigin);
 						VecCopy<Vector, 2>(playerUp.Velocity, player.Velocity);
 						player.Velocity[2] = playerDown.Velocity[2];
@@ -221,7 +240,8 @@ namespace Strafe
 				}
 			}
 		}
-		else {
+		else
+		{
 			// AirMove
 			FlyMove(player, vars, postype);
 		}
@@ -229,7 +249,8 @@ namespace Strafe
 		postype = GetPositionType(player, hull);
 		VecSubtract(player.Velocity, player.Basevelocity, player.Velocity);
 		CheckVelocity(player, vars);
-		if (postype != PositionType::GROUND && postype != PositionType::WATER) {
+		if (postype != PositionType::GROUND && postype != PositionType::WATER)
+		{
 			// FixupGravityVelocity
 			player.Velocity[2] -= static_cast<float>(entGravity * vars.Gravity * 0.5 * vars.Frametime);
 			CheckVelocity(player, vars);
@@ -255,7 +276,8 @@ namespace Strafe
 		auto blockedState = 0;
 		Vector planes[MAX_CLIP_PLANES];
 
-		for (auto bumpCount = 0; bumpCount < MAX_BUMPS; ++bumpCount) {
+		for (auto bumpCount = 0; bumpCount < MAX_BUMPS; ++bumpCount)
+		{
 			if (IsZero(player.Velocity))
 				break;
 
@@ -266,12 +288,14 @@ namespace Strafe
 			Trace(tr, player.UnduckedOrigin, end, hull);
 
 			allFraction += tr.fraction;
-			if (tr.allsolid) {
+			if (tr.allsolid)
+			{
 				VecScale(player.Velocity, 0, player.Velocity);
 				blockedState = 4;
 				break;
 			}
-			if (tr.fraction > 0) {
+			if (tr.fraction > 0)
+			{
 				VecCopy(tr.endpos, player.UnduckedOrigin);
 				VecCopy(player.Velocity, savedVelocity);
 				numPlanes = 0;
@@ -286,7 +310,8 @@ namespace Strafe
 
 			timeLeft -= timeLeft * tr.fraction;
 
-			if (numPlanes >= MAX_CLIP_PLANES) {
+			if (numPlanes >= MAX_CLIP_PLANES)
+			{
 				VecScale(player.Velocity, 0, player.Velocity);
 				break;
 			}
@@ -294,18 +319,24 @@ namespace Strafe
 			VecCopy(tr.plane.normal, planes[numPlanes]);
 			numPlanes++;
 
-			if (postype != PositionType::GROUND || vars.EntFriction != 1) {
+			if (postype != PositionType::GROUND || vars.EntFriction != 1)
+			{
 				for (auto i = 0; i < numPlanes; ++i)
 					if (planes[i][2] > 0.7)
 						ClipVelocity(savedVelocity, planes[i], 1);
 					else
-						ClipVelocity(savedVelocity, planes[i], static_cast<float>(1.0 + vars.Bounce * (1 - vars.EntFriction)));
+						ClipVelocity(savedVelocity,
+						             planes[i],
+						             static_cast<float>(
+						                 1.0 + vars.Bounce * (1 - vars.EntFriction)));
 
 				VecCopy(savedVelocity, player.Velocity);
 			}
-			else {
+			else
+			{
 				int i = 0;
-				for (i = 0; i < numPlanes; ++i) {
+				for (i = 0; i < numPlanes; ++i)
+				{
 					VecCopy(savedVelocity, player.Velocity);
 					ClipVelocity(player.Velocity, planes[i], 1);
 
@@ -319,8 +350,10 @@ namespace Strafe
 						break;
 				}
 
-				if (i == numPlanes) {
-					if (numPlanes != 2) {
+				if (i == numPlanes)
+				{
+					if (numPlanes != 2)
+					{
 						VecScale(player.Velocity, 0, player.Velocity);
 						break;
 					}
@@ -331,7 +364,8 @@ namespace Strafe
 					VecScale(dir, d, player.Velocity);
 				}
 
-				if (DotProduct(player.Velocity, originalVelocity) <= 0) {
+				if (DotProduct(player.Velocity, originalVelocity) <= 0)
+				{
 					VecScale(player.Velocity, 0, player.Velocity);
 					break;
 				}
@@ -348,7 +382,8 @@ namespace Strafe
 
 		auto backoff = static_cast<float>(DotProduct(velocty, normal) * overbounce);
 
-		for (size_t i = 0; i < 3; ++i) {
+		for (size_t i = 0; i < 3; ++i)
+		{
 			auto change = normal[i] * backoff;
 			velocty[i] -= change;
 
@@ -364,7 +399,11 @@ namespace Strafe
 			return 0;
 	}
 
-	double TargetTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, double target)
+	double TargetTheta(const PlayerData& player,
+	                   const MovementVars& vars,
+	                   bool onground,
+	                   double wishspeed,
+	                   double target)
 	{
 		double accel = onground ? vars.Accelerate : vars.Airaccelerate;
 		double L = onground ? vars.Maxspeed : std::min(vars.Maxspeed, (float)30);
@@ -385,11 +424,14 @@ namespace Strafe
 			cosTheta = std::sqrt((target * target - L * L) / lambdaVel * lambdaVel);
 			return std::acos(cosTheta);
 		}
-
 	}
 
-
-	double MaxAccelWithCapIntoYawTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, double vel_yaw, double yaw)
+	double MaxAccelWithCapIntoYawTheta(const PlayerData& player,
+	                                   const MovementVars& vars,
+	                                   bool onground,
+	                                   double wishspeed,
+	                                   double vel_yaw,
+	                                   double yaw)
 	{
 		if (!player.Velocity.AsVector2D().IsZero(0))
 			vel_yaw = Atan2(player.Velocity.y, player.Velocity.x);
@@ -429,7 +471,12 @@ namespace Strafe
 		return 0.0;
 	}
 
-	double MaxAccelIntoYawTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, double vel_yaw, double yaw)
+	double MaxAccelIntoYawTheta(const PlayerData& player,
+	                            const MovementVars& vars,
+	                            bool onground,
+	                            double wishspeed,
+	                            double vel_yaw,
+	                            double yaw)
 	{
 		if (!player.Velocity.AsVector2D().IsZero(0))
 			vel_yaw = Atan2(player.Velocity.y, player.Velocity.x);
@@ -440,34 +487,47 @@ namespace Strafe
 		return std::copysign(theta, NormalizeRad(yaw - vel_yaw));
 	}
 
-	double MaxAngleTheta(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, bool& safeguard_yaw)
+	double MaxAngleTheta(const PlayerData& player,
+	                     const MovementVars& vars,
+	                     bool onground,
+	                     double wishspeed,
+	                     bool& safeguard_yaw)
 	{
 		safeguard_yaw = false;
 		double speed = player.Velocity.Length2D();
 		double accel = onground ? vars.Accelerate : vars.Airaccelerate;
 		double accelspeed = accel * wishspeed * vars.EntFriction * vars.Frametime;
 
-		if (accelspeed <= 0.0) {
+		if (accelspeed <= 0.0)
+		{
 			double wishspeed_capped = onground ? wishspeed : vars.WishspeedCap;
 			accelspeed *= -1;
-			if (accelspeed >= speed) {
+			if (accelspeed >= speed)
+			{
 				if (wishspeed_capped >= speed)
 					return 0.0;
-				else {
+				else
+				{
 					safeguard_yaw = true;
-					return std::acos(wishspeed_capped / speed); // The actual angle needs to be _less_ than this.
+					return std::acos(wishspeed_capped
+					                 / speed); // The actual angle needs to be _less_ than this.
 				}
 			}
-			else {
+			else
+			{
 				if (wishspeed_capped >= speed)
 					return std::acos(accelspeed / speed);
-				else {
+				else
+				{
 					safeguard_yaw = (wishspeed_capped <= accelspeed);
-					return std::acos(std::min(accelspeed, wishspeed_capped) / speed); // The actual angle needs to be _less_ than this if wishspeed_capped <= accelspeed.
+					return std::acos(
+					    std::min(accelspeed, wishspeed_capped)
+					    / speed); // The actual angle needs to be _less_ than this if wishspeed_capped <= accelspeed.
 				}
 			}
 		}
-		else {
+		else
+		{
 			if (accelspeed >= speed)
 				return M_PI;
 			else
@@ -493,16 +553,26 @@ namespace Strafe
 
 	double ButtonsPhi(Button button)
 	{
-		switch (button) {
-		case Button::FORWARD: return 0;
-		case Button::FORWARD_LEFT: return M_PI / 4;
-		case Button::LEFT: return M_PI / 2;
-		case Button::BACK_LEFT: return 3 * M_PI / 4;
-		case Button::BACK: return -M_PI;
-		case Button::BACK_RIGHT: return -3 * M_PI / 4;
-		case Button::RIGHT: return -M_PI / 2;
-		case Button::FORWARD_RIGHT: return -M_PI / 4;
-		default: return 0;
+		switch (button)
+		{
+		case Button::FORWARD:
+			return 0;
+		case Button::FORWARD_LEFT:
+			return M_PI / 4;
+		case Button::LEFT:
+			return M_PI / 2;
+		case Button::BACK_LEFT:
+			return 3 * M_PI / 4;
+		case Button::BACK:
+			return -M_PI;
+		case Button::BACK_RIGHT:
+			return -3 * M_PI / 4;
+		case Button::RIGHT:
+			return -M_PI / 2;
+		case Button::FORWARD_RIGHT:
+			return -M_PI / 4;
+		default:
+			return 0;
 		}
 	}
 
@@ -520,24 +590,38 @@ namespace Strafe
 			return Button::BACK;
 	}
 
-	void SideStrafeGeneral(const PlayerData& player, const MovementVars& vars, bool onground, double wishspeed,
-		const StrafeButtons& strafeButtons, bool useGivenButtons, Button& usedButton, double vel_yaw, double theta, bool right, Vector2D& velocity, double& yaw)
+	void SideStrafeGeneral(const PlayerData& player,
+	                       const MovementVars& vars,
+	                       bool onground,
+	                       double wishspeed,
+	                       const StrafeButtons& strafeButtons,
+	                       bool useGivenButtons,
+	                       Button& usedButton,
+	                       double vel_yaw,
+	                       double theta,
+	                       bool right,
+	                       Vector2D& velocity,
+	                       double& yaw)
 	{
-		if (useGivenButtons) {
-			if (!onground) {
+		if (useGivenButtons)
+		{
+			if (!onground)
+			{
 				if (right)
 					usedButton = strafeButtons.AirRight;
 				else
 					usedButton = strafeButtons.AirLeft;
 			}
-			else {
+			else
+			{
 				if (right)
 					usedButton = strafeButtons.GroundRight;
 				else
 					usedButton = strafeButtons.GroundLeft;
 			}
 		}
-		else {
+		else
+		{
 			usedButton = GetBestButtons(theta, right);
 		}
 		double phi = ButtonsPhi(usedButton);
@@ -554,32 +638,75 @@ namespace Strafe
 		velocity = pl.Velocity.AsVector2D();
 	}
 
-	double YawStrafeMaxAccel(PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons, Button& usedButton,
-		double vel_yaw, double yaw)
+	double YawStrafeMaxAccel(PlayerData& player,
+	                         const MovementVars& vars,
+	                         bool onground,
+	                         double wishspeed,
+	                         const StrafeButtons& strafeButtons,
+	                         bool useGivenButtons,
+	                         Button& usedButton,
+	                         double vel_yaw,
+	                         double yaw)
 	{
 		double resulting_yaw;
 		double theta = MaxAccelIntoYawTheta(player, vars, onground, wishspeed, vel_yaw, yaw);
 		Vector2D newvel;
-		SideStrafeGeneral(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw, std::fabs(theta), (theta < 0), newvel, resulting_yaw);
+		SideStrafeGeneral(player,
+		                  vars,
+		                  onground,
+		                  wishspeed,
+		                  strafeButtons,
+		                  useGivenButtons,
+		                  usedButton,
+		                  vel_yaw,
+		                  std::fabs(theta),
+		                  (theta < 0),
+		                  newvel,
+		                  resulting_yaw);
 		player.Velocity.AsVector2D() = newvel;
 
 		return resulting_yaw;
 	}
 
-	double YawStrafeCapped(PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons, Button& usedButton,
-		double vel_yaw, double yaw)
+	double YawStrafeCapped(PlayerData& player,
+	                       const MovementVars& vars,
+	                       bool onground,
+	                       double wishspeed,
+	                       const StrafeButtons& strafeButtons,
+	                       bool useGivenButtons,
+	                       Button& usedButton,
+	                       double vel_yaw,
+	                       double yaw)
 	{
 		double resulting_yaw;
 		double theta = MaxAccelWithCapIntoYawTheta(player, vars, onground, wishspeed, vel_yaw, yaw);
 		Vector2D newvel;
-		SideStrafeGeneral(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw, std::fabs(theta), (theta < 0), newvel, resulting_yaw);
+		SideStrafeGeneral(player,
+		                  vars,
+		                  onground,
+		                  wishspeed,
+		                  strafeButtons,
+		                  useGivenButtons,
+		                  usedButton,
+		                  vel_yaw,
+		                  std::fabs(theta),
+		                  (theta < 0),
+		                  newvel,
+		                  resulting_yaw);
 		player.Velocity.AsVector2D() = newvel;
 
 		return resulting_yaw;
 	}
 
-	double YawStrafeMaxAngle(PlayerData& player, const MovementVars& vars, bool onground, double wishspeed, const StrafeButtons& strafeButtons, bool useGivenButtons, Button& usedButton,
-		double vel_yaw, double yaw)
+	double YawStrafeMaxAngle(PlayerData& player,
+	                         const MovementVars& vars,
+	                         bool onground,
+	                         double wishspeed,
+	                         const StrafeButtons& strafeButtons,
+	                         bool useGivenButtons,
+	                         Button& usedButton,
+	                         double vel_yaw,
+	                         double yaw)
 	{
 		bool safeguard_yaw;
 		double theta = MaxAngleTheta(player, vars, onground, wishspeed, safeguard_yaw);
@@ -588,40 +715,82 @@ namespace Strafe
 
 		Vector2D newvel;
 		double resulting_yaw;
-		SideStrafeGeneral(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw, theta, (NormalizeRad(yaw - vel_yaw) < 0), newvel, resulting_yaw);
+		SideStrafeGeneral(player,
+		                  vars,
+		                  onground,
+		                  wishspeed,
+		                  strafeButtons,
+		                  useGivenButtons,
+		                  usedButton,
+		                  vel_yaw,
+		                  theta,
+		                  (NormalizeRad(yaw - vel_yaw) < 0),
+		                  newvel,
+		                  resulting_yaw);
 
-		if (safeguard_yaw) {
+		if (safeguard_yaw)
+		{
 			Vector2D test_vel1, test_vel2;
 			double test_yaw1, test_yaw2;
 
-			SideStrafeGeneral(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw, std::min(theta - SAFEGUARD_THETA_DIFFERENCE_RAD, 0.0), (NormalizeRad(yaw - vel_yaw) < 0), test_vel1, test_yaw1);
-			SideStrafeGeneral(player, vars, onground, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw, std::max(theta + SAFEGUARD_THETA_DIFFERENCE_RAD, 0.0), (NormalizeRad(yaw - vel_yaw) < 0), test_vel2, test_yaw2);
+			SideStrafeGeneral(player,
+			                  vars,
+			                  onground,
+			                  wishspeed,
+			                  strafeButtons,
+			                  useGivenButtons,
+			                  usedButton,
+			                  vel_yaw,
+			                  std::min(theta - SAFEGUARD_THETA_DIFFERENCE_RAD, 0.0),
+			                  (NormalizeRad(yaw - vel_yaw) < 0),
+			                  test_vel1,
+			                  test_yaw1);
+			SideStrafeGeneral(player,
+			                  vars,
+			                  onground,
+			                  wishspeed,
+			                  strafeButtons,
+			                  useGivenButtons,
+			                  usedButton,
+			                  vel_yaw,
+			                  std::max(theta + SAFEGUARD_THETA_DIFFERENCE_RAD, 0.0),
+			                  (NormalizeRad(yaw - vel_yaw) < 0),
+			                  test_vel2,
+			                  test_yaw2);
 
-			double cos_test1 = test_vel1.Dot(player.Velocity.AsVector2D()) / (player.Velocity.Length2D() * test_vel1.Length());
-			double cos_test2 = test_vel2.Dot(player.Velocity.AsVector2D()) / (player.Velocity.Length2D() * test_vel2.Length());
-			double cos_newvel = newvel.Dot(player.Velocity.AsVector2D()) / (player.Velocity.Length2D() * newvel.Length());
+			double cos_test1 = test_vel1.Dot(player.Velocity.AsVector2D())
+			                   / (player.Velocity.Length2D() * test_vel1.Length());
+			double cos_test2 = test_vel2.Dot(player.Velocity.AsVector2D())
+			                   / (player.Velocity.Length2D() * test_vel2.Length());
+			double cos_newvel =
+			    newvel.Dot(player.Velocity.AsVector2D()) / (player.Velocity.Length2D() * newvel.Length());
 
 			//DevMsg("cos_newvel = %.8f; cos_test1 = %.8f; cos_test2 = %.8f\n", cos_newvel, cos_test1, cos_test2);
 
-			if (cos_test1 < cos_newvel) {
-				if (cos_test2 < cos_test1) {
+			if (cos_test1 < cos_newvel)
+			{
+				if (cos_test2 < cos_test1)
+				{
 					newvel = test_vel2;
 					resulting_yaw = test_yaw2;
 					cos_newvel = cos_test2;
 				}
-				else {
+				else
+				{
 					newvel = test_vel1;
 					resulting_yaw = test_yaw1;
 					cos_newvel = cos_test1;
 				}
 			}
-			else if (cos_test2 < cos_newvel) {
+			else if (cos_test2 < cos_newvel)
+			{
 				newvel = test_vel2;
 				resulting_yaw = test_yaw2;
 				cos_newvel = cos_test2;
 			}
 		}
-		else {
+		else
+		{
 			//DevMsg("theta = %.08f, yaw = %.08f, vel_yaw = %.08f, speed = %.08f\n", theta, yaw, vel_yaw, player.Velocity.Length2D());
 		}
 
@@ -629,18 +798,22 @@ namespace Strafe
 		return resulting_yaw;
 	}
 
-	void MapSpeeds(ProcessedFrame &out, const MovementVars& vars)
+	void MapSpeeds(ProcessedFrame& out, const MovementVars& vars)
 	{
-		if (out.Forward) {
+		if (out.Forward)
+		{
 			out.ForwardSpeed += vars.Maxspeed;
 		}
-		if (out.Back) {
+		if (out.Back)
+		{
 			out.ForwardSpeed -= vars.Maxspeed;
 		}
-		if (out.Right) {
+		if (out.Right)
+		{
 			out.SideSpeed += vars.Maxspeed;
 		}
-		if (out.Left) {
+		if (out.Left)
+		{
 			out.SideSpeed -= vars.Maxspeed;
 		}
 	}
@@ -650,7 +823,8 @@ namespace Strafe
 		if (!jumped)
 			return false;
 
-		if (tas_strafe_jumptype.GetInt() == 2) {
+		if (tas_strafe_jumptype.GetInt() == 2)
+		{
 			// OE bhop
 			out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat());
 			out.Forward = false;
@@ -660,8 +834,11 @@ namespace Strafe
 			out.Jump = true;
 			return true;
 		}
-		else if (tas_strafe_jumptype.GetInt() == 1) {
-			if (player.Velocity.Length2D() >= vars.Maxspeed * ((ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5)) {
+		else if (tas_strafe_jumptype.GetInt() == 1)
+		{
+			if (player.Velocity.Length2D()
+			    >= vars.Maxspeed * ((ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5))
+			{
 				// ABH
 				out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
 				out.Forward = false;
@@ -672,7 +849,8 @@ namespace Strafe
 				return true;
 			}
 		}
-		else if (tas_strafe_jumptype.GetInt() == 3) {
+		else if (tas_strafe_jumptype.GetInt() == 3)
+		{
 			// Glitchless bhop
 			const Vector vel = player.Velocity;
 			out.Yaw = NormalizeRad(Atan2(player.Velocity[1], player.Velocity[0])) * M_RAD2DEG;
@@ -687,10 +865,19 @@ namespace Strafe
 		return false;
 	}
 
-
-	void StrafeVectorial(PlayerData& player, const MovementVars& vars, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, bool yawChanged)
+	void StrafeVectorial(PlayerData& player,
+	                     const MovementVars& vars,
+	                     bool jumped,
+	                     bool ducking,
+	                     StrafeType type,
+	                     StrafeDir dir,
+	                     double target_yaw,
+	                     double vel_yaw,
+	                     ProcessedFrame& out,
+	                     bool yawChanged)
 	{
-		if (StrafeJump(jumped, player, vars, ducking, out)) {
+		if (StrafeJump(jumped, player, vars, ducking, out))
+		{
 			if (!yawChanged || tas_strafe_allow_jump_override.GetBool())
 			{
 				out.Processed = true;
@@ -701,7 +888,18 @@ namespace Strafe
 		}
 
 		ProcessedFrame dummy;
-		Strafe(player, vars, jumped, ducking, type, dir, target_yaw, vel_yaw, dummy, StrafeButtons(), true); // Get the desired strafe direction by calling the Strafe function while using forward strafe buttons
+		Strafe(
+		    player,
+		    vars,
+		    jumped,
+		    ducking,
+		    type,
+		    dir,
+		    target_yaw,
+		    vel_yaw,
+		    dummy,
+		    StrafeButtons(),
+		    true); // Get the desired strafe direction by calling the Strafe function while using forward strafe buttons
 
 		// If forward is pressed, strafing should occur
 		if (dummy.Forward)
@@ -709,9 +907,12 @@ namespace Strafe
 			if (!yawChanged && tas_strafe_vectorial_increment.GetFloat() > 0)
 			{
 				// Calculate updated yaw
-				double adjustedTarget = NormalizeDeg(target_yaw + tas_strafe_vectorial_offset.GetFloat());
+				double adjustedTarget =
+				    NormalizeDeg(target_yaw + tas_strafe_vectorial_offset.GetFloat());
 				double normalizedDiff = NormalizeDeg(adjustedTarget - vel_yaw);
-				double additionAbs = std::min(static_cast<double>(tas_strafe_vectorial_increment.GetFloat()), std::abs(normalizedDiff));
+				double additionAbs =
+				    std::min(static_cast<double>(tas_strafe_vectorial_increment.GetFloat()),
+				             std::abs(normalizedDiff));
 
 				// Snap to target if difference too large (likely due to an ABH)
 				if (std::abs(normalizedDiff) > tas_strafe_vectorial_snap.GetFloat())
@@ -731,11 +932,21 @@ namespace Strafe
 		}
 	}
 
-
-	bool Strafe(PlayerData& player, const MovementVars& vars, bool jumped, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, const StrafeButtons& strafeButtons, bool useGivenButtons)
+	bool Strafe(PlayerData& player,
+	            const MovementVars& vars,
+	            bool jumped,
+	            bool ducking,
+	            StrafeType type,
+	            StrafeDir dir,
+	            double target_yaw,
+	            double vel_yaw,
+	            ProcessedFrame& out,
+	            const StrafeButtons& strafeButtons,
+	            bool useGivenButtons)
 	{
 		//DevMsg("[Strafing] ducking = %d\n", (int)ducking);
-		if (StrafeJump(jumped, player, vars, ducking, out)) {
+		if (StrafeJump(jumped, player, vars, ducking, out))
+		{
 			out.Processed = true;
 			MapSpeeds(out, vars);
 
@@ -750,25 +961,58 @@ namespace Strafe
 		bool strafed;
 		strafed = true;
 
-		switch (dir) {
+		switch (dir)
+		{
 		case StrafeDir::YAW:
 			if (type == StrafeType::MAXACCEL)
-				out.Yaw = YawStrafeMaxAccel(player, vars, vars.OnGround, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD) * M_RAD2DEG;
+				out.Yaw = YawStrafeMaxAccel(player,
+				                            vars,
+				                            vars.OnGround,
+				                            wishspeed,
+				                            strafeButtons,
+				                            useGivenButtons,
+				                            usedButton,
+				                            vel_yaw * M_DEG2RAD,
+				                            target_yaw * M_DEG2RAD)
+				          * M_RAD2DEG;
 			else if (type == StrafeType::MAXANGLE)
-				out.Yaw = YawStrafeMaxAngle(player, vars, vars.OnGround, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD) * M_RAD2DEG;
+				out.Yaw = YawStrafeMaxAngle(player,
+				                            vars,
+				                            vars.OnGround,
+				                            wishspeed,
+				                            strafeButtons,
+				                            useGivenButtons,
+				                            usedButton,
+				                            vel_yaw * M_DEG2RAD,
+				                            target_yaw * M_DEG2RAD)
+				          * M_RAD2DEG;
 			else if (type == StrafeType::CAPPED)
-				out.Yaw = YawStrafeCapped(player, vars, vars.OnGround, wishspeed, strafeButtons, useGivenButtons, usedButton, vel_yaw * M_DEG2RAD, target_yaw * M_DEG2RAD) * M_RAD2DEG;
+				out.Yaw = YawStrafeCapped(player,
+				                          vars,
+				                          vars.OnGround,
+				                          wishspeed,
+				                          strafeButtons,
+				                          useGivenButtons,
+				                          usedButton,
+				                          vel_yaw * M_DEG2RAD,
+				                          target_yaw * M_DEG2RAD)
+				          * M_RAD2DEG;
 			break;
 		default:
 			strafed = false;
 			break;
 		}
 
-		if (strafed) {
-			out.Forward = (usedButton == Button::FORWARD || usedButton == Button::FORWARD_LEFT || usedButton == Button::FORWARD_RIGHT);
-			out.Back = (usedButton == Button::BACK || usedButton == Button::BACK_LEFT || usedButton == Button::BACK_RIGHT);
-			out.Right = (usedButton == Button::RIGHT || usedButton == Button::FORWARD_RIGHT || usedButton == Button::BACK_RIGHT);
-			out.Left = (usedButton == Button::LEFT || usedButton == Button::FORWARD_LEFT || usedButton == Button::BACK_LEFT);
+		if (strafed)
+		{
+			out.Forward = (usedButton == Button::FORWARD || usedButton == Button::FORWARD_LEFT
+			               || usedButton == Button::FORWARD_RIGHT);
+			out.Back = (usedButton == Button::BACK || usedButton == Button::BACK_LEFT
+			            || usedButton == Button::BACK_RIGHT);
+			out.Right = (usedButton == Button::RIGHT || usedButton == Button::FORWARD_RIGHT
+			             || usedButton == Button::BACK_RIGHT);
+			out.Left = (usedButton == Button::LEFT || usedButton == Button::FORWARD_LEFT
+			            || usedButton == Button::BACK_LEFT);
 			out.Processed = true;
 			MapSpeeds(out, vars);
 		}
@@ -786,14 +1030,24 @@ namespace Strafe
 		if (speed < 0.1)
 			return;
 
-		auto friction = float{ vars.Friction * vars.EntFriction };
+		auto friction = float{vars.Friction * vars.EntFriction};
 		auto control = (speed < vars.Stopspeed) ? vars.Stopspeed : speed;
 		auto drop = control * friction * vars.Frametime;
 		auto newspeed = std::max(speed - drop, 0.f);
 		player.Velocity *= (newspeed / speed);
 	}
 
-	void LgagstJump(const PlayerData& player, const MovementVars& vars, const CurrentState& curState, bool ducking, StrafeType type, StrafeDir dir, double target_yaw, double vel_yaw, ProcessedFrame& out, const StrafeButtons& strafeButtons, bool useGivenButtons)
+	void LgagstJump(const PlayerData& player,
+	                const MovementVars& vars,
+	                const CurrentState& curState,
+	                bool ducking,
+	                StrafeType type,
+	                StrafeDir dir,
+	                double target_yaw,
+	                double vel_yaw,
+	                ProcessedFrame& out,
+	                const StrafeButtons& strafeButtons,
+	                bool useGivenButtons)
 	{
 		// Fix me
 		auto v = vars;
@@ -803,7 +1057,17 @@ namespace Strafe
 		auto ground = PlayerData(player);
 		Friction(ground, v.OnGround, vars);
 		auto out_temp = ProcessedFrame(out);
-		Strafe(ground, v, false, ducking, type, dir, target_yaw, vel_yaw, out_temp, strafeButtons, useGivenButtons);
+		Strafe(ground,
+		       v,
+		       false,
+		       ducking,
+		       type,
+		       dir,
+		       target_yaw,
+		       vel_yaw,
+		       out_temp,
+		       strafeButtons,
+		       useGivenButtons);
 
 		auto air = PlayerData(player);
 		out_temp = ProcessedFrame(out);
@@ -813,9 +1077,10 @@ namespace Strafe
 
 		auto l_gr = ground.Velocity.Length2D();
 		auto l_air = air.Velocity.Length2D();
-		if (l_air > l_gr) {
+		if (l_air > l_gr)
+		{
 			out.Jump = true;
 		}
 	}
 
-}
+} // namespace Strafe

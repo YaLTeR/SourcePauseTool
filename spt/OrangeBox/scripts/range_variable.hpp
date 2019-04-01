@@ -7,12 +7,27 @@
 namespace scripts
 {
 	class SearchDoneException
-	{};
+	{
+	};
 
-	enum class SearchResult { NoSearch, Success, Fail };
-	enum class SearchType { None, Lowest, Range, Highest, Random, RandomLowest, RandomHighest };
+	enum class SearchResult
+	{
+		NoSearch,
+		Success,
+		Fail
+	};
+	enum class SearchType
+	{
+		None,
+		Lowest,
+		Range,
+		Highest,
+		Random,
+		RandomLowest,
+		RandomHighest
+	};
 
-	template <typename T>
+	template<typename T>
 	class RangeVariable
 	{
 	public:
@@ -62,9 +77,8 @@ namespace scripts
 	{
 		std::ostringstream os;
 
-		os << "[low: " << GetValueForIndex(lowIndex)
-			<< ", value: " << GetValueForIndex(valueIndex)
-			<< ", high: " << GetValueForIndex(highIndex) << "]";
+		os << "[low: " << GetValueForIndex(lowIndex) << ", value: " << GetValueForIndex(valueIndex)
+		   << ", high: " << GetValueForIndex(highIndex) << "]";
 
 		return os.str();
 	}
@@ -78,12 +92,11 @@ namespace scripts
 		uniformRandom = std::uniform_int_distribution<int>(lowIndex, highIndex);
 	}
 
-
 	template<typename T>
 	inline void RangeVariable<T>::ParseValues(const std::string& value)
 	{
 		GetTriplet(value, initialLow, initialHigh, increment, '|');
-		
+
 		if (increment <= 0)
 			throw std::exception("increment cannot be <= 0");
 		else if (initialLow >= initialHigh)
@@ -114,8 +127,8 @@ namespace scripts
 		case SearchType::Highest:
 			SelectHigh(lastResult);
 			break;
-		case SearchType::Random: 
-		case SearchType::RandomHighest: 
+		case SearchType::Random:
+		case SearchType::RandomHighest:
 		case SearchType::RandomLowest:
 			SelectRandom();
 			break;
@@ -166,7 +179,7 @@ namespace scripts
 			throw std::exception("Unexpected search result received");
 		}
 
-		SelectMiddle();	
+		SelectMiddle();
 	}
 
 	template<typename T>
@@ -194,4 +207,4 @@ namespace scripts
 
 		return value;
 	}
-}
+} // namespace scripts

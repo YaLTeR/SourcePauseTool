@@ -4,17 +4,17 @@
 #include "SPTLib\sptlib.hpp"
 #include "string_parsing.hpp"
 
-int PatternContainer::FindPatternIndex(PVOID * origPtr)
+int PatternContainer::FindPatternIndex(PVOID* origPtr)
 {
 	return patterns[(int)origPtr];
 }
 
-const std::string& PatternContainer::FindPatternName(PVOID * origPtr)
+const std::string& PatternContainer::FindPatternName(PVOID* origPtr)
 {
 	return patternNames[(int)origPtr];
 }
 
-void PatternContainer::Init(const std::wstring & moduleName)
+void PatternContainer::Init(const std::wstring& moduleName)
 {
 	this->moduleName = moduleName;
 }
@@ -25,7 +25,7 @@ void PatternContainer::AddHook(PVOID functionToHook, PVOID* origPtr)
 	functions.push_back(origPtr);
 }
 
-void PatternContainer::AddIndex(PVOID * origPtr, int index, std::string name)
+void PatternContainer::AddIndex(PVOID* origPtr, int index, std::string name)
 {
 	patterns[(int)origPtr] = index;
 	patternNames[(int)origPtr] = name;
@@ -42,7 +42,6 @@ void PatternContainer::Hook()
 
 void PatternContainer::Unhook()
 {
-    if (!entries.empty())
+	if (!entries.empty())
 		DetoursUtils::DetachDetours(moduleName, entries.size(), &functions[0]);
 }
-

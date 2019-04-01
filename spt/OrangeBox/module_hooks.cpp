@@ -1,8 +1,8 @@
 #include "stdafx.h"
+#include "..\sptlib-wrapper.hpp"
+#include "cvars.hpp"
 #include "modules.hpp"
 #include "modules\EngineDLL.hpp"
-#include "cvars.hpp"
-#include "..\sptlib-wrapper.hpp"
 #include "scripts\srctas_reader.hpp"
 #include "scripts\tests\test.hpp"
 
@@ -41,4 +41,4 @@ namespace ModuleHooks
 		serverDLL.JumpSignal.Connect(&vgui_matsurfaceDLL, &VGui_MatSurfaceDLL::Jump);
 #endif
 	}
-}
+} // namespace ModuleHooks

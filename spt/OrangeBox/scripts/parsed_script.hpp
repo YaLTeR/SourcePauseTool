@@ -28,7 +28,7 @@ namespace scripts
 		std::string duringLoad;
 		std::vector<afterframes_entry_t> afterFramesEntries;
 		std::vector<int> saveStateIndexes;
-		
+
 		void Reset();
 		void Init(std::string name);
 
@@ -37,8 +37,14 @@ namespace scripts
 		void AddFrameBulk(FrameBulkOutput& output);
 		void AddSaveState();
 		void AddAfterFramesEntry(long long int tick, std::string command);
-		void SetSave(std::string save) { saveName = save; };
-		int GetScriptLength() { return afterFramesTick; }
+		void SetSave(std::string save)
+		{
+			saveName = save;
+		};
+		int GetScriptLength()
+		{
+			return afterFramesTick;
+		}
 
 	private:
 		std::string saveName;
@@ -47,4 +53,4 @@ namespace scripts
 		Savestate GetSaveStateInfo();
 		std::vector<Savestate> saveStates;
 	};
-}
+} // namespace scripts

@@ -1,11 +1,11 @@
 #include "stdafx.h"
 #include "test.hpp"
-#include "dbg.h"
-#include "..\..\..\utils\file.hpp"
-#include "..\..\spt-serverplugin.hpp"
-#include "..\srctas_reader.hpp"
 #include <filesystem>
+#include "..\..\spt-serverplugin.hpp"
 #include "..\..\..\sptlib-wrapper.hpp"
+#include "..\..\..\utils\file.hpp"
+#include "..\srctas_reader.hpp"
+#include "dbg.h"
 
 namespace scripts
 {
@@ -43,11 +43,11 @@ namespace scripts
 				runningTest = true;
 				testItems = GetTestData(TestDataFile(testName));
 			}
-			
+
 			g_TASReader.ExecuteScript(testName);
 			lastTick = g_TASReader.GetCurrentScriptLength();
 		}
-		catch(const std::exception& ex)
+		catch (const std::exception& ex)
 		{
 			successfulTest = false;
 			std::ostringstream oss;
@@ -108,7 +108,7 @@ namespace scripts
 			{
 				TestIteration();
 				++dataTick;
-			}			
+			}
 			else if (generatingData)
 			{
 				GenerationIteration();
@@ -140,7 +140,8 @@ namespace scripts
 			if (!result.successful)
 			{
 				std::ostringstream oss;
-				oss << "Tracker \"" << tracker->TrackerName() << "\" difference at tick " << item.tick << " : \"" << result.errorMsg << "\"";
+				oss << "Tracker \"" << tracker->TrackerName() << "\" difference at tick " << item.tick
+				    << " : \"" << result.errorMsg << "\"";
 				throw std::exception(oss.str().c_str());
 			}
 
@@ -159,7 +160,8 @@ namespace scripts
 			if (!selfValidation.successful)
 			{
 				std::ostringstream oss;
-				oss << "Tracker " << tracker->TrackerName() << " failed to self-validate on tick " << dataTick << " : \"" << selfValidation.errorMsg << "\"";
+				oss << "Tracker " << tracker->TrackerName() << " failed to self-validate on tick "
+				    << dataTick << " : \"" << selfValidation.errorMsg << "\"";
 				throw std::exception(oss.str().c_str());
 			}
 
@@ -195,13 +197,15 @@ namespace scripts
 				std::ostringstream oss;
 
 				if (runningTest)
-					oss << successfulTests << " / " << testNames.size() << " tests ran successfully";
+					oss << successfulTests << " / " << testNames.size()
+					    << " tests ran successfully";
 				else
-					oss << "Data automatically generated for " << testNames.size() << " tests ran successfully";
+					oss << "Data automatically generated for " << testNames.size()
+					    << " tests ran successfully";
 
 				PrintTestMessage(oss.str());
 			}
-			
+
 			ResetIteration();
 			Reset();
 
@@ -217,7 +221,7 @@ namespace scripts
 		}
 	}
 
-	void Tester::RunAutomatedTest(const std::string & folder, bool generating, const std::string & testFileName)
+	void Tester::RunAutomatedTest(const std::string& folder, bool generating, const std::string& testFileName)
 	{
 		OpenLogFile(testFileName);
 		LoadTest(folder, generating, true);
@@ -237,7 +241,7 @@ namespace scripts
 			if (extPos != -1)
 			{
 				str = str.substr(0, extPos);
-				
+
 				if (RequiredFilesExist(str, generating))
 				{
 					testNames.push_back(str);
@@ -304,4 +308,4 @@ namespace scripts
 	{
 		return testNames[currentTestIndex];
 	}
-}
+} // namespace scripts

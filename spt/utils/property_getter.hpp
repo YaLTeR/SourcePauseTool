@@ -1,11 +1,11 @@
 #pragma once
 
-#include <string>
 #include <map>
-#include "icliententitylist.h"
-#include "icliententity.h"
-#include "engine\ivmodelinfo.h"
+#include <string>
 #include "cdll_int.h"
+#include "engine\ivmodelinfo.h"
+#include "icliententity.h"
+#include "icliententitylist.h"
 
 namespace utils
 {
@@ -16,11 +16,11 @@ namespace utils
 		std::map<std::string, int> offsets;
 		bool foundOffsets;
 	};
-	
+
 	int GetOffset(int entindex, const std::string& key);
 
 	template<typename T>
-	T GetProperty(int entindex, const std::string & key)
+	T GetProperty(int entindex, const std::string& key)
 	{
 #ifdef OE
 		return T();
@@ -35,4 +35,4 @@ namespace utils
 		}
 #endif
 	}
-}
+} // namespace utils

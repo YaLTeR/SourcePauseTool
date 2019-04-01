@@ -4,33 +4,35 @@
 #include <SPTLib\IHookableNameFilter.hpp>
 #include "..\..\utils\patterncontainer.hpp"
 
-
 #ifdef OE
 #include "mathlib.h"
 #else
 #include "mathlib/mathlib.h"
 #endif
 
-using std::uintptr_t;
 using std::size_t;
+using std::uintptr_t;
 
-typedef bool(__cdecl *_SV_ActivateServer) ();
-typedef void(__fastcall *_FinishRestore) (void* thisptr, int edx);
-typedef void(__fastcall *_SetPaused) (void* thisptr, int edx, bool paused);
-typedef void(__cdecl *__Host_RunFrame) (float time);
-typedef void(__cdecl *__Host_RunFrame_Input) (float accumulated_extra_samples, int bFinalTick);
-typedef void(__cdecl *__Host_RunFrame_Server) (int bFinalTick);
-typedef void(__cdecl *_Cbuf_Execute) ();
-typedef void(__fastcall *_VGui_Paint) (void* thisptr, int edx, int mode);
-typedef int(__fastcall *DemoPlayer__Func)(void* thisptr);
-typedef bool(__fastcall *_CEngineTrace__PointOutsideWorld)(void* thisptr, int edx, const Vector& pt);
-
+typedef bool(__cdecl* _SV_ActivateServer)();
+typedef void(__fastcall* _FinishRestore)(void* thisptr, int edx);
+typedef void(__fastcall* _SetPaused)(void* thisptr, int edx, bool paused);
+typedef void(__cdecl* __Host_RunFrame)(float time);
+typedef void(__cdecl* __Host_RunFrame_Input)(float accumulated_extra_samples, int bFinalTick);
+typedef void(__cdecl* __Host_RunFrame_Server)(int bFinalTick);
+typedef void(__cdecl* _Cbuf_Execute)();
+typedef void(__fastcall* _VGui_Paint)(void* thisptr, int edx, int mode);
+typedef int(__fastcall* DemoPlayer__Func)(void* thisptr);
+typedef bool(__fastcall* _CEngineTrace__PointOutsideWorld)(void* thisptr, int edx, const Vector& pt);
 
 class EngineDLL : public IHookableNameFilter
 {
 public:
-	EngineDLL() : IHookableNameFilter({ L"engine.dll" }) {};
-	virtual void Hook(const std::wstring& moduleName, void* moduleHandle, void* moduleBase, size_t moduleLength, bool needToIntercept);
+	EngineDLL() : IHookableNameFilter({L"engine.dll"}){};
+	virtual void Hook(const std::wstring& moduleName,
+	                  void* moduleHandle,
+	                  void* moduleBase,
+	                  size_t moduleLength,
+	                  bool needToIntercept);
 	virtual void Unhook();
 	virtual void Clear();
 
@@ -79,7 +81,7 @@ protected:
 	int* pM_State;
 	int* pM_nSignonState;
 	void** pDemoplayer;
-	
+
 	int GetPlaybackTick_Offset;
 	int GetTotalTicks_Offset;
 	int IsPlayingBack_Offset;

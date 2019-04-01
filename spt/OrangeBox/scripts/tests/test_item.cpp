@@ -6,7 +6,7 @@
 
 namespace scripts
 {
-	std::vector<TestItem> GetTestData(const std::string & fileName)
+	std::vector<TestItem> GetTestData(const std::string& fileName)
 	{
 		std::vector<TestItem> data;
 		std::ifstream is;
@@ -43,13 +43,11 @@ namespace scripts
 
 		for (auto& entry : testData)
 		{
-			os << entry.tick << ' ' <<  entry.trackerNo << ' ' << entry.data << '\n';
+			os << entry.tick << ' ' << entry.trackerNo << ' ' << entry.data << '\n';
 		}
 
 		os.close();
 	}
 
-	TestItem::TestItem(int tick, int no, const std::string& data) : tick(tick), trackerNo(no), data(data)
-	{
-	}
-}
+	TestItem::TestItem(int tick, int no, const std::string& data) : tick(tick), trackerNo(no), data(data) {}
+} // namespace scripts

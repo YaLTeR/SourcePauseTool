@@ -1,27 +1,29 @@
 #include "stdafx.h"
 
 #ifndef OE
-#include "portal_camera.hpp"
-#include "..\modules.hpp"
 #include "..\spt-serverplugin.hpp"
-#include "cdll_int.h"
-#include "engine\iserverplugin.h"
-#include "eiface.h"
-#include "tier2\tier2.h"
-#include "edict.h"
-#include "..\cvars.hpp"
-#include "mathlib\vmatrix.h"
-#include "overlay-renderer.hpp"
 #include "..\..\utils\ent_utils.hpp"
 #include "..\..\utils\property_getter.hpp"
+#include "..\cvars.hpp"
+#include "..\modules.hpp"
+#include "cdll_int.h"
 #include "client_class.h"
+#include "edict.h"
+#include "eiface.h"
+#include "engine\iserverplugin.h"
+#include "mathlib\vmatrix.h"
+#include "overlay-renderer.hpp"
+#include "portal_camera.hpp"
+#include "tier2\tier2.h"
 
 const int INDEX_MASK = MAX_EDICTS - 1;
 
 IClientEntity* getPortal(const char* arg, bool verbose);
 
 // From /game/shared/portal/prop_portal_shared.cpp
-void UpdatePortalTransformationMatrix(const matrix3x4_t &localToWorld, const matrix3x4_t &remoteToWorld, VMatrix& matrix)
+void UpdatePortalTransformationMatrix(const matrix3x4_t& localToWorld,
+                                      const matrix3x4_t& remoteToWorld,
+                                      VMatrix& matrix)
 {
 	VMatrix matPortal1ToWorldInv, matPortal2ToWorld, matRotation;
 
@@ -73,7 +75,8 @@ bool getPortal(IClientEntity** portal_edict, Vector& new_player_origin, QAngle& 
 {
 	IClientEntity* portal = getPortal(_y_spt_overlay_portal.GetString(), false);
 
-	if (!portal) {
+	if (!portal)
+	{
 		auto& player_origin = utils::GetPlayerEyePosition();
 		auto& player_angles = utils::GetPlayerEyeAngles();
 
@@ -82,15 +85,15 @@ bool getPortal(IClientEntity** portal_edict, Vector& new_player_origin, QAngle& 
 
 		return false;
 	}
-	
+
 	*portal_edict = portal;
 	return true;
 }
 
 void calculateAGPosition(Vector& new_player_origin, QAngle& new_player_angles)
 {
-	IClientEntity * enter_portal = NULL;
-	IClientEntity * exit_portal = NULL;
+	IClientEntity* enter_portal = NULL;
+	IClientEntity* exit_portal = NULL;
 
 	if (getPortal(&enter_portal, new_player_origin, new_player_angles))
 	{
@@ -98,13 +101,13 @@ void calculateAGPosition(Vector& new_player_origin, QAngle& new_player_angles)
 		if (exit_portal)
 		{
 			calculateAGOffsetPortal(enter_portal, exit_portal, new_player_origin, new_player_angles);
-		}	
-	}	
+		}
+	}
 }
 
 void calculateSGPosition(Vector& new_player_origin, QAngle& new_player_angles)
 {
-	IClientEntity * portal;
+	IClientEntity* portal;
 	if (getPortal(&portal, new_player_origin, new_player_angles))
 		calculateOffsetPlayer(portal, new_player_origin, new_player_angles);
 }
@@ -145,7 +148,10 @@ std::wstring calculateWillAGSG(Vector& new_player_origin, QAngle& new_player_ang
 		return L"yes";
 }
 
-void calculateAGOffsetPortal(IClientEntity* enter_portal, IClientEntity* exit_portal, Vector& new_player_origin, QAngle& new_player_angles)
+void calculateAGOffsetPortal(IClientEntity* enter_portal,
+                             IClientEntity* exit_portal,
+                             Vector& new_player_origin,
+                             QAngle& new_player_angles)
 {
 	auto& enter_origin = utils::GetPortalPosition(enter_portal);
 	auto& enter_angles = utils::GetPortalAngles(enter_portal);
@@ -201,9 +207,7 @@ void calculateOffsetPlayer(IClientEntity* saveglitch_portal, Vector& new_player_
 			new_player_angles.x = AngleNormalizePositive(new_player_angles.x);
 			new_player_angles.y = AngleNormalizePositive(new_player_angles.y);
 			new_player_angles.z = AngleNormalizePositive(new_player_angles.z);
-	
 		}
-
 	}
 }
 
@@ -220,32 +224,37 @@ IClientEntity* getPortal(const char* arg, bool verbose)
 		return GetEnviromentPortal();
 	}
 
-	if (want_blue || want_orange || want_auto) {
+	if (want_blue || want_orange || want_auto)
+	{
 		std::vector<int> indices;
 
-		for (int i = 0; i < MAX_EDICTS; ++i) {
+		for (int i = 0; i < MAX_EDICTS; ++i)
+		{
 			IClientEntity* ent = utils::GetClientEntity(i);
 
-			if (!invalidPortal(ent)) {
+			if (!invalidPortal(ent))
+			{
 				const char* modelName = utils::GetModelName(ent);
 				bool is_orange_portal = strstr(modelName, "portal2");
 
 				if (is_orange_portal && want_orange)
 				{
 					indices.push_back(i);
-				}			
+				}
 				else if (!is_orange_portal && want_blue)
 				{
 					indices.push_back(i);
-				}					
+				}
 			}
 		}
 
-		if (indices.size() > 1) {
-			if(verbose)
+		if (indices.size() > 1)
+		{
+			if (verbose)
 				Msg("There are multiple %s portals, please use the index:\n", arg);
 
-			for (auto i : indices) {
+			for (auto i : indices)
+			{
 				auto ent = utils::GetClientEntity(i);
 				auto& origin = utils::GetPortalPosition(ent);
 
@@ -253,11 +262,13 @@ IClientEntity* getPortal(const char* arg, bool verbose)
 					Msg("%d located at %.8f %.8f %.8f\n", i, origin.x, origin.y, origin.z);
 			}
 		}
-		else if (indices.size() == 0) {
+		else if (indices.size() == 0)
+		{
 			if (verbose)
 				Msg("There are no %s portals.\n", arg);
 		}
-		else {
+		else
+		{
 			portal_index = indices[0];
 			portal = utils::GetClientEntity(portal_index);
 		}
@@ -265,6 +276,5 @@ IClientEntity* getPortal(const char* arg, bool verbose)
 
 	return portal;
 }
-
 
 #endif

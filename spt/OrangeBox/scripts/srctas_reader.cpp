@@ -1,26 +1,22 @@
 #include "stdafx.h"
 
-#include "srctas_reader.hpp"
+#include "..\spt-serverplugin.hpp"
 #include "..\..\sptlib-wrapper.hpp"
+#include "..\..\utils\math.hpp"
 #include "..\..\utils\string_parsing.hpp"
 #include "..\cvars.hpp"
-#include "..\spt-serverplugin.hpp"
+#include "..\modules.hpp"
 #include "..\modules\ClientDLL.hpp"
 #include "..\modules\EngineDLL.hpp"
-#include "..\modules.hpp"
 #include "framebulk_handler.hpp"
-#include "..\..\utils\math.hpp"
+#include "srctas_reader.hpp"
 
 namespace scripts
 {
 	SourceTASReader g_TASReader;
 	const std::string SCRIPT_EXT = ".srctas";
 
-	const char* RESET_VARS[] = {
-		"cl_forwardspeed",
-		"cl_sidespeed",
-		"cl_yawspeed"
-	};
+	const char* RESET_VARS[] = {"cl_forwardspeed", "cl_sidespeed", "cl_yawspeed"};
 
 	const int RESET_VARS_COUNT = ARRAYSIZE(RESET_VARS);
 
@@ -98,7 +94,8 @@ namespace scripts
 				else if (IsVarsLine())
 					ParseVariables();
 				else
-					throw std::exception("Unexpected section order in file. Expected order is props - variables - frames");
+					throw std::exception(
+					    "Unexpected section order in file. Expected order is props - variables - frames");
 			}
 
 			Execute();
@@ -146,7 +143,7 @@ namespace scripts
 		{
 			iterationFinished = true;
 			SearchResult(SearchResult::Success);
-		}	
+		}
 	}
 
 	int SourceTASReader::GetCurrentTick()
@@ -178,8 +175,8 @@ namespace scripts
 
 		std::string startCmd(currentScript.initCommand + ";" + currentScript.duringLoad);
 		EngineConCmd(startCmd.c_str());
-		DevMsg("Executing start command: %s\n", startCmd.c_str());	
-		if(!demoName.empty())
+		DevMsg("Executing start command: %s\n", startCmd.c_str());
+		if (!demoName.empty())
 			currentScript.AddAfterFramesEntry(demoDelay, "record " + demoName);
 
 		for (auto& entry : currentScript.afterFramesEntries)
@@ -228,7 +225,7 @@ namespace scripts
 
 	void SourceTASReader::ReplaceVariables()
 	{
-		for(auto& variable : variables.variableMap)
+		for (auto& variable : variables.variableMap)
 		{
 			ReplaceAll(line, GetVarIdentifier(variable.first), variable.second.GetValue());
 		}
@@ -256,16 +253,16 @@ namespace scripts
 			const char* name = cmd->GetName();
 			// Reset any variables that have been marked to be reset for TASes
 			if (!cmd->IsCommand() && name != NULL && cmd->IsFlagSet(FCVAR_TAS_RESET))
-			{			
+			{
 				auto convar = icvar->FindVar(name);
 				DevMsg("Trying to reset variable %s\n", name);
 
 				// convar found
-				if (convar != NULL) 
+				if (convar != NULL)
 				{
 					DevMsg("Resetting var %s to value %s\n", name, convar->GetDefault());
 					convar->SetValue(convar->GetDefault());
-				}		
+				}
 				else
 					throw std::exception("Unable to find listed console variable!");
 			}
@@ -338,7 +335,7 @@ namespace scripts
 		if (isLineEmpty())
 		{
 			return;
-		}	
+		}
 
 		std::string prop;
 		std::string value;
@@ -352,7 +349,7 @@ namespace scripts
 			throw std::exception("Unknown property name");
 	}
 
-	void SourceTASReader::HandleSettings(const std::string & value)
+	void SourceTASReader::HandleSettings(const std::string& value)
 	{
 		currentScript.AddDuringLoadCmd(value);
 	}
@@ -399,7 +396,7 @@ namespace scripts
 		if (isLineEmpty())
 		{
 			return;
-		}	
+		}
 		else if (line.find("ss") == 0)
 		{
 			currentScript.AddSaveState();
@@ -433,8 +430,8 @@ namespace scripts
 		propertyHandlers["velz"] = &SourceTASReader::HandleZVel;
 		propertyHandlers["vel2d"] = &SourceTASReader::Handle2DVel;
 		propertyHandlers["velabs"] = &SourceTASReader::HandleAbsVel;
-        propertyHandlers["alive"] = &SourceTASReader::HandleAliveCondition;
-        propertyHandlers["jb"] = &SourceTASReader::HandleJBCondition;
+		propertyHandlers["alive"] = &SourceTASReader::HandleAliveCondition;
+		propertyHandlers["jb"] = &SourceTASReader::HandleJBCondition;
 	}
 
 	void SourceTASReader::HandleSave(const std::string& value)
@@ -468,39 +465,39 @@ namespace scripts
 			throw std::exception("Search type was invalid");
 	}
 
-	void SourceTASReader::HandlePlaybackSpeed(const std::string & value)
+	void SourceTASReader::HandlePlaybackSpeed(const std::string& value)
 	{
 		playbackSpeed = ParseValue<float>(value);
 		if (playbackSpeed <= 0.0f)
 			throw std::exception("Playback speed has to be positive");
 	}
 
-	void SourceTASReader::HandleTickRange(const std::string & value)
+	void SourceTASReader::HandleTickRange(const std::string& value)
 	{
 		int min, max;
 		GetDoublet(value, min, max, '|');
 		conditions.push_back(std::unique_ptr<Condition>(new TickRangeCondition(min, max, false)));
 	}
 
-	void SourceTASReader::HandleTicksFromEndRange(const std::string & value)
+	void SourceTASReader::HandleTicksFromEndRange(const std::string& value)
 	{
 		int min, max;
 		GetDoublet(value, min, max, '|');
 		conditions.push_back(std::unique_ptr<Condition>(new TickRangeCondition(min, max, true)));
 	}
 
-	void SourceTASReader::HandleJBCondition(const std::string & value)
+	void SourceTASReader::HandleJBCondition(const std::string& value)
 	{
 		auto height = ParseValue<float>(value);
 		conditions.push_back(std::unique_ptr<Condition>(new JBCondition(height)));
 	}
 
-	void SourceTASReader::HandleAliveCondition(const std::string & value)
+	void SourceTASReader::HandleAliveCondition(const std::string& value)
 	{
 		conditions.push_back(std::unique_ptr<Condition>(new AliveCondition()));
 	}
 
-	void SourceTASReader::HandlePosVel(const std::string & value, Axis axis, bool isPos)
+	void SourceTASReader::HandlePosVel(const std::string& value, Axis axis, bool isPos)
 	{
 		float min, max;
 		GetDoublet(value, min, max, '|');
@@ -529,4 +526,4 @@ namespace scripts
 
 		return os.str();
 	}
-}
+} // namespace scripts

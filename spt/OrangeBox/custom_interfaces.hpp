@@ -2,7 +2,8 @@
 #include "cdll_int.h"
 
 #ifdef OE
-class IVEngineClientDMoMM {
+class IVEngineClientDMoMM
+{
 public:
 	virtual void Unk1() = 0;
 	virtual void Unk2() = 0;
@@ -45,9 +46,10 @@ public:
 };
 #endif
 
-class EngineClientWrapper {
+class EngineClientWrapper
+{
 public:
-	virtual ~EngineClientWrapper() {};
+	virtual ~EngineClientWrapper(){};
 	virtual void ClientCmd(const char* command) = 0;
 	virtual void GetViewAngles(QAngle& viewangles) = 0;
 	virtual void SetViewAngles(QAngle& viewangles) = 0;
@@ -64,32 +66,39 @@ public:
  * Wrapper for an interface similar to IVEngineClient.
  */
 template<class EngineClient>
-class IVEngineClientWrapper : public EngineClientWrapper {
+class IVEngineClientWrapper : public EngineClientWrapper
+{
 public:
 	IVEngineClientWrapper(EngineClient* engine) : engine(engine) {}
 
-	void ClientCmd(const char* command) override {
+	void ClientCmd(const char* command) override
+	{
 		return engine->ClientCmd(command);
 	}
 
-	void GetViewAngles(QAngle& viewangles) override {
+	void GetViewAngles(QAngle& viewangles) override
+	{
 		return engine->GetViewAngles(viewangles);
 	}
 
-	void SetViewAngles(QAngle& viewangles) override {
+	void SetViewAngles(QAngle& viewangles) override
+	{
 		return engine->SetViewAngles(viewangles);
 	}
 
 #ifdef OE
-	int Cmd_Argc() override {
+	int Cmd_Argc() override
+	{
 		return engine->Cmd_Argc();
 	}
 
-	const char* Cmd_Argv(int arg) override {
+	const char* Cmd_Argv(int arg) override
+	{
 		return engine->Cmd_Argv(arg);
 	}
 #else
-	const char* GetGameDirectory() override {
+	const char* GetGameDirectory() override
+	{
 		return engine->GetGameDirectory();
 	}
 #endif

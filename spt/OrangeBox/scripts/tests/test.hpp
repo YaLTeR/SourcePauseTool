@@ -1,9 +1,9 @@
 #pragma once
+#include <fstream>
 #include <string>
 #include <vector>
-#include "tracker.hpp"
 #include "test_item.hpp"
-#include <fstream>
+#include "tracker.hpp"
 
 // Test contains the data describing a test
 // Store trackers as a vector of unique_ptrs to the abstract base class
@@ -21,7 +21,6 @@
 //	- A simple tracker number - value pairing
 // A vector of these can be loaded/written from/to a file using a utility function provided in test_item.hpp
 // The test data can be edited post generation
-
 
 namespace scripts
 {
@@ -51,6 +50,7 @@ namespace scripts
 		void RunAllTests(const std::string& folder, bool generating, bool automatedTest = false);
 		void ResetIteration();
 		void Reset();
+
 	private:
 		void PrintTestMessage(std::string msg);
 		void PrintTestMessage(const char* msg);
@@ -80,4 +80,4 @@ namespace scripts
 	};
 
 	extern Tester g_Tester;
-}
+} // namespace scripts

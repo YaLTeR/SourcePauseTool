@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "property_getter.hpp"
-#include "ent_utils.hpp"
 #include <vector>
+#include "ent_utils.hpp"
 
 namespace utils
 {
@@ -54,4 +54,4 @@ namespace utils
 			return INVALID_OFFSET;
 #endif
 	}
-}
+} // namespace utils
