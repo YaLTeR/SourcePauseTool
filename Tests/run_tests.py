@@ -3,20 +3,10 @@ import os
 import re
 import shutil
 import time
-import psutil
 import subprocess
 
 TEST_GAMEBUILDS = []
 TEST_FILE = 'testoutput.log'
-TEST_START = 5
-TEST_SLEEP_INC = 1
-
-def process_alive(pr):
-    """Is process alive?"""
-    for process in psutil.process_iter():
-        if process.name() == pr:
-            return True
-    return False
 
 def copy_all(src, dst):
     """Copy all files from src to dst"""
@@ -50,7 +40,7 @@ class GameBuild:
     def start_game(self):
         """Start the game."""
         exec_path = os.path.join(self.path, self.executable)
-        cmd = "%s -game \"%s\" -w 640 -h 480 -novid -console +volume 0 +plugin_load %s +tas_test_automated_validate \"test %s\"" % (exec_path, self.game, self.spt_name, self.output_filename)
+        cmd = "%s -game \"%s\" -w 640 -h 480 -window -novid -console +volume 0 +plugin_load %s +tas_test_automated_validate \"test %s\"" % (exec_path, self.game, self.spt_name, self.output_filename)
         subprocess.run(cmd)
 
     def set_path(self, path, executable, spt_path, spt_name):
