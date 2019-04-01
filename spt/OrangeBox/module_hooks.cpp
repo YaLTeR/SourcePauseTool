@@ -6,7 +6,7 @@
 #include "scripts\srctas_reader.hpp"
 #include "scripts\tests\test.hpp"
 
-namespace modulehooks
+namespace ModuleHooks
 {
 	void PauseOnDemoTick()
 	{

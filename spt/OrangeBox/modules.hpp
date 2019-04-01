@@ -16,4 +16,7 @@ extern VGui_MatSurfaceDLL vgui_matsurfaceDLL;
 #define TRACE_MSG(X) DevMsg(X)
 #else
 #define TRACE_MSG(X)
- #endif
+#endif
+
+#define TRACE_ENTER() TRACE_MSG("ENTER:" __func__ "\n")
+#define TRACE_EXIT() TRACE_MSG("EXIT:" __func__ "\n")

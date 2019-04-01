@@ -24,55 +24,55 @@ using std::size_t;
 
 void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur(void* view, int x, int y, int w, int h)
 {
-	TRACE_MSG("HOOKED_DoImageSpaceMotionBlur\n");
+	TRACE_ENTER();
 	return clientDLL.HOOKED_DoImageSpaceMotionBlur_Func(view, x, y, w, h);
 }
 
 bool __fastcall ClientDLL::HOOKED_CheckJumpButton(void* thisptr, int edx)
 {
-	TRACE_MSG("HOOKED_CheckJumpButton\n");
+	TRACE_ENTER();
 	return clientDLL.HOOKED_CheckJumpButton_Func(thisptr, edx);
 }
 
 void __stdcall ClientDLL::HOOKED_HudUpdate(bool bActive)
 {
-	TRACE_MSG("HOOKED_HudUpdate\n");
+	TRACE_ENTER();
 	return clientDLL.HOOKED_HudUpdate_Func(bActive);
 }
 
 int __fastcall ClientDLL::HOOKED_GetButtonBits(void* thisptr, int edx, int bResetState)
 {
-	TRACE_MSG("HOOKED_GetButtonBits\n");
+	TRACE_ENTER();
 	return clientDLL.HOOKED_GetButtonBits_Func(thisptr, edx, bResetState);
 }
 
 void __fastcall ClientDLL::HOOKED_AdjustAngles(void* thisptr, int edx, float frametime)
 {
-	TRACE_MSG("HOOKED_AdjustAngles\n");
+	TRACE_ENTER();
 	return clientDLL.HOOKED_AdjustAngles_Func(thisptr, edx, frametime);
 }
 
 void __fastcall ClientDLL::HOOKED_CreateMove(void* thisptr, int edx, int sequence_number, float input_sample_frametime, bool active)
 {
-	TRACE_MSG("HOOKED_CreateMove\n");
+	TRACE_ENTER();
 	return clientDLL.HOOKED_CreateMove_Func(thisptr, edx, sequence_number, input_sample_frametime, active);
 }
 
 void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart(void* thisptr, int edx)
 {
-	TRACE_MSG("HOOKED_CViewRender__OnRenderStart\n");
+	TRACE_ENTER();
 	return clientDLL.HOOKED_CViewRender__OnRenderStart_Func(thisptr, edx);
 }
 
 void ClientDLL::HOOKED_CViewRender__RenderView(void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw)
 {
-	TRACE_MSG("HOOKED_CViewRender__RenderView\n");
+	TRACE_ENTER();
 	clientDLL.HOOKED_CViewRender__RenderView_Func(thisptr, edx, cameraView, nClearFlags, whatToDraw);
 }
 
 void ClientDLL::HOOKED_CViewRender__Render(void* thisptr, int edx, void* rect)
 {
-	TRACE_MSG("HOOKED_CViewRender__Render\n");
+	TRACE_ENTER();
 	clientDLL.HOOKED_CViewRender__Render_Func(thisptr, edx, rect);
 }
 
@@ -380,8 +380,7 @@ void ClientDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	if (ORIG_CHLClient__CanRecordDemo)
 	{
 		int offset = *reinterpret_cast<int*>(ORIG_CHLClient__CanRecordDemo + 1);
-		const int CALL_INSTRUCTION_LEN = 5;
-		ORIG_GetClientModeNormal = (_GetClientModeNormal)(offset + ORIG_CHLClient__CanRecordDemo + CALL_INSTRUCTION_LEN);
+		ORIG_GetClientModeNormal = (_GetClientModeNormal)(offset + ORIG_CHLClient__CanRecordDemo + 5);
 		DevMsg("[client.dll] Found GetClientModeNormal at %p\n", ORIG_GetClientModeNormal);
 	}
 
@@ -435,6 +434,7 @@ void ClientDLL::Clear()
 	ORIG_CalcAbsoluteVelocity = nullptr;
 	ORIG_CViewRender__RenderView = nullptr;
 	ORIG_CViewRender__Render = nullptr;
+	ORIG_UTIL_TraceRay = nullptr;
 
 	pgpGlobals = nullptr;
 	off1M_nOldButtons = 0;
@@ -482,12 +482,12 @@ void ClientDLL::ResetAfterframesQueue()
 
 Strafe::MovementVars ClientDLL::GetMovementVars()
 {
-	TRACE_MSG("IN_GetMovementVars");
+	TRACE_ENTER();
     auto vars = Strafe::MovementVars();
 
 	if (!tasAddressesWereFound)
 	{
-		TRACE_MSG("OUT_GetMovementVars\n");
+		TRACE_EXIT();
 		return Strafe::MovementVars();
 	}
 
@@ -556,7 +556,7 @@ Strafe::MovementVars ClientDLL::GetMovementVars()
 	vars.Stepsize = _sv_stepsize->GetFloat();
 	vars.Bounce = _sv_bounce->GetFloat();
 
-	TRACE_MSG("OUT_MOVEMENTVARS");
+	TRACE_EXIT();
 
 	return vars;
 }
@@ -729,7 +729,7 @@ bool __fastcall ClientDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 		}
 		else
 		{
-			// EngineDevMsg( "Con jump prevented!\n" );
+			// DevMsg( "Con jump prevented!\n" );
 		}
 	}
 
@@ -753,10 +753,10 @@ bool __fastcall ClientDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 			cantJumpNextTime = true; // Prevent consecutive jumps.
 		}
 
-		// EngineDevMsg( "Jump!\n" );
+		// DevMsg( "Jump!\n" );
 	}
 
-	EngineDevMsg("Engine call: [client dll] CheckJumpButton() => %s\n", (rv ? "true" : "false"));
+	DevMsg("Engine call: [client dll] CheckJumpButton() => %s\n", (rv ? "true" : "false"));
 
 	return rv;
 }
@@ -815,6 +815,7 @@ bool DoAngleChange(float& angle, float target)
 
 void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, float frametime)
 {
+	TRACE_ENTER();
 	cinput_thisptr = thisptr;
 	ORIG_AdjustAngles(thisptr, edx, frametime);
 

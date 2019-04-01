@@ -2,6 +2,10 @@
 
 #ifndef OE
 
+#ifdef P2
+struct AudioState_t;
+#endif
+
 #include "inputsystem\buttoncode.h"
 #include "iclientmode.h"
 #include "vgui_controls\controls.h"

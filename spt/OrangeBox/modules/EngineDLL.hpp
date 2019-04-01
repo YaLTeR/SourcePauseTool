@@ -3,6 +3,8 @@
 
 #include <SPTLib\IHookableNameFilter.hpp>
 #include "..\..\utils\patterncontainer.hpp"
+
+
 #ifdef OE
 #include "mathlib.h"
 #else

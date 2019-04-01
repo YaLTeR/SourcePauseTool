@@ -16,49 +16,49 @@ using std::size_t;
 
 bool __cdecl EngineDLL::HOOKED_SV_ActivateServer()
 {
-	TRACE_MSG("HOOKED_SV_ActivateServer\n");
+	TRACE_ENTER();
 	return engineDLL.HOOKED_SV_ActivateServer_Func();
 }
 
 void __fastcall EngineDLL::HOOKED_FinishRestore(void* thisptr, int edx)
 {
-	TRACE_MSG("HOOKED_FinishRestore\n");
+	TRACE_ENTER();
 	return engineDLL.HOOKED_FinishRestore_Func(thisptr, edx);
 }
 
 void __fastcall EngineDLL::HOOKED_SetPaused(void* thisptr, int edx, bool paused)
 {
-	TRACE_MSG("HOOKED_SetPaused\n");
+	TRACE_ENTER();
 	return engineDLL.HOOKED_SetPaused_Func(thisptr, edx, paused);
 }
 
 void __cdecl EngineDLL::HOOKED__Host_RunFrame(float time)
 {
-	TRACE_MSG("HOOKED__Host_RunFrame\n");
+	TRACE_ENTER();
 	return engineDLL.HOOKED__Host_RunFrame_Func(time);
 }
 
 void __cdecl EngineDLL::HOOKED__Host_RunFrame_Input(float accumulated_extra_samples, int bFinalTick)
 {
-	TRACE_MSG("HOOKED__Host_RunFrame_Input\n");
+	TRACE_ENTER();
 	return engineDLL.HOOKED__Host_RunFrame_Input_Func(accumulated_extra_samples, bFinalTick);
 }
 
 void __cdecl EngineDLL::HOOKED__Host_RunFrame_Server(int bFinalTick)
 {
-	TRACE_MSG("HOOKED__Host_RunFrame_Server\n");
+	TRACE_ENTER();
 	return engineDLL.HOOKED__Host_RunFrame_Server_Func(bFinalTick);
 }
 
 void __cdecl EngineDLL::HOOKED_Cbuf_Execute()
 {
-	TRACE_MSG("HOOKED_Cbuf_Execute\n");
+	TRACE_ENTER();
 	return engineDLL.HOOKED_Cbuf_Execute_Func();
 }
 
 void __fastcall EngineDLL::HOOKED_VGui_Paint(void * thisptr, int edx, int mode)
 {
-	TRACE_MSG("HOOKED_VGui_Paint\n");
+	TRACE_ENTER();
 	engineDLL.HOOKED_VGui_Paint_Func(thisptr, edx, mode);
 }
 
@@ -181,7 +181,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 		}
 
 #if defined( OE )
-		EngineDevMsg("pGameServer is %p.\n", pGameServer);
+		DevMsg("pGameServer is %p.\n", pGameServer);
 #endif
 	}
 	else
@@ -229,7 +229,9 @@ void EngineDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 	auto pRecord = fRecord.get();
 	if (ORIG_Record)
 	{
-		if (strcmp(pRecord->name(), "2707") == 0)
+		int ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_Record);
+
+		if (ptnNumber == 0)
 		{
 			pDemoplayer = *reinterpret_cast<void***>(ORIG_Record + 132);
 
@@ -239,7 +241,7 @@ void EngineDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 			IsPlaybackPaused_Offset = 5;
 			IsPlayingBack_Offset = 6;
 		}		
-		else if (strcmp(pRecord->name(), "5135") == 0)
+		else if (ptnNumber == 1)
 		{
 			pDemoplayer = *reinterpret_cast<void***>(ORIG_Record + 0xA2);
 
@@ -311,7 +313,7 @@ void EngineDLL::SetTickrate(float value)
 
 int EngineDLL::Demo_GetPlaybackTick() const
 {
-	TRACE_MSG("Demo_GetPlaybackTick\n");
+	TRACE_ENTER();
 	if (!pDemoplayer)
 		return 0;
 	auto demoplayer = *pDemoplayer;
@@ -320,7 +322,7 @@ int EngineDLL::Demo_GetPlaybackTick() const
 
 int EngineDLL::Demo_GetTotalTicks() const
 {
-	TRACE_MSG("EngineDLL::Demo_GetTotalTicks\n");
+	TRACE_ENTER();
 	if (!pDemoplayer)
 		return 0;
 	auto demoplayer = *pDemoplayer;
@@ -329,7 +331,7 @@ int EngineDLL::Demo_GetTotalTicks() const
 
 bool EngineDLL::Demo_IsPlayingBack() const
 {
-	TRACE_MSG("EngineDLL::Demo_IsPlayingBack\n");
+	TRACE_ENTER();
 	if (!pDemoplayer)
 		return false;
 	auto demoplayer = *pDemoplayer;
@@ -338,7 +340,7 @@ bool EngineDLL::Demo_IsPlayingBack() const
 
 bool EngineDLL::Demo_IsPlaybackPaused() const
 {
-	TRACE_MSG("EngineDLL::Demo_IsPlaybackPaused\n");
+	TRACE_ENTER();
 	if (!pDemoplayer)
 		return false;
 	auto demoplayer = *pDemoplayer;
@@ -349,14 +351,14 @@ bool __cdecl EngineDLL::HOOKED_SV_ActivateServer_Func()
 {
 	bool result = ORIG_SV_ActivateServer();
 
-	EngineDevMsg("Engine call: SV_ActivateServer() => %s;\n", (result ? "true" : "false"));
+	DevMsg("Engine call: SV_ActivateServer() => %s;\n", (result ? "true" : "false"));
 
 	if (ORIG_SetPaused && pM_bLoadgame && pGameServer)
 	{
 		if ((y_spt_pause.GetInt() == 2) && *pM_bLoadgame)
 		{
 			ORIG_SetPaused((void *)pGameServer, 0, true);
-			EngineDevMsg("Pausing...\n");
+			DevMsg("Pausing...\n");
 
 			shouldPreventNextUnpause = true;
 		}
@@ -370,12 +372,12 @@ bool __cdecl EngineDLL::HOOKED_SV_ActivateServer_Func()
 
 void __fastcall EngineDLL::HOOKED_FinishRestore_Func(void* thisptr, int edx)
 {
-	EngineDevMsg("Engine call: FinishRestore();\n");
+	DevMsg("Engine call: FinishRestore();\n");
 
 	if (ORIG_SetPaused && (y_spt_pause.GetInt() == 1))
 	{
 		ORIG_SetPaused(thisptr, 0, true);
-		EngineDevMsg("Pausing...\n");
+		DevMsg("Pausing...\n");
 
 		shouldPreventNextUnpause = true;
 	}
@@ -389,18 +391,18 @@ void __fastcall EngineDLL::HOOKED_SetPaused_Func(void* thisptr, int edx, bool pa
 {
 	if (pM_bLoadgame)
 	{
-		EngineDevMsg("Engine call: SetPaused( %s ); m_bLoadgame = %s\n", (paused ? "true" : "false"), (*pM_bLoadgame ? "true" : "false"));
+		DevMsg("Engine call: SetPaused( %s ); m_bLoadgame = %s\n", (paused ? "true" : "false"), (*pM_bLoadgame ? "true" : "false"));
 	}
 	else
 	{
-		EngineDevMsg("Engine call: SetPaused( %s );\n", (paused ? "true" : "false"));
+		DevMsg("Engine call: SetPaused( %s );\n", (paused ? "true" : "false"));
 	}
 
 	if (paused == false)
 	{
 		if (shouldPreventNextUnpause)
 		{
-			EngineDevMsg("Unpause prevented.\n");
+			DevMsg("Unpause prevented.\n");
 			shouldPreventNextUnpause = false;
 			return;
 		}
@@ -412,50 +414,50 @@ void __fastcall EngineDLL::HOOKED_SetPaused_Func(void* thisptr, int edx, bool pa
 
 void __cdecl EngineDLL::HOOKED__Host_RunFrame_Func(float time)
 {
-	EngineDevMsg("_Host_RunFrame( %.8f ); m_nSignonState = %d;", time, *pM_nSignonState);
+	DevMsg("_Host_RunFrame( %.8f ); m_nSignonState = %d;", time, *pM_nSignonState);
 	if (pM_State)
-		_EngineDevMsg(" m_State = %d;", *pM_State);
-	_EngineDevMsg("\n");
+		DevMsg(" m_State = %d;", *pM_State);
+	DevMsg("\n");
 
 	ORIG__Host_RunFrame(time);
 
-	EngineDevMsg("_Host_RunFrame end.\n");
+	DevMsg("_Host_RunFrame end.\n");
 }
 
 void __cdecl EngineDLL::HOOKED__Host_RunFrame_Input_Func(float accumulated_extra_samples, int bFinalTick)
 {
-	EngineDevMsg("_Host_RunFrame_Input( %.8f, %d ); m_nSignonState = %d;", time, bFinalTick, *pM_nSignonState);
+	DevMsg("_Host_RunFrame_Input( %.8f, %d ); m_nSignonState = %d;", time, bFinalTick, *pM_nSignonState);
 	if (pM_State)
-		_EngineDevMsg(" m_State = %d;", *pM_State);
-	_EngineDevMsg(" host_frametime = %.8f\n", *pHost_Frametime);
+		DevMsg(" m_State = %d;", *pM_State);
+	DevMsg(" host_frametime = %.8f\n", *pHost_Frametime);
 
 	ORIG__Host_RunFrame_Input(accumulated_extra_samples, bFinalTick);
 
-	EngineDevMsg("_Host_RunFrame_Input end.\n");
+	DevMsg("_Host_RunFrame_Input end.\n");
 }
 
 void __cdecl EngineDLL::HOOKED__Host_RunFrame_Server_Func(int bFinalTick)
 {
-	EngineDevMsg("_Host_RunFrame_Server( %d ); m_nSignonState = %d;", bFinalTick, *pM_nSignonState);
+	DevMsg("_Host_RunFrame_Server( %d ); m_nSignonState = %d;", bFinalTick, *pM_nSignonState);
 	if (pM_State)
-		_EngineDevMsg(" m_State = %d;", *pM_State);
-	_EngineDevMsg(" host_frametime = %.8f\n", *pHost_Frametime);
+		DevMsg(" m_State = %d;", *pM_State);
+	DevMsg(" host_frametime = %.8f\n", *pHost_Frametime);
 
 	ORIG__Host_RunFrame_Server(bFinalTick);
 
-	EngineDevMsg("_Host_RunFrame_Server end.\n");
+	DevMsg("_Host_RunFrame_Server end.\n");
 }
 
 void __cdecl EngineDLL::HOOKED_Cbuf_Execute_Func()
 {
-	EngineDevMsg("Cbuf_Execute(); m_nSignonState = %d;", *pM_nSignonState);
+	DevMsg("Cbuf_Execute(); m_nSignonState = %d;", *pM_nSignonState);
 	if (pM_State)
-		_EngineDevMsg(" m_State = %d;", *pM_State);
-	_EngineDevMsg(" host_frametime = %.8f\n", *pHost_Frametime);
+		DevMsg(" m_State = %d;", *pM_State);
+	DevMsg(" host_frametime = %.8f\n", *pHost_Frametime);
 
 	ORIG_Cbuf_Execute();
 
-	EngineDevMsg("Cbuf_Execute() end.\n");
+	DevMsg("Cbuf_Execute() end.\n");
 }
 
 void __fastcall EngineDLL::HOOKED_VGui_Paint_Func(void * thisptr, int edx, int mode)

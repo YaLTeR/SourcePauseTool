@@ -13,10 +13,6 @@
 #include "vguimatsurface\imatsystemsurface.h"
 #include "vgui\ischeme.h"
 
-/*
-	TODO: Fix Steampipe regression regarding on ground checks and potentially other issues in ClientDLL
-*/
-
 //---------------------------------------------------------------------------------
 // Purpose: a sample 3rd party plugin class
 //---------------------------------------------------------------------------------
@@ -67,6 +63,7 @@ IVEngineServer* GetEngine();
 void* GetGamemovement();
 ICvar* GetCvarInterface();
 std::string GetGameDir();
+bool DoesGameLookLikePortal();
 
 #if defined( OE )
 struct ArgsWrapper

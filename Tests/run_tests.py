@@ -11,10 +11,10 @@ TEST_FILE = 'testoutput.log'
 TEST_START = 5
 TEST_SLEEP_INC = 1
 
-def processAlive(pr):
+def process_alive(pr):
     """Is process alive?"""
     for process in psutil.process_iter():
-        if(process.name() == pr):
+        if process.name() == pr:
             return True
     return False
 
@@ -44,16 +44,8 @@ class GameBuild:
         self.spt_name = None
         self.spt_out = None
 
-    def wait_for_process_to_finish(self):
-        """Waits for the game to terminate before exiting"""
-        total_time = TEST_START
-        time.sleep(TEST_START)
-        while processAlive(self.executable):
-            time.sleep(TEST_SLEEP_INC)
-            total_time = total_time + TEST_SLEEP_INC
-
     def __str__(self):
-        return "%s - %s - %s - %s" %(self.game, self.build, self.path, self.test_path)
+        return "%s - %s - %s - %s" % (self.game, self.build, self.path, self.test_path)
 
     def start_game(self):
         """Start the game."""
@@ -64,7 +56,7 @@ class GameBuild:
     def set_path(self, path, executable, spt_path, spt_name):
         """Set path and some other info."""
         game_dir = os.path.join(path, self.game)
-        if(os.path.isdir(game_dir)): # Check if game installed
+        if os.path.isdir(game_dir): # Check if game is installed
             self.game_path = game_dir
             self.path = path
             self.output_filename = self.game.replace(' ', '_') + "-" + TEST_FILE
@@ -95,7 +87,6 @@ class GameBuild:
         if os.path.isfile(self.test_output):
             os.remove(self.test_output)
         self.start_game()
-        self.wait_for_process_to_finish()
 
 def get_game(name):
     """Get gamebuild given the folder name or arg name"""

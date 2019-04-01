@@ -13,6 +13,7 @@
 #include <limits>
 #include "property_getter.hpp"
 #include "..\strafestuff.hpp"
+#include "SPTLib\sptlib.hpp"
 #undef max
 
 #ifndef OE
@@ -272,8 +273,8 @@ namespace utils
 			// Prop name matches regex
 			if (std::regex_match(prop.name.c_str(), r))
 			{
-				std::wstring name = s2ws(prop.name);
-				std::wstring value = s2ws(prop.value);
+				std::wstring name = Convert(prop.name);
+				std::wstring value = Convert(prop.value);
 
 				swprintf_s(arr + (entries * bufferSize), bufferSize, L"%s : %s", name.c_str(), value.c_str());
 				++entries;
@@ -338,7 +339,7 @@ namespace utils
 				else
 				{
 					std::string temp(ent->GetClientClass()->GetName());
-					std::wstring className = s2ws(temp);
+					std::wstring className = Convert(temp);
 
 					// Add empty line in between entities
 					if (entries != 0)
@@ -379,6 +380,7 @@ namespace utils
 	}
 	int GetIndex(void* ent)
 	{
+#ifndef P2
 		if (!ent)
 			return -1;
 
@@ -390,7 +392,7 @@ namespace utils
 			if (e && e->GetUnknown() == ent)
 				return i;
 		}
-
+#endif
 		return -1;
 	}
 #endif
@@ -442,7 +444,11 @@ namespace utils
 
 	bool serverActive()
 	{
+#ifdef P2
+		return GetEngine()->GetEntityCount();
+#else
 		return GetEngine()->PEntityOfEntIndex(0);
+#endif
 	}
 }
 

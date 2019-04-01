@@ -15,67 +15,66 @@ using std::size_t;
 
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton(void* thisptr, int edx)
 {
-	TRACE_MSG("HOOKED_CheckJumpButton\n");
+	TRACE_ENTER();
 	return serverDLL.HOOKED_CheckJumpButton_Func(thisptr, edx);
 }
 
 void __fastcall ServerDLL::HOOKED_FinishGravity(void* thisptr, int edx)
 {
-	TRACE_MSG("HOOKED_FinishGravity\n");
+	TRACE_ENTER();
 	return serverDLL.HOOKED_FinishGravity_Func(thisptr, edx);
 }
 
 void __fastcall ServerDLL::HOOKED_PlayerRunCommand(void* thisptr, int edx, void* ucmd, void* moveHelper)
 {
-	TRACE_MSG("HOOKED_PlayerRunCommand\n");
+	TRACE_ENTER();
 	return serverDLL.HOOKED_PlayerRunCommand_Func(thisptr, edx, ucmd, moveHelper);
 }
 
 int __fastcall ServerDLL::HOOKED_CheckStuck(void* thisptr, int edx)
 {
-	TRACE_MSG("HOOKED_CheckStuck\n");
+	TRACE_ENTER();
 	return serverDLL.HOOKED_CheckStuck_Func(thisptr, edx);
 }
 
 void __fastcall ServerDLL::HOOKED_AirAccelerate(void* thisptr, int edx, Vector* wishdir, float wishspeed, float accel)
 {
-	TRACE_MSG("HOOKED_AirAccelerate\n");
+	TRACE_ENTER();
 	return serverDLL.HOOKED_AirAccelerate_Func(thisptr, edx, wishdir, wishspeed, accel);
 }
 
 void __fastcall ServerDLL::HOOKED_ProcessMovement(void* thisptr, int edx, void* pPlayer, void* pMove)
 {
-	TRACE_MSG("HOOKED_ProcessMovement\n");
+	TRACE_ENTER();
 	return serverDLL.HOOKED_ProcessMovement_Func(thisptr, edx, pPlayer, pMove);
 }
-
 float __fastcall ServerDLL::HOOKED_TraceFirePortal(void* thisptr, int edx, bool bPortal2, const Vector& vTraceStart, const Vector& vDirection, trace_t& tr, Vector& vFinalPosition, QAngle& qFinalAngles, int iPlacedBy, bool bTest)
 {
-	TRACE_MSG("HOOKED_TraceFirePortal\n");
+	TRACE_ENTER();
 	return serverDLL.HOOKED_TraceFirePortal_Func(thisptr, edx, bPortal2, vTraceStart, vDirection, tr, vFinalPosition, qFinalAngles, iPlacedBy, bTest);
 }
 
 void __fastcall ServerDLL::HOOKED_SlidingAndOtherStuff(void* thisptr, int edx, void* a, void* b)
 {
-	TRACE_MSG("HOOKED_SlidingAndOtherStuff\n");
+	TRACE_ENTER();
 	return serverDLL.HOOKED_SlidingAndOtherStuff_Func(thisptr, edx, a, b);
 }
 
 int __fastcall ServerDLL::HOOKED_CRestore__ReadAll(void * thisptr, int edx, void * pLeafObject, datamap_t * pLeafMap)
 {
-	TRACE_MSG("HOOKED_CRestore__ReadAll\n");
+	TRACE_ENTER();
 	return serverDLL.ORIG_CRestore__ReadAll(thisptr, edx, pLeafObject, pLeafMap);
 }
 
 int __fastcall ServerDLL::HOOKED_CRestore__DoReadAll(void * thisptr, int edx, void * pLeafObject, datamap_t * pLeafMap, datamap_t * pCurMap)
 {
-	TRACE_MSG("HOOKED_CRestore__DoReadAll\n");
+	TRACE_ENTER();
 	return serverDLL.ORIG_CRestore__DoReadAll(thisptr, edx, pLeafObject, pLeafMap, pCurMap);
 }
 
 int __cdecl ServerDLL::HOOKED_DispatchSpawn(void * pEntity)
 {
-	TRACE_MSG("HOOKED_DispatchSpawn\n");
+	TRACE_ENTER();
 	return serverDLL.ORIG_DispatchSpawn(pEntity);
 }
 
@@ -430,18 +429,22 @@ void ServerDLL::Hook(const std::wstring& moduleName, void* moduleHandle, void* m
 		//ORIG_AirAccelerate = reinterpret_cast<_AirAccelerate>(MemUtils::HookVTable(vftable, 17, reinterpret_cast<uintptr_t>(HOOKED_AirAccelerate)));
 		ORIG_ProcessMovement = reinterpret_cast<_ProcessMovement>(MemUtils::HookVTable(vftable, 1, reinterpret_cast<void*>(HOOKED_ProcessMovement)));
 
-		EngineDevMsg("[server dll] Hooked ProcessMovement through the vftable.\n");
+		DevMsg("[server dll] Hooked ProcessMovement through the vftable.\n");
 	}
 
 	// TODO: remove fixed offsets.
+#ifdef SSDK2007
 	SnapEyeAngles = reinterpret_cast<_SnapEyeAngles>((unsigned int)moduleBase + 0x1B92F0);
-	FirePortal = reinterpret_cast<_FirePortal>((unsigned int)moduleBase + 0x442090);
-	m_hPortalEnvironmentOffsetPtr = reinterpret_cast<int*>((unsigned int)FirePortal + 0xA3);
-	GetActiveWeapon = reinterpret_cast<_GetActiveWeapon>((unsigned int)moduleBase + 0xCCE90);
-	ORIG_TraceFirePortal = reinterpret_cast<_TraceFirePortal>((unsigned int)moduleBase + 0x441730);
-	patternContainer.AddHook(HOOKED_TraceFirePortal, (PVOID*)&ORIG_TraceFirePortal);
+    GetActiveWeapon = reinterpret_cast<_GetActiveWeapon>((unsigned int)moduleBase + 0xCCE90);
 
-	
+	if (DoesGameLookLikePortal())
+	{
+            FirePortal = reinterpret_cast<_FirePortal>((unsigned int)moduleBase + 0x442090);
+            m_hPortalEnvironmentOffsetPtr = reinterpret_cast<int*>((unsigned int)FirePortal + 0xA3);
+            ORIG_TraceFirePortal = reinterpret_cast<_TraceFirePortal>((unsigned int)moduleBase + 0x441730);
+            patternContainer.AddHook(HOOKED_TraceFirePortal, (PVOID*)&ORIG_TraceFirePortal);
+	}
+#endif
 	patternContainer.Hook();
 }
 
@@ -453,7 +456,7 @@ void ServerDLL::Unhook()
 		//MemUtils::HookVTable(vftable, 17, reinterpret_cast<uintptr_t>(ORIG_AirAccelerate));
 		MemUtils::HookVTable(vftable, 1, reinterpret_cast<void*>(ORIG_ProcessMovement));
 
-		EngineDevMsg("[server dll] Unhooked ProcessMovement through the vftable.\n");
+		DevMsg("[server dll] Unhooked ProcessMovement through the vftable.\n");
 	}
 
 
@@ -493,7 +496,7 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 
 	CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
 	if (tas_log.GetBool())
-		EngineDevMsg("[CheckJumpButton PRE ] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
+		DevMsg("[CheckJumpButton PRE ] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
 			mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z,
 			mv->m_vecVelocity.x, mv->m_vecVelocity.y, mv->m_vecVelocity.z);
 
@@ -509,7 +512,7 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 		}
 		else
 		{
-			//EngineDevMsg( "Con jump prevented!\n" );
+			//DevMsg( "Con jump prevented!\n" );
 		}
 	}
 
@@ -536,16 +539,16 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 			cantJumpNextTime = true; // Prevent consecutive jumps.
 		}
 
-		//EngineDevMsg( "Jump!\n" );
+		//DevMsg( "Jump!\n" );
 	}
 
-	//EngineDevMsg( "Engine call: [server dll] CheckJumpButton() => %s\n", (rv ? "true" : "false") );
+	//DevMsg( "Engine call: [server dll] CheckJumpButton() => %s\n", (rv ? "true" : "false") );
 
 	//CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t *)thisptr + off1M_nOldButtons));
 	//DevMsg("[CJB] maxspeed = %.8f; speed = %.8f; yaw = %.8f; fmove = %.8f; smove = %.8f\n", mv->m_flMaxSpeed, mv->m_vecVelocity.Length2D(), mv->m_vecViewAngles[YAW], mv->m_flForwardMove, mv->m_flSideMove);
 
 	if (tas_log.GetBool())
-		EngineDevMsg("[CheckJumpButton POST] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
+		DevMsg("[CheckJumpButton POST] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
 			mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z,
 			mv->m_vecVelocity.x, mv->m_vecVelocity.y, mv->m_vecVelocity.z);
 
@@ -634,18 +637,17 @@ void __fastcall ServerDLL::HOOKED_ProcessMovement_Func(void* thisptr, int edx, v
 {
 	CHLMoveData *mv = reinterpret_cast<CHLMoveData*>(pMove);
 	if (tas_log.GetBool())
-		EngineDevMsg("[ProcessMovement PRE ] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
+		DevMsg("[ProcessMovement PRE ] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
 			mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z,
 			mv->m_vecVelocity.x, mv->m_vecVelocity.y, mv->m_vecVelocity.z);
 
 	ORIG_ProcessMovement(thisptr, edx, pPlayer, pMove);
 
 	if (tas_log.GetBool())
-		EngineDevMsg("[ProcessMovement POST] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
+		DevMsg("[ProcessMovement POST] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
 			mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z,
 			mv->m_vecVelocity.x, mv->m_vecVelocity.y, mv->m_vecVelocity.z);
 }
-
 float __fastcall ServerDLL::HOOKED_TraceFirePortal_Func(void* thisptr, int edx, bool bPortal2, const Vector& vTraceStart, const Vector& vDirection, trace_t& tr, Vector& vFinalPosition, QAngle& qFinalAngles, int iPlacedBy, bool bTest)
 {
 	const auto rv = ORIG_TraceFirePortal(thisptr, edx, bPortal2, vTraceStart, vDirection, tr, vFinalPosition, qFinalAngles, iPlacedBy, bTest);
@@ -670,7 +672,7 @@ void __fastcall ServerDLL::HOOKED_SlidingAndOtherStuff_Func(void* thisptr, int e
 
 void ServerDLL::HOOKED_MiddleOfSlidingFunction_Func()
 {
-	//EngineDevMsg("Sliding!\n");
+	//DevMsg("Sliding!\n");
 
 	sliding = true;
 

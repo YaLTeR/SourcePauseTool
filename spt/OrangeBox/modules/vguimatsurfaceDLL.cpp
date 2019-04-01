@@ -18,6 +18,9 @@
 #include "..\..\utils\property_getter.hpp"
 #include "..\module_hooks.hpp"
 
+#undef max
+#undef min
+
 #ifndef OE
 const int INDEX_MASK = MAX_EDICTS - 1;
 
@@ -66,6 +69,8 @@ void VGui_MatSurfaceDLL::Unhook()
 
 void VGui_MatSurfaceDLL::Clear()
 {
+	ORIG_StartDrawing = nullptr;
+	ORIG_FinishDrawing = nullptr;
 	sinceLanded = 0;
 	displayHop = 0;
 	loss = 0;
@@ -99,7 +104,7 @@ void VGui_MatSurfaceDLL::OnGround(bool onground)
 			loss = maxVel - vel;
 			percentage = (vel / maxVel) * 100;
 			displayHop = lastHop - 1;
-			displayHop = max(0, displayHop);			
+			displayHop = std::max(0, displayHop);			
 		}
 
 	}
@@ -179,7 +184,7 @@ void VGui_MatSurfaceDLL::CalculateAbhVel()
 	float jspeed = vars.Maxspeed + (vars.Maxspeed * modifier);
 
 	maxVel = vel + (vel - jspeed);
-	maxVel = max(maxVel, jspeed);
+	maxVel = std::max(maxVel, jspeed);
 }
 
 const wchar* FLAGS[] = { L"FL_ONGROUND", L"FL_DUCKING", L"FL_WATERJUMP", L"FL_ONTRAIN", L"FL_INRAIN", L"FL_FROZEN", L"FL_ATCONTROLS", L"FL_CLIENT", L"FL_FAKECLIENT"
@@ -231,7 +236,6 @@ static const char PROP_SEPARATOR = ',';
 
 void VGui_MatSurfaceDLL::DrawHopHud(vrect_t * screen, vgui::IScheme * scheme, IMatSystemSurface * surface)
 {
-#ifndef OE
 	surface->DrawSetTextFont(hopsFont);
 	surface->DrawSetTextColor(255, 255, 255, 255);
 	surface->DrawSetTexture(0);
@@ -253,13 +257,10 @@ void VGui_MatSurfaceDLL::DrawHopHud(vrect_t * screen, vgui::IScheme * scheme, IM
 	swprintf_s(buffer, BUFFER_SIZE, L"Percentage: %.*f", width, percentage);
 	surface->DrawSetTextPos(screen->width / 2 + y_spt_hud_hops_x.GetFloat(), screen->height / 2 + y_spt_hud_hops_y.GetFloat() + (fontTall + MARGIN) * 2);
 	surface->DrawPrintText(buffer, wcslen(buffer));
-
-#endif
 }
 
 void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t * screen, vgui::IScheme * scheme, IMatSystemSurface * surface)
 {
-#ifndef OE
 	int fontTall = surface->GetFontTall(font);
 	int x;
 
@@ -361,7 +362,6 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t * screen, vgui::IScheme * scheme, IM
 		DRAW_INT(L"onground", (int)vars.OnGround);
 	}
 
-#ifndef OE
 	if (y_spt_hud_ag_sg_tester.GetBool() && utils::serverActive())
 	{
 		Vector v = clientDLL.GetPlayerEyePos();
@@ -371,7 +371,6 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t * screen, vgui::IScheme * scheme, IM
 		swprintf_s(buffer, BUFFER_SIZE, L"ag sg: %s", result.c_str());
 		DRAW();
 	}
-#endif
 
 	if (y_spt_hud_oob.GetBool())
 	{
@@ -384,7 +383,6 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t * screen, vgui::IScheme * scheme, IM
 		DRAW();
 	}
 
-#endif
 }
 
 void VGui_MatSurfaceDLL::DrawFlagsHud(bool mutuallyExclusiveFlags, const wchar* hudName, int& vertIndex, int x, const wchar** nameArray, int count, IMatSystemSurface* surface, wchar* buffer, int bufferCount, int flags, int fontTall)

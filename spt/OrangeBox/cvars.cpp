@@ -18,7 +18,7 @@ ConVar y_spt_pause_demo_on_tick(
 ConVar y_spt_on_slide_pause_for("y_spt_on_slide_pause_for", "0", 0, "Whenever sliding occurs in DMoMM, pause for this many ticks.");
 
 ConVar tas_strafe("tas_strafe", "0", FCVAR_TAS_RESET);
-ConVar tas_strafe_type("tas_strafe_type", "0", FCVAR_TAS_RESET, "TAS strafe types:\n\t0 - Max acceleration strafing,\n\t1 - Max angle strafing.\n\t2 - Max accel strafing with a speed cap.\n");
+ConVar tas_strafe_type("tas_strafe_type", "0", FCVAR_TAS_RESET, "TAS strafe types:\n\t0 - Max acceleration strafing,\n\t1 - Max angle strafing.\n\t4 - Max accel strafing with a speed cap.\n");
 ConVar tas_strafe_dir("tas_strafe_dir", "3", FCVAR_TAS_RESET, "TAS strafe dirs:\n\t0 - to the left,\n\t1 - to the right,\n\t3 - to the yaw given in tas_strafe_yaw.");
 ConVar tas_strafe_yaw("tas_strafe_yaw", "", FCVAR_TAS_RESET, "Yaw to strafe to with tas_strafe_dir = 3.");
 ConVar tas_strafe_buttons("tas_strafe_buttons", "", FCVAR_TAS_RESET, "Sets the strafing buttons. The format is 4 digits: \"<AirLeft> <AirRight> <GroundLeft> <GroundRight>\". The default (auto-detect) is empty string: \"\".\n"
@@ -28,7 +28,7 @@ ConVar tas_strafe_vectorial_increment("tas_strafe_vectorial_increment", "2.5", F
 ConVar tas_strafe_vectorial_offset("tas_strafe_vectorial_offset", "0", FCVAR_TAS_RESET, "Determines the target view angle offset from tas_strafe_yaw\n");
 ConVar tas_strafe_vectorial_snap("tas_strafe_vectorial_snap", "170", FCVAR_TAS_RESET, "Determines when the yaw angle snaps to the target yaw. Mainly used to prevent ABHing from resetting the yaw angle to the back on every jump.\n");
 ConVar tas_strafe_allow_jump_override("tas_strafe_allow_jump_override", "0", FCVAR_TAS_RESET, "Determines if the setyaw/pitch commands are ignored when jumping + TAS strafing. Primarily used in search mode for stucklaunches when the exact time of the jump isn't known prior to running the script.\n");
-ConVar tas_strafe_capped_limit("tas_strafe_capped_limit", "299.99", FCVAR_TAS_RESET, "Determines the speed cap while using capped strafing(type 2).\n");
+ConVar tas_strafe_capped_limit("tas_strafe_capped_limit", "299.99", FCVAR_TAS_RESET, "Determines the speed cap while using capped strafing(type 4).\n");
 ConVar tas_strafe_hull_is_line("tas_strafe_hull_is_line", "0", FCVAR_TAS_RESET, "Treats the collision hull as a line for ground checks. A hack to fix ground detections while going through portals.");
 ConVar tas_strafe_use_tracing("tas_strafe_use_tracing", "1", FCVAR_TAS_RESET, "Use tracing for detecting the ground and whether or not the player can unduck. Only turn off to enable backwards compability with old scripts.");
 

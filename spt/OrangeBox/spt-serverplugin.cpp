@@ -32,6 +32,7 @@
 #include "overlay\overlays.hpp"
 #include "..\vgui\vgui_utils.hpp"
 #include "module_hooks.hpp"
+#include "SPTLib\sptlib.hpp"
 #include "tier0\memdbgoff.h" // YaLTeR - switch off the memory debugging.
 
 using namespace std::literals;
@@ -181,7 +182,7 @@ bool DoesGameLookLikePortal()
 
 	if (engine) {
 		auto game_dir = engine->GetGameDirectory();
-		return (GetFileName(s2ws(game_dir)) == L"portal"s);
+		return (GetFileName(Convert(game_dir)) == L"portal"s);
 	}
 #endif
 
@@ -356,7 +357,7 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	Hooks::AddToHookedModules(&vgui_matsurfaceDLL);
 #endif
 	Hooks::Init(true);
-	modulehooks::ConnectSignals();
+	ModuleHooks::ConnectSignals();
 
 	auto loadTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
 	std::ostringstream out;
@@ -620,7 +621,7 @@ CON_COMMAND(y_spt_canjb, "Tests if player can jumpbug on a given height, with th
 
 #ifndef OE
 
-CON_COMMAND(y_spt_print_ents, "Prints all client entity indexes and their corresponding classes.")
+CON_COMMAND(y_spt_print_ents, "Prints all client entity indices and their corresponding classes.")
 {
 	utils::PrintAllClientEntities();
 }

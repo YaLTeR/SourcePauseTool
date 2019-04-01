@@ -70,8 +70,8 @@ public:
 
 	_SnapEyeAngles SnapEyeAngles;
 	_FirePortal FirePortal;
-	double lastTraceFirePortalDistanceSq;
-	Vector lastTraceFirePortalNormal;
+    double lastTraceFirePortalDistanceSq;
+    Vector lastTraceFirePortalNormal;
 	_GetActiveWeapon GetActiveWeapon;
 	_CreateEntityByName ORIG_CreateEntityByName;
 	int* m_hPortalEnvironmentOffsetPtr;

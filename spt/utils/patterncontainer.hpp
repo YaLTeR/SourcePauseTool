@@ -4,7 +4,7 @@
 #include <vector>
 #include "SPTLib\memutils.hpp"
 
-#define PVOID void*
+using PVOID = void*;
 
 class PatternContainer
 {

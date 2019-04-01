@@ -1,7 +1,7 @@
 demo coast                               
 save coast_test             
 settings tas_strafe_vectorial 1 
-playspeed 1
+playspeed 16
 
 vars
 var yaw -5.5

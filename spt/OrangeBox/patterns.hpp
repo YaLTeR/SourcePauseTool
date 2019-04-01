@@ -229,6 +229,9 @@ namespace patterns
 		PATTERNS(UTIL_TraceRay,
 			"5135",
 			"8B 44 24 10 8B 4C 24 0C 83 EC 10 56 6A 00 50 51 8D 4C 24 10 E8 ?? ?? ?? ?? 8B 74 24 28 8B 0D ?? ?? ?? ?? 8B 11 8B 52 10");
+        PATTERNS(UTIL_Portal_TraceRay,
+             "5135",
+             "B8 A8 10 00 00 E8 ?? ?? ?? ?? 83 BC 24 B8 10 00 00 00 C7 44 24 24 ?? ?? ?? ?? 75 0B 8D 44 24 24 89 84 24 B8 10 00 00 D9 05 ?? ?? ?? ?? 53");
 	}
 
 	namespace server

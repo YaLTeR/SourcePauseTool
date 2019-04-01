@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 
-std::wstring s2ws(const std::string& s);
 bool whiteSpacesOnly(const std::string& s);
 
 void ReplaceAll(std::string& str, const std::string& from, const std::string& to);
