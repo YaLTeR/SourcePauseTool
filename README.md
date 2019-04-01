@@ -8,14 +8,14 @@ Place the compiled `spt.dll` into your mod directory (for example: `hl2`, `porta
 
 ## Building
 You will need Visual Studio 2017 or above.
-1. Get and build Detours v3.0 Express. This one is pretty annoying because it requires Visual Studio 2010. Copy the files from the resulting `include` and `lib.X86` folders into the respective folders in the `Detours` directory.
-2. Get the Source SDK code that you wish to build SPT for.
-3. Clone this repository into a folder under `src\utils`, where `src` is the folder with the Source SDK source code. The files from this repository should end up inside `src\utils\SourcePauseTool`.
-4. Inside the `SourcePauseTool` folder do `git submodule update --init --recursive`.
-5. Open `spt.sln` in Visual Studio and build the correct build configuration:
+1. Get the Source SDK code that you wish to build SPT for.
+1. Clone this repository into a folder under `src\utils`, where `src` is the folder with the Source SDK source code. The files from this repository should end up inside `src\utils\SourcePauseTool`.
+1. Inside the `SourcePauseTool` folder do `git submodule update --init --recursive`.
+1. Open `spt.sln` in Visual Studio and build the correct build configuration:
    - Release OE for Source SDK 2006
    - Release for Source SDK 2007
    - Release 2013 for Source SDK 2013
    - Release P2 for the Portal 2 SDK from alliedmodders.
+
 ## .srctas documentation
 .srctas is the SPT TAS script format. You can find its documentation [here](https://docs.google.com/document/d/11iu9kw5Ufa3-QaiR7poJWBwfe1I56wI6fBtDgmWZ8Aw/edit?usp=sharing).

@@ -6,7 +6,7 @@
 #include <SPTLib\IHookableNameFilter.hpp>
 #include "..\..\utils\patterncontainer.hpp"
 #include "..\spt-serverplugin.hpp"
-#include "..\..\SDK\igamemovement.h"
+#include "..\..\..\SDK\igamemovement.h"
 #include "..\public\cdll_int.h"
 #include "..\..\strafestuff.hpp"
 #include "Signals/Signal.h"

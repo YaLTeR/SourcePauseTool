@@ -1,1 +1,0 @@
-Put detours.h, detver.h and syelog.h into this folder.

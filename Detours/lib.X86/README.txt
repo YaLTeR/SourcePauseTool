@@ -1,1 +1,0 @@
-Put detours.lib, detours.pdb and syelog.lib into this folder.
