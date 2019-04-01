@@ -1,5 +1,5 @@
 #pragma once
-#ifdef SSDK2007
+#ifndef OE
 #include "tier0\basetypes.h"
 #include "view_shared.h"
 

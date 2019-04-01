@@ -10,6 +10,8 @@
 #include "custom_interfaces.hpp"
 #include "eiface.h"
 #include "icvar.h"
+#include "vguimatsurface\imatsystemsurface.h"
+#include "vgui\ischeme.h"
 
 //---------------------------------------------------------------------------------
 // Purpose: a sample 3rd party plugin class
@@ -58,8 +60,10 @@ public:
 
 IServerUnknown* GetServerPlayer();
 IVEngineServer* GetEngine();
+void* GetGamemovement();
 ICvar* GetCvarInterface();
 std::string GetGameDir();
+bool DoesGameLookLikePortal();
 
 #if defined( OE )
 struct ArgsWrapper

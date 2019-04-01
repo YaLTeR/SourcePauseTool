@@ -2,9 +2,12 @@
 #include "variable_container.hpp"
 #include "dbg.h"
 #include "..\cvars.hpp"
+#include "srctas_reader.hpp"
 
 namespace scripts 
 {
+	const int FAIL_TICK = -1;
+
 	void VariableContainer::PrintBest()
 	{
 		if (lastSuccessPrint.empty())
@@ -24,6 +27,7 @@ namespace scripts
 		lastResult = SearchResult::NoSearch;
 		lastSuccessPrint.clear();
 		iterationPrint.clear();
+		lastSuccessTick = FAIL_TICK;
 	}
 
 	void VariableContainer::Iteration(SearchType type)
@@ -34,7 +38,7 @@ namespace scripts
 
 		if (type == SearchType::None)
 			maxChanges = 0;
-		else if (type != SearchType::Random)
+		else if (type == SearchType::Highest || type == SearchType::Lowest || type == SearchType::Range)
 			maxChanges = 1;
 		else
 			maxChanges = variableMap.size();
@@ -63,14 +67,17 @@ namespace scripts
 
 	void VariableContainer::SetResult(SearchResult result)
 	{
-		if (searchType == SearchType::None)
+		if (result == SearchResult::NoSearch)
+			throw SearchDoneException();
+		else if (searchType == SearchType::None)
 			throw std::exception("Set result while not in search mode");
 
 		lastResult = result;
 
-		if (result == SearchResult::Success)
+		if (Successful(result))
 		{
-			lastSuccessPrint = iterationPrint;
+			lastSuccessTick = g_TASReader.GetCurrentTick();
+			lastSuccessPrint = iterationPrint + "\t- tick: " + std::to_string(lastSuccessTick) + "\n";
 			if (searchType == SearchType::Random)
 				throw SearchDoneException();
 		}			
@@ -92,6 +99,28 @@ namespace scripts
 		{
 			Msg(iterationPrint.c_str());
 		}
+	}
+
+	bool VariableContainer::Successful(SearchResult result)
+	{
+		if (result != SearchResult::Success)
+			return false;
+		else if (searchType == SearchType::RandomHighest)
+		{
+			if (lastSuccessTick == FAIL_TICK)
+				return true;
+			else
+				return g_TASReader.GetCurrentTick() > lastSuccessTick;
+		}
+		else if (searchType == SearchType::RandomLowest)
+		{
+			if (lastSuccessTick == FAIL_TICK)
+				return true;
+			else
+				return g_TASReader.GetCurrentTick() < lastSuccessTick;
+		}
+
+		return true;
 	}
 
 	ScriptVariable::ScriptVariable(const std::string& type, const std::string& value)

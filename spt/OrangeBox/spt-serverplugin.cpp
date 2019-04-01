@@ -11,11 +11,18 @@
 #include "vstdlib\random.h"
 #include "scripts\srctas_reader.hpp"
 #include "scripts\tests\test.hpp"
+#include "..\utils\string_parsing.hpp"
+#include "..\utils\ent_utils.hpp"
 
 #include "cdll_int.h"
 #include "engine\iserverplugin.h"
 #include "eiface.h"
 #include "tier2\tier2.h"
+#include "tier3\tier3.h"
+#include "vgui\isystem.h"
+#include "vgui\iinput.h"
+#include "vgui\ivgui.h"
+#include "icliententitylist.h"
 
 #if SSDK2007
 #include "mathlib\vmatrix.h"
@@ -23,6 +30,9 @@
 
 #include "overlay\overlay-renderer.hpp"
 #include "overlay\overlays.hpp"
+#include "..\vgui\vgui_utils.hpp"
+#include "module_hooks.hpp"
+#include "SPTLib\sptlib.hpp"
 #include "tier0\memdbgoff.h" // YaLTeR - switch off the memory debugging.
 
 using namespace std::literals;
@@ -37,6 +47,8 @@ inline bool FStrEq( const char *sz1, const char *sz2 )
 std::unique_ptr<EngineClientWrapper> engine;
 IVEngineServer *engine_server = nullptr;
 IUniformRandomStream* random = nullptr;
+IMatSystemSurface* surface = nullptr;
+vgui::ISchemeManager* scheme = nullptr;
 void *gm = nullptr;
 
 int lastSeed = 0;
@@ -108,6 +120,21 @@ IVEngineServer* GetEngine()
 	return engine_server;
 }
 
+void* GetGamemovement()
+{
+	return gm;
+}
+
+IMatSystemSurface * GetSurface()
+{
+	return surface;
+}
+
+vgui::IScheme * GetIScheme()
+{
+	return scheme->GetIScheme(scheme->GetDefaultScheme());
+}
+
 ICvar* GetCvarInterface()
 {
 	return g_pCVar;
@@ -155,7 +182,7 @@ bool DoesGameLookLikePortal()
 
 	if (engine) {
 		auto game_dir = engine->GetGameDirectory();
-		return (GetFileName(string_converter.from_bytes(game_dir)) == L"portal"s);
+		return (GetFileName(Convert(game_dir)) == L"portal"s);
 	}
 #endif
 
@@ -190,13 +217,14 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	auto startTime = std::chrono::high_resolution_clock::now();
 
 	ConnectTier1Libraries(&interfaceFactory, 1);
+	ConnectTier3Libraries(&interfaceFactory, 1);
 
 	gm = gameServerFactory(INTERFACENAME_GAMEMOVEMENT, NULL);
 	if (gm) {
 		DevMsg("SPT: Found IGameMovement at %p.\n", gm);
 	} else {
 		DevWarning("SPT: Could not find IGameMovement.\n");
-		DevWarning("SPT: ProcessMovement logging with tas_log is unavaliable.\n");
+		DevWarning("SPT: ProcessMovement logging with tas_log is unavailable.\n");
 	}
 
 	if (!g_pCVar)
@@ -220,11 +248,17 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 #else
 	else
 	{
-		_sv_airaccelerate = g_pCVar->FindVar("sv_airaccelerate");
-		_sv_accelerate = g_pCVar->FindVar("sv_accelerate");
-		_sv_friction = g_pCVar->FindVar("sv_friction");
-		_sv_maxspeed = g_pCVar->FindVar("sv_maxspeed");
-		_sv_stopspeed = g_pCVar->FindVar("sv_stopspeed");
+#define GETCVAR(x) _##x = g_pCVar->FindVar(#x);
+
+		GETCVAR(sv_airaccelerate);
+		GETCVAR(sv_accelerate);
+		GETCVAR(sv_friction);
+		GETCVAR(sv_maxspeed);
+		GETCVAR(sv_stopspeed);
+		GETCVAR(sv_stepsize);
+		GETCVAR(sv_gravity);
+		GETCVAR(sv_maxvelocity);
+		GETCVAR(sv_bounce);
 	}
 
 	ConVar_Register(0);
@@ -277,6 +311,36 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 		DevWarning("SPT: Failed to get the IUniformRandomStream interface.\n");
 	}
 
+#ifndef OE
+	auto clientFactory = Sys_GetFactory("client");
+	IClientEntityList* entList = (IClientEntityList*)clientFactory(VCLIENTENTITYLIST_INTERFACE_VERSION, NULL);
+	IVModelInfo* modelInfo = (IVModelInfo*)interfaceFactory(VMODELINFO_SERVER_INTERFACE_VERSION, NULL);
+	IBaseClientDLL* clientInterface = (IBaseClientDLL*)clientFactory(CLIENT_DLL_INTERFACE_VERSION, NULL);
+
+	if (entList)
+	{
+		utils::SetEntityList(entList);
+	}
+	else
+		DevWarning("Unable to retrieve entitylist interface.\n");
+
+	if (modelInfo)
+	{
+		utils::SetModelInfo(modelInfo);
+	}
+	else
+		DevWarning("Unable to retrieve the model info interface.\n");
+
+	if (clientInterface)
+	{
+		utils::SetClientDLL(clientInterface);
+	}
+	else
+		DevWarning("Unable to retrieve the client DLL interface.\n");
+
+#endif
+
+
 	EngineConCmd = CallServerCommand;
 	EngineGetViewAngles = GetViewAngles;
 	EngineSetViewAngles = SetViewAngles;
@@ -286,11 +350,14 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 	_EngineWarning = Warning;
 	_EngineDevWarning = DevWarning;
 
-	Hooks::getInstance().AddToHookedModules(&engineDLL);
-	Hooks::getInstance().AddToHookedModules(&clientDLL);
-	Hooks::getInstance().AddToHookedModules(&serverDLL);
-
-	Hooks::getInstance().Init();
+	Hooks::AddToHookedModules(&engineDLL);
+	Hooks::AddToHookedModules(&clientDLL);
+	Hooks::AddToHookedModules(&serverDLL);
+#ifndef OE
+	Hooks::AddToHookedModules(&vgui_matsurfaceDLL);
+#endif
+	Hooks::Init(true);
+	ModuleHooks::ConnectSignals();
 
 	auto loadTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
 	std::ostringstream out;
@@ -303,13 +370,14 @@ bool CSourcePauseTool::Load( CreateInterfaceFn interfaceFactory, CreateInterface
 
 void CSourcePauseTool::Unload( void )
 {
-	Hooks::getInstance().Free();
+	Hooks::Free();
 
 #if !defined( OE )
 	ConVar_Unregister();
 #endif
 
 	DisconnectTier1Libraries();
+	DisconnectTier3Libraries();
 }
 
 const char *CSourcePauseTool::GetPluginDescription( void )
@@ -527,31 +595,6 @@ CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of 
 }
 #endif
 
-void TestCanJb(float height)
-{
-	Vector player_origin = clientDLL.GetPlayerEyePos();
-	Vector vel = serverDLL.GetLastVelocity();
-
-	constexpr float gravity = 600;
-	constexpr float groundThreshold = 2.0f;
-	float ticktime = engineDLL.GetTickrate();
-	constexpr int maxIterations = 1000;
-
-	for (int i = 0; i < maxIterations && (vel.z > 0 || player_origin.z >= height); ++i)
-	{
-		if (vel.z < 0 && player_origin.z - height <= groundThreshold)
-		{
-			Msg("Yes, projected landing height %.6f in %d ticks\n", player_origin.z, i);
-			return;
-		}
-
-		vel.z -= (gravity * ticktime / 2);
-		player_origin.z += vel.z * ticktime;
-		vel.z -= (gravity * ticktime / 2);
-	}
-	Msg("Jumpbug impossible\n");
-}
-
 CON_COMMAND(y_spt_canjb, "Tests if player can jumpbug on a given height, with the current position and speed.")
 {
 	if (!engine)
@@ -568,8 +611,47 @@ CON_COMMAND(y_spt_canjb, "Tests if player can jumpbug on a given height, with th
 	}
 
 	float height = std::stof(args.Arg(1));
-	TestCanJb(height);
+	auto can = utils::CanJB(height);
+
+	if (can.canJB)
+		Msg("Yes, projected landing height %.6f in %d ticks\n", can.landingHeight - height, can.ticks);
+	else
+		Msg("No, missed by %.6f in %d ticks.\n", can.landingHeight - height, can.ticks);
 }
+
+#ifndef OE
+
+CON_COMMAND(y_spt_print_ents, "Prints all client entity indices and their corresponding classes.")
+{
+	utils::PrintAllClientEntities();
+}
+
+CON_COMMAND(y_spt_print_portals, "Prints all portal indexes, their position and angles.")
+{
+	utils::PrintAllPortals();
+}
+
+#endif
+
+#ifndef OE
+
+CON_COMMAND(y_spt_print_ent_props, "Prints all props for a given entity index.")
+{
+#if defined( OE )
+	ArgsWrapper args(engine.get());
+#endif
+	if (args.ArgC() < 2)
+	{
+		Msg("Usage: y_spt_print_ent_props [index]\n");
+	}
+	else
+	{
+		utils::PrintAllProps(std::stoi(args.Arg(1)));
+	}
+}
+
+#endif
+
 
 #if defined( OE )
 static void DuckspamDown()
@@ -656,7 +738,7 @@ CON_COMMAND(_y_spt_setangles, "Sets the angles. Usage: _y_spt_setangles <pitch> 
 
 CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 {
-	const Vector vel = serverDLL.GetLastVelocity();
+	const Vector vel = clientDLL.GetPlayerVelocity();
 
 	Warning("Velocity (x, y, z): %f %f %f\n", vel.x, vel.y, vel.z);
 	Warning("Velocity (xy): %f\n", vel.Length2D());
@@ -761,6 +843,11 @@ CON_COMMAND(tas_script_result_fail, "Signals an unsuccessful result in a variabl
 	scripts::g_TASReader.SearchResult(scripts::SearchResult::Fail);
 }
 
+CON_COMMAND(tas_script_result_stop, "Signals a stop in a variable search.")
+{
+	scripts::g_TASReader.SearchResult(scripts::SearchResult::NoSearch);
+}
+
 CON_COMMAND(_y_spt_findangle, "Finds the yaw/pitch angle required to look at the given position from player's current position.")
 {
 #if defined( OE )
@@ -792,7 +879,6 @@ CON_COMMAND(tas_test_generate, "Generates test data for given test.")
 
 	ArgsWrapper args(engine.get());
 #endif
-	Vector target;
 
 	if (args.ArgC() > 1)
 	{
@@ -808,13 +894,50 @@ CON_COMMAND(tas_test_validate, "Validates a test.")
 
 	ArgsWrapper args(engine.get());
 #endif
-	Vector target;
 
 	if (args.ArgC() > 1)
 	{
 		scripts::g_Tester.LoadTest(args.Arg(1), false);
 	}
 }
+
+CON_COMMAND(tas_test_automated_validate, "Validates a test, produces a log file and exits the game.")
+{
+#if defined( OE )
+	if (!engine)
+		return;
+
+	ArgsWrapper args(engine.get());
+#endif
+
+	if (args.ArgC() > 2)
+	{
+		scripts::g_Tester.RunAutomatedTest(args.Arg(1), false, args.Arg(2));
+	}
+}
+
+
+CON_COMMAND(tas_print_movement_vars, "Prints movement vars.") {
+
+   auto vars = clientDLL.GetMovementVars();
+
+   Msg("Accelerate %f\n", vars.Accelerate);
+   Msg("AirAccelerate %f\n", vars.Airaccelerate);
+   Msg("Bounce %f\n", vars.Bounce);
+   Msg("EntFriction %f\n", vars.EntFriction);
+   Msg("EntGrav %f\n", vars.EntGravity);
+   Msg("Frametime %f\n", vars.Frametime);
+   Msg("Friction %f\n", vars.Friction);
+   Msg("Grav %f\n", vars.Gravity);
+   Msg("Maxspeed %f\n", vars.Maxspeed);
+   Msg("Maxvelocity %f\n", vars.Maxvelocity);
+   Msg("OnGround %d\n", vars.OnGround);
+   Msg("ReduceWishspeed %d\n", vars.ReduceWishspeed);
+   Msg("Stepsize %f\n", vars.Stepsize);
+   Msg("Stopspeed %f\n", vars.Stopspeed);
+   Msg("WS cap %f\n", vars.WishspeedCap);
+}
+
 
 #if SSDK2007
 // TODO: remove fixed offsets.

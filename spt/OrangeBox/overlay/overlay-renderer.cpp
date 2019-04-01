@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#ifdef SSDK2007
+#ifndef OE
 #include "overlay-renderer.hpp"
 #include "..\modules\ClientDLL.hpp"
 #include "..\modules.hpp"
@@ -113,4 +113,4 @@ float OverlayRenderer::getFOV()
 
 	return fov;
 }
-#endif // SSDK2007
+#endif

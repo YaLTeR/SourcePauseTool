@@ -24,7 +24,6 @@ namespace scripts
 
 	const int RESET_VARS_COUNT = ARRAYSIZE(RESET_VARS);
 
-
 	SourceTASReader::SourceTASReader()
 	{
 		InitPropertyHandlers();
@@ -123,10 +122,11 @@ namespace scripts
 
 	void SourceTASReader::OnAfterFrames()
 	{
+		if (currentTick <= currentScript.GetScriptLength())
+			++currentTick;
+
 		if (conditions.empty() || iterationFinished)
 			return;
-
-		++currentTick;
 
 		bool allTrue = true;
 
@@ -147,6 +147,11 @@ namespace scripts
 			iterationFinished = true;
 			SearchResult(SearchResult::Success);
 		}	
+	}
+
+	int SourceTASReader::GetCurrentTick()
+	{
+		return currentTick;
 	}
 
 	int SourceTASReader::GetCurrentScriptLength()
@@ -428,6 +433,8 @@ namespace scripts
 		propertyHandlers["velz"] = &SourceTASReader::HandleZVel;
 		propertyHandlers["vel2d"] = &SourceTASReader::Handle2DVel;
 		propertyHandlers["velabs"] = &SourceTASReader::HandleAbsVel;
+        propertyHandlers["alive"] = &SourceTASReader::HandleAliveCondition;
+        propertyHandlers["jb"] = &SourceTASReader::HandleJBCondition;
 	}
 
 	void SourceTASReader::HandleSave(const std::string& value)
@@ -453,6 +460,10 @@ namespace scripts
 			searchType = SearchType::Highest;
 		else if (value == "random")
 			searchType = SearchType::Random;
+		else if (value == "randomlow")
+			searchType = SearchType::RandomLowest;
+		else if (value == "randomhigh")
+			searchType = SearchType::RandomHighest;
 		else
 			throw std::exception("Search type was invalid");
 	}
@@ -476,6 +487,17 @@ namespace scripts
 		int min, max;
 		GetDoublet(value, min, max, '|');
 		conditions.push_back(std::unique_ptr<Condition>(new TickRangeCondition(min, max, true)));
+	}
+
+	void SourceTASReader::HandleJBCondition(const std::string & value)
+	{
+		auto height = ParseValue<float>(value);
+		conditions.push_back(std::unique_ptr<Condition>(new JBCondition(height)));
+	}
+
+	void SourceTASReader::HandleAliveCondition(const std::string & value)
+	{
+		conditions.push_back(std::unique_ptr<Condition>(new AliveCondition()));
 	}
 
 	void SourceTASReader::HandlePosVel(const std::string & value, Axis axis, bool isPos)

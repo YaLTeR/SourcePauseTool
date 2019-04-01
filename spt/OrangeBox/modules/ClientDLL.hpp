@@ -4,9 +4,13 @@
 #include <vector>
 
 #include <SPTLib\IHookableNameFilter.hpp>
+#include "..\..\utils\patterncontainer.hpp"
 #include "..\spt-serverplugin.hpp"
 #include "..\..\SDK\igamemovement.h"
 #include "..\public\cdll_int.h"
+#include "..\..\strafestuff.hpp"
+#include "Signals/Signal.h"
+#include "cmodel.h"
 
 using std::uintptr_t;
 using std::size_t;
@@ -23,6 +27,11 @@ typedef void*(__fastcall *_GetGroundEntity) (void* thisptr, int edx);
 typedef void(__fastcall *_CalcAbsoluteVelocity) (void* thisptr, int edx);
 typedef void(__fastcall *_CViewRender__RenderView) (void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw);
 typedef void(__fastcall *_CViewRender__Render) (void* thisptr, int edx, void* rect);
+typedef void*(__cdecl *_GetClientModeNormal) ();
+typedef void(__cdecl * _UTIL_TraceLine) (const Vector& vecAbsStart, const Vector& vecAbsEnd, unsigned int mask, ITraceFilter *pFilter, trace_t* ptr);
+typedef void(__fastcall * _UTIL_TracePlayerBBox) (void* thisptr, int edx, const Vector& vecAbsStart, const Vector& vecAbsEnd, unsigned int mask, int collisionGroup, trace_t& ptr);
+typedef void(__cdecl * _UTIL_TraceRay) (const Ray_t& ray, unsigned int mask, const IHandleEntity* ignore, int collisionGroup, trace_t* ptr);
+typedef bool(__fastcall * _CGameMovement__CanUnDuckJump) (void* thisptr, int edx, trace_t& ptr);
 
 struct afterframes_entry_t
 {
@@ -42,7 +51,7 @@ class ClientDLL : public IHookableNameFilter
 {
 public:
 	ClientDLL() : IHookableNameFilter({ L"client.dll" }) {};
-	virtual void Hook(const std::wstring& moduleName, HMODULE hModule, uintptr_t moduleStart, size_t moduleLength);
+	virtual void Hook(const std::wstring& moduleName, void* moduleHandle, void* moduleBase, size_t moduleLength, bool needToIntercept);
 	virtual void Unhook();
 	virtual void Clear();
 
@@ -78,9 +87,23 @@ public:
 	void SetPitch(float pitch) { setPitch.angle = pitch; setPitch.set = true; }
 	void SetYaw(float yaw)     { setYaw.angle   = yaw;   setYaw.set   = true; }
 	void ResetPitchYawCommands() { setYaw.set = false; setPitch.set = false; }
+	Strafe::MovementVars GetMovementVars();
+	Strafe::PlayerData GetPlayerData();
 	Vector GetPlayerVelocity();
 	Vector GetPlayerEyePos();
+	int GetPlayerFlags();
 	bool GetFlagsDucking();
+	double GetDuckJumpTime();
+	bool CanUnDuckJump(trace_t& ptr);
+
+	Gallant::Signal0<void> AfterFramesSignal;
+	Gallant::Signal0<void> TickSignal;
+	Gallant::Signal1<bool> OngroundSignal;
+	bool renderingOverlay;
+	void* screenRect;
+	void* cinput_thisptr;
+	_GetClientModeNormal ORIG_GetClientModeNormal;
+	_UTIL_TraceRay ORIG_UTIL_TraceRay;
 
 protected:
 	_DoImageSpaceMotionBlur ORIG_DoImageSpaceMotionBlur;
@@ -90,11 +113,12 @@ protected:
 	_AdjustAngles ORIG_AdjustAngles;
 	_CreateMove ORIG_CreateMove;
 	_CViewRender__OnRenderStart ORIG_CViewRender__OnRenderStart;
-	_GetLocalPlayer GetLocalPlayer;
-	_GetGroundEntity GetGroundEntity;
-	_CalcAbsoluteVelocity CalcAbsoluteVelocity;
+	_GetLocalPlayer ORIG_GetLocalPlayer;
+	_GetGroundEntity ORIG_GetGroundEntity;
+	_CalcAbsoluteVelocity ORIG_CalcAbsoluteVelocity;
 	_CViewRender__RenderView ORIG_CViewRender__RenderView;
 	_CViewRender__Render ORIG_CViewRender__Render;
+	_CGameMovement__CanUnDuckJump ORIG_CGameMovement__CanUnDuckJump;
 
 	uintptr_t* pgpGlobals;
 	ptrdiff_t offM_pCommands;
@@ -125,7 +149,8 @@ protected:
 	bool cantJumpNextTime;
 
 	void OnFrame();
+	bool IsOnGround();
 
 	int afterframesDelay;
-	bool renderingOverlay;
+	PatternContainer patternContainer;
 };

@@ -1,0 +1,18 @@
+Language:        Cpp
+BasedOnStyle:  Google
+
+AccessModifierOffset: -4
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+BinPackArguments: false
+BinPackParameters: false
+BreakBeforeBinaryOperators: NonAssignment
+BreakConstructorInitializersBeforeComma: true
+ColumnLimit: 120
+IndentWidth: 4
+NamespaceIndentation: All
+PenaltyBreakBeforeFirstCallParameter: 300
+ReflowComments: false
+SpaceAfterTemplateKeyword: false

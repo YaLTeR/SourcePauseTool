@@ -1,5 +1,5 @@
 #pragma once
-#ifdef SSDK2007
+#ifndef OE
 #include "overlay-renderer.hpp"
 
 CameraInformation rearViewMirrorOverlay();

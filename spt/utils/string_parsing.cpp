@@ -1,5 +1,13 @@
 #include "stdafx.h"
+#include <Windows.h>
 #include "string_parsing.hpp"
+#include <algorithm>
+
+
+bool whiteSpacesOnly(const std::string & s)
+{
+	return std::all_of(s.begin(), s.end(), isspace);
+}
 
 void ReplaceAll(std::string& str, const std::string& from, const std::string& to)
 {

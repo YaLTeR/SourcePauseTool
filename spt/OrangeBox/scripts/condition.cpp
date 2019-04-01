@@ -2,6 +2,8 @@
 #include "condition.hpp"
 #include "..\modules\ClientDLL.hpp"
 #include "..\modules.hpp"
+#include "..\..\utils\property_getter.hpp"
+#include "..\..\utils\ent_utils.hpp"
 
 namespace scripts
 {
@@ -75,5 +77,33 @@ namespace scripts
 	bool PosSpeedCondition::ShouldTerminate(int tick, int totalTicks) const
 	{
 		return false;
+	}
+
+	JBCondition::JBCondition(float z) : height(z)
+	{
+	}
+
+	bool JBCondition::IsTrue(int tick, int totalTicks) const
+	{
+		return utils::CanJB(height).canJB;
+	}
+
+	bool JBCondition::ShouldTerminate(int tick, int totalTicks) const
+	{
+		return false;
+	}
+
+	AliveCondition::AliveCondition()
+	{
+	}
+
+	bool AliveCondition::IsTrue(int tick, int totalTicks) const
+	{
+		return utils::GetProperty<int>(0, "m_iHealth") > 0;
+	}
+
+	bool AliveCondition::ShouldTerminate(int tick, int totalTicks) const
+	{
+		return utils::GetProperty<int>(0, "m_iHealth") <= 0;
 	}
 }

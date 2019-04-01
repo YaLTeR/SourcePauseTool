@@ -20,6 +20,7 @@ namespace scripts
 		void StartSearch(const std::string& script);
 		void SearchResult(scripts::SearchResult result);
 		void OnAfterFrames();
+		int GetCurrentTick();
 		int GetCurrentScriptLength();
 	private:
 		bool iterationFinished;
@@ -63,6 +64,8 @@ namespace scripts
 		void HandlePlaybackSpeed(const std::string& value);
 		void HandleTickRange(const std::string& value);
 		void HandleTicksFromEndRange(const std::string& value);
+		void HandleJBCondition(const std::string& value);
+		void HandleAliveCondition(const std::string& value);
 		
 		void HandleXPos(const std::string& value) { HandlePosVel(value, Axis::AxisX, true); }
 		void HandleYPos(const std::string& value) { HandlePosVel(value, Axis::AxisY, true); }

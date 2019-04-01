@@ -10,7 +10,7 @@ namespace scripts
 	{};
 
 	enum class SearchResult { NoSearch, Success, Fail };
-	enum class SearchType { None, Lowest, Range, Highest, Random };
+	enum class SearchType { None, Lowest, Range, Highest, Random, RandomLowest, RandomHighest };
 
 	template <typename T>
 	class RangeVariable
@@ -114,7 +114,9 @@ namespace scripts
 		case SearchType::Highest:
 			SelectHigh(lastResult);
 			break;
-		case SearchType::Random:
+		case SearchType::Random: 
+		case SearchType::RandomHighest: 
+		case SearchType::RandomLowest:
 			SelectRandom();
 			break;
 		default:

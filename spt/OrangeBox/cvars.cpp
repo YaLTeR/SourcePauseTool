@@ -18,7 +18,7 @@ ConVar y_spt_pause_demo_on_tick(
 ConVar y_spt_on_slide_pause_for("y_spt_on_slide_pause_for", "0", 0, "Whenever sliding occurs in DMoMM, pause for this many ticks.");
 
 ConVar tas_strafe("tas_strafe", "0", FCVAR_TAS_RESET);
-ConVar tas_strafe_type("tas_strafe_type", "0", FCVAR_TAS_RESET, "TAS strafe types:\n\t0 - Max acceleration strafing,\n\t1 - Max angle strafing.\n");
+ConVar tas_strafe_type("tas_strafe_type", "0", FCVAR_TAS_RESET, "TAS strafe types:\n\t0 - Max acceleration strafing,\n\t1 - Max angle strafing.\n\t4 - Max accel strafing with a speed cap.\n");
 ConVar tas_strafe_dir("tas_strafe_dir", "3", FCVAR_TAS_RESET, "TAS strafe dirs:\n\t0 - to the left,\n\t1 - to the right,\n\t3 - to the yaw given in tas_strafe_yaw.");
 ConVar tas_strafe_yaw("tas_strafe_yaw", "", FCVAR_TAS_RESET, "Yaw to strafe to with tas_strafe_dir = 3.");
 ConVar tas_strafe_buttons("tas_strafe_buttons", "", FCVAR_TAS_RESET, "Sets the strafing buttons. The format is 4 digits: \"<AirLeft> <AirRight> <GroundLeft> <GroundRight>\". The default (auto-detect) is empty string: \"\".\n"
@@ -28,6 +28,9 @@ ConVar tas_strafe_vectorial_increment("tas_strafe_vectorial_increment", "2.5", F
 ConVar tas_strafe_vectorial_offset("tas_strafe_vectorial_offset", "0", FCVAR_TAS_RESET, "Determines the target view angle offset from tas_strafe_yaw\n");
 ConVar tas_strafe_vectorial_snap("tas_strafe_vectorial_snap", "170", FCVAR_TAS_RESET, "Determines when the yaw angle snaps to the target yaw. Mainly used to prevent ABHing from resetting the yaw angle to the back on every jump.\n");
 ConVar tas_strafe_allow_jump_override("tas_strafe_allow_jump_override", "0", FCVAR_TAS_RESET, "Determines if the setyaw/pitch commands are ignored when jumping + TAS strafing. Primarily used in search mode for stucklaunches when the exact time of the jump isn't known prior to running the script.\n");
+ConVar tas_strafe_capped_limit("tas_strafe_capped_limit", "299.99", FCVAR_TAS_RESET, "Determines the speed cap while using capped strafing(type 4).\n");
+ConVar tas_strafe_hull_is_line("tas_strafe_hull_is_line", "0", FCVAR_TAS_RESET, "Treats the collision hull as a line for ground checks. A hack to fix ground detections while going through portals.");
+ConVar tas_strafe_use_tracing("tas_strafe_use_tracing", "1", FCVAR_TAS_RESET, "Use tracing for detecting the ground and whether or not the player can unduck. Only turn off to enable backwards compability with old scripts.");
 
 ConVar tas_force_airaccelerate("tas_force_airaccelerate", "", 0, "Sets the value of airaccelerate used in TAS calculations. If empty, uses the value of sv_airaccelerate.\n\nShould be set to 15 for Portal.\n");
 ConVar tas_force_wishspeed_cap("tas_force_wishspeed_cap", "", 0, "Sets the value of the wishspeed cap used in TAS calculations. If empty, uses the default value: 30.\n\nShould be set to 60 for Portal.\n");
@@ -48,9 +51,29 @@ ConVar _y_spt_anglesetspeed("_y_spt_anglesetspeed", "360", FCVAR_TAS_RESET, "Det
 ConVar _y_spt_pitchspeed("_y_spt_pitchspeed", "0", FCVAR_TAS_RESET);
 ConVar _y_spt_yawspeed("_y_spt_yawspeed", "0", FCVAR_TAS_RESET);
 ConVar _y_spt_force_90fov("_y_spt_force_90fov", "0");
+
+ConVar y_spt_hud_velocity("y_spt_hud_velocity", "0", FCVAR_CHEAT, "Turns on the velocity hud.\n");
+ConVar y_spt_hud_flags("y_spt_hud_flags", "0", FCVAR_CHEAT, "Turns on the flags hud.\n");
+ConVar y_spt_hud_moveflags("y_spt_hud_moveflags", "0", FCVAR_CHEAT, "Turns on the move type hud.\n");
+ConVar y_spt_hud_movecollideflags("y_spt_hud_movecollideflags", "0", FCVAR_CHEAT, "Turns on the move collide hud.\n");
+ConVar y_spt_hud_collisionflags("y_spt_hud_collisionflags", "0", FCVAR_CHEAT, "Turns on the collision group hud.\n");
+ConVar y_spt_hud_accel("y_spt_hud_accel", "0", FCVAR_CHEAT, "Turns on the acceleration hud.\n");
+ConVar y_spt_hud_script_length("y_spt_hud_script_progress", "0", FCVAR_CHEAT, "Turns on the script progress hud.\n");
+ConVar y_spt_hud_portal_bubble("y_spt_hud_portal_bubble", "0", FCVAR_CHEAT, "Turns on portal bubble index hud.\n");
+ConVar y_spt_hud_decimals("y_spt_hud_decimals", "2", FCVAR_CHEAT, "Determines the number of decimals in the SPT HUD.\n");
+ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement vars HUD.\n");
+ConVar y_spt_hud_ag_sg_tester("y_spt_hud_ag_sg_tester", "0", FCVAR_CHEAT, "Tests if angle glitch will save glitch you.\n");
+ConVar y_spt_hud_ent_info("y_spt_hud_ent_info", "", FCVAR_CHEAT, "Display entity info on HUD. Format is \"[ent index],[prop regex],[prop regex],...,[prop regex];[ent index],...,[prop regex]\".\n");
+ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT, "When set to 1, displays SPT HUD on the left.\n");
+ConVar y_spt_hud_hops("y_spt_hud_hops", "0", FCVAR_CHEAT, "When set to 1, displays the hop practice HUD.");
+ConVar y_spt_hud_hops_x("y_spt_hud_hops_x", "-85", FCVAR_CHEAT, "Hops HUD x offset");
+ConVar y_spt_hud_hops_y("y_spt_hud_hops_y", "100", FCVAR_CHEAT, "Hops HUD y offset");
+ConVar y_spt_hud_oob("y_spt_hud_oob", "0", FCVAR_CHEAT, "Is the player OoB?");
+
+
 ConVar _y_spt_overlay("_y_spt_overlay", "0", FCVAR_CHEAT, "Enables the overlay camera in the top left of the screen.\n");
 ConVar _y_spt_overlay_type("_y_spt_overlay_type", "0", FCVAR_CHEAT, "Overlay type. 0 = save glitch body, 1 = angle glitch simulation, 2 = rear view mirror.\n");
-ConVar _y_spt_overlay_portal("_y_spt_overlay_portal", "blue", FCVAR_CHEAT, "Chooses the portal for the overlay camera. Valid options are blue/orange/portal index. For the SG camera this is the portal you save glitch on, for angle glitch simulation this is the portal you enter.\n");
+ConVar _y_spt_overlay_portal("_y_spt_overlay_portal", "auto", FCVAR_CHEAT, "Chooses the portal for the overlay camera. Valid options are blue/orange/portal index. For the SG camera this is the portal you save glitch on, for angle glitch simulation this is the portal you enter.\n");
 ConVar _y_spt_overlay_width("_y_spt_overlay_width", "480", FCVAR_CHEAT, "Determines the width of the overlay. Height is determined automatically from width.\n", true, 20.0f, true, 3840.0f);
 ConVar _y_spt_overlay_fov("_y_spt_overlay_fov", "90", FCVAR_CHEAT, "Determines the FOV of the overlay.\n", true, 5.0f, true, 140.0f);
 ConVar _y_spt_overlay_swap("_y_spt_overlay_swap", "0", FCVAR_CHEAT, "Swap alternate view and main screen?\n");
@@ -65,3 +88,7 @@ ConVar *_sv_airaccelerate = nullptr;
 ConVar *_sv_friction = nullptr;
 ConVar *_sv_maxspeed = nullptr;
 ConVar *_sv_stopspeed = nullptr;
+ConVar *_sv_stepsize = nullptr;
+ConVar *_sv_gravity = nullptr;
+ConVar *_sv_maxvelocity = nullptr;
+ConVar *_sv_bounce = nullptr;

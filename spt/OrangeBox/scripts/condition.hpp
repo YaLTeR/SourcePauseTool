@@ -35,4 +35,22 @@ namespace scripts
 		float high;
 		Axis axis;
 	};
+
+	class JBCondition : public Condition
+	{
+	public:
+		JBCondition(float z);
+		bool IsTrue(int tick, int totalTicks) const override;
+		bool ShouldTerminate(int tick, int totalTicks) const override;
+	private:
+		float height;
+	};
+
+	class AliveCondition : public Condition
+	{
+	public:
+		AliveCondition();
+		bool IsTrue(int tick, int totalTicks) const override;
+		bool ShouldTerminate(int tick, int totalTicks) const override;
+	};
 }
