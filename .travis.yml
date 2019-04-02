@@ -10,8 +10,8 @@ addons:
       - clang-format-8
 
 script:
-  - python run-clang-format.py \
-        --clang-format-executable clang-format-8 \
-        --exclude 'spt/utils/md5.*' \
-        --recursive \
+  - python run-clang-format.py
+        --clang-format-executable clang-format-8
+        --exclude 'spt/utils/md5.*'
+        --recursive
         spt
