@@ -80,7 +80,7 @@ namespace Strafe
 
 	bool CanUnduck(const PlayerData& player)
 	{
-		if (player.DuckPressed || !tas_strafe_use_tracing.GetBool())
+		if ((player.DuckPressed && !tas_strafe_autojb.GetBool()) || !tas_strafe_use_tracing.GetBool())
 			return false;
 		else
 		{

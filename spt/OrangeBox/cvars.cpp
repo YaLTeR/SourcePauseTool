@@ -122,6 +122,10 @@ ConVar tas_strafe_jumptype(
     "1",
     FCVAR_TAS_RESET,
     "TAS jump strafe types:\n\t0 - Does nothing,\n\t1 - Looks directly opposite to desired direction (for games with ABH),\n\t2 - Looks in desired direction (games with speed boost upon jumping but no ABH),\n\t3 - Looks in direction that results in greatest speed loss (for glitchless TASes on game with ABH).\n");
+ConVar tas_strafe_autojb("tas_strafe_autojb",
+                         "0",
+                         FCVAR_TAS_RESET,
+                         "ONLY JUMPBUGS WHEN POSSIBLE. IF IT DOESN'T JUMPBUG IT'S NOT POSSIBLE.\n");
 ConVar tas_script_printvars("tas_script_printvars",
                             "1",
                             0,

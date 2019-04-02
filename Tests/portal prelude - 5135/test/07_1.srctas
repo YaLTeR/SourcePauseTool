@@ -1,7 +1,7 @@
 demo 07_1
 save 06_1
 playspeed 16
-settings tas_strafe_hull_is_line 1
+settings tas_strafe_hull_is_line 1; cl_mouseenable 0
 
 vars
 
@@ -39,4 +39,4 @@ s01-------|------|------|-90|-|30|
 ----------|-l----|jd----|-|-|1|
 ----------|------|-d----|-|-|44|
 ----------|------|----2-|-|-|1|
-----------|------|------|-|-|1|y_spt_pause 1
+----------|------|------|-|-|1|cl_mouseenable 1

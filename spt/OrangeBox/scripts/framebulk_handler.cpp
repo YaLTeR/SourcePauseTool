@@ -68,6 +68,11 @@ namespace scripts
 
 		frameBulkInfo.AddPlusMinusCmd("y_spt_duckspam", frameBulkInfo.ContainsFlag(DUCKSPAM, "d"));
 
+		if (frameBulkInfo.ContainsFlag(JUMPBUG, "b"))
+			frameBulkInfo.AddCommand("tas_strafe_autojb 1");
+		else
+			frameBulkInfo.AddCommand("tas_strafe_autojb 0");
+
 		// todo
 #pragma warning(push)
 #pragma warning(disable : 4390)
@@ -75,8 +80,7 @@ namespace scripts
 			;
 		if (frameBulkInfo.ContainsFlag(LGAGST, "l"))
 			;
-		if (frameBulkInfo.ContainsFlag(JUMPBUG, "b"))
-			;
+
 		if (frameBulkInfo.ContainsFlag(DUCK_BEFORE_COLLISION, "c"))
 			;
 		if (frameBulkInfo.ContainsFlag(DUCK_BEFORE_GROUND, "g"))

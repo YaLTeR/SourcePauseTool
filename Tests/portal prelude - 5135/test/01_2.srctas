@@ -1,7 +1,7 @@
 demo 01_2
 save 01_1
 playspeed 16
-settings tas_strafe_hull_is_line 1
+settings tas_strafe_hull_is_line 1; cl_mouseenable 0
 
 vars
 var strafe_yaw -0.375
@@ -36,4 +36,4 @@ s01-j-----|------|------|0|-|25|
 ----------|------|------|-4|0|725|
 ----------|------|------|-|-|0|
 ----------|------|------|-|-|100|
-----------|------|------|-|-|0|stop;pause
+----------|------|------|-|-|0|cl_mouseenable 1
