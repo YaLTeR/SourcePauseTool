@@ -211,6 +211,7 @@ protected:
 	bool duckspam;
 	angset_command_t setPitch, setYaw;
 	bool forceJump;
+	bool forceUnduck;
 	bool cantJumpNextTime;
 
 	void OnFrame();

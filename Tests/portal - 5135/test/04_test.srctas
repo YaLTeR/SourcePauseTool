@@ -1,6 +1,6 @@
 demo 04_test                               
 save 04_test             
-settings tas_strafe_vectorial 1; tas_strafe_hull_is_line 1
+settings tas_strafe_vectorial 1; tas_strafe_hull_is_line 1; cl_mouseenable 0
 playspeed 1a
 playspeed 0.01 3908123098213
 playspeed 0.5 asdasdasdfgaqwezcxzxcsaq
@@ -284,4 +284,4 @@ s01-------|------|-d----|0|-|60|
 
 s01-------|------|------|180|-|30|
 s01-j-----|------|------|180|-|100|
-----------|------|------|0|-|1|disconnect
+----------|------|------|0|-|1|disconnect; cl_mouseenable 1

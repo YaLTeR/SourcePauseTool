@@ -1,6 +1,6 @@
 demo 04_test
 save 04_test
-settings tas_strafe_vectorial 1; tas_strafe_use_tracing 0
+settings tas_strafe_vectorial 1; tas_strafe_use_tracing 0; cl_mouseenable 0
 playspeed 16
 
 vars
@@ -274,4 +274,4 @@ s01-------|------|-d----|0|-|27|
 s01-j-----|------|-d----|0|-|1|_y_spt_setyaw 0
 s01-------|------|-d----|0|-|60|
 ----------|------|------|0|-|1|
-----------|------|------|0|-|1|disconnect
+----------|------|------|0|-|1|disconnect; cl_mouseenable 1

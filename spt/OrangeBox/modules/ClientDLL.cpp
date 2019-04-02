@@ -837,6 +837,12 @@ int __fastcall ClientDLL::HOOKED_GetButtonBits_Func(void* thisptr, int edx, int 
 			forceJump = false;
 			rv |= (1 << 1); // IN_JUMP
 		}
+
+		if (forceUnduck)
+		{
+			rv ^= (1 << 2); // IN_DUCK
+			forceUnduck = false;
+		}
 	}
 
 	return rv;
@@ -997,6 +1003,11 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 		// This bool is set if strafing should occur
 		if (out.Processed)
 		{
+			if (out.Jump && !pl.Ducking && pl.DuckPressed && tas_strafe_autojb.GetBool())
+			{
+				forceUnduck = true;
+			}
+
 			forceJump = out.Jump;
 			*reinterpret_cast<float*>(pCmd + offForwardmove) = out.ForwardSpeed;
 			*reinterpret_cast<float*>(pCmd + offSidemove) = out.SideSpeed;
