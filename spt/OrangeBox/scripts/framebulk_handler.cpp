@@ -73,14 +73,13 @@ namespace scripts
 		else
 			frameBulkInfo.AddCommand("tas_strafe_autojb 0");
 
-		// todo
+			// todo
 #pragma warning(push)
 #pragma warning(disable : 4390)
 		if (frameBulkInfo.ContainsFlag(USE_SPAM, "u"))
 			;
 		if (frameBulkInfo.ContainsFlag(LGAGST, "l"))
 			;
-
 		if (frameBulkInfo.ContainsFlag(DUCK_BEFORE_COLLISION, "c"))
 			;
 		if (frameBulkInfo.ContainsFlag(DUCK_BEFORE_GROUND, "g"))
