@@ -11,6 +11,7 @@ namespace scripts
 	const std::string FIELD1_FILLED = "flrbud";
 	const std::string FIELD2_FILLED = "jdu12rws";
 	const std::string EMPTY_FIELD = "-";
+	const char NOOP = '<';
 	const char WILDCARD = '*';
 	const char DELIMITER = '|';
 
@@ -48,6 +49,9 @@ namespace scripts
 
 	void Field1(FrameBulkInfo& frameBulkInfo)
 	{
+		if (frameBulkInfo.IsSectionNoop(0))
+			return;
+
 		if (frameBulkInfo.ContainsFlag(STRAFE, "s"))
 		{
 			frameBulkInfo.AddCommand("tas_strafe 1");
@@ -89,6 +93,9 @@ namespace scripts
 
 	void Field2(FrameBulkInfo& frameBulkInfo)
 	{
+		if (frameBulkInfo.IsSectionNoop(1))
+			return;
+
 		frameBulkInfo.AddPlusMinusCmd("forward", frameBulkInfo.ContainsFlag(FORWARD, "f"));
 		frameBulkInfo.AddPlusMinusCmd("moveleft", frameBulkInfo.ContainsFlag(LEFT, "l"));
 		frameBulkInfo.AddPlusMinusCmd("moveright", frameBulkInfo.ContainsFlag(RIGHT, "r"));
@@ -99,6 +106,9 @@ namespace scripts
 
 	void Field3(FrameBulkInfo& frameBulkInfo)
 	{
+		if (frameBulkInfo.IsSectionNoop(2))
+			return;
+
 		frameBulkInfo.AddPlusMinusCmd("jump",
 		                              frameBulkInfo.ContainsFlag(JUMP, "j")
 		                                  || frameBulkInfo.ContainsFlag(AUTOJUMP, "j"));
@@ -207,6 +217,28 @@ namespace scripts
 					dataMap[std::make_pair(section, i)] = line[i];
 			}
 
+			bool isNoop = true;
+			bool allNotNoop = true;
+
+			for (size_t i = 0; i < line.size(); ++i)
+			{
+				if (line[i] != NOOP)
+				{
+					isNoop = false;
+				}
+				else
+				{
+					allNotNoop = false;
+				}
+			}
+
+			if (isNoop)
+			{
+				noopSections.insert(section);
+			}
+			else if (!allNotNoop)
+				throw std::exception("Some characters in a noop block were not noop!");
+
 			++section;
 		} while (stream.good());
 	}
@@ -252,7 +284,7 @@ namespace scripts
 			if (fields[i] != WILDCARD && frameBulkInfo.dataMap.find(key) != frameBulkInfo.dataMap.end())
 			{
 				auto& value = frameBulkInfo[key];
-				if (value[0] != fields[i] && value[0] != '-')
+				if (value[0] != fields[i] && value[0] != '-' && value[0] != NOOP)
 				{
 					std::ostringstream os;
 					os << "Expected " << fields[i] << ", got " << value << " in field: " << fields;
@@ -264,5 +296,9 @@ namespace scripts
 	bool FrameBulkInfo::ContainsFlag(const std::pair<int, int>& key, const std::string& flag)
 	{
 		return dataMap.find(key) != dataMap.end() && this->operator[](key) == flag;
+	}
+	bool FrameBulkInfo::IsSectionNoop(int section)
+	{
+		return noopSections.find(section) != noopSections.end();
 	}
 } // namespace scripts
