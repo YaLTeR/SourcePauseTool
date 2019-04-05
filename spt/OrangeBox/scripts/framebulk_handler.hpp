@@ -30,10 +30,12 @@ namespace scripts
 		void AddPlusMinusCmd(const std::string& command, bool set);
 		void ValidateFieldFlags(FrameBulkInfo& frameBulkInfo, const std::string& fields, int index);
 		bool ContainsFlag(const std::pair<int, int>& key, const std::string& flag);
+		bool IsSectionNoop(int field);
 		FrameBulkOutput data;
 
 	private:
 		std::map<std::pair<int, int>, std::string> dataMap;
+		std::set<int> noopSections;
 	};
 
 	FrameBulkOutput HandleFrameBulk(FrameBulkInfo& frameBulkInfo);

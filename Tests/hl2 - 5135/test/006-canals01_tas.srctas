@@ -1,0 +1,12 @@
+save 005-canals01-0,39s
+settings y_spt_autojump 1; exec tashelp; tas_strafe_use_tracing 0; cl_mouseenable 0
+playspeed 16
+vars
+frames
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|0|_y_spt_pitchspeed .5;_y_spt_yawspeed 5.2
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|34|
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|0|stopspin;-use
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|21|
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|0|tuse;_y_spt_setangles -8 60
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|2|
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|0|pause;cl_mouseenable 1

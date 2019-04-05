@@ -1,0 +1,21 @@
+save 001-town_01
+settings y_spt_autojump 1; exec tashelp; tas_strafe_use_tracing 0; cl_mouseenable 0
+playspeed 16
+vars
+frames
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|0|_y_spt_setangles 45 -45;_y_spt_pitchspeed -0.5
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|2|
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|0|+attack2;backstrafe;tas_strafe 1;tas_strafe_yaw 155
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|15|
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|0|tas_strafe_yaw 90;tas_strafe_type 1
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|0|+moveleft;+forward
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|2|
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|0|-moveleft;-forward
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|31|
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|0|tas_strafe_yaw 180;tas_strafe_type 0
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|5|
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|0|+jump
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|5|
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|0|-jump;tas_strafe 0;_y_spt_pitchspeed 0;_y_spt_yawspeed 3
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|55|
+<<<<<<<<<<|<<<<<<|<<<<<<<<|-|-|0|pause;cl_mouseenable 1
