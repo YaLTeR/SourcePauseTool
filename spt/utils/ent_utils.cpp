@@ -1,9 +1,13 @@
 #include "stdafx.h"
 
+#include "ent_utils.hpp"
+
 #include <limits>
 #include <regex>
 #include <vector>
+
 #include "..\OrangeBox\spt-serverplugin.hpp"
+
 #include "..\OrangeBox\modules.hpp"
 #include "..\OrangeBox\modules\ClientDLL.hpp"
 #include "..\OrangeBox\modules\ServerDLL.hpp"
@@ -11,7 +15,6 @@
 #include "..\strafestuff.hpp"
 #include "SPTLib\sptlib.hpp"
 #include "client_class.h"
-#include "ent_utils.hpp"
 #include "property_getter.hpp"
 #include "string_parsing.hpp"
 #undef max
@@ -137,9 +140,11 @@ namespace utils
 			v = *reinterpret_cast<Vector*>(value);
 			sprintf_s(buffer, size, "(%.3f, %.3f, %.3f)", v.x, v.y, v.z);
 			break;
+#ifdef SSDK2007
 		case DPT_String:
 			sprintf_s(buffer, size, "%s", *reinterpret_cast<const char**>(value));
 			break;
+#endif
 		default:
 			sprintf_s(buffer, size, "unable to parse");
 			break;
