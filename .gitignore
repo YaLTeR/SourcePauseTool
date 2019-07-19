@@ -2,6 +2,8 @@
 /Tests/output.txt
 
 # Build files
+Debug/
+Debug P2/
 Debug OE/
 Debug 2013/
 Release OE/
