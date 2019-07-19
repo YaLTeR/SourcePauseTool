@@ -1,29 +1,29 @@
+#include "spt-serverplugin.hpp"
+
+#include <SPTLib\Hooks.hpp>
 #include <chrono>
 #include <functional>
 #include <sstream>
 #include <time.h>
 
-#include <SPTLib\Hooks.hpp>
-#include "spt-serverplugin.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "..\utils\ent_utils.hpp"
 #include "..\utils\string_parsing.hpp"
+#include "cdll_int.h"
 #include "custom_interfaces.hpp"
 #include "cvars.hpp"
-#include "modules.hpp"
-#include "scripts\srctas_reader.hpp"
-#include "scripts\tests\test.hpp"
-#include "vstdlib\random.h"
-
-#include "cdll_int.h"
 #include "eiface.h"
 #include "engine\iserverplugin.h"
 #include "icliententitylist.h"
+#include "modules.hpp"
+#include "scripts\srctas_reader.hpp"
+#include "scripts\tests\test.hpp"
 #include "tier2\tier2.h"
 #include "tier3\tier3.h"
 #include "vgui\iinput.h"
 #include "vgui\isystem.h"
 #include "vgui\ivgui.h"
+#include "vstdlib\random.h"
 
 #if SSDK2007
 #include "mathlib\vmatrix.h"
@@ -864,8 +864,8 @@ CON_COMMAND(tas_script_result_stop, "Signals a stop in a variable search.")
 	scripts::g_TASReader.SearchResult(scripts::SearchResult::NoSearch);
 }
 
-CON_COMMAND(_y_spt_findangle,
-            "Finds the yaw/pitch angle required to look at the given position from player's current position.")
+CON_COMMAND(_y_spt_setangle,
+            "Sets the yaw/pitch angle required to look at the given position from player's current position.")
 {
 #if defined(OE)
 	if (!engine)
@@ -875,7 +875,7 @@ CON_COMMAND(_y_spt_findangle,
 #endif
 	Vector target;
 
-	if (args.ArgC() > 3)
+	if (args.ArgC() > 3 && utils::serverActive())
 	{
 		target.x = atof(args.Arg(1));
 		target.y = atof(args.Arg(2));
@@ -885,6 +885,8 @@ CON_COMMAND(_y_spt_findangle,
 		Vector diff = (target - player_origin);
 		QAngle angles;
 		VectorAngles(diff, angles);
+		clientDLL.SetPitch(angles[PITCH]);
+		clientDLL.SetYaw(angles[YAW]);
 	}
 }
 

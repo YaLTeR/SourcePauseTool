@@ -1,5 +1,7 @@
 #include "stdafx.h"
+
 #include "framebulk_handler.hpp"
+
 #include "..\..\utils\string_parsing.hpp"
 
 namespace scripts
@@ -83,7 +85,10 @@ namespace scripts
 		if (frameBulkInfo.ContainsFlag(USE_SPAM, "u"))
 			;
 		if (frameBulkInfo.ContainsFlag(LGAGST, "l"))
-			;
+			frameBulkInfo.AddCommand("tas_strafe_lgagst 1");
+		else
+			frameBulkInfo.AddCommand("tas_strafe_lgagst 0");
+
 		if (frameBulkInfo.ContainsFlag(DUCK_BEFORE_COLLISION, "c"))
 			;
 		if (frameBulkInfo.ContainsFlag(DUCK_BEFORE_GROUND, "g"))

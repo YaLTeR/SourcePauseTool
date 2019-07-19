@@ -1,14 +1,16 @@
 #include "stdafx.h"
-#include "..\cvars.hpp"
-#include "..\modules.hpp"
+
+#include "EngineDLL.hpp"
 
 #include <SPTLib\hooks.hpp>
 #include <SPTLib\memutils.hpp>
+
 #include "..\..\sptlib-wrapper.hpp"
 #include "..\..\utils\ent_utils.hpp"
+#include "..\cvars.hpp"
+#include "..\modules.hpp"
 #include "..\overlay\overlay-renderer.hpp"
 #include "..\patterns.hpp"
-#include "EngineDLL.hpp"
 #include "vguimatsurfaceDLL.hpp"
 
 using std::size_t;
@@ -48,6 +50,17 @@ void __cdecl EngineDLL::HOOKED__Host_RunFrame_Server(int bFinalTick)
 {
 	TRACE_ENTER();
 	return engineDLL.HOOKED__Host_RunFrame_Server_Func(bFinalTick);
+}
+
+void __cdecl EngineDLL::HOOKED_Host_AccumulateTime(float dt)
+{
+	if (tas_pause.GetBool())
+	{
+		*engineDLL.pHost_Realtime += dt;
+		*engineDLL.pHost_Frametime = 0;
+	}
+	else
+		engineDLL.ORIG_Host_AccumulateTime(dt);
 }
 
 void __cdecl EngineDLL::HOOKED_Cbuf_Execute()
@@ -132,6 +145,8 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	DEF_FUTURE(VGui_Paint);
 	DEF_FUTURE(SpawnPlayer);
 	DEF_FUTURE(CEngineTrace__PointOutsideWorld);
+	DEF_FUTURE(_Host_RunFrame);
+	DEF_FUTURE(Host_AccumulateTime);
 
 	GET_HOOKEDFUTURE(SV_ActivateServer);
 	GET_HOOKEDFUTURE(FinishRestore);
@@ -140,6 +155,8 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	GET_HOOKEDFUTURE(VGui_Paint);
 	GET_FUTURE(SpawnPlayer);
 	GET_FUTURE(CEngineTrace__PointOutsideWorld);
+	GET_FUTURE(_Host_RunFrame);
+	GET_HOOKEDFUTURE(Host_AccumulateTime);
 
 	// m_bLoadgame and pGameServer (&sv)
 	if (ORIG_SpawnPlayer)
@@ -289,6 +306,16 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	if (!ORIG_VGui_Paint)
 	{
 		Warning("Speedrun hud is not available.\n");
+	}
+
+	if (ORIG__Host_RunFrame)
+	{
+		pHost_Frametime = *reinterpret_cast<float**>((uintptr_t)ORIG__Host_RunFrame + 227);
+	}
+
+	if (ORIG_Host_AccumulateTime)
+	{
+		pHost_Realtime = *reinterpret_cast<float**>((uintptr_t)ORIG_Host_AccumulateTime + 5);
 	}
 
 	patternContainer.Hook();

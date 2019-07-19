@@ -1,7 +1,10 @@
 #include "stdafx.h"
+
 #include "ClientDLL.hpp"
+
 #include <SPTLib\hooks.hpp>
 #include <SPTLib\memutils.hpp>
+
 #include "..\..\sptlib-wrapper.hpp"
 #include "..\..\strafestuff.hpp"
 #include "..\cvars.hpp"
@@ -947,20 +950,11 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 			{
 				if (tas_strafe_lgagst.GetBool())
 				{
-					LgagstJump(pl,
-					           vars,
-					           curState,
-					           GetFlagsDucking(),
-					           type,
-					           dir,
-					           tas_strafe_yaw.GetFloat(),
-					           va[YAW] * M_DEG2RAD,
-					           out,
-					           btns,
-					           false);
-					if (out.Jump)
+					bool jump = LgagstJump(pl, vars);
+					if (jump)
 					{
 						vars.OnGround = false;
+						out.Jump = true;
 						jumped = true;
 					}
 				}

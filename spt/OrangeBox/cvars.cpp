@@ -1,4 +1,5 @@
 #include "cvars.hpp"
+
 #include "convar.h"
 
 ConVar y_spt_pause("y_spt_pause", "1", FCVAR_ARCHIVE);
@@ -101,6 +102,7 @@ ConVar tas_force_onground(
     FCVAR_TAS_RESET,
     "If enabled, strafing assumes the player is on ground regardless of what the prediction indicates. Useful for save glitch in Portal where the prediction always reports the player being in the air.\n");
 
+ConVar tas_pause("tas_pause", "0", 0, "Does a pause where you can look around when the game is paused.\n");
 ConVar tas_log("tas_log", "0", 0, "If enabled, dumps a whole bunch of different stuff into the console.\n");
 ConVar tas_strafe_lgagst(
     "tas_strafe_lgagst",
@@ -131,6 +133,10 @@ ConVar tas_script_printvars("tas_script_printvars",
                             0,
                             "Prints variable information when running .srctas scripts.\n");
 ConVar tas_script_savestates("tas_script_savestates", "1", 0, "Enables/disables savestates in .srctas scripts.\n");
+ConVar tas_script_onsuccess("tas_script_onsuccess",
+	"",
+	0,
+	"Commands to be executed when a search concludes.\n");
 ConVar _y_spt_autojump_ensure_legit("_y_spt_autojump_ensure_legit", "1", FCVAR_ARCHIVE);
 ConVar _y_spt_afterframes_reset_on_server_activate("_y_spt_afterframes_reset_on_server_activate", "1", FCVAR_ARCHIVE);
 ConVar _y_spt_anglesetspeed(

@@ -2,6 +2,7 @@
 #pragma once
 
 #include <SPTLib\IHookableNameFilter.hpp>
+
 #include "..\..\utils\patterncontainer.hpp"
 
 #ifdef OE
@@ -23,6 +24,7 @@ typedef void(__cdecl* _Cbuf_Execute)();
 typedef void(__fastcall* _VGui_Paint)(void* thisptr, int edx, int mode);
 typedef int(__fastcall* DemoPlayer__Func)(void* thisptr);
 typedef bool(__fastcall* _CEngineTrace__PointOutsideWorld)(void* thisptr, int edx, const Vector& pt);
+typedef void(__cdecl* _Host_AccumulateTime)(float dt);
 
 class EngineDLL : public IHookableNameFilter
 {
@@ -42,6 +44,7 @@ public:
 	static void __cdecl HOOKED__Host_RunFrame(float time);
 	static void __cdecl HOOKED__Host_RunFrame_Input(float accumulated_extra_samples, int bFinalTick);
 	static void __cdecl HOOKED__Host_RunFrame_Server(int bFinalTick);
+	static void __cdecl HOOKED_Host_AccumulateTime(float dt);
 	static void __cdecl HOOKED_Cbuf_Execute();
 	static void __fastcall HOOKED_VGui_Paint(void* thisptr, int edx, int mode);
 	bool __cdecl HOOKED_SV_ActivateServer_Func();
@@ -72,12 +75,14 @@ protected:
 	__Host_RunFrame_Server ORIG__Host_RunFrame_Server;
 	_Cbuf_Execute ORIG_Cbuf_Execute;
 	_VGui_Paint ORIG_VGui_Paint;
+	_Host_AccumulateTime ORIG_Host_AccumulateTime;
 
 	void* pGameServer;
 	bool* pM_bLoadgame;
 	bool shouldPreventNextUnpause;
 	float* pIntervalPerTick;
 	float* pHost_Frametime;
+	float* pHost_Realtime;
 	int* pM_State;
 	int* pM_nSignonState;
 	void** pDemoplayer;

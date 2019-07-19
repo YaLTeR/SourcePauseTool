@@ -30,6 +30,7 @@ extern ConVar tas_reset_surface_friction;
 
 extern ConVar tas_force_onground;
 
+extern ConVar tas_pause;
 extern ConVar tas_log;
 extern ConVar tas_strafe_lgagst;
 extern ConVar tas_strafe_lgagst_minspeed;
@@ -42,6 +43,7 @@ extern ConVar tas_strafe_autojb;
 
 extern ConVar tas_script_printvars;
 extern ConVar tas_script_savestates;
+extern ConVar tas_script_onsuccess;
 
 extern ConVar _y_spt_autojump_ensure_legit;
 extern ConVar _y_spt_afterframes_reset_on_server_activate;

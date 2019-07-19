@@ -1,6 +1,9 @@
 #include "stdafx.h"
 
+#include "srctas_reader.hpp"
+
 #include "..\spt-serverplugin.hpp"
+
 #include "..\..\sptlib-wrapper.hpp"
 #include "..\..\utils\math.hpp"
 #include "..\..\utils\string_parsing.hpp"
@@ -9,7 +12,6 @@
 #include "..\modules\ClientDLL.hpp"
 #include "..\modules\EngineDLL.hpp"
 #include "framebulk_handler.hpp"
-#include "srctas_reader.hpp"
 
 namespace scripts
 {
@@ -141,6 +143,10 @@ namespace scripts
 
 		if (allTrue)
 		{
+			auto onsuccessCmd = tas_script_onsuccess.GetString();
+			if (onsuccessCmd && *onsuccessCmd)
+				EngineConCmd(onsuccessCmd);
+
 			iterationFinished = true;
 			SearchResult(SearchResult::Success);
 		}
@@ -432,6 +438,7 @@ namespace scripts
 		propertyHandlers["velabs"] = &SourceTASReader::HandleAbsVel;
 		propertyHandlers["alive"] = &SourceTASReader::HandleAliveCondition;
 		propertyHandlers["jb"] = &SourceTASReader::HandleJBCondition;
+		propertyHandlers["changelevel"] = &SourceTASReader::HandleCLCondition;
 	}
 
 	void SourceTASReader::HandleSave(const std::string& value)
@@ -495,6 +502,11 @@ namespace scripts
 	void SourceTASReader::HandleAliveCondition(const std::string& value)
 	{
 		conditions.push_back(std::unique_ptr<Condition>(new AliveCondition()));
+	}
+
+	void SourceTASReader::HandleCLCondition(const std::string& value)
+	{
+		conditions.push_back(std::unique_ptr<Condition>(new LoadCondition()));
 	}
 
 	void SourceTASReader::HandlePosVel(const std::string& value, Axis axis, bool isPos)
