@@ -63,9 +63,6 @@ extern ConVar y_spt_hud_vars;
 extern ConVar y_spt_hud_ag_sg_tester;
 extern ConVar y_spt_hud_ent_info;
 extern ConVar y_spt_hud_left;
-extern ConVar y_spt_hud_hops;
-extern ConVar y_spt_hud_hops_x;
-extern ConVar y_spt_hud_hops_y;
 extern ConVar y_spt_hud_oob;
 
 extern ConVar _y_spt_overlay;
