@@ -634,6 +634,8 @@ Strafe::PlayerData ClientDLL::GetPlayerData()
 
 Vector ClientDLL::GetPlayerVelocity()
 {
+	if (!ORIG_GetLocalPlayer)
+		return Vector();
 	auto player = ORIG_GetLocalPlayer();
 	ORIG_CalcAbsoluteVelocity(player, 0);
 	float* vel = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offAbsVelocity);
@@ -661,16 +663,23 @@ Vector ClientDLL::GetPlayerEyePos()
 
 int ClientDLL::GetPlayerFlags()
 {
+	if (!ORIG_GetLocalPlayer)
+		return 0;
 	return (*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(ORIG_GetLocalPlayer()) + offFlags));
 }
 
 bool ClientDLL::GetFlagsDucking()
 {
+	if (!ORIG_GetLocalPlayer)
+		return false;
 	return (*reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(ORIG_GetLocalPlayer()) + offFlags)) & FL_DUCKING;
 }
 
 double ClientDLL::GetDuckJumpTime()
 {
+	if (!ORIG_GetLocalPlayer)
+		return 0;
+
 	auto player = ORIG_GetLocalPlayer();
 	return *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offDuckJumpTime);
 }

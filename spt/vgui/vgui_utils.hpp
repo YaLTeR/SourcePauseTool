@@ -6,9 +6,13 @@
 struct AudioState_t;
 #endif
 
-#include "inputsystem\buttoncode.h"
-
+#ifdef BMS
+class IClientMode;
+#else
 #include "iclientmode.h"
+#endif
+
+#include "inputsystem\buttoncode.h"
 #include "vgui\ischeme.h"
 #include "vgui_controls\controls.h"
 
