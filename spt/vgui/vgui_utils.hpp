@@ -6,9 +6,9 @@
 struct AudioState_t;
 #endif
 
-#include "inputsystem\buttoncode.h"
+class IClientMode;
 
-#include "iclientmode.h"
+#include "inputsystem\buttoncode.h"
 #include "vgui\ischeme.h"
 #include "vgui_controls\controls.h"
 
