@@ -1,29 +1,29 @@
-#include "spt-serverplugin.hpp"
-
-#include <SPTLib\Hooks.hpp>
 #include <chrono>
 #include <functional>
 #include <sstream>
 #include <time.h>
 
+#include <SPTLib\Hooks.hpp>
+#include "spt-serverplugin.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "..\utils\ent_utils.hpp"
 #include "..\utils\string_parsing.hpp"
-#include "cdll_int.h"
 #include "custom_interfaces.hpp"
 #include "cvars.hpp"
-#include "eiface.h"
-#include "engine\iserverplugin.h"
-#include "icliententitylist.h"
 #include "modules.hpp"
 #include "scripts\srctas_reader.hpp"
 #include "scripts\tests\test.hpp"
+#include "vstdlib\random.h"
+
+#include "cdll_int.h"
+#include "eiface.h"
+#include "engine\iserverplugin.h"
+#include "icliententitylist.h"
 #include "tier2\tier2.h"
 #include "tier3\tier3.h"
 #include "vgui\iinput.h"
 #include "vgui\isystem.h"
 #include "vgui\ivgui.h"
-#include "vstdlib\random.h"
 
 #if SSDK2007
 #include "mathlib\vmatrix.h"
@@ -35,7 +35,6 @@
 #include "overlay\overlay-renderer.hpp"
 #include "overlay\overlays.hpp"
 #include "tier0\memdbgoff.h" // YaLTeR - switch off the memory debugging.
-
 using namespace std::literals;
 
 // useful helper func
