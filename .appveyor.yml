@@ -1,0 +1,52 @@
+version: '{build}'
+
+skip_commits:
+  files:
+    - README.md
+    - .travis.yml
+
+os: Visual Studio 2017
+
+environment:
+  matrix:
+#    - Configuration: Debug
+#      SDK: orangebox
+#    - Configuration: Debug BMS
+#      SDK: bms
+#    - Configuration: Debug 2013
+#      SDK: sdk2013
+#    - Configuration: Debug OE
+#      SDK: episode1
+#    - Configuration: Debug P2
+#      SDK: portal2
+    - Configuration: Release
+      SDK: orangebox
+    - Configuration: Release BMS
+      SDK: bms
+    - Configuration: Release 2013
+      SDK: sdk2013
+    - Configuration: Release OE
+      SDK: episode1
+    - Configuration: Release P2
+      SDK: portal2
+
+install: |
+  git submodule update --init --recursive
+  cd ..
+  git clone --depth 1 -b %SDK% https://github.com/alliedmodders/hl2sdk.git
+  mkdir hl2sdk\utils\SourcePauseTool
+  xcopy SourcePauseTool hl2sdk\utils\SourcePauseTool /EH
+  cd hl2sdk\utils\SourcePauseTool
+
+platform: Win32
+
+build:
+  parallel: true
+  project: ..\hl2sdk\utils\SourcePauseTool\spt.sln
+
+after_build: move "%Configuration%\spt*.dll" %APPVEYOR_BUILD_FOLDER%
+
+test: off
+
+artifacts:
+  - path: spt*.dll
