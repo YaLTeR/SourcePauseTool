@@ -50,7 +50,7 @@ You will need Visual Studio 2017 or later, and [git](https://git-scm.com).
 
    If Visual Studio asks to retarget projects, press OK.
 
-   Once Visual Studio is open, right click `libMinHook`, click `Properties`, change `Platform Toolset` to the correct one, and press OK.
+   Once Visual Studio is open, right click `libMinHook`, click `Properties`, change `Platform Toolset` to the one corresponding to your Visual Studio version, and press OK.
 
 4. Choose the build configuration corresponding to the SDK you cloned:
     * Source SDK 2007 (Source Unpack/New Engine/Orange Box) - `Release`
