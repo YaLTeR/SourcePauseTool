@@ -37,7 +37,7 @@ You will need Visual Studio 2017 or later, and [git](https://git-scm.com).
 * `sdk2013` - Source SDK 2013 (SteamPipe)
 * `episode1` - Source SDK 2006 (Old Engine)
 * `portal2` - Portal 2
-2.
+2. Enter the following into cmd:
 ```
 git clone --recurse-submodules https://github.com/YaLTeR/SourcePauseTool.git hl2sdk\utils\SourcePauseTool
 
