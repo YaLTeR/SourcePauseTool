@@ -3,6 +3,7 @@ version: '{build}'
 skip_commits:
   files:
     - README.md
+    - .azure-pipelines.yml
     - .travis.yml
 
 os: Visual Studio 2017
@@ -38,13 +39,11 @@ install: |
   xcopy SourcePauseTool hl2sdk\utils\SourcePauseTool /EH
   cd hl2sdk\utils\SourcePauseTool
 
-platform: Win32
-
 build:
   parallel: true
   project: ..\hl2sdk\utils\SourcePauseTool\spt.sln
 
-after_build: move "%Configuration%\spt*.dll" %APPVEYOR_BUILD_FOLDER%
+on_success: move "%Configuration%\spt*.dll" %APPVEYOR_BUILD_FOLDER%
 
 test: off
 
