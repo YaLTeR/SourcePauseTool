@@ -27,7 +27,7 @@ A plugin for all your pausing needs.
     1. Launch the game.
     2. Go to `Options > Keyboard > Advanced`, check `Enable developer console`, and press OK.
     3. Press the tilde key (~) and enter `plugin_load spt` into the developer console. 
-      * To automatically load SourcePauseTool add `plugin_load spt` to `cfg/autoexec.cfg`.
+        * To automatically load SourcePauseTool add `plugin_load spt` to `cfg/autoexec.cfg`.
 
 ## Building
 You will need Visual Studio 2017 or later, and [git](https://git-scm.com).
@@ -40,17 +40,17 @@ You will need Visual Studio 2017 or later, and [git](https://git-scm.com).
     * Portal 2 - `portal2`
 
 2. Enter the following into cmd:
-```
-git clone --recurse-submodules https://github.com/YaLTeR/SourcePauseTool.git hl2sdk\utils\SourcePauseTool
+    ```
+    git clone --recurse-submodules https://github.com/YaLTeR/SourcePauseTool.git hl2sdk\utils\SourcePauseTool
+    
+    hl2sdk\utils\SourcePauseTool\spt.sln
+    ```
 
-hl2sdk\utils\SourcePauseTool\spt.sln
-```
+3. If Windows asks which program to open `spt.sln` with, choose Visual Studio.
 
-3. *If Windows asks which program to open `spt.sln` with, choose Visual Studio.*
+    If Visual Studio asks to retarget projects press OK.
 
-    *If Visual Studio asks to retarget projects press OK.*
-
-    *Once Visual Studio is open, right click `libMinHook`, click `Properties`, change `Platform Toolset` to the correct one, and press OK.*
+    Once Visual Studio is open, right click `libMinHook`, click `Properties`, change `Platform Toolset` to the correct one, and press OK.
 
 4. Choose the build configuration corresponding to the SDK you cloned:
     * Source SDK 2007 (Source Unpack/New Engine/Orange Box) - `Release`
