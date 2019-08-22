@@ -35,6 +35,20 @@ namespace scripts
 		CommonExecuteScript(false);
 	}
 
+	void SourceTASReader::ExecuteScriptWithResume(const std::string& script, int resumeTicks)
+	{
+		char buffer[80];
+		freezeVariables = false;
+		fileName = script;
+		CommonExecuteScript(false);
+
+		clientDLL.AddIntoAfterframesQueue(afterframes_entry_t(0, "y_spt_cvar fps_max 0; mat_norendering 1"));
+		tickTime = engineDLL.GetTickrate();
+		snprintf(buffer, 80, "y_spt_cvar fps_max %.6f; mat_norendering 0", 1 / tickTime);
+		int resumeTick = GetCurrentScriptLength() - resumeTicks;
+		clientDLL.AddIntoAfterframesQueue(afterframes_entry_t(resumeTick, buffer));
+	}
+
 	void SourceTASReader::StartSearch(const std::string& script)
 	{
 		freezeVariables = false;

@@ -17,6 +17,7 @@ namespace scripts
 	public:
 		SourceTASReader();
 		void ExecuteScript(const std::string& script);
+		void ExecuteScriptWithResume(const std::string& script, int resumeTicks);
 		void StartSearch(const std::string& script);
 		void SearchResult(scripts::SearchResult result);
 		void OnAfterFrames();
