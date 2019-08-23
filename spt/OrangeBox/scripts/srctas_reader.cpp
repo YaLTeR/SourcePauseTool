@@ -1,6 +1,9 @@
 #include "stdafx.h"
 
+#include "srctas_reader.hpp"
+
 #include "..\spt-serverplugin.hpp"
+
 #include "..\..\sptlib-wrapper.hpp"
 #include "..\..\utils\math.hpp"
 #include "..\..\utils\string_parsing.hpp"
@@ -9,7 +12,6 @@
 #include "..\modules\ClientDLL.hpp"
 #include "..\modules\EngineDLL.hpp"
 #include "framebulk_handler.hpp"
-#include "srctas_reader.hpp"
 
 namespace scripts
 {
@@ -31,6 +33,20 @@ namespace scripts
 		freezeVariables = false;
 		fileName = script;
 		CommonExecuteScript(false);
+	}
+
+	void SourceTASReader::ExecuteScriptWithResume(const std::string& script, int resumeTicks)
+	{
+		char buffer[80];
+		freezeVariables = false;
+		fileName = script;
+		CommonExecuteScript(false);
+
+		clientDLL.AddIntoAfterframesQueue(afterframes_entry_t(0, "y_spt_cvar fps_max 0; mat_norendering 1"));
+		tickTime = engineDLL.GetTickrate();
+		snprintf(buffer, ARRAYSIZE(buffer), "y_spt_cvar fps_max %.6f; mat_norendering 0", 1 / tickTime);
+		int resumeTick = GetCurrentScriptLength() - resumeTicks;
+		clientDLL.AddIntoAfterframesQueue(afterframes_entry_t(resumeTick, buffer));
 	}
 
 	void SourceTASReader::StartSearch(const std::string& script)
@@ -141,6 +157,10 @@ namespace scripts
 
 		if (allTrue)
 		{
+			auto onsuccessCmd = tas_script_onsuccess.GetString();
+			if (onsuccessCmd && onsuccessCmd[0])
+				EngineConCmd(onsuccessCmd);
+
 			iterationFinished = true;
 			SearchResult(SearchResult::Success);
 		}
@@ -432,6 +452,7 @@ namespace scripts
 		propertyHandlers["velabs"] = &SourceTASReader::HandleAbsVel;
 		propertyHandlers["alive"] = &SourceTASReader::HandleAliveCondition;
 		propertyHandlers["jb"] = &SourceTASReader::HandleJBCondition;
+		propertyHandlers["changelevel"] = &SourceTASReader::HandleCLCondition;
 	}
 
 	void SourceTASReader::HandleSave(const std::string& value)
@@ -495,6 +516,11 @@ namespace scripts
 	void SourceTASReader::HandleAliveCondition(const std::string& value)
 	{
 		conditions.push_back(std::unique_ptr<Condition>(new AliveCondition()));
+	}
+
+	void SourceTASReader::HandleCLCondition(const std::string& value)
+	{
+		conditions.push_back(std::unique_ptr<Condition>(new LoadCondition()));
 	}
 
 	void SourceTASReader::HandlePosVel(const std::string& value, Axis axis, bool isPos)

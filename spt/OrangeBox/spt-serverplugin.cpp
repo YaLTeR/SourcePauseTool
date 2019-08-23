@@ -35,7 +35,6 @@
 #include "overlay\overlay-renderer.hpp"
 #include "overlay\overlays.hpp"
 #include "tier0\memdbgoff.h" // YaLTeR - switch off the memory debugging.
-
 using namespace std::literals;
 
 // useful helper func
@@ -819,7 +818,9 @@ CON_COMMAND(y_spt_timer_print, "Prints the current time of the SPT timer.")
 	Warning("Current time (in ticks): %u\n", serverDLL.GetTicksPassed());
 }
 
-CON_COMMAND(tas_script_load, "Loads and executes an .srctas script. Usage: tas_load_script [script]")
+CON_COMMAND(
+    tas_script_load,
+    "Loads and executes an .srctas script. If an extra ticks argument is given, the script is played back at maximal FPS and without rendering until that many ticks before the end of the script. Usage: tas_load_script [script] [ticks]")
 {
 #if defined(OE)
 	if (!engine)
@@ -828,8 +829,12 @@ CON_COMMAND(tas_script_load, "Loads and executes an .srctas script. Usage: tas_l
 	ArgsWrapper args(engine.get());
 #endif
 
-	if (args.ArgC() > 1)
+	if (args.ArgC() == 2)
 		scripts::g_TASReader.ExecuteScript(args.Arg(1));
+	else if (args.ArgC() == 3)
+	{
+		scripts::g_TASReader.ExecuteScriptWithResume(args.Arg(1), std::stoi(args.Arg(2)));
+	}
 	else
 		Msg("Loads and executes an .srctas script. Usage: tas_load_script [script]\n");
 }
@@ -864,8 +869,8 @@ CON_COMMAND(tas_script_result_stop, "Signals a stop in a variable search.")
 	scripts::g_TASReader.SearchResult(scripts::SearchResult::NoSearch);
 }
 
-CON_COMMAND(_y_spt_findangle,
-            "Finds the yaw/pitch angle required to look at the given position from player's current position.")
+CON_COMMAND(_y_spt_setangle,
+            "Sets the yaw/pitch angle required to look at the given position from player's current position.")
 {
 #if defined(OE)
 	if (!engine)
@@ -875,7 +880,7 @@ CON_COMMAND(_y_spt_findangle,
 #endif
 	Vector target;
 
-	if (args.ArgC() > 3)
+	if (args.ArgC() > 3 && utils::serverActive())
 	{
 		target.x = atof(args.Arg(1));
 		target.y = atof(args.Arg(2));
@@ -885,6 +890,8 @@ CON_COMMAND(_y_spt_findangle,
 		Vector diff = (target - player_origin);
 		QAngle angles;
 		VectorAngles(diff, angles);
+		clientDLL.SetPitch(angles[PITCH]);
+		clientDLL.SetYaw(angles[YAW]);
 	}
 }
 

@@ -98,7 +98,6 @@ namespace Strafe
 		// TODO: Check water. If we're under water, return here.
 		// Check ground.
 
-		auto type = PositionType::AIR;
 		if (player.Velocity[2] > 140.f)
 			return PositionType::AIR;
 
@@ -997,6 +996,8 @@ namespace Strafe
 				                          vel_yaw * M_DEG2RAD,
 				                          target_yaw * M_DEG2RAD)
 				          * M_RAD2DEG;
+			else if (type == StrafeType::DIRECTION)
+				out.Yaw = target_yaw;
 			break;
 		default:
 			strafed = false;
@@ -1037,49 +1038,19 @@ namespace Strafe
 		player.Velocity *= (newspeed / speed);
 	}
 
-	void LgagstJump(const PlayerData& player,
-	                const MovementVars& vars,
-	                const CurrentState& curState,
-	                bool ducking,
-	                StrafeType type,
-	                StrafeDir dir,
-	                double target_yaw,
-	                double vel_yaw,
-	                ProcessedFrame& out,
-	                const StrafeButtons& strafeButtons,
-	                bool useGivenButtons)
+	ConVar tas_strafe_lgagst_min("tas_strafe_lgagst_min", "150", FCVAR_TAS_RESET, "");
+	ConVar tas_strafe_lgagst_max("tas_strafe_lgagst_max", "270", FCVAR_TAS_RESET, "");
+
+	bool LgagstJump(PlayerData& player, const MovementVars& vars)
 	{
-		// Fix me
-		auto v = vars;
-		if (player.Velocity.Length2D() < curState.LgagstMinSpeed)
-			return;
-
-		auto ground = PlayerData(player);
-		Friction(ground, v.OnGround, vars);
-		auto out_temp = ProcessedFrame(out);
-		Strafe(ground,
-		       v,
-		       false,
-		       ducking,
-		       type,
-		       dir,
-		       target_yaw,
-		       vel_yaw,
-		       out_temp,
-		       strafeButtons,
-		       useGivenButtons);
-
-		auto air = PlayerData(player);
-		out_temp = ProcessedFrame(out);
-		out_temp.Jump = true;
-		v.OnGround = false;
-		Strafe(air, v, true, ducking, type, dir, target_yaw, vel_yaw, out_temp, strafeButtons, useGivenButtons);
-
-		auto l_gr = ground.Velocity.Length2D();
-		auto l_air = air.Velocity.Length2D();
-		if (l_air > l_gr)
+		double vel = player.Velocity.Length2D();
+		if (vars.OnGround && vel <= tas_strafe_lgagst_max.GetFloat() && vel >= tas_strafe_lgagst_min.GetFloat())
 		{
-			out.Jump = true;
+			return true;
+		}
+		else
+		{
+			return false;
 		}
 	}
 

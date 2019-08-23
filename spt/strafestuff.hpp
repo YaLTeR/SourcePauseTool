@@ -113,7 +113,8 @@ namespace Strafe
 	{
 		MAXACCEL = 0,
 		MAXANGLE = 1,
-		CAPPED = 2
+		CAPPED = 2,
+		DIRECTION = 3
 	};
 
 	enum class StrafeDir
@@ -231,15 +232,5 @@ namespace Strafe
 
 	void Friction(PlayerData& player, bool onground, const MovementVars& vars);
 
-	void LgagstJump(const PlayerData& player,
-	                const MovementVars& vars,
-	                const CurrentState& curState,
-	                bool ducking,
-	                StrafeType type,
-	                StrafeDir dir,
-	                double target_yaw,
-	                double vel_yaw,
-	                ProcessedFrame& out,
-	                const StrafeButtons& strafeButtons,
-	                bool useGivenButtons);
+	bool LgagstJump(PlayerData& player, const MovementVars& vars);
 } // namespace Strafe

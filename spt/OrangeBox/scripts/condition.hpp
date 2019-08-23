@@ -64,4 +64,12 @@ namespace scripts
 		bool IsTrue(int tick, int totalTicks) const override;
 		bool ShouldTerminate(int tick, int totalTicks) const override;
 	};
+
+	class LoadCondition : public Condition
+	{
+	public:
+		LoadCondition();
+		bool IsTrue(int tick, int totalTicks) const override;
+		bool ShouldTerminate(int tick, int totalTicks) const override;
+	};
 } // namespace scripts
