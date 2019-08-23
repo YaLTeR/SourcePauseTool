@@ -98,7 +98,6 @@ namespace Strafe
 		// TODO: Check water. If we're under water, return here.
 		// Check ground.
 
-		auto type = PositionType::AIR;
 		if (player.Velocity[2] > 140.f)
 			return PositionType::AIR;
 
@@ -1045,7 +1044,6 @@ namespace Strafe
 	bool LgagstJump(PlayerData& player, const MovementVars& vars)
 	{
 		double vel = player.Velocity.Length2D();
-		bool jump = false;
 		if (vars.OnGround && vel <= tas_strafe_lgagst_max.GetFloat() && vel >= tas_strafe_lgagst_min.GetFloat())
 		{
 			return true;

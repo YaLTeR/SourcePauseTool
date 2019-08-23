@@ -106,11 +106,14 @@ namespace scripts
 	{
 		return utils::serverActive() && utils::GetProperty<int>(0, "m_iHealth") <= 0;
 	}
+
 	LoadCondition::LoadCondition() {}
+
 	bool LoadCondition::IsTrue(int tick, int totalTicks) const
 	{
 		return !utils::serverActive();
 	}
+
 	bool LoadCondition::ShouldTerminate(int tick, int totalTicks) const
 	{
 		return false;

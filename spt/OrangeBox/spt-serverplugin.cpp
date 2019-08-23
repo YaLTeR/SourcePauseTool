@@ -818,7 +818,9 @@ CON_COMMAND(y_spt_timer_print, "Prints the current time of the SPT timer.")
 	Warning("Current time (in ticks): %u\n", serverDLL.GetTicksPassed());
 }
 
-CON_COMMAND(tas_script_load, "Loads and executes an .srctas script. Usage: tas_load_script [script] [resume normal playback this many ticks before the end]")
+CON_COMMAND(
+    tas_script_load,
+    "Loads and executes an .srctas script. If an extra ticks argument is given, the script is played back at maximal FPS and without rendering until that many ticks before the end of the script. Usage: tas_load_script [script] [ticks]")
 {
 #if defined(OE)
 	if (!engine)
@@ -829,7 +831,7 @@ CON_COMMAND(tas_script_load, "Loads and executes an .srctas script. Usage: tas_l
 
 	if (args.ArgC() == 2)
 		scripts::g_TASReader.ExecuteScript(args.Arg(1));
-	else if(args.ArgC() == 3)
+	else if (args.ArgC() == 3)
 	{
 		scripts::g_TASReader.ExecuteScriptWithResume(args.Arg(1), std::stoi(args.Arg(2)));
 	}

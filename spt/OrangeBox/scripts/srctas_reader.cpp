@@ -44,7 +44,7 @@ namespace scripts
 
 		clientDLL.AddIntoAfterframesQueue(afterframes_entry_t(0, "y_spt_cvar fps_max 0; mat_norendering 1"));
 		tickTime = engineDLL.GetTickrate();
-		snprintf(buffer, 80, "y_spt_cvar fps_max %.6f; mat_norendering 0", 1 / tickTime);
+		snprintf(buffer, ARRAYSIZE(buffer), "y_spt_cvar fps_max %.6f; mat_norendering 0", 1 / tickTime);
 		int resumeTick = GetCurrentScriptLength() - resumeTicks;
 		clientDLL.AddIntoAfterframesQueue(afterframes_entry_t(resumeTick, buffer));
 	}
@@ -158,7 +158,7 @@ namespace scripts
 		if (allTrue)
 		{
 			auto onsuccessCmd = tas_script_onsuccess.GetString();
-			if (onsuccessCmd && *onsuccessCmd)
+			if (onsuccessCmd && onsuccessCmd[0])
 				EngineConCmd(onsuccessCmd);
 
 			iterationFinished = true;
