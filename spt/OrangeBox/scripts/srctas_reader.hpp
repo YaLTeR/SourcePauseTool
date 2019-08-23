@@ -69,6 +69,8 @@ namespace scripts
 		void HandleJBCondition(const std::string& value);
 		void HandleAliveCondition(const std::string& value);
 		void HandleCLCondition(const std::string& value);
+		void HandleVelPitch(const std::string& value);
+		void HandleVelYaw(const std::string& value);
 
 		void HandleXPos(const std::string& value)
 		{
