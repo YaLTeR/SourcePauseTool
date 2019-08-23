@@ -32,6 +32,12 @@ namespace scripts
 		Abs
 	};
 
+	enum class AngleAxis
+	{
+		Pitch,
+		Yaw
+	};
+
 	class PosSpeedCondition : public Condition
 	{
 	public:
@@ -69,6 +75,18 @@ namespace scripts
 	{
 	public:
 		LoadCondition();
+		bool IsTrue(int tick, int totalTicks) const override;
+		bool ShouldTerminate(int tick, int totalTicks) const override;
+	};
+
+	class VelAngleCondition : public Condition
+	{
+		float low;
+		float high;
+		AngleAxis axis;
+
+	public:
+		VelAngleCondition(float low, float high, AngleAxis axis);
 		bool IsTrue(int tick, int totalTicks) const override;
 		bool ShouldTerminate(int tick, int totalTicks) const override;
 	};

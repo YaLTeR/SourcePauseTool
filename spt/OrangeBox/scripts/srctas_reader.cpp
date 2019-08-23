@@ -453,6 +453,8 @@ namespace scripts
 		propertyHandlers["alive"] = &SourceTASReader::HandleAliveCondition;
 		propertyHandlers["jb"] = &SourceTASReader::HandleJBCondition;
 		propertyHandlers["changelevel"] = &SourceTASReader::HandleCLCondition;
+		propertyHandlers["velyaw"] = &SourceTASReader::HandleVelYaw;
+		propertyHandlers["velpitch"] = &SourceTASReader::HandleVelPitch;
 	}
 
 	void SourceTASReader::HandleSave(const std::string& value)
@@ -521,6 +523,20 @@ namespace scripts
 	void SourceTASReader::HandleCLCondition(const std::string& value)
 	{
 		conditions.push_back(std::unique_ptr<Condition>(new LoadCondition()));
+	}
+
+	void SourceTASReader::HandleVelPitch(const std::string& value)
+	{
+		float low, high;
+		GetDoublet(value, low, high, '|');
+		conditions.push_back(std::unique_ptr<Condition>(new VelAngleCondition(low, high, AngleAxis::Pitch)));
+	}
+
+	void SourceTASReader::HandleVelYaw(const std::string& value)
+	{
+		float low, high;
+		GetDoublet(value, low, high, '|');
+		conditions.push_back(std::unique_ptr<Condition>(new VelAngleCondition(low, high, AngleAxis::Yaw)));
 	}
 
 	void SourceTASReader::HandlePosVel(const std::string& value, Axis axis, bool isPos)

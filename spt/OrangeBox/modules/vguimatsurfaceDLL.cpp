@@ -25,6 +25,7 @@
 ConVar y_spt_hud_hops("y_spt_hud_hops", "0", FCVAR_CHEAT, "When set to 1, displays the hop practice HUD.");
 ConVar y_spt_hud_hops_x("y_spt_hud_hops_x", "-85", FCVAR_CHEAT, "Hops HUD x offset");
 ConVar y_spt_hud_hops_y("y_spt_hud_hops_y", "100", FCVAR_CHEAT, "Hops HUD y offset");
+ConVar y_spt_hud_velocity_angles("y_spt_hud_velocity_angles", "0", FCVAR_CHEAT, "Display velocity Euler angles.");
 const int INDEX_MASK = MAX_EDICTS - 1;
 
 #define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::vguimatsurface::##name);
@@ -149,7 +150,8 @@ void VGui_MatSurfaceDLL::DrawHUD(vrect_t* screen)
 		    || y_spt_hud_movecollideflags.GetBool() || y_spt_hud_collisionflags.GetBool()
 		    || y_spt_hud_script_length.GetBool() || y_spt_hud_accel.GetBool() || y_spt_hud_vars.GetBool()
 		    || y_spt_hud_portal_bubble.GetBool() || y_spt_hud_ag_sg_tester.GetBool()
-		    || !whiteSpacesOnly(y_spt_hud_ent_info.GetString()) || y_spt_hud_oob.GetBool())
+		    || !whiteSpacesOnly(y_spt_hud_ent_info.GetString()) || y_spt_hud_oob.GetBool()
+		    || y_spt_hud_velocity_angles.GetBool())
 		{
 			DrawTopHUD(screen, scheme, surface);
 		}
@@ -382,6 +384,13 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t* screen, vgui::IScheme* scheme, IMat
 	{
 		DRAW_TRIPLEFLOAT(L"vel(xyz)", currentVel.x, currentVel.y, currentVel.z);
 		DRAW_FLOAT(L"vel(xy)", currentVel.Length2D());
+	}
+
+	if (y_spt_hud_velocity_angles.GetBool())
+	{
+		QAngle angles;
+		VectorAngles(currentVel, Vector(0, 0, 1), angles);
+		DRAW_TRIPLEFLOAT(L"vel(p/y/r)", angles.x, angles.y, angles.z);
 	}
 
 	if (y_spt_hud_accel.GetBool())

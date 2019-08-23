@@ -3,6 +3,7 @@
 #include "condition.hpp"
 
 #include "..\..\utils\ent_utils.hpp"
+#include "..\..\utils\math.hpp"
 #include "..\..\utils\property_getter.hpp"
 #include "..\modules.hpp"
 #include "..\modules\ClientDLL.hpp"
@@ -115,6 +116,32 @@ namespace scripts
 	}
 
 	bool LoadCondition::ShouldTerminate(int tick, int totalTicks) const
+	{
+		return false;
+	}
+
+	VelAngleCondition::VelAngleCondition(float low, float high, AngleAxis axis) : low(low), high(high), axis(axis)
+	{
+		if (NormalizeDeg(high - low) < 0)
+			throw std::exception("Low should be lower than high");
+	}
+
+	bool VelAngleCondition::IsTrue(int tick, int totalTicks) const
+	{
+		Vector v = clientDLL.GetPlayerVelocity();
+		QAngle angles;
+		VectorAngles(v, Vector(0, 0, 1), angles);
+		float f;
+
+		if (axis == AngleAxis::Pitch)
+			f = angles.x;
+		else
+			f = angles.y;
+
+		return NormalizeDeg(f - low) >= 0 && NormalizeDeg(f - high) <= 0;
+	}
+
+	bool VelAngleCondition::ShouldTerminate(int tick, int totalTicks) const
 	{
 		return false;
 	}
