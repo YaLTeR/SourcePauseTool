@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+
+jobs:
+  Build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        Configuration: [Release, Release BMS, Release 2013, Release OE, Release P2]
+#        Configuration: [Debug, Debug BMS, Debug 2013, Debug OE, Debug P2, Release, Release BMS, Release 2013, Release OE, Release P2]
+        include:
+#          - Configuration: Debug
+#            SDK: orangebox
+#            spt-filename: spt
+#          - Configuration: Debug BMS
+#            SDK: bms
+#            spt-filename: spt-bms
+#          - Configuration: Debug 2013
+#            SDK: sdk2013
+#            spt-filename: spt-2013
+#          - Configuration: Debug OE
+#            SDK: episode1
+#            spt-filename: spt-oe
+#          - Configuration: Debug P2
+#            SDK: portal2
+#            spt-filename: spt-p2
+          - Configuration: Release
+            SDK: orangebox
+            spt-filename: spt
+          - Configuration: Release BMS
+            SDK: bms
+            spt-filename: spt-bms
+          - Configuration: Release 2013
+            SDK: sdk2013
+            spt-filename: spt-2013
+          - Configuration: Release OE
+            SDK: episode1
+            spt-filename: spt-oe
+          - Configuration: Release P2
+            SDK: portal2
+            spt-filename: spt-p2
+    steps:
+    - name: Checkout AlliedModders SDK
+      uses: actions/checkout@v2
+      with:
+        repository: alliedmodders/hl2sdk
+        ref: ${{ matrix.SDK }}
+    - name: Checkout SPT
+      uses: actions/checkout@v2
+      with:
+        path: utils\SourcePauseTool
+    - name: Get SPT submodules
+      run: git submodule update --init --recursive
+      working-directory: utils\SourcePauseTool
+    - uses: warrenbuckley/Setup-MSBuild@v1
+    - name: Build
+      run: msbuild /m /nologo /p:Configuration="${{ matrix.Configuration }}" spt.sln
+      working-directory: utils\SourcePauseTool
+    - uses: actions/upload-artifact@v1
+      with:
+        name: ${{ matrix.spt-filename }}
+        path: utils\SourcePauseTool\${{ matrix.Configuration }}\${{ matrix.spt-filename }}.dll
+
+  Format:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install clang-format-8
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install clang-format-8
+    - name: Format
+      run: python run-clang-format.py --clang-format-executable clang-format-8 --exclude 'spt/utils/md5.*' --recursive spt
