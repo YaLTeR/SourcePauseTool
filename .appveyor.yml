@@ -30,15 +30,13 @@ environment:
     - Configuration: Release P2
       SDK: portal2
 
-install: |
+install: |-
   git submodule update --init --recursive
   cd ..
   git clone --depth 1 -b %SDK% https://github.com/alliedmodders/hl2sdk.git
   mkdir hl2sdk\utils\SourcePauseTool
   xcopy SourcePauseTool hl2sdk\utils\SourcePauseTool /EH
   cd hl2sdk\utils\SourcePauseTool
-
-platform: Win32
 
 build:
   parallel: true
@@ -50,3 +48,5 @@ test: off
 
 artifacts:
   - path: spt*.dll
+
+deploy: off
