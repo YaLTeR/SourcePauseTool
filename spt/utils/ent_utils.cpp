@@ -255,7 +255,8 @@ namespace utils
 
 	QAngle GetPlayerEyeAngles()
 	{
-		return utils::GetProperty<QAngle>(0, "m_angEyeAngles[0]");
+		auto ply = GetPlayer();
+		return ply->GetAbsAngles();
 	}
 
 	int PortalIsOrange(IClientEntity* ent)
