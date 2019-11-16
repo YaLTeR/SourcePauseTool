@@ -431,8 +431,8 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 
 	extern bool FoundEngineServer();
 	if (ORIG_CreateMove && ORIG_GetGroundEntity && ORIG_CalcAbsoluteVelocity && ORIG_GetLocalPlayer
-	    && _sv_airaccelerate && _sv_accelerate && _sv_friction && _sv_maxspeed && _sv_stopspeed
-	    && FoundEngineServer())
+	    && ORIG_GetButtonBits && _sv_airaccelerate && _sv_accelerate && _sv_friction && _sv_maxspeed
+	    && _sv_stopspeed && ORIG_AdjustAngles && FoundEngineServer())
 	{
 		tasAddressesWereFound = true;
 	}
@@ -608,7 +608,7 @@ Strafe::MovementVars ClientDLL::GetMovementVars()
 
 Strafe::PlayerData ClientDLL::GetPlayerData()
 {
-	if (!tasAddressesWereFound)
+	if (!tasAddressesWereFound || !cinput_thisptr)
 		return Strafe::PlayerData();
 
 	Strafe::PlayerData data;
