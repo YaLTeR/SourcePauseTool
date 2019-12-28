@@ -32,6 +32,7 @@ public:
 	void OnGround(bool ground);
 	void NewTick();
 	void DrawHUD(vrect_t* screen);
+	void DrawCrosshair(vrect_t* screen);
 	void CalculateAbhVel();
 
 	_StartDrawing ORIG_StartDrawing;
