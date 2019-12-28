@@ -255,8 +255,10 @@ namespace utils
 
 	QAngle GetPlayerEyeAngles()
 	{
-		auto ply = GetPlayer();
-		return ply->GetAbsAngles();
+		if (DoesGameLookLikePortal())
+			return utils::GetProperty<QAngle>(0, "m_angEyeAngles[0]");
+		else
+			return utils::GetProperty<QAngle>(0, "m_angRotation");
 	}
 
 	int PortalIsOrange(IClientEntity* ent)
