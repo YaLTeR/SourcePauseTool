@@ -31,22 +31,27 @@ namespace scripts
 
 		void Reset();
 		void Init(std::string name);
+		void SetDemoName(std::string name);
+		std::string GetDemoName()
+		{
+			return demoName;
+		}
 
 		void AddDuringLoadCmd(const std::string& cmd);
 		void AddInitCommand(const std::string& cmd);
 		void AddFrameBulk(FrameBulkOutput& output);
 		void AddSaveState();
+		void AddSaveLoad();
 		void AddAfterFramesEntry(long long int tick, std::string command);
-		void SetSave(std::string save)
-		{
-			saveName = save;
-		};
+		void SetSave(std::string save);
 		int GetScriptLength()
 		{
 			return afterFramesTick;
 		}
 
 	private:
+		int demoCount;
+		std::string demoName;
 		std::string saveName;
 		std::string scriptName;
 		int afterFramesTick;

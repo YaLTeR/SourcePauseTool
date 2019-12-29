@@ -2,9 +2,10 @@
 #include <string>
 
 bool whiteSpacesOnly(const std::string& s);
-
 void ReplaceAll(std::string& str, const std::string& from, const std::string& to);
 inline void GetTriplet(std::istringstream& stream, std::string& out1, std::string& out2, std::string& out3, char delim);
+void rtrim(std::string& s);
+
 template<typename T>
 inline T ParseValue(std::string s);
 template<typename T>

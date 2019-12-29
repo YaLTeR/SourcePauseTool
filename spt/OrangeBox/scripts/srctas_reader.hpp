@@ -36,7 +36,6 @@ namespace scripts
 		SearchType searchType;
 		float tickTime;
 		float playbackSpeed;
-		std::string demoName;
 		int demoDelay;
 
 		VariableContainer variables;

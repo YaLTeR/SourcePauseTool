@@ -48,9 +48,39 @@ namespace scripts
 		saveStates.push_back(GetSaveStateInfo());
 	}
 
+	void ParsedScript::AddSaveLoad()
+	{
+		std::string sName;
+		if (demoCount == 1)
+		{
+			sName = demoName;
+		}
+		else
+		{
+			sName = demoName + "_" + std::to_string(demoCount);
+		}
+
+		if (sName == saveName)
+		{
+			std::string error =
+			    "Save name " + saveName + " is the same as the initial save, cannot create saveload bulk";
+			throw std::exception(error.c_str());
+		}
+
+		++demoCount;
+		AddAfterFramesEntry(afterFramesTick,
+		                    "save " + sName + "; load " + sName + +";  _y_spt_afterframes_await_load");
+		if (!demoName.empty())
+			AddAfterFramesEntry(afterFramesTick + 1,
+			                    "record " + demoName + "_" + std::to_string(demoCount));
+		++afterFramesTick;
+	}
+
 	void ParsedScript::Reset()
 	{
+		demoName = "";
 		scriptName.clear();
+		demoCount = 1;
 		afterFramesTick = 0;
 		afterFramesEntries.clear();
 		saveStateIndexes.clear();
@@ -107,9 +137,21 @@ namespace scripts
 			AddInitCommand("load " + saveName);
 	}
 
+	void ParsedScript::SetDemoName(std::string name)
+	{
+		rtrim(name);
+		demoName = name;
+	}
+
 	void ParsedScript::AddAfterFramesEntry(long long int tick, std::string command)
 	{
 		afterFramesEntries.push_back(afterframes_entry_t(tick, std::move(command)));
+	}
+
+	void ParsedScript::SetSave(std::string save)
+	{
+		rtrim(save);
+		saveName = save;
 	}
 
 	Savestate ParsedScript::GetSaveStateInfo()

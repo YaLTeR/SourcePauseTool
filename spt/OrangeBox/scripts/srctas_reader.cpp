@@ -182,8 +182,11 @@ namespace scripts
 		SetFpsAndPlayspeed();
 		currentTick = 0;
 		clientDLL.ResetAfterframesQueue();
-
 		currentScript.Init(fileName);
+
+		auto demoName = currentScript.GetDemoName();
+		if (!demoName.empty())
+			currentScript.AddAfterFramesEntry(demoDelay, "record " + demoName);
 
 		for (auto& entry : currentScript.afterFramesEntries)
 		{
@@ -196,8 +199,6 @@ namespace scripts
 		std::string startCmd(currentScript.initCommand + ";" + currentScript.duringLoad);
 		EngineConCmd(startCmd.c_str());
 		DevMsg("Executing start command: %s\n", startCmd.c_str());
-		if (!demoName.empty())
-			currentScript.AddAfterFramesEntry(demoDelay, "record " + demoName);
 
 		for (auto& entry : currentScript.afterFramesEntries)
 		{
@@ -334,7 +335,6 @@ namespace scripts
 		searchType = SearchType::None;
 		playbackSpeed = 1.0f;
 		demoDelay = 0;
-		demoName.clear();
 		currentScript.Reset();
 	}
 
@@ -421,6 +421,10 @@ namespace scripts
 		{
 			currentScript.AddSaveState();
 		}
+		else if (line.find("sl") == 0)
+		{
+			currentScript.AddSaveLoad();
+		}
 		else
 		{
 			FrameBulkInfo info(lineStream);
@@ -464,7 +468,7 @@ namespace scripts
 
 	void SourceTASReader::HandleDemo(const std::string& value)
 	{
-		demoName = value;
+		currentScript.SetDemoName(value);
 	}
 
 	void SourceTASReader::HandleDemoDelay(const std::string& value)
