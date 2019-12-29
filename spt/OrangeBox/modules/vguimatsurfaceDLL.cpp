@@ -135,9 +135,9 @@ void VGui_MatSurfaceDLL::DrawHUD(vrect_t* screen)
 	if (!ORIG_StartDrawing || !ORIG_FinishDrawing)
 		return;
 
-	ORIG_StartDrawing();
 	auto surface = (IMatSystemSurface*)vgui::surface();
 	auto scheme = vgui::GetScheme();
+	ORIG_StartDrawing(surface, 0);
 
 	try
 	{
@@ -161,7 +161,7 @@ void VGui_MatSurfaceDLL::DrawHUD(vrect_t* screen)
 		Msg("Error drawing HUD: %s\n", e.what());
 	}
 
-	ORIG_FinishDrawing();
+	ORIG_FinishDrawing(surface, 0);
 }
 
 void VGui_MatSurfaceDLL::CalculateAbhVel()

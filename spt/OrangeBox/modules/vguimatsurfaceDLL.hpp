@@ -13,8 +13,8 @@
 using std::size_t;
 using std::uintptr_t;
 
-typedef int(__cdecl* _StartDrawing)();
-typedef int(__cdecl* _FinishDrawing)();
+typedef void(__fastcall* _StartDrawing)(void* thisptr, int edx);
+typedef void(__fastcall* _FinishDrawing)(void* thisptr, int edx);
 
 class VGui_MatSurfaceDLL : public IHookableNameFilter
 {
