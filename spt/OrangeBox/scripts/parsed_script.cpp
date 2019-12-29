@@ -59,6 +59,14 @@ namespace scripts
 		{
 			sName = demoName + "_" + std::to_string(demoCount);
 		}
+
+		if (sName == saveName)
+		{
+			std::string error =
+			    "Save name " + saveName + " is the same as the initial save, cannot create saveload bulk";
+			throw std::exception(error.c_str());
+		}
+
 		++demoCount;
 		AddAfterFramesEntry(afterFramesTick,
 		                    "save " + sName + "; load " + sName + +";  _y_spt_afterframes_await_load");
