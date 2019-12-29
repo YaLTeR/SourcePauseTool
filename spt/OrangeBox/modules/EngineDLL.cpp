@@ -421,6 +421,11 @@ bool __cdecl EngineDLL::HOOKED_SV_ActivateServer_Func()
 	return result;
 }
 
+ConVar _y_spt_afterframes_await_legacy("_y_spt_afterframes_await_legacy",
+                                       "0",
+                                       FCVAR_TAS_RESET,
+                                       "Set to 1 for backwards compatibility with old scripts.");
+
 void __fastcall EngineDLL::HOOKED_FinishRestore_Func(void* thisptr, int edx)
 {
 	DevMsg("Engine call: FinishRestore();\n");
@@ -435,11 +440,15 @@ void __fastcall EngineDLL::HOOKED_FinishRestore_Func(void* thisptr, int edx)
 
 	ORIG_FinishRestore(thisptr, edx);
 
-	clientDLL.ResumeAfterframesQueue();
+	if (_y_spt_afterframes_await_legacy.GetBool())
+		clientDLL.ResumeAfterframesQueue();
 }
 
 void __fastcall EngineDLL::HOOKED_SetPaused_Func(void* thisptr, int edx, bool paused)
 {
+	if (!paused && !_y_spt_afterframes_await_legacy.GetBool())
+		clientDLL.ResumeAfterframesQueue();
+
 	if (pM_bLoadgame)
 	{
 		DevMsg("Engine call: SetPaused( %s ); m_bLoadgame = %s\n",
