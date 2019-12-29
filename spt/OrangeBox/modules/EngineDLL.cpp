@@ -517,7 +517,13 @@ void __fastcall EngineDLL::HOOKED_VGui_Paint_Func(void* thisptr, int edx, int mo
 {
 #ifndef OE
 	if (mode == 2 && !clientDLL.renderingOverlay)
+	{
 		vgui_matsurfaceDLL.DrawHUD((vrect_t*)clientDLL.screenRect);
+	}
+
+	if (clientDLL.renderingOverlay)
+		vgui_matsurfaceDLL.DrawCrosshair((vrect_t*)clientDLL.screenRect);
+
 #endif
 
 	ORIG_VGui_Paint(thisptr, edx, mode);

@@ -26,6 +26,15 @@ ConVar y_spt_hud_hops("y_spt_hud_hops", "0", FCVAR_CHEAT, "When set to 1, displa
 ConVar y_spt_hud_hops_x("y_spt_hud_hops_x", "-85", FCVAR_CHEAT, "Hops HUD x offset");
 ConVar y_spt_hud_hops_y("y_spt_hud_hops_y", "100", FCVAR_CHEAT, "Hops HUD y offset");
 ConVar y_spt_hud_velocity_angles("y_spt_hud_velocity_angles", "0", FCVAR_CHEAT, "Display velocity Euler angles.");
+ConVar _y_spt_overlay_crosshair_size("_y_spt_overlay_crosshair_size", "10", FCVAR_CHEAT, "Overlay crosshair size.");
+ConVar _y_spt_overlay_crosshair_thickness("_y_spt_overlay_crosshair_thickness",
+                                          "1",
+                                          FCVAR_CHEAT,
+                                          "Overlay crosshair thickness.");
+ConVar _y_spt_overlay_crosshair_color("_y_spt_overlay_crosshair_color",
+                                      "0 255 0 255",
+                                      FCVAR_CHEAT,
+                                      "Overlay crosshair RGBA color.");
 const int INDEX_MASK = MAX_EDICTS - 1;
 
 #define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::vguimatsurface::##name);
@@ -162,6 +171,32 @@ void VGui_MatSurfaceDLL::DrawHUD(vrect_t* screen)
 	}
 
 	ORIG_FinishDrawing(surface, 0);
+}
+
+void VGui_MatSurfaceDLL::DrawCrosshair(vrect_t* screen)
+{
+	static std::string color = "";
+	static int r = 0, g = 0, b = 0, a = 0;
+
+	if (strcmp(color.c_str(), _y_spt_overlay_crosshair_color.GetString()) != 0)
+	{
+		color = _y_spt_overlay_crosshair_color.GetString();
+		sscanf(color.c_str(), "%d %d %d %d", &r, &g, &b, &a);
+	}
+
+	auto surface = (IMatSystemSurface*)vgui::surface();
+	surface->DrawSetColor(r, g, b, a);
+	int x = screen->x + screen->width / 2;
+	int y = screen->y + screen->height / 2;
+	int width = _y_spt_overlay_crosshair_size.GetInt();
+	int thickness = _y_spt_overlay_crosshair_thickness.GetInt();
+
+	if (thickness > width)
+		std::swap(thickness, width);
+
+	surface->DrawFilledRect(x - thickness / 2, y - width / 2, x + thickness / 2 + 1, y + width / 2 + 1);
+	surface->DrawFilledRect(x - width / 2, y - thickness / 2, x - thickness / 2, y + thickness / 2 + 1);
+	surface->DrawFilledRect(x + thickness / 2 + 1, y - thickness / 2, x + width / 2 + 1, y + thickness / 2 + 1);
 }
 
 void VGui_MatSurfaceDLL::CalculateAbhVel()
