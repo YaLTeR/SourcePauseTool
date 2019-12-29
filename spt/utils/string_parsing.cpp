@@ -2,6 +2,7 @@
 #include "string_parsing.hpp"
 #include <Windows.h>
 #include <algorithm>
+#include <cctype>
 
 bool whiteSpacesOnly(const std::string& s)
 {
@@ -18,4 +19,9 @@ void ReplaceAll(std::string& str, const std::string& from, const std::string& to
 		str.replace(start_pos, from.length(), to);
 		start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
 	}
+}
+
+void rtrim(std::string& s)
+{
+	s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) { return !std::isspace(ch); }).base(), s.end());
 }

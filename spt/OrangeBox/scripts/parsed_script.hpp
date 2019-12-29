@@ -31,10 +31,7 @@ namespace scripts
 
 		void Reset();
 		void Init(std::string name);
-		void SetDemoName(const std::string& name)
-		{
-			demoName = name;
-		}
+		void SetDemoName(std::string name);
 		std::string GetDemoName()
 		{
 			return demoName;
@@ -46,10 +43,7 @@ namespace scripts
 		void AddSaveState();
 		void AddSaveLoad();
 		void AddAfterFramesEntry(long long int tick, std::string command);
-		void SetSave(std::string save)
-		{
-			saveName = save;
-		};
+		void SetSave(std::string save);
 		int GetScriptLength()
 		{
 			return afterFramesTick;
