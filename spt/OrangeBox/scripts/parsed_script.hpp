@@ -31,11 +31,20 @@ namespace scripts
 
 		void Reset();
 		void Init(std::string name);
+		void SetDemoName(const std::string& name)
+		{
+			demoName = name;
+		}
+		std::string GetDemoName()
+		{
+			return demoName;
+		}
 
 		void AddDuringLoadCmd(const std::string& cmd);
 		void AddInitCommand(const std::string& cmd);
 		void AddFrameBulk(FrameBulkOutput& output);
 		void AddSaveState();
+		void AddSaveLoad();
 		void AddAfterFramesEntry(long long int tick, std::string command);
 		void SetSave(std::string save)
 		{
@@ -47,6 +56,8 @@ namespace scripts
 		}
 
 	private:
+		int demoCount;
+		std::string demoName;
 		std::string saveName;
 		std::string scriptName;
 		int afterFramesTick;

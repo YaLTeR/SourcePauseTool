@@ -48,9 +48,31 @@ namespace scripts
 		saveStates.push_back(GetSaveStateInfo());
 	}
 
+	void ParsedScript::AddSaveLoad()
+	{
+		std::string sName;
+		if (demoCount == 1)
+		{
+			sName = demoName;
+		}
+		else
+		{
+			sName = demoName + "_" + std::to_string(demoCount);
+		}
+		++demoCount;
+		AddAfterFramesEntry(afterFramesTick,
+		                    "save " + sName + "; load " + sName + +";  _y_spt_afterframes_await_load");
+		if (!demoName.empty())
+			AddAfterFramesEntry(afterFramesTick + 1,
+			                    "record " + demoName + "_" + std::to_string(demoCount));
+		++afterFramesTick;
+	}
+
 	void ParsedScript::Reset()
 	{
+		demoName = "";
 		scriptName.clear();
+		demoCount = 1;
 		afterFramesTick = 0;
 		afterFramesEntries.clear();
 		saveStateIndexes.clear();
