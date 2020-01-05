@@ -1,7 +1,7 @@
 demo 07_1
 save 06_1
 playspeed 16
-settings tas_strafe_hull_is_line 1; cl_mouseenable 0; _y_spt_afterframes_await_legacy 1
+settings tas_strafe_hull_is_line 1; cl_mouseenable 0; _y_spt_afterframes_await_legacy 1; tas_strafe_version 1
 
 vars
 
