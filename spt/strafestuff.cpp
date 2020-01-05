@@ -17,8 +17,8 @@
 #include "strafe_utils.hpp"
 #include "strafestuff.hpp"
 #include "utils/ent_utils.hpp"
-#include "utils/property_getter.hpp"
 #include "utils/math.hpp"
+#include "utils/property_getter.hpp"
 
 #ifndef OE
 #include "OrangeBox/overlay/portal_camera.hpp"
