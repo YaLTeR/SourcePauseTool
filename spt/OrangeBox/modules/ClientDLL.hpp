@@ -167,6 +167,7 @@ public:
 	void* cinput_thisptr;
 	_GetClientModeNormal ORIG_GetClientModeNormal;
 	_UTIL_TraceRay ORIG_UTIL_TraceRay;
+	bool IsGroundEntitySet();
 
 protected:
 	_DoImageSpaceMotionBlur ORIG_DoImageSpaceMotionBlur;
@@ -215,7 +216,6 @@ protected:
 	bool cantJumpNextTime;
 
 	void OnFrame();
-	bool IsOnGround();
 
 	int afterframesDelay;
 	PatternContainer patternContainer;

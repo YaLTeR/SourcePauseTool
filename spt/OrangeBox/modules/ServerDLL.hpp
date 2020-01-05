@@ -40,6 +40,38 @@ typedef int(__fastcall* _CRestore__DoReadAll)(void* thisptr,
                                               datamap_t* pCurMap);
 typedef int(__cdecl* _DispatchSpawn)(void* pEntity);
 typedef string_t(__cdecl* _AllocPooledString)(const char* pszValue, int trash);
+typedef void(__fastcall* _CGameMovement__TracePlayerBBox)(void* thisptr,
+                                                          int edx,
+                                                          const Vector& start,
+                                                          const Vector& end,
+                                                          unsigned int fMask,
+                                                          int collisionGroup,
+                                                          trace_t& pm);
+typedef void(__fastcall* _CPortalGameMovement__TracePlayerBBox)(void* thisptr,
+                                                                int edx,
+                                                                const Vector& start,
+                                                                const Vector& end,
+                                                                unsigned int fMask,
+                                                                int collisionGroup,
+                                                                trace_t& pm);
+typedef const Vector&(__fastcall* _CGameMovement__GetPlayerMaxs)(void* thisptr, int edx);
+typedef const Vector&(__fastcall* _CGameMovement__GetPlayerMins)(void* thisptr, int edx);
+typedef void(__cdecl* _TracePlayerBBoxForGround)(const Vector& start,
+                                                 const Vector& end,
+                                                 const Vector& mins,
+                                                 const Vector& maxs,
+                                                 IHandleEntity* player,
+                                                 unsigned int fMask,
+                                                 int collisionGroup,
+                                                 trace_t& pm);
+typedef void(__cdecl* _TracePlayerBBoxForGround2)(const Vector& start,
+                                                  const Vector& end,
+                                                  const Vector& mins,
+                                                  const Vector& maxs,
+                                                  IHandleEntity* player,
+                                                  unsigned int fMask,
+                                                  int collisionGroup,
+                                                  trace_t& pm);
 
 class ServerDLL : public IHookableNameFilter
 {
@@ -82,6 +114,16 @@ public:
 	                                                 datamap_t* pCurMap);
 	static int __cdecl HOOKED_DispatchSpawn(void* pEntity);
 	static void HOOKED_MiddleOfSlidingFunction();
+	static const Vector& __fastcall HOOKED_CGameMovement__GetPlayerMaxs(void* thisptr, int edx);
+	static const Vector& __fastcall HOOKED_CGameMovement__GetPlayerMins(void* thisptr, int edx);
+
+	void TracePlayerBBox(const Vector& start,
+	                     const Vector& end,
+	                     const Vector& mins,
+	                     const Vector& maxs,
+	                     unsigned int fMask,
+	                     int collisionGroup,
+	                     trace_t& pm);
 	bool __fastcall HOOKED_CheckJumpButton_Func(void* thisptr, int edx);
 	void __fastcall HOOKED_FinishGravity_Func(void* thisptr, int edx);
 	void __fastcall HOOKED_PlayerRunCommand_Func(void* thisptr, int edx, void* ucmd, void* moveHelper);
@@ -104,6 +146,7 @@ public:
 	                                             bool bTest);
 	void __fastcall HOOKED_SlidingAndOtherStuff_Func(void* thisptr, int edx, void* a, void* b);
 	void HOOKED_MiddleOfSlidingFunction_Func();
+	bool CanTracePlayerBBox();
 
 	void StartTimer()
 	{
@@ -139,7 +182,16 @@ public:
 	_CRestore__DoReadAll ORIG_CRestore__DoReadAll;
 	_DispatchSpawn ORIG_DispatchSpawn;
 	_AllocPooledString ORIG_AllocPooledString;
+	_CGameMovement__GetPlayerMins ORIG_CGameMovement__GetPlayerMins;
+	_CGameMovement__GetPlayerMaxs ORIG_CGameMovement__GetPlayerMaxs;
+	_CGameMovement__TracePlayerBBox ORIG_CGameMovement__TracePlayerBBox;
+	_CPortalGameMovement__TracePlayerBBox ORIG_CPortalGameMovement__TracePlayerBBox;
+	_TracePlayerBBoxForGround ORIG_TracePlayerBBoxForGround;
+	_TracePlayerBBoxForGround2 ORIG_TracePlayerBBoxForGround2;
 	Gallant::Signal0<void> JumpSignal;
+	bool overrideMinMax;
+	Vector _mins;
+	Vector _maxs;
 
 protected:
 	PatternContainer patternContainer;
