@@ -255,10 +255,6 @@ namespace patterns
 		    UTIL_TraceRay,
 		    "5135",
 		    "8B 44 24 10 8B 4C 24 0C 83 EC 10 56 6A 00 50 51 8D 4C 24 10 E8 ?? ?? ?? ?? 8B 74 24 28 8B 0D ?? ?? ?? ?? 8B 11 8B 52 10");
-		PATTERNS(
-		    UTIL_Portal_TraceRay,
-		    "5135",
-		    "B8 A8 10 00 00 E8 ?? ?? ?? ?? 83 BC 24 B8 10 00 00 00 C7 44 24 24 ?? ?? ?? ?? 75 0B 8D 44 24 24 89 84 24 B8 10 00 00 D9 05 ?? ?? ?? ?? 53");
 	} // namespace client
 
 	namespace server
@@ -415,6 +411,24 @@ namespace patterns
 		    FindPooledString,
 		    "5135",
 		    "8B 44 24 08 50 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 85 C0 74 0E 80 38 00 74 09 8B 4C 24 04 89 01 8B C1 C3 8B 44 24 04 33 C9 89 08 C3");
+		PATTERNS(TracePlayerBBoxForGround,
+		         "5135",
+		         "55 8B EC 83 E4 F0 81 EC 84 00 00 00 53 56 8B 75 24 8B 46 0C D9 46 2C 8B 4E 10");
+		PATTERNS(TracePlayerBBoxForGround2,
+		         "5135",
+		         "55 8B EC 83 E4 F0 8B 4D 18 8B 01 8B 50 08 81 EC 84 00 00 00 53 56 57 FF D2");
+		PATTERNS(CGameMovement__TracePlayerBBox, "5135", "55 8B EC 83 E4 F0 83 EC 5C 56 8B F1 8B 06 8B 50 24");
+		PATTERNS(CPortalGameMovement__TracePlayerBBox,
+		         "5135",
+		         "55 8B EC 83 E4 F0 81 EC C4 00 00 00 53 56 8B F1 8B 46 08 83 C0 04 8B 00");
+		PATTERNS(
+		    CGameMovement__GetPlayerMins,
+		    "4104",
+		    "8B 41 ?? 8B 88 ?? ?? ?? ?? C1 E9 03 F6 C1 01 8B 0D ?? ?? ?? ?? 8B 11 74 09 8B 42 ?? FF D0 83 C0 48 C3");
+		PATTERNS(
+		    CGameMovement__GetPlayerMaxs,
+		    "4104",
+		    "8B 41 ?? 8B 88 ?? ?? ?? ?? C1 E9 03 F6 C1 01 8B 0D ?? ?? ?? ?? 8B 11 74 09 8B 42 ?? FF D0 83 C0 54 C3");
 	} // namespace server
 
 	namespace vguimatsurface

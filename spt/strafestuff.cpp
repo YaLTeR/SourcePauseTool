@@ -18,6 +18,11 @@
 #include "strafestuff.hpp"
 #include "utils/ent_utils.hpp"
 #include "utils/math.hpp"
+#include "utils/property_getter.hpp"
+
+#ifndef OE
+#include "OrangeBox/overlay/portal_camera.hpp"
+#endif
 
 #ifdef max
 #undef max
@@ -31,46 +36,115 @@
 // go take a look at that instead:
 // https://github.com/HLTAS/hlstrafe
 
+ConVar tas_strafe_version("tas_strafe_version",
+                          "2",
+                          FCVAR_TAS_RESET,
+                          "Strafe version. For backwards compatibility with old scripts.");
+
+extern void* gm;
+
 namespace Strafe
 {
-	void Trace(trace_t& trace, const Vector& start, const Vector& end, HullType hull)
+	bool CanTrace()
+	{
+		if (!tas_strafe_use_tracing.GetBool())
+			return false;
+
+		if (tas_strafe_version.GetInt() == 1)
+		{
+			return clientDLL.ORIG_UTIL_TraceRay != nullptr;
+		}
+		else
+		{
+			return serverDLL.CanTracePlayerBBox();
+		}
+	}
+
+	static CMoveData* oldmv;
+	static void* oldPlayer;
+	static CMoveData data;
+
+	void SetMoveData()
+	{
+		data.m_nPlayerHandle = GetServerPlayer()->GetRefEHandle();
+		void** player = reinterpret_cast<void**>((char*)gm + 0x4);
+		CMoveData** mv = reinterpret_cast<CMoveData**>((char*)gm + 0x8);
+		oldmv = *mv;
+		oldPlayer = *player;
+		*mv = &data;
+		*player = GetServerPlayer();
+	}
+
+	void UnsetMoveData()
+	{
+		void** player = reinterpret_cast<void**>((char*)gm + 0x4);
+		CMoveData** mv = reinterpret_cast<CMoveData**>((char*)gm + 0x8);
+		*player = oldPlayer;
+		*mv = oldmv;
+	}
+
+	void TracePlayer(trace_t& trace, const Vector& start, const Vector& end, HullType hull)
 	{
 #ifndef OE
-		if (!clientDLL.ORIG_UTIL_TraceRay)
+		if (!CanTrace())
 			return;
 
 		float minH;
 		float maxH;
 
-		if (tas_strafe_hull_is_line.GetBool())
+		if (tas_strafe_version.GetInt() == 1)
 		{
-			minH = 0;
-			maxH = 0;
+			if (tas_strafe_hull_is_line.GetBool())
+			{
+				minH = 0;
+				maxH = 0;
+			}
+			else
+			{
+				minH = -16;
+				maxH = 16;
+			}
+
+			Vector mins(minH, minH, 0);
+			Vector maxs(maxH, maxH, 72);
+
+			if (hull == HullType::DUCKED)
+				mins.z = 36;
+
+			Ray_t ray;
+
+			if (hull == HullType::POINT)
+				ray.Init(start, end);
+			else
+				ray.Init(start, end, mins, maxs);
+
+			clientDLL.ORIG_UTIL_TraceRay(ray,
+			                             MASK_PLAYERSOLID_BRUSHONLY,
+			                             utils::GetClientEntity(0),
+			                             COLLISION_GROUP_PLAYER_MOVEMENT,
+			                             &trace);
 		}
 		else
 		{
 			minH = -16;
 			maxH = 16;
+			Vector mins(minH, minH, 0);
+			Vector maxs(maxH, maxH, 72);
+
+			if (hull == HullType::DUCKED)
+				mins.z = 36;
+
+			SetMoveData();
+			serverDLL.TracePlayerBBox(start,
+			                          end,
+			                          mins,
+			                          maxs,
+			                          MASK_PLAYERSOLID,
+			                          COLLISION_GROUP_PLAYER_MOVEMENT,
+			                          trace);
+			UnsetMoveData();
 		}
 
-		Vector mins(minH, minH, 0);
-		Vector maxs(maxH, maxH, 72);
-
-		if (hull == HullType::DUCKED)
-			mins.z = 36;
-
-		Ray_t ray;
-
-		if (hull == HullType::POINT)
-			ray.Init(start, end);
-		else
-			ray.Init(start, end, mins, maxs);
-
-		clientDLL.ORIG_UTIL_TraceRay(ray,
-		                             MASK_PLAYERSOLID_BRUSHONLY,
-		                             utils::GetClientEntity(0),
-		                             COLLISION_GROUP_PLAYER_MOVEMENT,
-		                             &trace);
 #endif
 	}
 
@@ -87,7 +161,7 @@ namespace Strafe
 			trace_t tr;
 			Vector duckedOrigin(player.UnduckedOrigin);
 			duckedOrigin.z -= 36;
-			Trace(tr, duckedOrigin, player.UnduckedOrigin, Strafe::HullType::DUCKED);
+			TracePlayer(tr, duckedOrigin, player.UnduckedOrigin, Strafe::HullType::DUCKED);
 
 			return tr.fraction == 1.0f;
 		}
@@ -97,22 +171,99 @@ namespace Strafe
 	{
 		// TODO: Check water. If we're under water, return here.
 		// Check ground.
+		int strafe_version = tas_strafe_version.GetInt();
 
-		if (player.Velocity[2] > 140.f)
-			return PositionType::AIR;
+		if (!tas_strafe_use_tracing.GetBool() || strafe_version == 0 || !CanTrace())
+		{
+			if (clientDLL.IsGroundEntitySet())
+				return PositionType::GROUND;
+			else
+				return PositionType::AIR;
+		}
+		else if (strafe_version == 1)
+		{
+			if (clientDLL.IsGroundEntitySet())
+				return PositionType::GROUND;
 
-		trace_t tr;
-		Vector point;
-		VecCopy(player.UnduckedOrigin, point);
-		point[2] -= 2;
+			if (player.Velocity[2] > 140.f)
+				return PositionType::AIR;
 
-		Trace(tr, player.UnduckedOrigin, point, hull);
-		if (tr.plane.normal[2] < 0.7 || tr.m_pEnt == NULL || tr.startsolid)
-			return PositionType::AIR;
+			trace_t tr;
+			Vector point;
+			VecCopy(player.UnduckedOrigin, point);
+			point[2] -= 2;
 
-		if (!tr.startsolid && !tr.allsolid)
-			VecCopy<Vector, 3>(tr.endpos, player.UnduckedOrigin);
-		return PositionType::GROUND;
+			TracePlayer(tr, player.UnduckedOrigin, point, hull);
+			if (tr.plane.normal[2] < 0.7 || tr.m_pEnt == NULL || tr.startsolid)
+				return PositionType::AIR;
+
+			if (!tr.startsolid && !tr.allsolid)
+				VecCopy<Vector, 3>(tr.endpos, player.UnduckedOrigin);
+			return PositionType::GROUND;
+		}
+		else
+		{
+			SetMoveData();
+			if (player.Velocity[2] > 140.f)
+			{
+				UnsetMoveData();
+				return PositionType::AIR;
+			}
+
+			Vector bumpOrigin = player.UnduckedOrigin;
+			Vector point = bumpOrigin;
+			point[2] -= 2;
+
+			float minH = -16;
+			float maxH = 16;
+			Vector mins(minH, minH, 0);
+			Vector maxs(maxH, maxH, 72);
+
+			if (hull == HullType::DUCKED)
+				mins.z = 36;
+
+			trace_t pm;
+
+			serverDLL.TracePlayerBBox(bumpOrigin,
+			                          point,
+			                          mins,
+			                          maxs,
+			                          MASK_PLAYERSOLID,
+			                          COLLISION_GROUP_PLAYER_MOVEMENT,
+			                          pm);
+
+			if (pm.m_pEnt && pm.plane.normal[2] >= 0.7)
+			{
+				UnsetMoveData();
+				return PositionType::GROUND;
+			}
+
+			if (DoesGameLookLikePortal())
+				serverDLL.ORIG_TracePlayerBBoxForGround2(bumpOrigin,
+				                                         point,
+				                                         mins,
+				                                         maxs,
+				                                         GetServerPlayer(),
+				                                         MASK_PLAYERSOLID,
+				                                         COLLISION_GROUP_PLAYER_MOVEMENT,
+				                                         pm);
+			else
+				serverDLL.ORIG_TracePlayerBBoxForGround(bumpOrigin,
+				                                        point,
+				                                        mins,
+				                                        maxs,
+				                                        GetServerPlayer(),
+				                                        MASK_PLAYERSOLID,
+				                                        COLLISION_GROUP_PLAYER_MOVEMENT,
+				                                        pm);
+
+			UnsetMoveData();
+
+			if (pm.m_pEnt && pm.plane.normal[2] >= 0.7)
+				return PositionType::GROUND;
+			else
+				return PositionType::AIR;
+		}
 	}
 
 	void VectorFME(PlayerData& player,
@@ -188,7 +339,7 @@ namespace Strafe
 				dest[0] += player.Velocity[0] * vars.Frametime;
 				dest[1] += player.Velocity[1] * vars.Frametime;
 
-				Trace(tr, player.UnduckedOrigin, dest, hull);
+				TracePlayer(tr, player.UnduckedOrigin, dest, hull);
 				if (tr.fraction == 1.0f)
 				{
 					VecCopy(tr.endpos, player.UnduckedOrigin);
@@ -198,7 +349,7 @@ namespace Strafe
 					// Figure out the end position when trying to walk up a step.
 					auto playerUp = PlayerData(player);
 					dest[2] += vars.Stepsize;
-					Trace(tr, playerUp.UnduckedOrigin, dest, hull);
+					TracePlayer(tr, playerUp.UnduckedOrigin, dest, hull);
 					if (!tr.startsolid && !tr.allsolid)
 						VecCopy(tr.endpos, playerUp.UnduckedOrigin);
 
@@ -206,7 +357,7 @@ namespace Strafe
 					VecCopy(playerUp.UnduckedOrigin, dest);
 					dest[2] -= vars.Stepsize;
 
-					Trace(tr, playerUp.UnduckedOrigin, dest, hull);
+					TracePlayer(tr, playerUp.UnduckedOrigin, dest, hull);
 					if (!tr.startsolid && !tr.allsolid)
 						VecCopy(tr.endpos, playerUp.UnduckedOrigin);
 
@@ -284,7 +435,7 @@ namespace Strafe
 			for (size_t i = 0; i < 3; ++i)
 				end[i] = player.UnduckedOrigin[i] + timeLeft * player.Velocity[i];
 
-			Trace(tr, player.UnduckedOrigin, end, hull);
+			TracePlayer(tr, player.UnduckedOrigin, end, hull);
 
 			allFraction += tr.fraction;
 			if (tr.allsolid)

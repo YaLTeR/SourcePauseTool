@@ -25,6 +25,12 @@ void PatternContainer::AddHook(PVOID functionToHook, PVOID* origPtr)
 	functions.push_back(origPtr);
 }
 
+void PatternContainer::AddVFTableHook(VFTableHook hook)
+{
+	vftable_hooks.push_back(hook);
+	*hook.origPtr = nullptr;
+}
+
 void PatternContainer::AddIndex(PVOID* origPtr, int index, std::string name)
 {
 	patterns[(int)origPtr] = index;
@@ -36,6 +42,9 @@ void PatternContainer::Hook()
 	for (auto& entry : entries)
 		MemUtils::MarkAsExecutable(*(entry.first));
 
+	for (auto& vft_hook : vftable_hooks)
+		*vft_hook.origPtr = MemUtils::HookVTable(vft_hook.vftable, vft_hook.index, vft_hook.functionToHook);
+
 	if (!entries.empty())
 		DetoursUtils::AttachDetours(moduleName, entries.size(), &entries[0]);
 }
@@ -44,4 +53,15 @@ void PatternContainer::Unhook()
 {
 	if (!entries.empty())
 		DetoursUtils::DetachDetours(moduleName, entries.size(), &functions[0]);
+
+	for (auto& vft_hook : vftable_hooks)
+		MemUtils::HookVTable(vft_hook.vftable, vft_hook.index, *vft_hook.origPtr);
+}
+
+VFTableHook::VFTableHook(void** vftable, int index, PVOID functionToHook, PVOID* origPtr)
+{
+	this->vftable = vftable;
+	this->index = index;
+	this->functionToHook = functionToHook;
+	this->origPtr = origPtr;
 }

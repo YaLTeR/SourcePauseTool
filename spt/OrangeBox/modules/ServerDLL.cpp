@@ -118,15 +118,40 @@ __declspec(naked) void ServerDLL::HOOKED_MiddleOfSlidingFunction()
 	}
 }
 
+#define PRINT_FIND(future_name) \
+	{ \
+		if (ORIG_##future_name) \
+		{ \
+			DevMsg("[server dll] Found " #future_name " at %p (using the %s pattern).\n", \
+			       (unsigned int)ORIG_##future_name - (unsigned int)moduleBase, \
+			       pattern->name()); \
+		} \
+		else \
+		{ \
+			DevWarning("[server dll] Could not find " #future_name ".\n"); \
+		} \
+	}
+
+#define PRINT_FIND_VFTABLE(future_name) \
+	{ \
+		if (ORIG_##future_name) \
+		{ \
+			DevMsg("[server dll] Found " #future_name " at %p (using the vftable).\n", \
+			       (unsigned int)ORIG_##future_name - (unsigned int)moduleBase); \
+		} \
+		else \
+		{ \
+			DevWarning("[server dll] Could not find " #future_name ".\n"); \
+		} \
+	}
+
 #define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::server::##name);
 #define GET_HOOKEDFUTURE(future_name) \
 	{ \
 		auto pattern = f##future_name.get(); \
+		PRINT_FIND(future_name) \
 		if (ORIG_##future_name) \
 		{ \
-			DevMsg("[server dll] Found " #future_name " at %p (using the %s pattern).\n", \
-			       ORIG_##future_name, \
-			       pattern->name()); \
 			patternContainer.AddHook(HOOKED_##future_name, (PVOID*)&ORIG_##future_name); \
 			for (int i = 0; true; ++i) \
 			{ \
@@ -137,20 +162,14 @@ __declspec(naked) void ServerDLL::HOOKED_MiddleOfSlidingFunction()
 				} \
 			} \
 		} \
-		else \
-		{ \
-			DevWarning("[server dll] Could not find " #future_name ".\n"); \
-		} \
 	}
 
 #define GET_FUTURE(future_name) \
 	{ \
 		auto pattern = f##future_name.get(); \
+		PRINT_FIND(future_name) \
 		if (ORIG_##future_name) \
 		{ \
-			DevMsg("[server dll] Found " #future_name " at %p (using the %s pattern).\n", \
-			       ORIG_##future_name, \
-			       pattern->name()); \
 			for (int i = 0; true; ++i) \
 			{ \
 				if (patterns::server::##future_name.at(i).name() == pattern->name()) \
@@ -159,10 +178,6 @@ __declspec(naked) void ServerDLL::HOOKED_MiddleOfSlidingFunction()
 					break; \
 				} \
 			} \
-		} \
-		else \
-		{ \
-			DevWarning("[server dll] Could not find " #future_name ".\n"); \
 		} \
 	}
 
@@ -190,6 +205,12 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	DEF_FUTURE(GetStepSoundVelocities);
 	DEF_FUTURE(CBaseEntity__SetCollisionGroup);
 	DEF_FUTURE(AllocPooledString);
+	DEF_FUTURE(TracePlayerBBoxForGround);
+	DEF_FUTURE(TracePlayerBBoxForGround2);
+	DEF_FUTURE(CGameMovement__TracePlayerBBox);
+	DEF_FUTURE(CPortalGameMovement__TracePlayerBBox);
+	DEF_FUTURE(CGameMovement__GetPlayerMaxs);
+	DEF_FUTURE(CGameMovement__GetPlayerMins);
 
 	GET_HOOKEDFUTURE(FinishGravity);
 	GET_HOOKEDFUTURE(PlayerRunCommand);
@@ -201,6 +222,12 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	GET_FUTURE(GetStepSoundVelocities);
 	GET_FUTURE(CBaseEntity__SetCollisionGroup);
 	GET_FUTURE(AllocPooledString);
+	GET_FUTURE(TracePlayerBBoxForGround);
+	GET_FUTURE(TracePlayerBBoxForGround2);
+	GET_FUTURE(CGameMovement__TracePlayerBBox);
+	GET_FUTURE(CPortalGameMovement__TracePlayerBBox);
+	GET_HOOKEDFUTURE(CGameMovement__GetPlayerMaxs);
+	GET_HOOKEDFUTURE(CGameMovement__GetPlayerMins);
 
 	// Server-side CheckJumpButton
 	if (ORIG_CheckJumpButton)
@@ -463,15 +490,16 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	extern void* gm;
 	if (gm)
 	{
-		auto vftable = reinterpret_cast<void**>(gm);
+		auto vftable = *reinterpret_cast<void***>(gm);
 		//ORIG_AirAccelerate = reinterpret_cast<_AirAccelerate>(MemUtils::HookVTable(vftable, 17, reinterpret_cast<uintptr_t>(HOOKED_AirAccelerate)));
-		ORIG_ProcessMovement = reinterpret_cast<_ProcessMovement>(
-		    MemUtils::HookVTable(vftable, 1, reinterpret_cast<void*>(HOOKED_ProcessMovement)));
-
-		DevMsg("[server dll] Hooked ProcessMovement through the vftable.\n");
+		patternContainer.AddVFTableHook(
+		    VFTableHook(vftable, 1, (PVOID)HOOKED_ProcessMovement, (PVOID*)&ORIG_ProcessMovement));
 	}
 
-	// TODO: remove fixed offsets.
+	if (!CanTracePlayerBBox())
+		Warning("tas_strafe_version 2 not available\n");
+
+		// TODO: remove fixed offsets.
 #ifdef SSDK2007
 	SnapEyeAngles = reinterpret_cast<_SnapEyeAngles>((unsigned int)moduleBase + 0x1B92F0);
 	GetActiveWeapon = reinterpret_cast<_GetActiveWeapon>((unsigned int)moduleBase + 0xCCE90);
@@ -489,16 +517,6 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 
 void ServerDLL::Unhook()
 {
-	extern void* gm;
-	if (gm)
-	{
-		auto vftable = reinterpret_cast<void**>(gm);
-		//MemUtils::HookVTable(vftable, 17, reinterpret_cast<uintptr_t>(ORIG_AirAccelerate));
-		MemUtils::HookVTable(vftable, 1, reinterpret_cast<void*>(ORIG_ProcessMovement));
-
-		DevMsg("[server dll] Unhooked ProcessMovement through the vftable.\n");
-	}
-
 	patternContainer.Unhook();
 	Clear();
 }
@@ -524,6 +542,47 @@ void ServerDLL::Clear()
 	timerRunning = false;
 	sliding = false;
 	wasSliding = false;
+	overrideMinMax = false;
+}
+
+void ServerDLL::TracePlayerBBox(const Vector& start,
+                                const Vector& end,
+                                const Vector& mins,
+                                const Vector& maxs,
+                                unsigned int fMask,
+                                int collisionGroup,
+                                trace_t& pm)
+{
+	extern void* gm;
+	overrideMinMax = true;
+	serverDLL._mins = mins;
+	serverDLL._maxs = maxs;
+
+	if (DoesGameLookLikePortal())
+		ORIG_CPortalGameMovement__TracePlayerBBox(gm, 0, start, end, fMask, collisionGroup, pm);
+	else
+		ORIG_CGameMovement__TracePlayerBBox(gm, 0, start, end, fMask, collisionGroup, pm);
+	overrideMinMax = false;
+}
+
+const Vector& __fastcall ServerDLL::HOOKED_CGameMovement__GetPlayerMaxs(void* thisptr, int edx)
+{
+	if (serverDLL.overrideMinMax)
+	{
+		return serverDLL._maxs;
+	}
+	else
+		return serverDLL.ORIG_CGameMovement__GetPlayerMaxs(thisptr, edx);
+}
+
+const Vector& __fastcall ServerDLL::HOOKED_CGameMovement__GetPlayerMins(void* thisptr, int edx)
+{
+	if (serverDLL.overrideMinMax)
+	{
+		return serverDLL._mins;
+	}
+	else
+		return serverDLL.ORIG_CGameMovement__GetPlayerMins(thisptr, edx);
 }
 
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
@@ -765,6 +824,21 @@ void ServerDLL::HOOKED_MiddleOfSlidingFunction_Func()
 			entry.command = "unpause";
 			clientDLL.AddIntoAfterframesQueue(entry);
 		}
+	}
+}
+
+bool ServerDLL::CanTracePlayerBBox()
+{
+	extern void* gm;
+	if (DoesGameLookLikePortal())
+	{
+		return gm != nullptr && ORIG_TracePlayerBBoxForGround2 && ORIG_CGameMovement__TracePlayerBBox
+		       && ORIG_CGameMovement__GetPlayerMaxs && ORIG_CGameMovement__GetPlayerMins;
+	}
+	else
+	{
+		return gm != nullptr && ORIG_TracePlayerBBoxForGround && ORIG_CGameMovement__TracePlayerBBox
+		       && ORIG_CGameMovement__GetPlayerMaxs && ORIG_CGameMovement__GetPlayerMins;
 	}
 }
 

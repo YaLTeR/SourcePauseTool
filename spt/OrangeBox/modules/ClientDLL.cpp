@@ -449,6 +449,9 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	if (ORIG_CViewRender__RenderView == nullptr || ORIG_CViewRender__Render == nullptr)
 		Warning("Overlay cameras have no effect.\n");
 
+	if (!ORIG_UTIL_TraceRay)
+		Warning("tas_strafe_version 1 not available\n");
+
 	patternContainer.Hook();
 }
 
@@ -530,21 +533,29 @@ Strafe::MovementVars ClientDLL::GetMovementVars()
 	}
 
 	auto player = ORIG_GetLocalPlayer();
-	auto onground = IsOnGround(); // TODO: This should really be a proper check.
 	auto maxspeed = *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offMaxspeed);
 
-	if (tas_force_onground.GetBool())
-		onground = true;
-
 	auto pl = GetPlayerData();
-	vars.OnGround = onground;
+	vars.OnGround = Strafe::GetPositionType(pl, pl.Ducking ? Strafe::HullType::DUCKED : Strafe::HullType::NORMAL)
+	                == Strafe::PositionType::GROUND;
+	bool ground; // for backwards compatibility with old bugs
 
-	if (!vars.OnGround && ORIG_UTIL_TraceRay && tas_strafe_use_tracing.GetBool())
-		vars.OnGround =
-		    Strafe::GetPositionType(pl, pl.Ducking ? Strafe::HullType::DUCKED : Strafe::HullType::NORMAL)
-		    == Strafe::PositionType::GROUND;
+	if (tas_strafe_version.GetInt() <= 1)
+	{
+		ground = IsGroundEntitySet();
+	}
+	else
+	{
+		ground = vars.OnGround;
+	}
 
-	vars.ReduceWishspeed = onground && GetFlagsDucking();
+	if (tas_force_onground.GetBool())
+	{
+		ground = true;
+		vars.OnGround = true;
+	}
+
+	vars.ReduceWishspeed = ground && GetFlagsDucking();
 	vars.Accelerate = _sv_accelerate->GetFloat();
 
 	if (tas_force_airaccelerate.GetString()[0] != '\0')
@@ -583,7 +594,7 @@ Strafe::MovementVars ClientDLL::GetMovementVars()
 
 		if (pl.Velocity.z <= 140.f)
 		{
-			if (onground)
+			if (ground)
 			{
 				// TODO: This should check the real surface friction.
 				vars.EntFriction = 1.0f;
@@ -722,7 +733,7 @@ void ClientDLL::OnFrame()
 	AfterFramesSignal();
 }
 
-bool ClientDLL::IsOnGround()
+bool ClientDLL::IsGroundEntitySet()
 {
 	if (ORIG_GetGroundEntity == nullptr || ORIG_GetLocalPlayer == nullptr)
 		return false;
@@ -1019,7 +1030,7 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 	}
 
 	EngineSetViewAngles(va);
-	OngroundSignal(IsOnGround());
+	OngroundSignal(IsGroundEntitySet());
 	TickSignal();
 }
 

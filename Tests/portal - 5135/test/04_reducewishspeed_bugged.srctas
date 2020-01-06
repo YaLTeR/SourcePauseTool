@@ -1,0 +1,12 @@
+demo testage             
+save testage            
+settings tas_strafe_vectorial 1; cl_mouseenable 0; tas_strafe_version 1; tas_strafe_hull_is_line 1
+playspeed 16
+
+vars
+
+frames
+s01-------|------|-d----|-90|-|27|
+s01-------|------|-d----|-90|-|19|
+s01-------|------|-d----|90|-|150|
+----------|------|------|-|-|1|cl_mouseenable 1; disconnect
