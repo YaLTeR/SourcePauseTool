@@ -60,21 +60,27 @@ namespace Strafe
 		}
 	}
 
-	static CMoveData* old;
+	static CMoveData* oldmv;
+	static void* oldPlayer;
 	static CMoveData data;
 
 	void SetMoveData()
 	{
 		data.m_nPlayerHandle = GetServerPlayer()->GetRefEHandle();
+		void** player = reinterpret_cast<void**>((char*)gm + 0x4);
 		CMoveData** mv = reinterpret_cast<CMoveData**>((char*)gm + 0x8);
-		old = *mv;
+		oldmv = *mv;
+		oldPlayer = *player;
 		*mv = &data;
+		*player = GetServerPlayer();
 	}
 
 	void UnsetMoveData()
 	{
+		void** player = reinterpret_cast<void**>((char*)gm + 0x4);
 		CMoveData** mv = reinterpret_cast<CMoveData**>((char*)gm + 0x8);
-		*mv = old;
+		*player = oldPlayer;
+		*mv = oldmv;
 	}
 
 	void TracePlayer(trace_t& trace, const Vector& start, const Vector& end, HullType hull)
