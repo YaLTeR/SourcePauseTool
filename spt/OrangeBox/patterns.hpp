@@ -255,6 +255,10 @@ namespace patterns
 		    UTIL_TraceRay,
 		    "5135",
 		    "8B 44 24 10 8B 4C 24 0C 83 EC 10 56 6A 00 50 51 8D 4C 24 10 E8 ?? ?? ?? ?? 8B 74 24 28 8B 0D ?? ?? ?? ?? 8B 11 8B 52 10");
+		PATTERNS(
+		    CViewEffects__Fade,
+		    "dmomm",
+		    "51 56 6A 14 8B F1 E8 ?? ?? ?? ?? 8B 54 24 10 8B C8 0F B7 02 89 44 24 10 83 C4 04 89 4C 24 04 DB 44 24 0C");
 	} // namespace client
 
 	namespace server

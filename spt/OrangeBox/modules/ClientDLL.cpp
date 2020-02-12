@@ -87,6 +87,14 @@ void ClientDLL::HOOKED_CViewRender__Render(void* thisptr, int edx, void* rect)
 	clientDLL.HOOKED_CViewRender__Render_Func(thisptr, edx, rect);
 }
 
+ConVar y_spt_disable_fade("y_spt_disable_fade", "0", FCVAR_ARCHIVE, "Disables all fades.");
+
+void __fastcall ClientDLL::HOOKED_CViewEffects__Fade(void* thisptr, int edx, void* data)
+{
+	if (!y_spt_disable_fade.GetBool())
+		clientDLL.ORIG_CViewEffects__Fade(thisptr, edx, data);
+}
+
 #define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::client::##name);
 #define GET_HOOKEDFUTURE(future_name) \
 	{ \
@@ -164,6 +172,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	DEF_FUTURE(CViewRender__Render);
 	DEF_FUTURE(UTIL_TraceRay);
 	DEF_FUTURE(CGameMovement__CanUnDuckJump);
+	DEF_FUTURE(CViewEffects__Fade);
 
 	GET_HOOKEDFUTURE(HudUpdate);
 	GET_HOOKEDFUTURE(GetButtonBits);
@@ -180,6 +189,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	GET_HOOKEDFUTURE(CViewRender__Render);
 	GET_FUTURE(UTIL_TraceRay);
 	GET_FUTURE(CGameMovement__CanUnDuckJump);
+	GET_HOOKEDFUTURE(CViewEffects__Fade);
 
 	if (ORIG_DoImageSpaceMotionBlur)
 	{
@@ -451,6 +461,9 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 
 	if (!ORIG_UTIL_TraceRay)
 		Warning("tas_strafe_version 1 not available\n");
+
+	if (!ORIG_CViewEffects__Fade)
+		Warning("y_spt_disable_fade 1 not available\n");
 
 	patternContainer.Hook();
 }
