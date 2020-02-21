@@ -10,11 +10,10 @@ on:
 
 jobs:
   Build:
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
-        os: [vs2017-win2016, windows-latest]
         Configuration: [Release, Release BMS, Release 2013, Release OE, Release P2]
 #        Configuration: [Debug, Debug BMS, Debug 2013, Debug OE, Debug P2, Release, Release BMS, Release 2013, Release OE, Release P2]
         include:
