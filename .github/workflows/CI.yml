@@ -58,7 +58,7 @@ jobs:
       with:
         path: utils\SourcePauseTool
     - name: Get SPT submodules
-      run: git submodule update --init --recursive
+      run: git submodule update --init --recursive -j $env:NUMBER_OF_PROCESSORS
       working-directory: utils\SourcePauseTool
     - uses: warrenbuckley/Setup-MSBuild@v1
     - name: Build
