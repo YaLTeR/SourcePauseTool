@@ -59,7 +59,7 @@ jobs:
     - name: Get SPT submodules
       run: git submodule update --init --recursive
       working-directory: utils\SourcePauseTool
-    - uses: warrenbuckley/Setup-MSBuild@v1
+    - uses: microsoft/setup-msbuild@v1
     - name: Build
       run: msbuild /m /nologo /p:Configuration="${{ matrix.Configuration }}" spt.sln
       working-directory: utils\SourcePauseTool
@@ -75,7 +75,7 @@ jobs:
     - name: Install LLVM/clang-format-8
       run: |
         wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-        sudo add-apt-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-8 main"
+        sudo add-apt-repository "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-8 main"
         sudo apt-get update
         sudo apt-get -y install clang-format-8
     - name: Format
