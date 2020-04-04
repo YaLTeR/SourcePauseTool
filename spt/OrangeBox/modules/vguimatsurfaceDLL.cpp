@@ -482,7 +482,7 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t* screen, vgui::IScheme* scheme, IMat
 		DRAW_FLAGS(L"Move collide", MOVECOLLIDE_FLAGS, flags, true);
 	}
 
-	if (y_spt_hud_vars.GetBool() && utils::serverActive())
+	if (y_spt_hud_vars.GetBool() && utils::playerEntityAvailable())
 	{
 		auto vars = clientDLL.GetMovementVars();
 		DRAW_FLOAT(L"accelerate", vars.Accelerate);
@@ -496,7 +496,7 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t* screen, vgui::IScheme* scheme, IMat
 		DRAW_INT(L"onground", (int)vars.OnGround);
 	}
 
-	if (y_spt_hud_ag_sg_tester.GetBool() && utils::serverActive())
+	if (y_spt_hud_ag_sg_tester.GetBool() && utils::playerEntityAvailable())
 	{
 		Vector v = clientDLL.GetPlayerEyePos();
 		QAngle q;

@@ -46,6 +46,9 @@ namespace scripts
 
 	bool PosSpeedCondition::IsTrue(int tick, int totalTicks) const
 	{
+		if (!utils::playerEntityAvailable())
+			return false;
+
 		Vector v;
 
 		if (isPos)
@@ -100,19 +103,19 @@ namespace scripts
 
 	bool AliveCondition::IsTrue(int tick, int totalTicks) const
 	{
-		return !utils::serverActive() || utils::GetProperty<int>(0, "m_iHealth") > 0;
+		return !utils::playerEntityAvailable() || utils::GetProperty<int>(0, "m_iHealth") > 0;
 	}
 
 	bool AliveCondition::ShouldTerminate(int tick, int totalTicks) const
 	{
-		return utils::serverActive() && utils::GetProperty<int>(0, "m_iHealth") <= 0;
+		return utils::playerEntityAvailable() && utils::GetProperty<int>(0, "m_iHealth") <= 0;
 	}
 
 	LoadCondition::LoadCondition() {}
 
 	bool LoadCondition::IsTrue(int tick, int totalTicks) const
 	{
-		return !utils::serverActive();
+		return !utils::playerEntityAvailable();
 	}
 
 	bool LoadCondition::ShouldTerminate(int tick, int totalTicks) const
@@ -128,6 +131,9 @@ namespace scripts
 
 	bool VelAngleCondition::IsTrue(int tick, int totalTicks) const
 	{
+		if (!utils::playerEntityAvailable())
+			return false;
+
 		Vector v = clientDLL.GetPlayerVelocity();
 		QAngle angles;
 		VectorAngles(v, Vector(0, 0, 1), angles);

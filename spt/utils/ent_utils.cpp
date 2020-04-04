@@ -460,6 +460,9 @@ namespace utils
 		data.canJB = false;
 		data.landingHeight = std::numeric_limits<float>::max();
 
+		if (!utils::playerEntityAvailable())
+			return data;
+
 		Vector player_origin = clientDLL.GetPlayerEyePos();
 		Vector vel = clientDLL.GetPlayerVelocity();
 
@@ -498,12 +501,12 @@ namespace utils
 		return data;
 	}
 
-	bool serverActive()
+	bool playerEntityAvailable()
 	{
-#ifdef P2
-		return GetEngine()->GetEntityCount();
+#ifdef OE
+		return false;
 #else
-		return GetEngine()->PEntityOfEntIndex(0);
+		return GetClientEntity(0) != nullptr;
 #endif
 	}
 } // namespace utils
