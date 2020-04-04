@@ -880,7 +880,7 @@ CON_COMMAND(_y_spt_setangle,
 #endif
 	Vector target;
 
-	if (args.ArgC() > 3 && utils::serverActive())
+	if (args.ArgC() > 3 && utils::playerEntityAvailable())
 	{
 		target.x = atof(args.Arg(1));
 		target.y = atof(args.Arg(2));

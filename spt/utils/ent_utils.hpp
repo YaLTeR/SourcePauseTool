@@ -45,5 +45,5 @@ namespace utils
 	};
 
 	JBData CanJB(float height);
-	bool serverActive();
+	bool playerEntityAvailable();
 } // namespace utils

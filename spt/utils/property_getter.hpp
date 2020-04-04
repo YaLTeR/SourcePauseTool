@@ -25,12 +25,16 @@ namespace utils
 #ifdef OE
 		return T();
 #else
+		auto ent = GetClientEntity(entindex);
+
+		if (!ent)
+			return T();
+
 		int offset = GetOffset(entindex, key);
 		if (offset == INVALID_OFFSET)
 			return T();
 		else
 		{
-			IClientEntity* ent = GetClientEntity(entindex);
 			return *reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(ent) + offset);
 		}
 #endif

@@ -844,7 +844,7 @@ bool ServerDLL::CanTracePlayerBBox()
 
 int ServerDLL::GetPlayerPhysicsFlags() const
 {
-	if (!utils::serverActive())
+	if (!utils::playerEntityAvailable())
 		return -1;
 	else
 		return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_afPhysicsFlags));
@@ -852,7 +852,7 @@ int ServerDLL::GetPlayerPhysicsFlags() const
 
 int ServerDLL::GetPlayerMoveType() const
 {
-	if (!utils::serverActive())
+	if (!utils::playerEntityAvailable())
 		return -1;
 	else
 		return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_moveType)) & 0xF;
@@ -860,7 +860,7 @@ int ServerDLL::GetPlayerMoveType() const
 
 int ServerDLL::GetPlayerMoveCollide() const
 {
-	if (!utils::serverActive())
+	if (!utils::playerEntityAvailable())
 		return -1;
 	else
 		return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_moveCollide)) & 0x7;
@@ -868,7 +868,7 @@ int ServerDLL::GetPlayerMoveCollide() const
 
 int ServerDLL::GetPlayerCollisionGroup() const
 {
-	if (!utils::serverActive())
+	if (!utils::playerEntityAvailable())
 		return -1;
 	else
 		return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_collisionGroup));
@@ -876,7 +876,7 @@ int ServerDLL::GetPlayerCollisionGroup() const
 
 int ServerDLL::GetEnviromentPortalHandle() const
 {
-	if (!utils::serverActive())
+	if (!utils::playerEntityAvailable())
 		return -1;
 	else
 	{
