@@ -41,6 +41,9 @@ ConVar tas_strafe_version("tas_strafe_version",
                           FCVAR_TAS_RESET,
                           "Strafe version. For backwards compatibility with old scripts.");
 
+ConVar tas_strafe_afh_length("tas_strafe_afh_length", "0.0000000000000000001", FCVAR_TAS_RESET, "Magnitude of AFHs");
+ConVar tas_strafe_afh("tas_strafe_afh", "0", FCVAR_TAS_RESET, "Should AFH?");
+
 extern void* gm;
 
 namespace Strafe
@@ -989,14 +992,25 @@ namespace Strafe
 			if (player.Velocity.Length2D()
 			    >= vars.Maxspeed * ((ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5))
 			{
-				// ABH
-				out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
-				out.Forward = false;
-				out.Back = false;
-				out.Right = false;
-				out.Left = false;
-				out.Jump = true;
-				return true;
+				if (tas_strafe_afh.GetBool())
+				{
+					out.Yaw = tas_strafe_yaw.GetFloat();
+					out.ForwardSpeed = -tas_strafe_afh_length.GetFloat();
+					out.Jump = true;
+					out.Processed = true;
+					return true;
+				}
+				else
+				{
+					// ABH
+					out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
+					out.Forward = false;
+					out.Back = false;
+					out.Right = false;
+					out.Left = false;
+					out.Jump = true;
+					return true;
+				}
 			}
 		}
 		else if (tas_strafe_jumptype.GetInt() == 3)
@@ -1028,7 +1042,7 @@ namespace Strafe
 	{
 		if (StrafeJump(jumped, player, vars, ducking, out))
 		{
-			if (!yawChanged || tas_strafe_allow_jump_override.GetBool())
+			if ((!yawChanged || tas_strafe_allow_jump_override.GetBool()) && !out.Processed)
 			{
 				out.Processed = true;
 				MapSpeeds(out, vars);
