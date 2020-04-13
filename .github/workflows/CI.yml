@@ -56,9 +56,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         path: utils\SourcePauseTool
-    - name: Get SPT submodules
-      run: git submodule update --init --recursive
-      working-directory: utils\SourcePauseTool
+        submodules: recursive
     - uses: microsoft/setup-msbuild@v1
     - name: Build
       run: msbuild /m /nologo /p:Configuration="${{ matrix.Configuration }}" spt.sln
