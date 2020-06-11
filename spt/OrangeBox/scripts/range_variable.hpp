@@ -203,7 +203,7 @@ namespace scripts
 	inline float RangeVariable<float>::Normalize(float value)
 	{
 		if (isAngle)
-			value = static_cast<float>(NormalizeDeg(static_cast<double>(value)));
+			value = static_cast<float>(utils::NormalizeDeg(static_cast<double>(value)));
 
 		return value;
 	}

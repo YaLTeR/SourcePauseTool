@@ -886,7 +886,7 @@ int __fastcall ClientDLL::HOOKED_GetButtonBits_Func(void* thisptr, int edx, int 
 
 bool DoAngleChange(float& angle, float target)
 {
-	float normalizedDiff = NormalizeDeg(target - angle);
+	float normalizedDiff = utils::NormalizeDeg(target - angle);
 	if (std::abs(normalizedDiff) > _y_spt_anglesetspeed.GetFloat())
 	{
 		angle += std::copysign(_y_spt_anglesetspeed.GetFloat(), normalizedDiff);

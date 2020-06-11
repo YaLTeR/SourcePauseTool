@@ -125,7 +125,7 @@ namespace scripts
 
 	VelAngleCondition::VelAngleCondition(float low, float high, AngleAxis axis) : low(low), high(high), axis(axis)
 	{
-		if (NormalizeDeg(high - low) < 0)
+		if (utils::NormalizeDeg(high - low) < 0)
 			throw std::exception("Low should be lower than high");
 	}
 
@@ -144,7 +144,7 @@ namespace scripts
 		else
 			f = angles.y;
 
-		return NormalizeDeg(f - low) >= 0 && NormalizeDeg(f - high) <= 0;
+		return utils::NormalizeDeg(f - low) >= 0 && utils::NormalizeDeg(f - high) <= 0;
 	}
 
 	bool VelAngleCondition::ShouldTerminate(int tick, int totalTicks) const
