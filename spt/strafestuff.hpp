@@ -139,6 +139,7 @@ namespace Strafe
 	};
 
 	void TracePlayer(trace_t& trace, const Vector& start, const Vector& end, HullType hull);
+	void Trace(trace_t& trace, const Vector& start, const Vector& end);
 
 	bool CanUnduck(const PlayerData& player);
 
