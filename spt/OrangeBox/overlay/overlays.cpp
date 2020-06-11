@@ -20,7 +20,7 @@ CameraInformation rearViewMirrorOverlay()
 	info.y = pos.y;
 	info.z = pos.z;
 	info.pitch = angles[PITCH];
-	info.yaw = NormalizeDeg(angles[YAW] + 180);
+	info.yaw = utils::NormalizeDeg(angles[YAW] + 180);
 	return info;
 }
 
@@ -35,7 +35,7 @@ CameraInformation sgOverlay()
 	info.y = pos.y;
 	info.z = pos.z;
 	info.pitch = va[PITCH];
-	info.yaw = NormalizeDeg(va[YAW]);
+	info.yaw = utils::NormalizeDeg(va[YAW]);
 
 	return info;
 }
@@ -51,7 +51,7 @@ CameraInformation agOverlay()
 	info.y = pos.y;
 	info.z = pos.z;
 	info.pitch = va[PITCH];
-	info.yaw = NormalizeDeg(va[YAW]);
+	info.yaw = utils::NormalizeDeg(va[YAW]);
 
 	return info;
 }
