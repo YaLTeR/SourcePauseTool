@@ -1,5 +1,7 @@
 #include "stdafx.h"
+
 #include "..\sptlib-wrapper.hpp"
+#include "..\utils\ent_utils.hpp"
 #include "cvars.hpp"
 #include "modules.hpp"
 #include "modules\EngineDLL.hpp"
@@ -31,6 +33,9 @@ namespace ModuleHooks
 		clientDLL.AfterFramesSignal.Connect(&scripts::g_TASReader, &scripts::SourceTASReader::OnAfterFrames);
 		clientDLL.AfterFramesSignal.Connect(&scripts::g_Tester, &scripts::Tester::OnAfterFrames);
 		clientDLL.AfterFramesSignal.Connect(&PauseOnDemoTick);
+#if !defined(OE) && !defined(P2)
+		clientDLL.AfterFramesSignal.Connect(&utils::CheckPiwSave);
+#endif
 
 		clientDLL.TickSignal.Connect(&scripts::g_Tester, &scripts::Tester::DataIteration);
 

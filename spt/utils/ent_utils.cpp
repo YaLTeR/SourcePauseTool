@@ -7,17 +7,23 @@
 #include <vector>
 
 #include "..\OrangeBox\spt-serverplugin.hpp"
-
+#include "..\OrangeBox\cvars.hpp"
 #include "..\OrangeBox\modules.hpp"
 #include "..\OrangeBox\modules\ClientDLL.hpp"
 #include "..\OrangeBox\modules\ServerDLL.hpp"
 #include "..\OrangeBox\overlay\portal_camera.hpp"
+#include "..\sptlib-wrapper.hpp"
 #include "..\strafestuff.hpp"
 #include "SPTLib\sptlib.hpp"
 #include "client_class.h"
 #include "property_getter.hpp"
 #include "string_parsing.hpp"
 #undef max
+
+#if !defined(OE) && !defined(P2)
+#define GAME_DLL
+#include "cbase.h"
+#endif
 
 #ifndef OE
 static IClientEntityList* entList;
@@ -509,4 +515,68 @@ namespace utils
 		return GetClientEntity(0) != nullptr;
 #endif
 	}
+
+#if !defined(OE) && !defined(P2)
+	static int GetServerEntityCount()
+	{
+		auto engine_server = GetEngine();
+		if (!engine_server)
+			return 0;
+
+		return engine_server->GetEntityCount();
+	}
+
+	static CBaseEntity* GetServerEntity(int index)
+	{
+		auto engine_server = GetEngine();
+		if (!engine_server)
+			return nullptr;
+
+		auto edict = engine_server->PEntityOfEntIndex(index);
+		if (!edict)
+			return nullptr;
+
+		auto unknown = edict->GetUnknown();
+		if (!unknown)
+			return nullptr;
+
+		return unknown->GetBaseEntity();
+	}
+
+	void CheckPiwSave()
+	{
+		if (y_spt_piwsave.GetString()[0] != '\0')
+		{
+			auto ply = GetServerEntity(1);
+			if (ply)
+			{
+				auto pphys = ply->VPhysicsGetObject();
+				if (pphys && (pphys->GetGameFlags() & FVPHYSICS_PENETRATING) == 0)
+				{
+					int count = GetServerEntityCount();
+					for (int i = 0; i < count; ++i)
+					{
+						auto ent = GetServerEntity(i);
+						if (!ent)
+							continue;
+
+						auto phys = ent->VPhysicsGetObject();
+						if (!phys)
+							continue;
+
+						const auto mask = FVPHYSICS_PLAYER_HELD | FVPHYSICS_PENETRATING;
+
+						if ((phys->GetGameFlags() & mask) == mask)
+						{
+							std::ostringstream oss;
+							oss << "save " << y_spt_piwsave.GetString();
+							EngineConCmd(oss.str().c_str());
+							y_spt_piwsave.SetValue("");
+						}
+					}
+				}
+			}
+		}
+	}
+#endif
 } // namespace utils

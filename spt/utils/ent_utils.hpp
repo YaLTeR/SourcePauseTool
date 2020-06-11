@@ -46,4 +46,7 @@ namespace utils
 
 	JBData CanJB(float height);
 	bool playerEntityAvailable();
+#if !defined(OE) && !defined(P2)
+	void CheckPiwSave();
+#endif
 } // namespace utils
