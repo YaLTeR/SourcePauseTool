@@ -34,35 +34,22 @@ A plugin for all your pausing needs.
    *Loading SourcePauseTool more than once will crash the game!*
 
 ### Building
-You will need Visual Studio 2017 or later, and [git](https://git-scm.com).
+You will need Visual Studio 2019 and [git](https://git-scm.com).
 
-1. Run the following in cmd, replacing `%Branch%` with the correct branch:
-
-    `git clone -b %Branch% https://github.com/alliedmodders/hl2sdk.git`
-    | SDK                                                   | Branch
-    | ----------------------------------------------------- | -----------
-    | Source SDK 2007 (Source Unpack/New Engine/Orange Box) | `orangebox`
-    | Black Mesa                                            | `bms`
-    | Source SDK 2013 (SteamPipe/latest)                    | `sdk2013`
-    | Source SDK 2006 (Old Engine)                          | `episode1`
-    | Portal 2                                              | `portal2`
-
-    For example: `git clone -b orangebox https://github.com/alliedmodders/hl2sdk.git`
-
-2. Run the following in cmd:
+1. Run the following in cmd:
     ```
-    git clone --recurse-submodules https://github.com/YaLTeR/SourcePauseTool.git hl2sdk\utils\SourcePauseTool
+    git clone --recurse-submodules https://github.com/YaLTeR/SourcePauseTool.git
     
-    hl2sdk\utils\SourcePauseTool\spt.sln
+    SourcePauseTool\spt.sln
     ```
 
-3. If Windows asks which program to open `spt.sln` with, choose Visual Studio.
+2. If Windows asks which program to open `spt.sln` with, choose Visual Studio.
 
    If Visual Studio asks to retarget projects, press OK.
 
    Once Visual Studio is open, right click `libMinHook`, click `Properties`, change `Platform Toolset` to the one corresponding to your Visual Studio version, and press OK.
 
-4. Choose the build configuration corresponding to the SDK you cloned:
+3. Choose the build configuration
     | SDK                                                   | Configuration
     | ----------------------------------------------------- | -------------
     | Source SDK 2007 (Source Unpack/New Engine/Orange Box) | `Release`
@@ -71,7 +58,7 @@ You will need Visual Studio 2017 or later, and [git](https://git-scm.com).
     | Source SDK 2006 (Old Engine)                          | `Release OE`
     | Portal 2                                              | `Release P2`
 
-5. Click `Build > Build Solution`.
+4. Click `Build > Build Solution`.
 
    `spt*.dll` will be in `hl2sdk\utils\SourcePauseTool\<Build Configuration>`
 
