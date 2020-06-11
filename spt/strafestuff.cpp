@@ -151,6 +151,22 @@ namespace Strafe
 #endif
 	}
 
+	void Trace(trace_t& trace, const Vector& start, const Vector& end)
+	{
+#ifndef OE
+		if (!clientDLL.ORIG_UTIL_TraceRay)
+			return;
+
+		Ray_t ray;
+		ray.Init(start, end);
+		clientDLL.ORIG_UTIL_TraceRay(ray,
+		                             MASK_PLAYERSOLID_BRUSHONLY,
+		                             utils::GetClientEntity(0),
+		                             COLLISION_GROUP_PLAYER_MOVEMENT,
+		                             &trace);
+#endif
+	}
+
 	void FlyMove(PlayerData& player, const MovementVars& vars, PositionType postype);
 	int ClipVelocity(Vector& velocty, const Vector& normal, float overbounce);
 	static const constexpr double SAFEGUARD_THETA_DIFFERENCE_RAD = M_PI / 65536;
