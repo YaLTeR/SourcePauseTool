@@ -1,3 +1,23 @@
 [submodule "SPTLib"]
 	path = SPTLib
 	url = https://github.com/YaLTeR/SPTLib.git
+[submodule "SDK/orangebox"]
+	path = SDK/orangebox
+	url = https://github.com/alliedmodders/hl2sdk.git
+	branch = orangebox
+[submodule "SDK/bms"]
+	path = SDK/bms
+	url = https://github.com/alliedmodders/hl2sdk.git
+	branch = bms
+[submodule "SDK/sdk2013"]
+	path = SDK/sdk2013
+	url = https://github.com/alliedmodders/hl2sdk.git
+	branch = sdk2013
+[submodule "SDK/episode1"]
+	path = SDK/episode1
+	url = https://github.com/alliedmodders/hl2sdk.git
+	branch = episode1
+[submodule "SDK/portal2"]
+	path = SDK/portal2
+	url = https://github.com/alliedmodders/hl2sdk.git
+	branch = portal2

@@ -47,16 +47,16 @@ jobs:
             SDK: portal2
             spt-filename: spt-p2
     steps:
-    - name: Checkout AlliedModders SDK
-      uses: actions/checkout@v2
-      with:
-        repository: alliedmodders/hl2sdk
-        ref: ${{ matrix.SDK }}
     - name: Checkout SPT
       uses: actions/checkout@v2
       with:
         path: utils\SourcePauseTool
-        submodules: recursive
+    - name: Checkout SPTLib
+      run: git submodule update --init SPTLib
+      working-directory: utils\SourcePauseTool
+    - name: Checkout SDK
+      run: git submodule update --init SDK\${{ matrix.SDK }}
+      working-directory: utils\SourcePauseTool
     - uses: microsoft/setup-msbuild@v1
     - name: Build
       run: msbuild /m /nologo /p:Configuration="${{ matrix.Configuration }}" spt.sln
