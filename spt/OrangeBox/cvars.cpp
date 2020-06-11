@@ -9,7 +9,8 @@ ConVar y_spt_additional_jumpboost("y_spt_additional_jumpboost",
                                   "0",
                                   0,
                                   "1 = Add in ABH movement mechanic, 2 = Add in OE movement mechanic.\n");
-ConVar y_spt_stucksave("y_spt_stucksave", "", FCVAR_TAS_RESET);
+ConVar y_spt_stucksave("y_spt_stucksave", "", FCVAR_TAS_RESET, "Automatically saves when you get stuck in a prop.\n");
+ConVar y_spt_piwsave("y_spt_piwsave", "", FCVAR_TAS_RESET, "Automatically saves when you push a prop into a wall.\n");
 ConVar y_spt_pause_demo_on_tick(
     "y_spt_pause_demo_on_tick",
     "0",
