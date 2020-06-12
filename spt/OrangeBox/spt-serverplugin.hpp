@@ -96,6 +96,7 @@ void* GetGamemovement();
 ICvar* GetCvarInterface();
 std::string GetGameDir();
 bool DoesGameLookLikePortal();
+bool DoesGameLookLikeHLS();
 
 #if defined(OE)
 struct ArgsWrapper
