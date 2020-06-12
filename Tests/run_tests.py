@@ -102,8 +102,10 @@ def find_paths():
     """Look up paths for different game builds from the config file."""
     args = configargparse.ArgParser(default_config_files=['config.ini'])
     args.add_argument('--b5135', default="")
+    args.add_argument('--steampipe', default="")
     parsed_args = args.parse_args()
     add_build_path("5135", parsed_args.b5135, "hl2.exe", get_2007_spt(), "spt")
+    add_build_path("steampipe", parsed_args.steampipe, "hl2.exe", get_2013_spt(), "spt-2013")
 
     for build in TEST_GAMEBUILDS:
         if build.path:
@@ -113,6 +115,10 @@ def find_paths():
 
 def get_2007_spt():
     releases = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Release\\spt.dll'))
+    return releases
+    
+def get_2013_spt():
+    releases = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Release 2013\\spt-2013.dll'))
     return releases
 
 def run_tests():

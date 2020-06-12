@@ -1,0 +1,14 @@
+demo test                       
+save c1a0_test
+settings tas_strafe_vectorial 1; cl_mouseenable 0; tas_strafe_version 2
+playspeed 16
+
+vars
+
+frames
+s00-------|------|--------|180|-|30|
+s00-j-----|------|--------|180|-|45|
+s00-j-----|------|--------|140|-|80|
+s00-j-----|------|--------|180|-|95|
+s00-j-----|------|--------|-90|-|40|
+----------|------|--------|-|-|1|cl_mouseenable 1; disconnect
