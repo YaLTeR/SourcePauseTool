@@ -36,6 +36,11 @@ A plugin for all your pausing needs.
 ### Building
 You will need Visual Studio 2019 and [git](https://git-scm.com).
 
+1. Open Visual Studio 2019. Click on Tools → Get Tools and Features... from the top bar of the window. 
+This should open the Visual Studio Installer in another window. From the Workload tab, install "Desktop development with C++". From the Individual Components tab, install:
+	- MSVC v141 - VS 2017 C++ x64/x86 build tools
+	- C++ Windows XP Support for VS 2017 (v141) tools
+
 1. Run the following in cmd:
     ```
     git clone --recurse-submodules https://github.com/YaLTeR/SourcePauseTool.git
@@ -43,13 +48,13 @@ You will need Visual Studio 2019 and [git](https://git-scm.com).
     SourcePauseTool\spt.sln
     ```
 
-2. If Windows asks which program to open `spt.sln` with, choose Visual Studio.
+1. If Windows asks which program to open `spt.sln` with, choose Visual Studio.
 
    If Visual Studio asks to retarget projects, press OK.
 
    Once Visual Studio is open, right click `libMinHook`, click `Properties`, change `Platform Toolset` to the one corresponding to your Visual Studio version, and press OK.
 
-3. Choose the build configuration
+1. Choose the build configuration
     | SDK                                                   | Configuration
     | ----------------------------------------------------- | -------------
     | Source SDK 2007 (Source Unpack/New Engine/Orange Box) | `Release`
@@ -58,7 +63,7 @@ You will need Visual Studio 2019 and [git](https://git-scm.com).
     | Source SDK 2006 (Old Engine)                          | `Release OE`
     | Portal 2                                              | `Release P2`
 
-4. Click `Build > Build Solution`.
+1. Click `Build > Build Solution`.
 
    `spt*.dll` will be in `hl2sdk\utils\SourcePauseTool\<Build Configuration>`
 
