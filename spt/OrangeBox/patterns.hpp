@@ -259,6 +259,10 @@ namespace patterns
 		    CViewEffects__Fade,
 		    "dmomm",
 		    "51 56 6A 14 8B F1 E8 ?? ?? ?? ?? 8B 54 24 10 8B C8 0F B7 02 89 44 24 10 83 C4 04 89 4C 24 04 DB 44 24 0C");
+		PATTERNS(
+		    CHudDamageIndicator__GetDamagePosition,
+		    "5135",
+		    "83 EC 18 E8 ?? ?? ?? ?? e8 ?? ?? ?? ?? 8B 08 89 4C 24 0C 8B 50 04 6A 00 89 54 24 14 8B 40 08 6A 00 8D 4C 24 08 51 8D 54 24 18 52 89 44 24 24");
 	} // namespace client
 
 	namespace server

@@ -153,7 +153,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	m_Name = moduleName;
 	m_Base = moduleBase;
 	m_Length = moduleLength;
-	uintptr_t ORIG_MiddleOfCAM_Think, ORIG_CHLClient__CanRecordDemo;
+	uintptr_t ORIG_MiddleOfCAM_Think, ORIG_CHLClient__CanRecordDemo, ORIG_CHudDamageIndicator__GetDamagePosition;
 
 	patternContainer.Init(moduleName);
 
@@ -173,6 +173,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	DEF_FUTURE(UTIL_TraceRay);
 	DEF_FUTURE(CGameMovement__CanUnDuckJump);
 	DEF_FUTURE(CViewEffects__Fade);
+	DEF_FUTURE(CHudDamageIndicator__GetDamagePosition);
 
 	GET_HOOKEDFUTURE(HudUpdate);
 	GET_HOOKEDFUTURE(GetButtonBits);
@@ -190,6 +191,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	GET_FUTURE(UTIL_TraceRay);
 	GET_FUTURE(CGameMovement__CanUnDuckJump);
 	GET_HOOKEDFUTURE(CViewEffects__Fade);
+	GET_FUTURE(CHudDamageIndicator__GetDamagePosition);
 
 	if (DoesGameLookLikeHLS())
 	{
@@ -448,6 +450,13 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 		DevMsg("[client.dll] Found GetClientModeNormal at %p\n", ORIG_GetClientModeNormal);
 	}
 
+	if (ORIG_CHudDamageIndicator__GetDamagePosition)
+	{
+		int offset = *reinterpret_cast<int*>(ORIG_CHudDamageIndicator__GetDamagePosition + 4);
+		ORIG_MainViewOrigin = (_MainViewOrigin)(offset + ORIG_CHudDamageIndicator__GetDamagePosition + 8);
+		DevMsg("[client.dll] Found MainViewOrigin at %p\n", ORIG_MainViewOrigin);
+	}
+
 	extern bool FoundEngineServer();
 	if (ORIG_CreateMove && ORIG_GetGroundEntity && ORIG_CalcAbsoluteVelocity && ORIG_GetLocalPlayer
 	    && ORIG_GetButtonBits && _sv_airaccelerate && _sv_accelerate && _sv_friction && _sv_maxspeed
@@ -498,6 +507,7 @@ void ClientDLL::Clear()
 	ORIG_CViewRender__RenderView = nullptr;
 	ORIG_CViewRender__Render = nullptr;
 	ORIG_UTIL_TraceRay = nullptr;
+	ORIG_MainViewOrigin = nullptr;
 
 	pgpGlobals = nullptr;
 	off1M_nOldButtons = 0;
@@ -692,6 +702,11 @@ Vector ClientDLL::GetPlayerEyePos()
 	}
 
 	return rval;
+}
+
+Vector ClientDLL::GetCameraOrigin()
+{
+	return *reinterpret_cast<Vector*>(ORIG_MainViewOrigin());
 }
 
 int ClientDLL::GetPlayerFlags()
