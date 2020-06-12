@@ -200,6 +200,7 @@ protected:
 	ptrdiff_t offDuckJumpTime;
 	ptrdiff_t offServerSurfaceFriction;
 	ptrdiff_t offServerPreviouslyPredictedOrigin;
+	std::size_t sizeofCUserCmd;
 
 public:
 	ptrdiff_t offServerAbsOrigin;

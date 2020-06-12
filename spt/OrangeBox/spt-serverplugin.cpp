@@ -203,6 +203,17 @@ bool DoesGameLookLikeDMoMM()
 	return false;
 }
 
+bool DoesGameLookLikeHLS()
+{
+	if (g_pCVar)
+	{
+		if (g_pCVar->FindVar("hl1_ref_db_distance"))
+			return true;
+	}
+
+	return false;
+}
+
 bool FoundEngineServer()
 {
 	return (engine_server != nullptr);

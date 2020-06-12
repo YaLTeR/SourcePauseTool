@@ -191,6 +191,15 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	GET_FUTURE(CGameMovement__CanUnDuckJump);
 	GET_HOOKEDFUTURE(CViewEffects__Fade);
 
+	if (DoesGameLookLikeHLS())
+	{
+		sizeofCUserCmd = 84 - sizeof(CUtlVector<int>);
+	}
+	else
+	{
+		sizeofCUserCmd = 84;
+	}
+
 	if (ORIG_DoImageSpaceMotionBlur)
 	{
 		int ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_DoImageSpaceMotionBlur);
@@ -1054,7 +1063,7 @@ void __fastcall ClientDLL::HOOKED_CreateMove_Func(void* thisptr,
                                                   bool active)
 {
 	auto m_pCommands = *reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(thisptr) + offM_pCommands);
-	pCmd = m_pCommands + 84 * (sequence_number % 90);
+	pCmd = m_pCommands + sizeofCUserCmd * (sequence_number % 90);
 
 	ORIG_CreateMove(thisptr, edx, sequence_number, input_sample_frametime, active);
 
