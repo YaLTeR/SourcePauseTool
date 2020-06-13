@@ -49,6 +49,7 @@ typedef void(__cdecl* _UTIL_TraceRay)(const Ray_t& ray,
                                       trace_t* ptr);
 typedef bool(__fastcall* _CGameMovement__CanUnDuckJump)(void* thisptr, int edx, trace_t& ptr);
 typedef void(__fastcall* _CViewEffects__Fade)(void* thisptr, int edx, void* data);
+typedef const Vector&(__cdecl* _MainViewOrigin)();
 
 struct afterframes_entry_t
 {
@@ -156,6 +157,7 @@ public:
 	Strafe::PlayerData GetPlayerData();
 	Vector GetPlayerVelocity();
 	Vector GetPlayerEyePos();
+	Vector GetCameraOrigin();
 	int GetPlayerFlags();
 	bool GetFlagsDucking();
 	double GetDuckJumpTime();
@@ -186,6 +188,7 @@ protected:
 	_CViewRender__Render ORIG_CViewRender__Render;
 	_CGameMovement__CanUnDuckJump ORIG_CGameMovement__CanUnDuckJump;
 	_CViewEffects__Fade ORIG_CViewEffects__Fade;
+	_MainViewOrigin ORIG_MainViewOrigin;
 
 	uintptr_t* pgpGlobals;
 	ptrdiff_t offM_pCommands;
