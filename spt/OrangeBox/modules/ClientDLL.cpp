@@ -706,7 +706,7 @@ Vector ClientDLL::GetPlayerEyePos()
 
 Vector ClientDLL::GetCameraOrigin()
 {
-	return *reinterpret_cast<Vector*>(ORIG_MainViewOrigin());
+	return ORIG_MainViewOrigin();
 }
 
 int ClientDLL::GetPlayerFlags()

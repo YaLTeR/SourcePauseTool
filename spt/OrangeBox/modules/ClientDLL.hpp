@@ -49,7 +49,7 @@ typedef void(__cdecl* _UTIL_TraceRay)(const Ray_t& ray,
                                       trace_t* ptr);
 typedef bool(__fastcall* _CGameMovement__CanUnDuckJump)(void* thisptr, int edx, trace_t& ptr);
 typedef void(__fastcall* _CViewEffects__Fade)(void* thisptr, int edx, void* data);
-typedef void*(__cdecl* _MainViewOrigin)();
+typedef const Vector&(__cdecl* _MainViewOrigin)();
 
 struct afterframes_entry_t
 {
