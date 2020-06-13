@@ -483,6 +483,9 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	if (!ORIG_CViewEffects__Fade)
 		Warning("y_spt_disable_fade 1 not available\n");
 
+	if (!ORIG_MainViewOrigin)
+		Warning("y_spt_hud_oob 1 has no effect\n");
+
 	patternContainer.Hook();
 }
 
@@ -706,6 +709,8 @@ Vector ClientDLL::GetPlayerEyePos()
 
 Vector ClientDLL::GetCameraOrigin()
 {
+	if (!ORIG_MainViewOrigin)
+		return Vector();
 	return ORIG_MainViewOrigin();
 }
 
