@@ -1135,9 +1135,9 @@ void ClientDLL::HOOKED_CViewRender__Render_Func(void* thisptr, int edx, void* re
 	ORIG_CViewRender__Render(thisptr, edx, rect);
 #else
 	renderingOverlay = false;
+	screenRect = rect;
 	if (!g_OverlayRenderer.shouldRenderOverlay())
 	{
-		screenRect = rect;
 		ORIG_CViewRender__Render(thisptr, edx, rect);
 	}
 	else
