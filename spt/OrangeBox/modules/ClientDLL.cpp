@@ -483,7 +483,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	if (!ORIG_CViewEffects__Fade)
 		Warning("y_spt_disable_fade 1 not available\n");
 
-	if (!ORIG_MainViewOrigin)
+	if (!ORIG_MainViewOrigin || !ORIG_UTIL_TraceRay)
 		Warning("y_spt_hud_oob 1 has no effect\n");
 
 	patternContainer.Hook();

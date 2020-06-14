@@ -233,7 +233,7 @@ namespace patterns
 		    "55 8B EC 83 EC 24 89 4D E0 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? D8 1D ?? ?? ?? ?? DF E0 F6 C4 05 7A 5A");
 		PATTERNS(
 		    CViewRender__RenderView,
-		         "5135",
+		    "5135",
 		    "55 8B EC 83 E4 F8 81 EC 24 01 00 00 53 56 57 8B F9 8D 8F 20 01 00 00 89 7C 24 24 E8",
 		    "3420",
 		    "55 8B EC 83 E4 F8 81 EC 24 01 00 00 53 8B 5D 08 56 57 8B F9 8D 8F 94 00 00 00 53 89 7C 24 28 89 4C 24 34 E8");
@@ -257,7 +257,9 @@ namespace patterns
 		PATTERNS(
 		    UTIL_TraceRay,
 		    "5135",
-		    "8B 44 24 10 8B 4C 24 0C 83 EC 10 56 6A 00 50 51 8D 4C 24 10 E8 ?? ?? ?? ?? 8B 74 24 28 8B 0D ?? ?? ?? ?? 8B 11 8B 52 10");
+		    "8B 44 24 10 8B 4C 24 0C 83 EC 10 56 6A 00 50 51 8D 4C 24 10 E8 ?? ?? ?? ?? 8B 74 24 28 8B 0D ?? ?? ?? ?? 8B 11 8B 52 10",
+			"3420",
+			"8B 44 24 10 8B 4C 24 0C 83 EC 0C 56 50 51 8D 4C 24 0C E8 ?? ?? ?? ?? 8B 74 24 24 8B 0D ?? ?? ?? ?? 8B 11 8B 52 10");
 		PATTERNS(
 		    CViewEffects__Fade,
 		    "dmomm",
