@@ -1,23 +1,29 @@
 [submodule "SPTLib"]
 	path = SPTLib
 	url = https://github.com/YaLTeR/SPTLib.git
+	shallow = true
 [submodule "SDK/orangebox"]
 	path = SDK/orangebox
 	url = https://github.com/alliedmodders/hl2sdk.git
 	branch = orangebox
+	shallow = true
 [submodule "SDK/bms"]
 	path = SDK/bms
 	url = https://github.com/alliedmodders/hl2sdk.git
 	branch = bms
+	shallow = true
 [submodule "SDK/sdk2013"]
 	path = SDK/sdk2013
 	url = https://github.com/alliedmodders/hl2sdk.git
 	branch = sdk2013
+	shallow = true
 [submodule "SDK/episode1"]
 	path = SDK/episode1
 	url = https://github.com/alliedmodders/hl2sdk.git
 	branch = episode1
+	shallow = true
 [submodule "SDK/portal2"]
 	path = SDK/portal2
 	url = https://github.com/alliedmodders/hl2sdk.git
 	branch = portal2
+	shallow = true
