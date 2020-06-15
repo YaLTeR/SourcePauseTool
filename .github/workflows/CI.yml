@@ -2,11 +2,9 @@ name: CI
 
 on:
   push:
-    paths-ignore:
-      - README.md
+    paths-ignore: [README.md]
   pull_request:
-    paths-ignore:
-      - README.md
+    paths-ignore: [README.md]
 
 jobs:
   Build:
@@ -18,53 +16,40 @@ jobs:
         include:
           - Configuration: Debug
             SDK: orangebox
-            spt-filename: spt
           - Configuration: Debug BMS
             SDK: bms
-            spt-filename: spt-bms
           - Configuration: Debug 2013
             SDK: sdk2013
-            spt-filename: spt-2013
           - Configuration: Debug OE
             SDK: episode1
-            spt-filename: spt-oe
           - Configuration: Debug P2
             SDK: portal2
-            spt-filename: spt-p2
           - Configuration: Release
             SDK: orangebox
-            spt-filename: spt
           - Configuration: Release BMS
             SDK: bms
-            spt-filename: spt-bms
           - Configuration: Release 2013
             SDK: sdk2013
-            spt-filename: spt-2013
           - Configuration: Release OE
             SDK: episode1
-            spt-filename: spt-oe
           - Configuration: Release P2
             SDK: portal2
-            spt-filename: spt-p2
     steps:
     - name: Checkout SPT
       uses: actions/checkout@v2
-      with:
-        path: utils\SourcePauseTool
-    - name: Checkout SPTLib
-      run: git submodule update --init SPTLib
-      working-directory: utils\SourcePauseTool
-    - name: Checkout SDK
-      run: git submodule update --init SDK\${{ matrix.SDK }}
-      working-directory: utils\SourcePauseTool
+    - name: Checkout submodules
+      run: git submodule update --init -j $env:NUMBER_OF_PROCESSORS SPTLib SDK\${{ matrix.SDK }}
     - uses: microsoft/setup-msbuild@v1
     - name: Build
       run: msbuild /m /nologo /p:Configuration="${{ matrix.Configuration }}" spt.sln
-      working-directory: utils\SourcePauseTool
+    - name: Get SPT DLL name
+      run: |
+        $spt_filename = (gi "${{ matrix.Configuration }}\spt*.dll").BaseName
+        echo "::set-env name=spt_filename::$spt_filename"
     - uses: actions/upload-artifact@v2
       with:
-        name: ${{ matrix.Configuration }} - ${{ matrix.spt-filename }}
-        path: utils\SourcePauseTool\${{ matrix.Configuration }}\${{ matrix.spt-filename }}.dll
+        name: ${{ matrix.Configuration }} - ${{ env.spt_filename }}
+        path: ${{ matrix.Configuration }}\${{ env.spt_filename }}.dll
 
   Format:
     runs-on: ubuntu-18.04
