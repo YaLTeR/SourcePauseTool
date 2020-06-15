@@ -44,7 +44,7 @@ jobs:
       run: msbuild /m /nologo /p:Configuration="${{ matrix.Configuration }}" spt.sln
     - name: Get SPT DLL name
       run: |
-        $spt_filename = (gi "${{ matrix.Configuration }}\spt*.dll").BaseName
+        $spt_filename = (Get-Item "${{ matrix.Configuration }}\spt*.dll").BaseName
         echo "::set-env name=spt_filename::$spt_filename"
     - uses: actions/upload-artifact@v2
       with:
