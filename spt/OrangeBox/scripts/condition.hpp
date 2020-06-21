@@ -90,4 +90,17 @@ namespace scripts
 		bool IsTrue(int tick, int totalTicks) const override;
 		bool ShouldTerminate(int tick, int totalTicks) const override;
 	};
+
+#if SSDK2007
+	class PBubbleCondition : public Condition
+	{
+	public:
+		PBubbleCondition(bool inBubble);
+		bool IsTrue(int tick, int totalTicks) const override;
+		bool ShouldTerminate(int tick, int totalTicks) const override;
+
+	private:
+		bool searchForInBubble;
+	};
+#endif
 } // namespace scripts

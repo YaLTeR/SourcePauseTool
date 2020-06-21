@@ -459,6 +459,9 @@ namespace scripts
 		propertyHandlers["changelevel"] = &SourceTASReader::HandleCLCondition;
 		propertyHandlers["velyaw"] = &SourceTASReader::HandleVelYaw;
 		propertyHandlers["velpitch"] = &SourceTASReader::HandleVelPitch;
+#if SSDK2007
+		propertyHandlers["portal_bubble"] = &SourceTASReader::HandlePBubbleCondition;
+#endif
 	}
 
 	void SourceTASReader::HandleSave(const std::string& value)
@@ -523,6 +526,14 @@ namespace scripts
 	{
 		conditions.push_back(std::unique_ptr<Condition>(new AliveCondition()));
 	}
+
+#if SSDK2007
+	void SourceTASReader::HandlePBubbleCondition(const std::string& value)
+	{
+		auto inBubble = ParseValue<bool>(value);
+		conditions.push_back(std::unique_ptr<Condition>(new PBubbleCondition(inBubble)));
+	}
+#endif
 
 	void SourceTASReader::HandleCLCondition(const std::string& value)
 	{

@@ -8,6 +8,8 @@
 #include "..\modules.hpp"
 #include "..\modules\ClientDLL.hpp"
 
+const int INDEX_MASK = MAX_EDICTS - 1;
+
 namespace scripts
 {
 	TickRangeCondition::TickRangeCondition(int low, int high, bool reverse)
@@ -151,4 +153,21 @@ namespace scripts
 	{
 		return false;
 	}
+
+#if SSDK2007
+	PBubbleCondition::PBubbleCondition(bool inBubble) : searchForInBubble(inBubble) {}
+
+	bool PBubbleCondition::IsTrue(int tick, int totalTicks) const 
+	{
+		// copied from GetEnviromentPortal() in portal_camera.cpp
+		int handle = utils::GetProperty<int>(0, "m_hPortalEnvironment");
+		int index = (handle & INDEX_MASK) - 1;
+		return (utils::GetClientEntity(index) == NULL) ^ searchForInBubble;
+	}
+
+	bool PBubbleCondition::ShouldTerminate(int tick, int totalTicks) const
+	{
+		return false;
+	}
+#endif
 } // namespace scripts
