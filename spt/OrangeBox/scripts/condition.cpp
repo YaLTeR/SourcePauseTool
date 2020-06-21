@@ -2,6 +2,8 @@
 
 #include "condition.hpp"
 
+#include <spt\OrangeBox\overlay\portal_camera.hpp>
+
 #include "..\..\utils\ent_utils.hpp"
 #include "..\..\utils\math.hpp"
 #include "..\..\utils\property_getter.hpp"
@@ -159,10 +161,7 @@ namespace scripts
 
 	bool PBubbleCondition::IsTrue(int tick, int totalTicks) const
 	{
-		// copied from GetEnviromentPortal() in portal_camera.cpp
-		int handle = utils::GetProperty<int>(0, "m_hPortalEnvironment");
-		int index = (handle & INDEX_MASK) - 1;
-		return (utils::GetClientEntity(index) == NULL) ^ searchForInBubble;
+		return (GetEnvironmentPortal() == NULL) ^ searchForInBubble;
 	}
 
 	bool PBubbleCondition::ShouldTerminate(int tick, int totalTicks) const

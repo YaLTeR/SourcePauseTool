@@ -2,6 +2,7 @@
 
 #ifndef OE
 #include "..\spt-serverplugin.hpp"
+
 #include "..\..\utils\ent_utils.hpp"
 #include "..\..\utils\property_getter.hpp"
 #include "..\cvars.hpp"
@@ -57,7 +58,7 @@ bool invalidPortal(IClientEntity* portal)
 	return !portal || strcmp(portal->GetClientClass()->GetName(), "CProp_Portal") != 0;
 }
 
-IClientEntity* GetEnviromentPortal()
+IClientEntity* GetEnvironmentPortal()
 {
 	auto player = utils::GetPlayer();
 	int handle = utils::GetProperty<int>(0, "m_hPortalEnvironment");
@@ -221,7 +222,7 @@ IClientEntity* getPortal(const char* arg, bool verbose)
 
 	if (want_auto)
 	{
-		return GetEnviromentPortal();
+		return GetEnvironmentPortal();
 	}
 
 	if (want_blue || want_orange || want_auto)
