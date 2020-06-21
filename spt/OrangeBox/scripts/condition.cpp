@@ -157,7 +157,7 @@ namespace scripts
 #if SSDK2007
 	PBubbleCondition::PBubbleCondition(bool inBubble) : searchForInBubble(inBubble) {}
 
-	bool PBubbleCondition::IsTrue(int tick, int totalTicks) const 
+	bool PBubbleCondition::IsTrue(int tick, int totalTicks) const
 	{
 		// copied from GetEnviromentPortal() in portal_camera.cpp
 		int handle = utils::GetProperty<int>(0, "m_hPortalEnvironment");
