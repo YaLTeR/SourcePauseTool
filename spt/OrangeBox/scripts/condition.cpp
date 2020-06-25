@@ -10,7 +10,6 @@
 #include "..\modules.hpp"
 #include "..\modules\ClientDLL.hpp"
 
-
 namespace scripts
 {
 	TickRangeCondition::TickRangeCondition(int low, int high, bool reverse)
