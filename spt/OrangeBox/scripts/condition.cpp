@@ -10,7 +10,6 @@
 #include "..\modules.hpp"
 #include "..\modules\ClientDLL.hpp"
 
-const int INDEX_MASK = MAX_EDICTS - 1;
 
 namespace scripts
 {
