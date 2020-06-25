@@ -460,7 +460,10 @@ namespace scripts
 		propertyHandlers["velyaw"] = &SourceTASReader::HandleVelYaw;
 		propertyHandlers["velpitch"] = &SourceTASReader::HandleVelPitch;
 #if SSDK2007
-		propertyHandlers["portal_bubble"] = &SourceTASReader::HandlePBubbleCondition;
+		if (DoesGameLookLikePortal())
+		{
+			propertyHandlers["portal_bubble"] = &SourceTASReader::HandlePBubbleCondition;
+		}
 #endif
 	}
 
