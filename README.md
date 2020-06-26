@@ -16,7 +16,7 @@ A plugin for all your pausing needs.
 2. Place the DLL into the correct folder:
     | SDK                    | Folder
     | ---------------------- | -----------------------------------------
-    | Old Engine             | Topmost `bin` with `AdminServer.dll` etc.
+    | Old Engine/Portal 3420 | Topmost `bin` with `AdminServer.dll` etc.
     | Old Engine mods        | `Source SDK Base\bin`
     | Half-Life 2            | `hl2`
     | Half-Life 2: Episode 1 | `episodic`
