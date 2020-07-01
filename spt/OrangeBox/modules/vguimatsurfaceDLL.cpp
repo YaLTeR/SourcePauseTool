@@ -1,8 +1,11 @@
 #include "stdafx.h"
+
 #include "vguimatsurfaceDLL.hpp"
+
 #include <SPTLib\Windows\detoursutils.hpp>
 #include <SPTLib\hooks.hpp>
 #include <SPTLib\memutils.hpp>
+
 #include "..\..\utils\ent_utils.hpp"
 #include "..\..\utils\property_getter.hpp"
 #include "..\..\utils\string_parsing.hpp"
@@ -453,7 +456,7 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t* screen, vgui::IScheme* scheme, IMat
 #if SSDK2007
 	if (y_spt_hud_portal_bubble.GetBool())
 	{
-		int in_bubble = GetEnviromentPortal() != NULL;
+		int in_bubble = GetEnvironmentPortal() != NULL;
 		DRAW_INT(L"portal bubble", in_bubble);
 	}
 #endif

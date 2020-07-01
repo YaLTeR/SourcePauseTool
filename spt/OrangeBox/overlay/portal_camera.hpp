@@ -7,7 +7,7 @@
 #include "tier2\tier2.h"
 
 bool invalidPortal(IClientEntity* portal);
-IClientEntity* GetEnviromentPortal();
+IClientEntity* GetEnvironmentPortal();
 void calculateAGPosition(Vector& new_player_origin, QAngle& new_player_angles);
 void calculateAGOffsetPortal(IClientEntity* enter_portal,
                              IClientEntity* exit_portal,

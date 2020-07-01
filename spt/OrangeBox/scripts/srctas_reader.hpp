@@ -3,6 +3,7 @@
 #include <map>
 #include <sstream>
 #include <string>
+
 #include "condition.hpp"
 #include "parsed_script.hpp"
 #include "range_variable.hpp"
@@ -70,6 +71,9 @@ namespace scripts
 		void HandleCLCondition(const std::string& value);
 		void HandleVelPitch(const std::string& value);
 		void HandleVelYaw(const std::string& value);
+#if SSDK2007
+		void HandlePBubbleCondition(const std::string& value);
+#endif
 
 		void HandleXPos(const std::string& value)
 		{
