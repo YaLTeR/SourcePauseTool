@@ -30,7 +30,7 @@ ConVar tas_strafe_type(
     "tas_strafe_type",
     "0",
     FCVAR_TAS_RESET,
-    "TAS strafe types:\n\t0 - Max acceleration strafing,\n\t1 - Max angle strafing.\n\t4 - Max accel strafing with a speed cap.\n");
+    "TAS strafe types:\n\t0 - Max acceleration strafing,\n\t1 - Max angle strafing.\n\t2 - Max accel strafing with a speed cap.\n\t3 - W strafing.\n");
 ConVar tas_strafe_dir(
     "tas_strafe_dir",
     "3",
