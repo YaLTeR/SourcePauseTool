@@ -575,7 +575,7 @@ namespace Strafe
 	                   double target)
 	{
 		double accel = onground ? vars.Accelerate : vars.Airaccelerate;
-		double L = onground ? vars.Maxspeed : std::min(vars.Maxspeed, (float)30);
+		double L = vars.WishspeedCap;
 		double gamma1 = vars.EntFriction * vars.Frametime * vars.Maxspeed * accel;
 
 		PlayerData copy = player;
