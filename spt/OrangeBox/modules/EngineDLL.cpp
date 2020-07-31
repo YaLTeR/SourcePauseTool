@@ -63,6 +63,27 @@ void __cdecl EngineDLL::HOOKED_Host_AccumulateTime(float dt)
 		engineDLL.ORIG_Host_AccumulateTime(dt);
 }
 
+void EngineDLL::SetPreventNextDemoStop()
+{
+	preventNextDemoStopsCount = 2;
+}
+
+void __fastcall EngineDLL::HOOKED_Disconnect(void* thisptr, int edx, bool bShowMainMenu) 
+{
+	//ConMsg("DISCONNECT, SHOW MENU: %d\n", bShowMainMenu);
+	//if (bShowMainMenu)
+	//	engineDLL.preventNextDemoStopsCount = 0;// TODO TEST WITHOUT THIS AHHHHHHHHHHHH
+	engineDLL.ORIG_Disconnect(thisptr, edx, bShowMainMenu);
+}
+
+void __fastcall EngineDLL::HOOKED_StopRecording(void* thisptr, int edx) {
+	ConMsg("STOPRECORDING HOOKED, PREVENTINTG: %d\n", y_spt_prevent_demo_stop.GetBool());
+	if (y_spt_prevent_demo_stop.GetBool())
+		DevMsg("demo will not stop recording");
+	else
+		engineDLL.ORIG_StopRecording(thisptr, edx);
+}
+
 void __cdecl EngineDLL::HOOKED_Cbuf_Execute()
 {
 	TRACE_ENTER();
@@ -147,6 +168,8 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	DEF_FUTURE(CEngineTrace__PointOutsideWorld);
 	DEF_FUTURE(_Host_RunFrame);
 	DEF_FUTURE(Host_AccumulateTime);
+	DEF_FUTURE(Disconnect);
+	DEF_FUTURE(StopRecording);
 
 	GET_HOOKEDFUTURE(SV_ActivateServer);
 	GET_HOOKEDFUTURE(FinishRestore);
@@ -157,6 +180,8 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	GET_FUTURE(CEngineTrace__PointOutsideWorld);
 	GET_FUTURE(_Host_RunFrame);
 	GET_HOOKEDFUTURE(Host_AccumulateTime);
+	GET_HOOKEDFUTURE(Disconnect);
+	GET_HOOKEDFUTURE(StopRecording);
 
 	// m_bLoadgame and pGameServer (&sv)
 	if (ORIG_SpawnPlayer)
@@ -336,6 +361,8 @@ void EngineDLL::Clear()
 	ORIG__Host_RunFrame = nullptr;
 	ORIG__Host_RunFrame_Input = nullptr;
 	ORIG__Host_RunFrame_Server = nullptr;
+	ORIG_Disconnect = nullptr;
+	ORIG_StopRecording = nullptr;
 	ORIG_Cbuf_Execute = nullptr;
 	ORIG_VGui_Paint = nullptr;
 	pGameServer = nullptr;
@@ -346,6 +373,7 @@ void EngineDLL::Clear()
 	pM_State = nullptr;
 	pM_nSignonState = nullptr;
 	pDemoplayer = nullptr;
+	preventNextDemoStopsCount = 0;
 }
 
 float EngineDLL::GetTickrate() const

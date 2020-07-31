@@ -25,6 +25,8 @@ typedef void(__fastcall* _VGui_Paint)(void* thisptr, int edx, int mode);
 typedef int(__fastcall* DemoPlayer__Func)(void* thisptr);
 typedef bool(__fastcall* _CEngineTrace__PointOutsideWorld)(void* thisptr, int edx, const Vector& pt);
 typedef void(__cdecl* _Host_AccumulateTime)(float dt);
+typedef void(__fastcall* _Disconnect)(void* thisptr, int edx, bool bShowMainMenu);
+typedef void(__fastcall* _StopRecording)(void* thisptr, int edx);
 
 class EngineDLL : public IHookableNameFilter
 {
@@ -45,6 +47,8 @@ public:
 	static void __cdecl HOOKED__Host_RunFrame_Input(float accumulated_extra_samples, int bFinalTick);
 	static void __cdecl HOOKED__Host_RunFrame_Server(int bFinalTick);
 	static void __cdecl HOOKED_Host_AccumulateTime(float dt);
+	static void __fastcall HOOKED_Disconnect(void* thisptr, int edx, bool bShowMainMenu);
+	static void __fastcall HOOKED_StopRecording(void* thisptr, int edx);
 	static void __cdecl HOOKED_Cbuf_Execute();
 	static void __fastcall HOOKED_VGui_Paint(void* thisptr, int edx, int mode);
 	bool __cdecl HOOKED_SV_ActivateServer_Func();
@@ -63,6 +67,7 @@ public:
 	int Demo_GetTotalTicks() const;
 	bool Demo_IsPlayingBack() const;
 	bool Demo_IsPlaybackPaused() const;
+	void SetPreventNextDemoStop();
 	_CEngineTrace__PointOutsideWorld ORIG_CEngineTrace__PointOutsideWorld;
 
 protected:
@@ -76,6 +81,9 @@ protected:
 	_Cbuf_Execute ORIG_Cbuf_Execute;
 	_VGui_Paint ORIG_VGui_Paint;
 	_Host_AccumulateTime ORIG_Host_AccumulateTime;
+	_Disconnect ORIG_Disconnect;
+	_StopRecording ORIG_StopRecording;
+
 
 	void* pGameServer;
 	bool* pM_bLoadgame;
@@ -91,4 +99,5 @@ protected:
 	int GetTotalTicks_Offset;
 	int IsPlayingBack_Offset;
 	int IsPlaybackPaused_Offset;
+	int preventNextDemoStopsCount;
 };
