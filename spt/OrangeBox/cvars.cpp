@@ -20,14 +20,14 @@ ConVar y_spt_pause_demo_on_tick(
     "x > 0 means pause the demo at tick number x.\n"
     "x < 0 means pause the demo at <demo length> + x, so for example -1 will pause the demo at the last tick.\n\n"
     "Demos ending with changelevels report incorrect length; you can obtain the correct demo length using listdemo and then set this CVar to <demo length> - 1 manually.");
-ConVar y_spt_prevent_demo_stop("y_spt_prevent_demo_stop",
-                               "0",
-                               FCVAR_TAS_RESET | FCVAR_DONTRECORD | FCVAR_HIDDEN,
-                               "Set to 1 to prevent the game stopping recording demos");
 ConVar y_spt_on_slide_pause_for("y_spt_on_slide_pause_for",
                                 "0",
                                 0,
                                 "Whenever sliding occurs in DMoMM, pause for this many ticks.");
+ConVar y_spt_override_demo_naming("y_spt_override_demo_naming", 
+                                  "0",
+                                  FCVAR_DONTRECORD,
+                                  "Allow demos to continue recording through loads just like through map transitions. Use tas_override_demo_naming to use during tas scripts.");
 
 ConVar tas_strafe("tas_strafe", "0", FCVAR_TAS_RESET);
 ConVar tas_strafe_type(
@@ -106,7 +106,12 @@ ConVar tas_force_onground(
     "0",
     FCVAR_TAS_RESET,
     "If enabled, strafing assumes the player is on ground regardless of what the prediction indicates. Useful for save glitch in Portal where the prediction always reports the player being in the air.\n");
-
+ConVar tas_override_demo_naming(
+    "tas_override_demo_naming",
+    "1",
+    FCVAR_DONTRECORD,
+    "Allow demos to continue recording through loads just like through map transitions while running tas scripts. \
+    Useful if a script goes through map transitions and uses 'sl' or manually loads saves. Use y_spt_override_demo_naming to use outside of tas scripts.\n");
 ConVar tas_pause("tas_pause", "0", 0, "Does a pause where you can look around when the game is paused.\n");
 ConVar tas_log("tas_log", "0", 0, "If enabled, dumps a whole bunch of different stuff into the console.\n");
 ConVar tas_strafe_lgagst(

@@ -25,7 +25,6 @@ typedef void(__fastcall* _VGui_Paint)(void* thisptr, int edx, int mode);
 typedef int(__fastcall* DemoPlayer__Func)(void* thisptr);
 typedef bool(__fastcall* _CEngineTrace__PointOutsideWorld)(void* thisptr, int edx, const Vector& pt);
 typedef void(__cdecl* _Host_AccumulateTime)(float dt);
-typedef void(__fastcall* _Disconnect)(void* thisptr, int edx, bool bShowMainMenu);
 typedef void(__fastcall* _StopRecording)(void* thisptr, int edx);
 
 class EngineDLL : public IHookableNameFilter
@@ -47,8 +46,9 @@ public:
 	static void __cdecl HOOKED__Host_RunFrame_Input(float accumulated_extra_samples, int bFinalTick);
 	static void __cdecl HOOKED__Host_RunFrame_Server(int bFinalTick);
 	static void __cdecl HOOKED_Host_AccumulateTime(float dt);
-	static void __fastcall HOOKED_Disconnect(void* thisptr, int edx, bool bShowMainMenu);
 	static void __fastcall HOOKED_StopRecording(void* thisptr, int edx);
+	static void HOOKED_MiddleOfLoadSaveGame();
+	static void HOOKED_MiddleOfState_LoadGame();
 	static void __cdecl HOOKED_Cbuf_Execute();
 	static void __fastcall HOOKED_VGui_Paint(void* thisptr, int edx, int mode);
 	bool __cdecl HOOKED_SV_ActivateServer_Func();
@@ -59,6 +59,8 @@ public:
 	void __cdecl HOOKED__Host_RunFrame_Server_Func(int bFinalTick);
 	void __cdecl HOOKED_Cbuf_Execute_Func();
 	void __fastcall HOOKED_VGui_Paint_Func(void* thisptr, int edx, int mode);
+	void HOOKED_MiddleOfLoadSaveGame_Func();
+	void HOOKED_MiddleOfState_LoadGame_Func();
 
 	float GetTickrate() const;
 	void SetTickrate(float value);
@@ -81,8 +83,9 @@ protected:
 	_Cbuf_Execute ORIG_Cbuf_Execute;
 	_VGui_Paint ORIG_VGui_Paint;
 	_Host_AccumulateTime ORIG_Host_AccumulateTime;
-	_Disconnect ORIG_Disconnect;
 	_StopRecording ORIG_StopRecording;
+	void* ORIG_MiddleOfLoadSaveGame; // TODO check
+	void* ORIG_MiddleOfState_LoadGame;
 
 
 	void* pGameServer;
@@ -94,6 +97,9 @@ protected:
 	int* pM_State;
 	int* pM_nSignonState;
 	void** pDemoplayer;
+
+	void* thisptrFromStopRecording;
+	int edxFromStopRecording;
 
 	int GetPlaybackTick_Offset;
 	int GetTotalTicks_Offset;

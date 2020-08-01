@@ -70,9 +70,9 @@ namespace scripts
 		++demoCount;
 		AddAfterFramesEntry(afterFramesTick,
 		                    "save " + sName + "; load " + sName + +";  _y_spt_afterframes_await_load");
-		if (!demoName.empty())
+		if (!tas_override_demo_naming.GetBool() && !demoName.empty())
 			AddAfterFramesEntry(afterFramesTick + 1,
-			                    "record " + demoName + "_" + std::to_string(demoCount));
+				                "record " + demoName + "_" + std::to_string(demoCount));
 		++afterFramesTick;
 	}
 

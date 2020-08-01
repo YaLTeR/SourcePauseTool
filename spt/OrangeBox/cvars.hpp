@@ -11,8 +11,8 @@ extern ConVar y_spt_additional_jumpboost;
 extern ConVar y_spt_stucksave;
 extern ConVar y_spt_piwsave;
 extern ConVar y_spt_pause_demo_on_tick;
-extern ConVar y_spt_prevent_demo_stop;
 extern ConVar y_spt_on_slide_pause_for;
+extern ConVar y_spt_override_demo_naming;
 
 extern ConVar tas_strafe;
 extern ConVar tas_strafe_type;
@@ -43,6 +43,7 @@ extern ConVar tas_strafe_hull_is_line;
 extern ConVar tas_strafe_use_tracing;
 extern ConVar tas_strafe_autojb;
 extern ConVar tas_strafe_version;
+extern ConVar tas_override_demo_naming;
 
 extern ConVar tas_script_printvars;
 extern ConVar tas_script_savestates;

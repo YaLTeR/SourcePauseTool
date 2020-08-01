@@ -1214,25 +1214,4 @@ CON_COMMAND(
 	Msg("Could not find a seam shot. Best guess: setang %.8f %.8f 0\n", test.x, test.y);
 }
 
-CON_COMMAND(
-	y_spt_load, 
-	"load a save, but keep recording demos with the same prefix like when going through a map transition",
-	FCVAR_DONTRECORD)
-{
-	if (args.ArgC() == 2)
-	{
-		// TODO ADD WARNINGS IF PATTERNS NOT FOUND
-		ConVar& cvar = y_spt_prevent_demo_stop;
-		std::stringstream ss;
-		ss << cvar.GetName() << " 1; load " << args.Arg(1) << "; wait 5; " << cvar.GetName() << " 0";
-		const std::string tmp = ss.str();
-		EngineConCmd(tmp.c_str());
-		ConMsg("\"%s\"", tmp.c_str());
-	}
-	else
-	{
-		Msg("Usage: y_spt_load [save]\n");
-	}
-}
-
 #endif

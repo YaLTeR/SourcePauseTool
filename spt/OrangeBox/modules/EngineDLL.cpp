@@ -12,9 +12,30 @@
 #include "..\overlay\overlay-renderer.hpp"
 #include "..\patterns.hpp"
 #include "vguimatsurfaceDLL.hpp"
+#include <spt\OrangeBox\scripts\srctas_reader.hpp>
 
 using std::size_t;
 using std::uintptr_t;
+
+// see MiddleOfSlidingFunction, it is important to not use local variables and to 
+// push/pop these registers before calling another function
+#define HOOKED_MID_FUNCTION_WRAPPER(func_name) \
+	__declspec(naked) void EngineDLL::HOOKED_##func_name() \
+	{ \
+		__asm { \
+			__asm pushad \
+			__asm pushfd \
+		} \
+		engineDLL.HOOKED_##func_name##_Func(); \
+		__asm { \
+			__asm popfd \
+			__asm popad \
+			__asm jmp engineDLL.ORIG_##func_name \
+		} \
+	}
+
+HOOKED_MID_FUNCTION_WRAPPER(MiddleOfLoadSaveGame)
+HOOKED_MID_FUNCTION_WRAPPER(MiddleOfState_LoadGame)
 
 bool __cdecl EngineDLL::HOOKED_SV_ActivateServer()
 {
@@ -68,20 +89,18 @@ void EngineDLL::SetPreventNextDemoStop()
 	preventNextDemoStopsCount = 2;
 }
 
-void __fastcall EngineDLL::HOOKED_Disconnect(void* thisptr, int edx, bool bShowMainMenu) 
-{
-	//ConMsg("DISCONNECT, SHOW MENU: %d\n", bShowMainMenu);
-	//if (bShowMainMenu)
-	//	engineDLL.preventNextDemoStopsCount = 0;// TODO TEST WITHOUT THIS AHHHHHHHHHHHH
-	engineDLL.ORIG_Disconnect(thisptr, edx, bShowMainMenu);
-}
-
 void __fastcall EngineDLL::HOOKED_StopRecording(void* thisptr, int edx) {
-	ConMsg("STOPRECORDING HOOKED, PREVENTINTG: %d\n", y_spt_prevent_demo_stop.GetBool());
-	if (y_spt_prevent_demo_stop.GetBool())
-		DevMsg("demo will not stop recording");
+	engineDLL.thisptrFromStopRecording = thisptr; // save for later
+	engineDLL.edxFromStopRecording = edx;
+	if (engineDLL.preventNextDemoStopsCount > 0)
+	{
+		DevMsg("Disabling 'StopRecording'\n");
+		engineDLL.preventNextDemoStopsCount--;
+	}
 	else
+	{
 		engineDLL.ORIG_StopRecording(thisptr, edx);
+	}
 }
 
 void __cdecl EngineDLL::HOOKED_Cbuf_Execute()
@@ -168,8 +187,9 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	DEF_FUTURE(CEngineTrace__PointOutsideWorld);
 	DEF_FUTURE(_Host_RunFrame);
 	DEF_FUTURE(Host_AccumulateTime);
-	DEF_FUTURE(Disconnect);
 	DEF_FUTURE(StopRecording);
+	DEF_FUTURE(MiddleOfLoadSaveGame);
+	DEF_FUTURE(MiddleOfState_LoadGame);
 
 	GET_HOOKEDFUTURE(SV_ActivateServer);
 	GET_HOOKEDFUTURE(FinishRestore);
@@ -180,8 +200,9 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	GET_FUTURE(CEngineTrace__PointOutsideWorld);
 	GET_FUTURE(_Host_RunFrame);
 	GET_HOOKEDFUTURE(Host_AccumulateTime);
-	GET_HOOKEDFUTURE(Disconnect);
 	GET_HOOKEDFUTURE(StopRecording);
+	GET_HOOKEDFUTURE(MiddleOfLoadSaveGame);
+	GET_HOOKEDFUTURE(MiddleOfState_LoadGame);
 
 	// m_bLoadgame and pGameServer (&sv)
 	if (ORIG_SpawnPlayer)
@@ -343,6 +364,18 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 		pHost_Realtime = *reinterpret_cast<float**>((uintptr_t)ORIG_Host_AccumulateTime + 5);
 	}
 
+	if (!ORIG_MiddleOfLoadSaveGame)
+	{
+		Warning("y_spt_override_demo_name and tas_override_demo_name have no effect.\n");
+	}
+	else
+	{
+		ConCommand* cmd = g_pCVar->FindCommand("load"); // override_demo_naming includes load commands which is no bueno
+		cmd->AddFlags(FCVAR_DONTRECORD);
+		if (!ORIG_MiddleOfState_LoadGame)
+			Warning("Enabling y_spt_override_demo_name and tas_override_demo_name might cause issues if disconnecting.\n");
+	}
+
 	patternContainer.Hook();
 }
 
@@ -361,8 +394,9 @@ void EngineDLL::Clear()
 	ORIG__Host_RunFrame = nullptr;
 	ORIG__Host_RunFrame_Input = nullptr;
 	ORIG__Host_RunFrame_Server = nullptr;
-	ORIG_Disconnect = nullptr;
 	ORIG_StopRecording = nullptr;
+	ORIG_MiddleOfLoadSaveGame = nullptr;
+	ORIG_MiddleOfState_LoadGame = nullptr;
 	ORIG_Cbuf_Execute = nullptr;
 	ORIG_VGui_Paint = nullptr;
 	pGameServer = nullptr;
@@ -457,6 +491,7 @@ ConVar _y_spt_afterframes_await_legacy("_y_spt_afterframes_await_legacy",
 void __fastcall EngineDLL::HOOKED_FinishRestore_Func(void* thisptr, int edx)
 {
 	DevMsg("Engine call: FinishRestore();\n");
+	preventNextDemoStopsCount = 0;
 
 	if (ORIG_SetPaused && (y_spt_pause.GetInt() == 1))
 	{
@@ -564,4 +599,31 @@ void __fastcall EngineDLL::HOOKED_VGui_Paint_Func(void* thisptr, int edx, int mo
 #endif
 
 	ORIG_VGui_Paint(thisptr, edx, mode);
+}
+
+void EngineDLL::HOOKED_MiddleOfLoadSaveGame_Func() 
+{
+	int curScriptTick = scripts::g_TASReader.GetCurrentTick();
+	int curScriptLen = scripts::g_TASReader.GetCurrentScriptLength();
+	if (curScriptTick != 0)
+	{
+		if (curScriptTick <= curScriptLen) // in a script
+			preventNextDemoStopsCount = tas_override_demo_naming.GetBool() ? 2 : 0;
+		else
+			preventNextDemoStopsCount = y_spt_override_demo_naming.GetBool() ? 2 : 0;
+	}
+	else
+		preventNextDemoStopsCount = 0; // we're loading a script, let the demo stop
+
+	if (preventNextDemoStopsCount > 0)
+		DevMsg("Disabling the next %d 'StopRecording' calls.\n", preventNextDemoStopsCount);
+}
+
+void EngineDLL::HOOKED_MiddleOfState_LoadGame_Func() {
+	if (preventNextDemoStopsCount > 0)
+	{
+		DevMsg("Loading save failed... stopping demo recording manually.\n");
+		preventNextDemoStopsCount = 0;
+		ORIG_StopRecording(thisptrFromStopRecording, edxFromStopRecording);
+	}
 }
