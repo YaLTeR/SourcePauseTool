@@ -10,8 +10,12 @@
 #include "..\patterns.hpp"
 #include "ServerDLL.hpp"
 
+#define MID_FUNCTION_HOOK_WRAPPER(func_name) GENERIC_MID_FUNCTION_HOOK_WRAPPER(func_name, ServerDLL, serverDLL)
+
 using std::size_t;
 using std::uintptr_t;
+
+MID_FUNCTION_HOOK_WRAPPER(MiddleOfSlidingFunction)
 
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton(void* thisptr, int edx)
 {
@@ -91,33 +95,6 @@ int __cdecl ServerDLL::HOOKED_DispatchSpawn(void* pEntity)
 	TRACE_ENTER();
 	return serverDLL.ORIG_DispatchSpawn(pEntity);
 }
-
-__declspec(naked) void ServerDLL::HOOKED_MiddleOfSlidingFunction()
-{
-	/**
-	 * This is a hook in the middle of a function.
-	 * Save all registers and EFLAGS to restore right before jumping out.
-	 * Don't use local variables as they will corrupt the stack.
-	 */
-	__asm {
-		pushad;
-		pushfd;
-	}
-
-	serverDLL.HOOKED_MiddleOfSlidingFunction_Func();
-
-	__asm {
-		popfd;
-		popad;
-		/**
-		 * It's important that nothing modifies the registers, the EFLAGS or the stack past this point,
-		 * or the game won't be able to continue normally.
-		 */
-
-		jmp serverDLL.ORIG_MiddleOfSlidingFunction;
-	}
-}
-
 
 
 #define PRINT_FIND(future_name) \

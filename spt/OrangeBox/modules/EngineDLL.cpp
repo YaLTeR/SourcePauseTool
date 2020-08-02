@@ -14,28 +14,13 @@
 #include "vguimatsurfaceDLL.hpp"
 #include <spt\OrangeBox\scripts\srctas_reader.hpp>
 
+#define MID_FUNCTION_HOOK_WRAPPER(func_name) GENERIC_MID_FUNCTION_HOOK_WRAPPER(func_name, EngineDLL, engineDLL)
+
 using std::size_t;
 using std::uintptr_t;
 
-// see MiddleOfSlidingFunction, it is important to not use local variables and to 
-// push/pop these registers before calling another function
-#define HOOKED_MID_FUNCTION_WRAPPER(func_name) \
-	__declspec(naked) void EngineDLL::HOOKED_##func_name() \
-	{ \
-		__asm { \
-			__asm pushad \
-			__asm pushfd \
-		} \
-		engineDLL.HOOKED_##func_name##_Func(); \
-		__asm { \
-			__asm popfd \
-			__asm popad \
-			__asm jmp engineDLL.ORIG_##func_name \
-		} \
-	}
-
-HOOKED_MID_FUNCTION_WRAPPER(MiddleOfLoadSaveGame)
-HOOKED_MID_FUNCTION_WRAPPER(MiddleOfState_LoadGame)
+MID_FUNCTION_HOOK_WRAPPER(MiddleOfLoadSaveGame)
+MID_FUNCTION_HOOK_WRAPPER(MiddleOfState_LoadGame)
 
 bool __cdecl EngineDLL::HOOKED_SV_ActivateServer()
 {
@@ -364,9 +349,9 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 		pHost_Realtime = *reinterpret_cast<float**>((uintptr_t)ORIG_Host_AccumulateTime + 5);
 	}
 
-	if (!ORIG_MiddleOfLoadSaveGame)
+	if (!ORIG_MiddleOfLoadSaveGame || !ORIG_StopRecording)
 	{
-		Warning("y_spt_override_demo_name and tas_override_demo_name have no effect.\n");
+		Warning("y_spt_override_demo_naming and tas_override_demo_naming have no effect.\n");
 	}
 	else
 	{
@@ -605,7 +590,7 @@ void EngineDLL::HOOKED_MiddleOfLoadSaveGame_Func()
 {
 	int curScriptTick = scripts::g_TASReader.GetCurrentTick();
 	int curScriptLen = scripts::g_TASReader.GetCurrentScriptLength();
-	if (curScriptTick != 0)
+	if (curScriptTick != 0 && ORIG_StopRecording)
 	{
 		if (curScriptTick <= curScriptLen) // in a script
 			preventNextDemoStopsCount = tas_override_demo_naming.GetBool() ? 2 : 0;
@@ -613,7 +598,7 @@ void EngineDLL::HOOKED_MiddleOfLoadSaveGame_Func()
 			preventNextDemoStopsCount = y_spt_override_demo_naming.GetBool() ? 2 : 0;
 	}
 	else
-		preventNextDemoStopsCount = 0; // we're loading a script, let the demo stop
+		preventNextDemoStopsCount = 0; // we're loading a script, let the demo stop (or we haven't hooked StopRecordin())
 
 	if (preventNextDemoStopsCount > 0)
 		DevMsg("Disabling the next %d 'StopRecording' calls.\n", preventNextDemoStopsCount);

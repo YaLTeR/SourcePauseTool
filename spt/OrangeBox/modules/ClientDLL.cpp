@@ -22,6 +22,8 @@
 #undef min
 #endif
 
+#define MID_FUNCTION_HOOK_WRAPPER(func_name) GENERIC_MID_FUNCTION_HOOK_WRAPPER(func_name, ClientDLL, clientDLL)
+
 using std::size_t;
 using std::uintptr_t;
 
