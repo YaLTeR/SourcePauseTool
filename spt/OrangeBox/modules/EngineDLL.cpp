@@ -4,6 +4,7 @@
 
 #include <SPTLib\hooks.hpp>
 #include <SPTLib\memutils.hpp>
+#include <spt\OrangeBox\scripts\srctas_reader.hpp>
 
 #include "..\..\sptlib-wrapper.hpp"
 #include "..\..\utils\ent_utils.hpp"
@@ -12,7 +13,6 @@
 #include "..\overlay\overlay-renderer.hpp"
 #include "..\patterns.hpp"
 #include "vguimatsurfaceDLL.hpp"
-#include <spt\OrangeBox\scripts\srctas_reader.hpp>
 
 #define MID_FUNCTION_HOOK_WRAPPER(func_name) GENERIC_MID_FUNCTION_HOOK_WRAPPER(func_name, EngineDLL, engineDLL)
 
@@ -74,7 +74,8 @@ void EngineDLL::SetPreventNextDemoStop()
 	preventNextDemoStopsCount = 2;
 }
 
-void __fastcall EngineDLL::HOOKED_StopRecording(void* thisptr, int edx) {
+void __fastcall EngineDLL::HOOKED_StopRecording(void* thisptr, int edx)
+{
 	engineDLL.thisptrFromStopRecording = thisptr; // save for later
 	engineDLL.edxFromStopRecording = edx;
 	if (engineDLL.preventNextDemoStopsCount > 0)
@@ -355,10 +356,12 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	}
 	else
 	{
-		ConCommand* cmd = g_pCVar->FindCommand("load"); // override_demo_naming includes load commands which is no bueno
+		ConCommand* cmd =
+		    g_pCVar->FindCommand("load"); // override_demo_naming includes load commands which is no bueno
 		cmd->AddFlags(FCVAR_DONTRECORD);
 		if (!ORIG_MiddleOfState_LoadGame)
-			Warning("Enabling y_spt_override_demo_name and tas_override_demo_name might cause issues if disconnecting.\n");
+			Warning(
+			    "Enabling y_spt_override_demo_name and tas_override_demo_name might cause issues if disconnecting.\n");
 	}
 
 	patternContainer.Hook();
@@ -586,7 +589,7 @@ void __fastcall EngineDLL::HOOKED_VGui_Paint_Func(void* thisptr, int edx, int mo
 	ORIG_VGui_Paint(thisptr, edx, mode);
 }
 
-void EngineDLL::HOOKED_MiddleOfLoadSaveGame_Func() 
+void EngineDLL::HOOKED_MiddleOfLoadSaveGame_Func()
 {
 	int curScriptTick = scripts::g_TASReader.GetCurrentTick();
 	int curScriptLen = scripts::g_TASReader.GetCurrentScriptLength();
@@ -604,7 +607,8 @@ void EngineDLL::HOOKED_MiddleOfLoadSaveGame_Func()
 		DevMsg("Disabling the next %d 'StopRecording' calls.\n", preventNextDemoStopsCount);
 }
 
-void EngineDLL::HOOKED_MiddleOfState_LoadGame_Func() {
+void EngineDLL::HOOKED_MiddleOfState_LoadGame_Func()
+{
 	if (preventNextDemoStopsCount > 0)
 	{
 		DevMsg("Loading save failed... stopping demo recording manually.\n");

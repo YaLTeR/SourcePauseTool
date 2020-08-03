@@ -87,7 +87,6 @@ protected:
 	void* ORIG_MiddleOfLoadSaveGame; // TODO check
 	void* ORIG_MiddleOfState_LoadGame;
 
-
 	void* pGameServer;
 	bool* pM_bLoadgame;
 	bool shouldPreventNextUnpause;

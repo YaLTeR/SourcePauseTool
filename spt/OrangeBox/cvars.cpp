@@ -24,10 +24,11 @@ ConVar y_spt_on_slide_pause_for("y_spt_on_slide_pause_for",
                                 "0",
                                 0,
                                 "Whenever sliding occurs in DMoMM, pause for this many ticks.");
-ConVar y_spt_override_demo_naming("y_spt_override_demo_naming", 
-                                  "0",
-                                  FCVAR_DONTRECORD,
-                                  "Allow demos to continue recording through loads just like through map transitions. Use tas_override_demo_naming to use during tas scripts.");
+ConVar y_spt_override_demo_naming(
+    "y_spt_override_demo_naming",
+    "0",
+    FCVAR_DONTRECORD,
+    "Allow demos to continue recording through loads just like through map transitions. Use tas_override_demo_naming to use during tas scripts.");
 
 ConVar tas_strafe("tas_strafe", "0", FCVAR_TAS_RESET);
 ConVar tas_strafe_type(
