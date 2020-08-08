@@ -24,11 +24,11 @@ ConVar y_spt_on_slide_pause_for("y_spt_on_slide_pause_for",
                                 "0",
                                 0,
                                 "Whenever sliding occurs in DMoMM, pause for this many ticks.");
-ConVar y_spt_override_demo_naming(
-    "y_spt_override_demo_naming",
+ConVar y_spt_record_through_loads(
+    "y_spt_record_through_loads",
     "0",
     FCVAR_DONTRECORD,
-    "Allow demos to continue recording through loads just like through map transitions. Use tas_override_demo_naming to use during tas scripts.");
+    "Allow demos to continue recording through loads just like through map transitions. Use tas_record_through_loads to use during tas scripts.");
 
 ConVar tas_strafe("tas_strafe", "0", FCVAR_TAS_RESET);
 ConVar tas_strafe_type(
@@ -107,12 +107,12 @@ ConVar tas_force_onground(
     "0",
     FCVAR_TAS_RESET,
     "If enabled, strafing assumes the player is on ground regardless of what the prediction indicates. Useful for save glitch in Portal where the prediction always reports the player being in the air.\n");
-ConVar tas_override_demo_naming(
-    "tas_override_demo_naming",
+ConVar tas_record_through_loads(
+    "tas_record_through_loads",
     "1",
     FCVAR_DONTRECORD,
     "Allow demos to continue recording through loads just like through map transitions while running tas scripts. \
-    Useful if a script goes through map transitions and uses 'sl' or manually loads saves. Use y_spt_override_demo_naming to use outside of tas scripts.\n");
+    Useful if a script goes through map transitions and uses 'sl' or manually loads saves. Use y_spt_record_through_loads to use outside of tas scripts.\n");
 ConVar tas_pause("tas_pause", "0", 0, "Does a pause where you can look around when the game is paused.\n");
 ConVar tas_log("tas_log", "0", 0, "If enabled, dumps a whole bunch of different stuff into the console.\n");
 ConVar tas_strafe_lgagst(

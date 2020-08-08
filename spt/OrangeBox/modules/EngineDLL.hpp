@@ -84,7 +84,7 @@ protected:
 	_VGui_Paint ORIG_VGui_Paint;
 	_Host_AccumulateTime ORIG_Host_AccumulateTime;
 	_StopRecording ORIG_StopRecording;
-	void* ORIG_MiddleOfLoadSaveGame; // TODO check
+	void* ORIG_MiddleOfLoadSaveGame;
 	void* ORIG_MiddleOfState_LoadGame;
 
 	void* pGameServer;
