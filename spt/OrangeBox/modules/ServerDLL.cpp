@@ -21,7 +21,7 @@ using std::uintptr_t;
 		/* Don't use local variables as they will corrupt the stack.*/ \
 		__asm { \
 			__asm pushad \
-			__asm pushfd } \
+			__asm pushfd} \
 		serverDLL.HOOKED_##func_name##_Func(); \
 		__asm { \
 			__asm popfd \

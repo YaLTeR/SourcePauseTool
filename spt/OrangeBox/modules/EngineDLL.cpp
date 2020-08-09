@@ -358,17 +358,20 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 		pHost_Realtime = *reinterpret_cast<float**>((uintptr_t)ORIG_Host_AccumulateTime + 5);
 	}
 
-	if (!ORIG_MiddleOfLoadSaveGame || !ORIG_StopRecording)
-	{
-		Warning("y_spt_record_through_loads and tas_record_through_loads have no effect.\n");
-	}
-	else
+#ifndef OE
+	if (ORIG_MiddleOfLoadSaveGame && ORIG_StopRecording)
 	{
 		// record_through_loads includes load commands in demos which is no bueno
 		ConCommand* cmd = g_pCVar->FindCommand("load");
 		cmd->AddFlags(FCVAR_DONTRECORD);
 		if (!ORIG_MiddleOfState_LoadGame)
 			Warning("record_through_loads might cause issues if disconnecting.\n");
+	}
+	else
+#endif // !OE
+	{
+		Warning("y_spt_record_through_loads and tas_record_through_loads have no effect.\n");
+		ORIG_MiddleOfLoadSaveGame = ORIG_StopRecording = nullptr;
 	}
 
 	patternContainer.Hook();
