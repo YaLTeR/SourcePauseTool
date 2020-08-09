@@ -594,8 +594,8 @@ void EngineDLL::HOOKED_MiddleOfLoadSaveGame_Func()
 		else
 			preventNextDemoStopsCount = y_spt_record_through_loads.GetBool() ? 2 : 0;
 	}
-	else
-		preventNextDemoStopsCount = 0; // we're loading a script, let the demo stop (or we haven't hooked StopRecording())
+	else // we're loading a script, let the demo stop (or we haven't hooked StopRecording())
+		preventNextDemoStopsCount = 0;
 
 	if (preventNextDemoStopsCount > 0)
 		DevMsg("Disabling the next %d 'StopRecording' calls.\n", preventNextDemoStopsCount);

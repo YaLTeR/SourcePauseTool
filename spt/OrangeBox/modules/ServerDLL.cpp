@@ -1,14 +1,16 @@
 #include "stdafx.h"
-#include "..\cvars.hpp"
-#include "..\modules.hpp"
+
+#include "ServerDLL.hpp"
 
 #include <SPTLib\hooks.hpp>
 #include <SPTLib\memutils.hpp>
+
 #include "..\..\sptlib-wrapper.hpp"
 #include "..\..\utils\ent_utils.hpp"
+#include "..\cvars.hpp"
+#include "..\modules.hpp"
 #include "..\overlay\overlays.hpp"
 #include "..\patterns.hpp"
-#include "ServerDLL.hpp"
 
 #define MID_FUNCTION_HOOK_WRAPPER(func_name) GENERIC_MID_FUNCTION_HOOK_WRAPPER(func_name, ServerDLL, serverDLL)
 
@@ -95,7 +97,6 @@ int __cdecl ServerDLL::HOOKED_DispatchSpawn(void* pEntity)
 	TRACE_ENTER();
 	return serverDLL.ORIG_DispatchSpawn(pEntity);
 }
-
 
 #define PRINT_FIND(future_name) \
 	{ \
