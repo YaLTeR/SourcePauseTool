@@ -69,11 +69,6 @@ void __cdecl EngineDLL::HOOKED_Host_AccumulateTime(float dt)
 		engineDLL.ORIG_Host_AccumulateTime(dt);
 }
 
-void EngineDLL::SetPreventNextDemoStop()
-{
-	preventNextDemoStopsCount = 2;
-}
-
 void __fastcall EngineDLL::HOOKED_StopRecording(void* thisptr, int edx)
 {
 	engineDLL.thisptrFromStopRecording = thisptr; // save for later
@@ -600,8 +595,7 @@ void EngineDLL::HOOKED_MiddleOfLoadSaveGame_Func()
 			preventNextDemoStopsCount = y_spt_record_through_loads.GetBool() ? 2 : 0;
 	}
 	else
-		preventNextDemoStopsCount =
-		    0; // we're loading a script, let the demo stop (or we haven't hooked StopRecording())
+		preventNextDemoStopsCount = 0; // we're loading a script, let the demo stop (or we haven't hooked StopRecording())
 
 	if (preventNextDemoStopsCount > 0)
 		DevMsg("Disabling the next %d 'StopRecording' calls.\n", preventNextDemoStopsCount);

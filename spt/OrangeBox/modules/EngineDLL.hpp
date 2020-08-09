@@ -69,7 +69,6 @@ public:
 	int Demo_GetTotalTicks() const;
 	bool Demo_IsPlayingBack() const;
 	bool Demo_IsPlaybackPaused() const;
-	void SetPreventNextDemoStop();
 	_CEngineTrace__PointOutsideWorld ORIG_CEngineTrace__PointOutsideWorld;
 
 protected:
