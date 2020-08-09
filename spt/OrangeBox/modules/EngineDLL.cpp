@@ -356,10 +356,11 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	}
 	else
 	{
-		ConCommand* cmd = g_pCVar->FindCommand("load"); // record_through_loads includes load commands in demos which is no bueno
+		// record_through_loads includes load commands in demos which is no bueno
+		ConCommand* cmd = g_pCVar->FindCommand("load");
 		cmd->AddFlags(FCVAR_DONTRECORD);
 		if (!ORIG_MiddleOfState_LoadGame)
-			Warning("Enabling y_spt_override_demo_name and tas_override_demo_name might cause issues if disconnecting.\n");
+			Warning("Enabling y_spt_record_through_loads and tas_record_through_loads might cause issues if disconnecting.\n");
 	}
 
 	patternContainer.Hook();
@@ -599,7 +600,8 @@ void EngineDLL::HOOKED_MiddleOfLoadSaveGame_Func()
 			preventNextDemoStopsCount = y_spt_record_through_loads.GetBool() ? 2 : 0;
 	}
 	else
-		preventNextDemoStopsCount = 0; // we're loading a script, let the demo stop (or we haven't hooked StopRecording())
+		preventNextDemoStopsCount =
+		    0; // we're loading a script, let the demo stop (or we haven't hooked StopRecording())
 
 	if (preventNextDemoStopsCount > 0)
 		DevMsg("Disabling the next %d 'StopRecording' calls.\n", preventNextDemoStopsCount);
