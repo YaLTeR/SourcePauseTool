@@ -181,9 +181,11 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	DEF_FUTURE(CEngineTrace__PointOutsideWorld);
 	DEF_FUTURE(_Host_RunFrame);
 	DEF_FUTURE(Host_AccumulateTime);
+#ifndef OE
 	DEF_FUTURE(StopRecording);
 	DEF_FUTURE(MiddleOfLoadSaveGame);
 	DEF_FUTURE(MiddleOfState_LoadGame);
+#endif
 
 	GET_HOOKEDFUTURE(SV_ActivateServer);
 	GET_HOOKEDFUTURE(FinishRestore);
@@ -194,9 +196,11 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	GET_FUTURE(CEngineTrace__PointOutsideWorld);
 	GET_FUTURE(_Host_RunFrame);
 	GET_HOOKEDFUTURE(Host_AccumulateTime);
+#ifndef OE
 	GET_HOOKEDFUTURE(StopRecording);
 	GET_HOOKEDFUTURE(MiddleOfLoadSaveGame);
 	GET_HOOKEDFUTURE(MiddleOfState_LoadGame);
+#endif
 
 	// m_bLoadgame and pGameServer (&sv)
 	if (ORIG_SpawnPlayer)
