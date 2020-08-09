@@ -12,10 +12,25 @@
 #include "..\overlay\overlays.hpp"
 #include "..\patterns.hpp"
 
-#define MID_FUNCTION_HOOK_WRAPPER(func_name) GENERIC_MID_FUNCTION_HOOK_WRAPPER(func_name, ServerDLL, serverDLL)
-
 using std::size_t;
 using std::uintptr_t;
+
+#define MID_FUNCTION_HOOK_WRAPPER(func_name) \
+	__declspec(naked) void ServerDLL::HOOKED_##func_name() \
+	{ \
+		/* Save all registers and EFLAGS to restore right before jumping out.*/ \
+		/* Don't use local variables as they will corrupt the stack.*/ \
+		__asm { \
+			__asm pushad \
+			__asm pushfd \
+		} \
+		serverDLL.HOOKED_##func_name##_Func(); \
+		__asm { \
+			__asm popfd \
+			__asm popad \
+			__asm jmp serverDLL.ORIG_##func_name \
+		} \
+	}
 
 MID_FUNCTION_HOOK_WRAPPER(MiddleOfSlidingFunction)
 

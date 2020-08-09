@@ -14,7 +14,22 @@
 #include "..\patterns.hpp"
 #include "vguimatsurfaceDLL.hpp"
 
-#define MID_FUNCTION_HOOK_WRAPPER(func_name) GENERIC_MID_FUNCTION_HOOK_WRAPPER(func_name, EngineDLL, engineDLL)
+#define MID_FUNCTION_HOOK_WRAPPER(func_name) \
+	__declspec(naked) void EngineDLL::HOOKED_##func_name() \
+	{ \
+		/* Save all registers and EFLAGS to restore right before jumping out.*/ \
+		/* Don't use local variables as they will corrupt the stack.*/ \
+		__asm { \
+			__asm pushad \
+			__asm pushfd \
+		} \
+		engineDLL.HOOKED_##func_name##_Func(); \
+		__asm { \
+			__asm popfd \
+			__asm popad \
+			__asm jmp engineDLL.ORIG_##func_name \
+		} \
+	}
 
 using std::size_t;
 using std::uintptr_t;
