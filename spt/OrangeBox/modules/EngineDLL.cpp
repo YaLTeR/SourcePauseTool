@@ -355,7 +355,8 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 		ConCommand* cmd = g_pCVar->FindCommand("load");
 		cmd->AddFlags(FCVAR_DONTRECORD);
 		if (!ORIG_MiddleOfState_LoadGame)
-			Warning("Enabling y_spt_record_through_loads and tas_record_through_loads might cause issues if disconnecting.\n");
+			Warning(
+			    "Enabling y_spt_record_through_loads and tas_record_through_loads might cause issues if disconnecting.\n");
 	}
 
 	patternContainer.Hook();
