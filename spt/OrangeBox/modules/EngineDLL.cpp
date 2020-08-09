@@ -21,14 +21,12 @@
 		/* Don't use local variables as they will corrupt the stack.*/ \
 		__asm { \
 			__asm pushad \
-			__asm pushfd \
-		} \
+			__asm pushfd} \
 		engineDLL.HOOKED_##func_name##_Func(); \
 		__asm { \
 			__asm popfd \
 			__asm popad \
-			__asm jmp engineDLL.ORIG_##func_name \
-		} \
+			__asm jmp engineDLL.ORIG_##func_name } \
 	}
 
 using std::size_t;
@@ -370,8 +368,7 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 		ConCommand* cmd = g_pCVar->FindCommand("load");
 		cmd->AddFlags(FCVAR_DONTRECORD);
 		if (!ORIG_MiddleOfState_LoadGame)
-			Warning(
-			    "Enabling y_spt_record_through_loads and tas_record_through_loads might cause issues if disconnecting.\n");
+			Warning("record_through_loads might cause issues if disconnecting.\n");
 	}
 
 	patternContainer.Hook();

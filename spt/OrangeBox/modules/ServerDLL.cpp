@@ -1,16 +1,15 @@
 #include "stdafx.h"
-
-#include "ServerDLL.hpp"
+#include "..\cvars.hpp"
+#include "..\modules.hpp"
 
 #include <SPTLib\hooks.hpp>
 #include <SPTLib\memutils.hpp>
 
 #include "..\..\sptlib-wrapper.hpp"
 #include "..\..\utils\ent_utils.hpp"
-#include "..\cvars.hpp"
-#include "..\modules.hpp"
 #include "..\overlay\overlays.hpp"
 #include "..\patterns.hpp"
+#include "ServerDLL.hpp"
 
 using std::size_t;
 using std::uintptr_t;
@@ -22,14 +21,12 @@ using std::uintptr_t;
 		/* Don't use local variables as they will corrupt the stack.*/ \
 		__asm { \
 			__asm pushad \
-			__asm pushfd \
-		} \
+			__asm pushfd } \
 		serverDLL.HOOKED_##func_name##_Func(); \
 		__asm { \
 			__asm popfd \
 			__asm popad \
-			__asm jmp serverDLL.ORIG_##func_name \
-		} \
+			__asm jmp serverDLL.ORIG_##func_name } \
 	}
 
 MID_FUNCTION_HOOK_WRAPPER(MiddleOfSlidingFunction)
