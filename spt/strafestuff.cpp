@@ -37,7 +37,7 @@
 // https://github.com/HLTAS/hlstrafe
 
 ConVar tas_strafe_version("tas_strafe_version",
-                          "2",
+                          "3",
                           FCVAR_TAS_RESET,
                           "Strafe version. For backwards compatibility with old scripts.");
 
@@ -1003,6 +1003,8 @@ namespace Strafe
 		if (yawChanged && !tas_strafe_allow_jump_override.GetBool())
 		{
 			// Yaw changed and override not permitted
+			if (tas_strafe_version.GetInt() >= 3)
+				out.Processed = false;
 			return true;
 		}
 		else if (tas_strafe_jumptype.GetInt() == 2)
