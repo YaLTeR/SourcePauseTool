@@ -2,9 +2,9 @@
 #include "parsed_script.hpp"
 #include "..\spt-serverplugin.hpp"
 #include "..\..\utils\file.hpp"
-#include "..\..\utils\md5.hpp"
 #include "..\cvars.hpp"
 #include "framebulk_handler.hpp"
+#include "thirdparty\md5.hpp"
 
 namespace scripts
 {

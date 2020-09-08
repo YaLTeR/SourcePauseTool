@@ -9,7 +9,7 @@
 #include "..\..\strafestuff.hpp"
 #include "..\..\utils\patterncontainer.hpp"
 #include "..\public\cdll_int.h"
-#include "Signals/Signal.h"
+#include "thirdparty\Signal.h"
 #include "cmodel.h"
 
 using std::size_t;
