@@ -163,6 +163,7 @@ public:
 	double GetDuckJumpTime();
 	bool CanUnDuckJump(trace_t& ptr);
 
+	Gallant::Signal0<void> FrameSignal;
 	Gallant::Signal0<void> AfterFramesSignal;
 	Gallant::Signal0<void> TickSignal;
 	Gallant::Signal1<bool> OngroundSignal;
