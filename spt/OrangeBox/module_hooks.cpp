@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "..\ipc\ipc-spt.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "..\utils\ent_utils.hpp"
 #include "cvars.hpp"
@@ -30,6 +31,8 @@ namespace ModuleHooks
 
 	void ConnectSignals()
 	{
+		clientDLL.FrameSignal.Connect(ipc::Loop);
+
 		clientDLL.AfterFramesSignal.Connect(&scripts::g_TASReader, &scripts::SourceTASReader::OnAfterFrames);
 		clientDLL.AfterFramesSignal.Connect(&scripts::g_Tester, &scripts::Tester::OnAfterFrames);
 		clientDLL.AfterFramesSignal.Connect(&PauseOnDemoTick);

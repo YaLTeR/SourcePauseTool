@@ -289,7 +289,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies);ws2_32.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -359,7 +359,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>interfaces.lib;legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>interfaces.lib;legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies);ws2_32.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -430,7 +430,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies);ws2_32.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -501,7 +501,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies);ws2_32.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -572,7 +572,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies);ws2_32.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -643,7 +643,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies);ws2_32.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -718,7 +718,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies);ws2_32.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -794,7 +794,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies);ws2_32.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -949,7 +949,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>interfaces.lib;legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>interfaces.lib;legacy_stdio_definitions.lib;odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;%(AdditionalDependencies);ws2_32.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -1025,7 +1025,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;vgui_controls.lib;tier3.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies);ws2_32.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -1351,6 +1351,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="spt\ipc\ipc-spt.cpp" />
+    <ClCompile Include="spt\ipc\ipc.cpp" />
     <ClCompile Include="spt\OrangeBox\module_hooks.cpp" />
     <ClCompile Include="spt\utils\ent_utils.cpp" />
     <ClCompile Include="spt\utils\patterncontainer.cpp" />
@@ -1747,6 +1749,8 @@
     <ClInclude Include="SPTLib\patterns.hpp" />
     <ClInclude Include="SPTLib\patterns_macros.hpp" />
     <ClInclude Include="SPTLib\Windows\DetoursUtils.hpp" />
+    <ClInclude Include="spt\ipc\ipc-spt.hpp" />
+    <ClInclude Include="spt\ipc\ipc.hpp" />
     <ClInclude Include="spt\OrangeBox\module_hooks.hpp" />
     <ClInclude Include="spt\strafe_utils.hpp" />
     <ClInclude Include="spt\utils\ent_utils.hpp" />
