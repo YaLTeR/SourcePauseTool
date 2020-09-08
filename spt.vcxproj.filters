@@ -64,9 +64,6 @@
     <ClCompile Include="spt\utils\math.cpp">
       <Filter>spt\utils</Filter>
     </ClCompile>
-    <ClCompile Include="spt\utils\md5.cpp">
-      <Filter>spt\utils</Filter>
-    </ClCompile>
     <ClCompile Include="spt\utils\string_parsing.cpp">
       <Filter>spt\utils</Filter>
     </ClCompile>
@@ -123,6 +120,9 @@
     </ClCompile>
     <ClCompile Include="spt\utils\property_getter.cpp">
       <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\md5.cpp">
+      <Filter>thirdparty</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -261,9 +261,6 @@
     <ClInclude Include="spt\utils\math.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
-    <ClInclude Include="spt\utils\md5.hpp">
-      <Filter>spt\utils</Filter>
-    </ClInclude>
     <ClInclude Include="spt\utils\string_parsing.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
@@ -315,12 +312,6 @@
     <ClInclude Include="spt\utils\ent_utils.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SourcePauseTool\Signals\Delegate.h">
-      <Filter>Signals</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SourcePauseTool\Signals\Signal.h">
-      <Filter>Signals</Filter>
-    </ClInclude>
     <ClInclude Include="SPTLib\patterns_macros.hpp">
       <Filter>SPTLib</Filter>
     </ClInclude>
@@ -332,6 +323,18 @@
     </ClInclude>
     <ClInclude Include="spt\strafe_utils.hpp">
       <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\Delegate.h">
+      <Filter>thirdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\json.hpp">
+      <Filter>thirdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\md5.hpp">
+      <Filter>thirdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\Signal.h">
+      <Filter>thirdparty</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -388,13 +391,13 @@
     <Filter Include="SPTLib\Windows">
       <UniqueIdentifier>{9a4a9a35-de34-40d0-a01c-057aea6a099d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Signals">
-      <UniqueIdentifier>{680a4130-6128-4d4a-b6a7-4abfb255dea6}</UniqueIdentifier>
+    <Filter Include="thirdparty">
+      <UniqueIdentifier>{20f959c6-2185-4a22-af30-a22417e39297}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\..\..\SourcePauseTool\Signals\example.txt">
-      <Filter>Signals</Filter>
+    <Text Include="thirdparty\example.txt">
+      <Filter>thirdparty</Filter>
     </Text>
   </ItemGroup>
 </Project>

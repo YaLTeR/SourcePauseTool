@@ -1703,10 +1703,10 @@
     </ClCompile>
     <ClCompile Include="spt\utils\file.cpp" />
     <ClCompile Include="spt\utils\math.cpp" />
-    <ClCompile Include="spt\utils\md5.cpp" />
     <ClCompile Include="spt\utils\property_getter.cpp" />
     <ClCompile Include="spt\utils\string_parsing.cpp" />
     <ClCompile Include="spt\vgui\vgui_utils.cpp" />
+    <ClCompile Include="thirdparty\md5.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib" />
@@ -1716,8 +1716,6 @@
     <Library Include="..\..\lib\public\vstdlib.lib" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\SourcePauseTool\Signals\Delegate.h" />
-    <ClInclude Include="..\..\..\SourcePauseTool\Signals\Signal.h" />
     <ClInclude Include="..\..\public\tier0\basetypes.h" />
     <ClInclude Include="..\..\public\Color.h" />
     <ClInclude Include="..\..\public\tier0\dbg.h" />
@@ -1781,18 +1779,21 @@
     <ClInclude Include="spt\strafestuff.hpp" />
     <ClInclude Include="spt\utils\file.hpp" />
     <ClInclude Include="spt\utils\math.hpp" />
-    <ClInclude Include="spt\utils\md5.hpp" />
     <ClInclude Include="spt\utils\property_getter.hpp" />
     <ClInclude Include="spt\utils\string_parsing.hpp" />
     <ClInclude Include="spt\vgui\vgui_utils.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\..\..\SourcePauseTool\Signals\example.txt" />
+    <ClInclude Include="thirdparty\Delegate.h" />
+    <ClInclude Include="thirdparty\json.hpp" />
+    <ClInclude Include="thirdparty\md5.hpp" />
+    <ClInclude Include="thirdparty\Signal.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="SPTLib\Windows\minhook\build\VC15\libMinHook.vcxproj">
       <Project>{f142a341-5ee0-442d-a15f-98ae9b48dbae}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="thirdparty\example.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

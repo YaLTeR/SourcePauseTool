@@ -32,6 +32,7 @@ MaxEmptyLinesToKeep: 1
 NamespaceIndentation: All
 PenaltyBreakBeforeFirstCallParameter: 300
 ReflowComments: false
+SortIncludes: false
 SpaceAfterTemplateKeyword: false
 SpacesBeforeTrailingComments: 1
 UseTab: ForIndentation
