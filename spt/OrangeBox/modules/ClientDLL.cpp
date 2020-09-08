@@ -750,6 +750,8 @@ bool ClientDLL::CanUnDuckJump(trace_t& ptr)
 
 void ClientDLL::OnFrame()
 {
+	FrameSignal();
+
 	if (afterframesPaused)
 	{
 		return;
