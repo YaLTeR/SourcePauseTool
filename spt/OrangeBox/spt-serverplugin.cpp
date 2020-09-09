@@ -397,6 +397,7 @@ void CSourcePauseTool::Unload(void)
 
 	DisconnectTier1Libraries();
 	DisconnectTier3Libraries();
+	ipc::ShutdownIPC();
 }
 
 const char* CSourcePauseTool::GetPluginDescription(void)
