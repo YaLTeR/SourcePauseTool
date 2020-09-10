@@ -6,6 +6,7 @@
 #include "spt\utils\ent_utils.hpp"
 #include "spt\utils\property_getter.hpp"
 #include "spt\utils\string_parsing.hpp"
+#include "spt\OrangeBox\scripts\srctas_reader.hpp"
 
 void MapPropToJson(RecvProp* prop, void* ptr, nlohmann::json& msg)
 {
@@ -198,4 +199,18 @@ CON_COMMAND(y_spt_ipc_echo,
 	{
 		Msg("Text contained non-UTF8 characters, cannot send message.\n");
 	}
+}
+
+CON_COMMAND(y_spt_ipc_playback, "Outputs the current playback tick to IPC client.\n")
+{
+	if (!ipc::IsActive())
+	{
+		Msg("No IPC client connected.\n");
+		return;
+	}
+	nlohmann::json msg;
+	msg["type"] = "playback";
+	msg["tick"] = scripts::g_TASReader.GetCurrentTick();
+	msg["length"] = scripts::g_TASReader.GetCurrentScriptLength();
+	ipc::Send(msg);
 }
