@@ -26,6 +26,16 @@ void rtrim(std::string& s)
 	s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) { return !std::isspace(ch); }).base(), s.end());
 }
 
+const char* FormatTempString(const char* value, ...)
+{
+	static char FORMAT_BUFFER[256];
+
+	va_list args;
+	va_start(args, value);
+	vsprintf_s(FORMAT_BUFFER, ARRAYSIZE(FORMAT_BUFFER), value, args);
+	return FORMAT_BUFFER;
+}
+
 // UTF-8 detection code, with minor additions
 // Copyright (c) 2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>
 // See http://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for details.
