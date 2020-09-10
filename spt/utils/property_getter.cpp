@@ -5,11 +5,11 @@
 
 namespace utils
 {
-	static std::map<std::string, OffsetMap> classToOffsetsMap;
+	static std::map<std::string, PropMap> classToOffsetsMap;
 #ifndef OE
-	OffsetMap FindOffsets(IClientEntity* ent)
+	PropMap FindOffsets(IClientEntity* ent)
 	{
-		OffsetMap out;
+		PropMap out;
 		if (!ent)
 		{
 			out.foundOffsets = false;
@@ -22,7 +22,7 @@ namespace utils
 
 		for (auto prop1 : props)
 		{
-			out.offsets[prop1.name] = prop1.offset;
+			out.props[prop1.name] = prop1.prop;
 		}
 
 		out.foundOffsets = true;
@@ -35,6 +35,18 @@ namespace utils
 #ifdef OE
 		return INVALID_OFFSET;
 #else
+		auto prop = GetRecvProp(entindex, key);
+		if (prop)
+			return prop->GetOffset();
+		else
+			return INVALID_OFFSET;
+#endif
+	}
+	RecvProp* GetRecvProp(int entindex, const std::string& key)
+	{
+#ifdef OE
+		return nullptr;
+#else
 		auto ent = GetClientEntity(entindex);
 		std::string className = ent->GetClientClass()->m_pNetworkName;
 
@@ -42,16 +54,16 @@ namespace utils
 		{
 			auto map = FindOffsets(ent);
 			if (!map.foundOffsets)
-				return INVALID_OFFSET;
+				return nullptr;
 			classToOffsetsMap[className] = map;
 		}
 
-		auto& classMap = classToOffsetsMap[className].offsets;
+		auto& classMap = classToOffsetsMap[className].props;
 
 		if (classMap.find(key) != classMap.end())
 			return classMap[key];
 		else
-			return INVALID_OFFSET;
+			return nullptr;
 #endif
 	}
 } // namespace utils

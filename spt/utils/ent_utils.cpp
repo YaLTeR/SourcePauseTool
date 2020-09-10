@@ -160,9 +160,9 @@ namespace utils
 	const size_t BUFFER_SIZE = 256;
 	static char BUFFER[BUFFER_SIZE];
 
-	void AddProp(std::vector<propValue>& props, const char* name, int offset)
+	void AddProp(std::vector<propValue>& props, const char* name, RecvProp* prop)
 	{
-		props.push_back(propValue(name, BUFFER, offset));
+		props.push_back(propValue(name, BUFFER, prop));
 	}
 
 	void GetAllProps(RecvTable* table, void* ptr, std::vector<propValue>& props)
@@ -185,7 +185,7 @@ namespace utils
 			    != 0) // There's various garbage attributes at offset 0 for a thusfar unbeknownst reason
 			{
 				GetPropValue(prop, ptr, BUFFER, BUFFER_SIZE);
-				AddProp(props, prop->GetName(), prop->GetOffset());
+				AddProp(props, prop->GetName(), prop);
 			}
 		}
 	}
@@ -202,14 +202,14 @@ namespace utils
 			         ent->GetAbsOrigin().x,
 			         ent->GetAbsOrigin().y,
 			         ent->GetAbsOrigin().z);
-			AddProp(props, "AbsOrigin", -1);
+			AddProp(props, "AbsOrigin", nullptr);
 			snprintf(BUFFER,
 			         BUFFER_SIZE,
 			         "(%.3f, %.3f, %.3f)",
 			         ent->GetAbsAngles().x,
 			         ent->GetAbsAngles().y,
 			         ent->GetAbsAngles().z);
-			AddProp(props, "AbsAngles", -1);
+			AddProp(props, "AbsAngles", nullptr);
 			GetAllProps(ent->GetClientClass()->m_pRecvTable, ent, props);
 		}
 	}
@@ -228,7 +228,7 @@ namespace utils
 			for (auto& prop : props)
 				Msg("Name: %s, offset %d, value %s\n",
 				    prop.name.c_str(),
-				    prop.offset,
+				    prop.GetOffset(),
 				    prop.value.c_str());
 		}
 		else
@@ -456,6 +456,18 @@ namespace utils
 		}
 #endif
 		return -1;
+	}
+
+	int propValue::GetOffset()
+	{
+		if (prop)
+		{
+			return prop->GetOffset();
+		}
+		else
+		{
+			return INVALID_OFFSET;
+		}
 	}
 #endif
 
