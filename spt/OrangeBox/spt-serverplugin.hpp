@@ -101,21 +101,23 @@ bool DoesGameLookLikeHLS();
 #if defined(OE)
 struct ArgsWrapper
 {
-	EngineClientWrapper* engine;
+	EngineClientWrapper* engine_pointer;
 
 	ArgsWrapper(EngineClientWrapper* engine)
 	{
-		this->engine = engine;
+		this->engine_pointer = engine;
 	};
+
+	ArgsWrapper();
 
 	int ArgC()
 	{
-		return engine->Cmd_Argc();
+		return engine_pointer->Cmd_Argc();
 	};
 
 	const char* Arg(int arg)
 	{
-		return engine->Cmd_Argv(arg);
+		return engine_pointer->Cmd_Argv(arg);
 	};
 };
 #endif
