@@ -78,6 +78,13 @@ CPluginConVarAccessor g_ConVarAccessor;
 int(WINAPIV* __vsnprintf)(char*, size_t, const char*, va_list) = _vsnprintf;
 #endif
 
+#ifdef OE
+ArgsWrapper::ArgsWrapper()
+{
+	this->engine_pointer = engine.get();
+}
+#endif
+
 void CallServerCommand(const char* cmd)
 {
 	if (engine)
