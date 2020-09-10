@@ -130,6 +130,9 @@
     <ClCompile Include="thirdparty\md5.cpp">
       <Filter>thirdparty</Filter>
     </ClCompile>
+    <ClCompile Include="spt\ipc\ipc-commands.cpp">
+      <Filter>spt\ipc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
