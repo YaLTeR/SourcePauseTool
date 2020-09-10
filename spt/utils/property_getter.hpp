@@ -4,6 +4,7 @@
 #include <string>
 #include "cdll_int.h"
 #include "engine\ivmodelinfo.h"
+#include "client_class.h"
 #include "icliententity.h"
 #include "icliententitylist.h"
 
@@ -11,13 +12,14 @@ namespace utils
 {
 	const int INVALID_OFFSET = -1;
 
-	struct OffsetMap
+	struct PropMap
 	{
-		std::map<std::string, int> offsets;
+		std::map<std::string, RecvProp*> props;
 		bool foundOffsets;
 	};
 
 	int GetOffset(int entindex, const std::string& key);
+	RecvProp* GetRecvProp(int entindex, const std::string& key);
 
 	template<typename T>
 	T GetProperty(int entindex, const std::string& key)

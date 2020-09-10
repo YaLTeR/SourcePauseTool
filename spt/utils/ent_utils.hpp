@@ -13,9 +13,10 @@ namespace utils
 	{
 		std::string name;
 		std::string value;
-		int offset;
+		RecvProp* prop;
 
-		propValue(const char* name, const char* value, int offset) : name(name), value(value), offset(offset) {}
+		int GetOffset();
+		propValue(const char* name, const char* value, RecvProp* prop) : name(name), value(value), prop(prop) {}
 	};
 
 	void GetAllProps(RecvTable* table, void* ptr, std::vector<propValue>& props);
