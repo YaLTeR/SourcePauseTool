@@ -188,16 +188,14 @@ CON_COMMAND(y_spt_ipc_echo,
 		text += args.Arg(i);
 	}
 
-	// The json library just calls exit instead of throwing an exception on invalid UTF-8
-	// so gotta check it's valid first.
-	if (IsValidUTF8(text.c_str()))
+	try
 	{
 		msg["text"] = text;
 		ipc::Send(msg);
 	}
-	else
+	catch (const std::exception& ex)
 	{
-		Msg("Text contained non-UTF8 characters, cannot send message.\n");
+		Msg("Error sending message: %s\n", ex.what());
 	}
 }
 
