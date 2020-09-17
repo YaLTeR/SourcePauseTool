@@ -212,3 +212,17 @@ CON_COMMAND(y_spt_ipc_playback, "Outputs the current playback tick to IPC client
 	msg["length"] = scripts::g_TASReader.GetCurrentScriptLength();
 	ipc::Send(msg);
 }
+
+CON_COMMAND(y_spt_ipc_gamedir, "Output the game directory path to IPC client.\n")
+{
+	if (!ipc::IsActive())
+	{
+		Msg("No IPC client connected.\n");
+		return;
+	}
+
+	nlohmann::json msg;
+	msg["type"] = "gamedir";
+	msg["path"] = GetGameDir();
+	ipc::Send(msg);
+}
