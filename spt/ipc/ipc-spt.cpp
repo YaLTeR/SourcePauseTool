@@ -37,6 +37,10 @@ namespace ipc
 
 	void CmdCallback(const nlohmann::json& msg)
 	{
+		nlohmann::json ackMsg;
+		ackMsg["type"] = "ack";
+		ipc::Send(ackMsg);
+
 		if (msg.find("cmd") != msg.end())
 		{
 			std::string cmd = msg["cmd"];
