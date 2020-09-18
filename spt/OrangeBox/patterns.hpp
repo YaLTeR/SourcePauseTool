@@ -458,4 +458,9 @@ namespace patterns
 		    "56 6A 00 E8 ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? 8B 01 8B ?? ?? ?? ?? ?? 83 C4 04 FF D2 8B F0 85 F6 74 09 8B 06 8B 50 08 8B CE FF D2");
 	} // namespace vguimatsurface
 
+	namespace inputsystem
+	{
+		PATTERNS(CInputSystem__SleepUntilInput, "5135", "8B 44 24 ?? 85 C0 7D ??");
+	} // namespace inputsystem
+
 } // namespace patterns
