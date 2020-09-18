@@ -133,6 +133,9 @@
     <ClCompile Include="spt\ipc\ipc-commands.cpp">
       <Filter>spt\ipc</Filter>
     </ClCompile>
+    <ClCompile Include="spt\OrangeBox\modules\inputSystemDLL.cpp">
+      <Filter>spt\OrangeBox\modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -350,6 +353,9 @@
     </ClInclude>
     <ClInclude Include="thirdparty\Signal.h">
       <Filter>thirdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\modules\inputSystemDLL.hpp">
+      <Filter>spt\OrangeBox\modules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -2,11 +2,13 @@
 
 #include "modules\ClientDLL.hpp"
 #include "modules\EngineDLL.hpp"
+#include "modules\inputSystemDLL.hpp"
 #include "modules\ServerDLL.hpp"
 #include "modules\vguimatsurfaceDLL.hpp"
 
 extern EngineDLL engineDLL;
 extern ClientDLL clientDLL;
+extern InputSystemDLL inputSystemDLL;
 extern ServerDLL serverDLL;
 #ifndef OE
 extern VGui_MatSurfaceDLL vgui_matsurfaceDLL;
