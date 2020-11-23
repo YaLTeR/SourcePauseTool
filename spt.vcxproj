@@ -1739,6 +1739,7 @@
     <ClInclude Include="SDK\hl_movedata.h" />
     <ClInclude Include="SDK\igamemovement.h" />
     <ClInclude Include="SDK\imovehelper.h" />
+    <ClInclude Include="SDK\usercmd.h" />
     <ClInclude Include="sptlib\Hooks.hpp" />
     <ClInclude Include="SPTLib\IHookableDirFilter.hpp" />
     <ClInclude Include="sptlib\IHookableModule.hpp" />

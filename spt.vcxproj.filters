@@ -363,6 +363,9 @@
     <ClInclude Include="spt\aim.hpp">
       <Filter>spt</Filter>
     </ClInclude>
+    <ClInclude Include="SDK\usercmd.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">
