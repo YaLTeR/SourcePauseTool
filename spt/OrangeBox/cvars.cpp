@@ -51,7 +51,7 @@ ConVar tas_strafe_vectorial_increment(
     "tas_strafe_vectorial_increment",
     "2.5",
     FCVAR_TAS_RESET,
-    "Determines how fast the player yaw angle moves towards the target yaw angle. 0 for no movement, 180 for instant snapping. Has no effect on strafing speed.\n");
+    "Has no effect on tas_strafe_version >= 4. Determines how fast the player yaw angle moves towards the target yaw angle. 0 for no movement, 180 for instant snapping. Has no effect on strafing speed.\n");
 ConVar tas_strafe_vectorial_offset("tas_strafe_vectorial_offset",
                                    "0",
                                    FCVAR_TAS_RESET,

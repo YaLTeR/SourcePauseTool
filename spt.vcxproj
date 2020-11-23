@@ -1347,6 +1347,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="spt\aim.cpp" />
     <ClCompile Include="spt\ipc\ipc-commands.cpp" />
     <ClCompile Include="spt\ipc\ipc-spt.cpp" />
     <ClCompile Include="spt\ipc\ipc.cpp" />
@@ -1747,6 +1748,7 @@
     <ClInclude Include="SPTLib\patterns.hpp" />
     <ClInclude Include="SPTLib\patterns_macros.hpp" />
     <ClInclude Include="SPTLib\Windows\DetoursUtils.hpp" />
+    <ClInclude Include="spt\aim.hpp" />
     <ClInclude Include="spt\ipc\ipc-spt.hpp" />
     <ClInclude Include="spt\ipc\ipc.hpp" />
     <ClInclude Include="spt\OrangeBox\modules\inputSystemDLL.hpp" />
