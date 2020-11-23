@@ -1,0 +1,12 @@
+demo 04_test                               
+save 04_test             
+settings tas_strafe_vectorial 1; tas_strafe_afh 1; tas_strafe_version 4
+playspeed 1
+
+vars
+
+frames
+s01-------|------|-d----|0|-|1|tas_aim 30 30 80
+s01-------|------|-d----|0|-|28|
+s01-j-----|------|-d----|0|-|60|
+----------|------|------|0|-|1|disconnect; cl_mouseenable 1
