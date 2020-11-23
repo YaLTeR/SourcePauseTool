@@ -444,6 +444,10 @@ namespace patterns
 		    CGameMovement__GetPlayerMaxs,
 		    "4104",
 		    "8B 41 ?? 8B 88 ?? ?? ?? ?? C1 E9 03 F6 C1 01 8B 0D ?? ?? ?? ?? 8B 11 74 09 8B 42 ?? FF D0 83 C0 54 C3");
+		PATTERNS(SetPredictionRandomSeed, "5135", "8B 44 24 ?? 85 C0 75 ?? C7 05 ?? ?? ?? ?? FF FF FF FF");
+		PATTERNS(CGameMovement__DecayPunchAngle,
+		         "5135",
+		         "83 EC 0C 56 8B F1 8B 56 ?? D9 82 ?? ?? ?? ?? 8D 8A ?? ?? ?? ??");
 	} // namespace server
 
 	namespace vguimatsurface

@@ -72,6 +72,7 @@ typedef void(__cdecl* _TracePlayerBBoxForGround2)(const Vector& start,
                                                   unsigned int fMask,
                                                   int collisionGroup,
                                                   trace_t& pm);
+typedef void(__cdecl* _SetPredictionRandomSeed)(void* usercmd);
 
 class ServerDLL : public IHookableNameFilter
 {
@@ -116,7 +117,9 @@ public:
 	static void HOOKED_MiddleOfSlidingFunction();
 	static const Vector& __fastcall HOOKED_CGameMovement__GetPlayerMaxs(void* thisptr, int edx);
 	static const Vector& __fastcall HOOKED_CGameMovement__GetPlayerMins(void* thisptr, int edx);
+	static void __cdecl HOOKED_SetPredictionRandomSeed(void* usercmd);
 
+	int GetCommandNumber();
 	void TracePlayerBBox(const Vector& start,
 	                     const Vector& end,
 	                     const Vector& mins,
@@ -192,6 +195,8 @@ public:
 	bool overrideMinMax;
 	Vector _mins;
 	Vector _maxs;
+	ptrdiff_t offM_vecPunchAngle;
+	ptrdiff_t offM_vecPunchAngleVel;
 
 protected:
 	PatternContainer patternContainer;
@@ -204,11 +209,13 @@ protected:
 	_TraceFirePortal ORIG_TraceFirePortal;
 	_SlidingAndOtherStuff ORIG_SlidingAndOtherStuff;
 	void* ORIG_MiddleOfSlidingFunction;
+	_SetPredictionRandomSeed ORIG_SetPredictionRandomSeed;
 
 	ptrdiff_t off1M_nOldButtons;
 	ptrdiff_t off2M_nOldButtons;
 	bool cantJumpNextTime;
 	bool insideCheckJumpButton;
+	int commandNumber;
 	ptrdiff_t off1M_bDucked;
 	ptrdiff_t off2M_bDucked;
 	ptrdiff_t offM_vecAbsVelocity;

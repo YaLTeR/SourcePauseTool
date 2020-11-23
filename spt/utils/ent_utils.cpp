@@ -528,16 +528,7 @@ namespace utils
 #endif
 	}
 
-#if !defined(OE) && !defined(P2)
-	static int GetServerEntityCount()
-	{
-		auto engine_server = GetEngine();
-		if (!engine_server)
-			return 0;
-
-		return engine_server->GetEntityCount();
-	}
-
+#ifndef P2
 	static CBaseEntity* GetServerEntity(int index)
 	{
 		auto engine_server = GetEngine();
@@ -553,6 +544,39 @@ namespace utils
 			return nullptr;
 
 		return unknown->GetBaseEntity();
+	}
+#endif
+
+	bool GetPunchAngleInformation(QAngle& punchAngle, QAngle& punchAngleVel)
+	{
+#ifdef P2
+		return false;
+#else
+		auto ply = GetServerEntity(1);
+
+		if (ply && serverDLL.offM_vecPunchAngle != 0 && serverDLL.offM_vecPunchAngleVel != 0)
+		{
+			punchAngle =
+			    *reinterpret_cast<QAngle*>(reinterpret_cast<char*>(ply) + serverDLL.offM_vecPunchAngle);
+			punchAngleVel =
+			    *reinterpret_cast<QAngle*>(reinterpret_cast<char*>(ply) + serverDLL.offM_vecPunchAngleVel);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+#endif
+	}
+
+#if !defined(OE) && !defined(P2)
+	static int GetServerEntityCount()
+	{
+		auto engine_server = GetEngine();
+		if (!engine_server)
+			return 0;
+
+		return engine_server->GetEntityCount();
 	}
 
 	void CheckPiwSave()

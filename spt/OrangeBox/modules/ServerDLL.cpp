@@ -10,6 +10,12 @@
 #include "..\patterns.hpp"
 #include "ServerDLL.hpp"
 
+#ifdef OE
+#include "SDK\usercmd.h"
+#else
+#include "..\game\shared\usercmd.h"
+#endif
+
 using std::size_t;
 using std::uintptr_t;
 
@@ -192,7 +198,8 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	m_Base = moduleBase;
 	m_Length = moduleLength;
 	uintptr_t ORIG_CHL2_Player__HandleInteraction = NULL, ORIG_PerformFlyCollisionResolution = NULL,
-	          ORIG_GetStepSoundVelocities = NULL, ORIG_CBaseEntity__SetCollisionGroup = NULL;
+	          ORIG_GetStepSoundVelocities = NULL, ORIG_CBaseEntity__SetCollisionGroup = NULL,
+	          ORIG_CGameMovement__DecayPunchAngle = NULL;
 	patternContainer.Init(moduleName);
 
 	DEF_FUTURE(FinishGravity);
@@ -211,6 +218,8 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	DEF_FUTURE(CPortalGameMovement__TracePlayerBBox);
 	DEF_FUTURE(CGameMovement__GetPlayerMaxs);
 	DEF_FUTURE(CGameMovement__GetPlayerMins);
+	DEF_FUTURE(SetPredictionRandomSeed);
+	DEF_FUTURE(CGameMovement__DecayPunchAngle);
 
 	GET_HOOKEDFUTURE(FinishGravity);
 	GET_HOOKEDFUTURE(PlayerRunCommand);
@@ -228,6 +237,8 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	GET_FUTURE(CPortalGameMovement__TracePlayerBBox);
 	GET_HOOKEDFUTURE(CGameMovement__GetPlayerMaxs);
 	GET_HOOKEDFUTURE(CGameMovement__GetPlayerMins);
+	GET_HOOKEDFUTURE(SetPredictionRandomSeed);
+	GET_FUTURE(CGameMovement__DecayPunchAngle);
 
 	// Server-side CheckJumpButton
 	if (ORIG_CheckJumpButton)
@@ -487,6 +498,19 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 		Warning("y_spt_on_slide_pause_for has no effect.\n");
 	}
 
+	if (ORIG_CGameMovement__DecayPunchAngle)
+	{
+		offM_vecPunchAngle = *reinterpret_cast<int*>(ORIG_CGameMovement__DecayPunchAngle + 0x11);
+		offM_vecPunchAngleVel = *reinterpret_cast<int*>(ORIG_CGameMovement__DecayPunchAngle + 0xb);
+
+		DevMsg("vecPunchAngle offset is %d\n", offM_vecPunchAngle);
+		DevMsg("vecPunchAngleVel offset is %d\n", offM_vecPunchAngleVel);
+	}
+	else
+	{
+		Warning("Punch angle compensation is not available for tas_aim!\n");
+	}
+
 	extern void* gm;
 	if (gm)
 	{
@@ -543,6 +567,14 @@ void ServerDLL::Clear()
 	sliding = false;
 	wasSliding = false;
 	overrideMinMax = false;
+	commandNumber = 0;
+	offM_vecPunchAngle = 0;
+	offM_vecPunchAngleVel = 0;
+}
+
+int ServerDLL::GetCommandNumber()
+{
+	return commandNumber;
 }
 
 void ServerDLL::TracePlayerBBox(const Vector& start,
@@ -583,6 +615,17 @@ const Vector& __fastcall ServerDLL::HOOKED_CGameMovement__GetPlayerMins(void* th
 	}
 	else
 		return serverDLL.ORIG_CGameMovement__GetPlayerMins(thisptr, edx);
+}
+
+void __cdecl ServerDLL::HOOKED_SetPredictionRandomSeed(void* usercmd)
+{
+	CUserCmd* ptr = reinterpret_cast<CUserCmd*>(usercmd);
+	if (ptr)
+	{
+		serverDLL.commandNumber = ptr->command_number;
+	}
+
+	serverDLL.ORIG_SetPredictionRandomSeed(usercmd);
 }
 
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
