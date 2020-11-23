@@ -136,6 +136,9 @@
     <ClCompile Include="spt\OrangeBox\modules\inputSystemDLL.cpp">
       <Filter>spt\OrangeBox\modules</Filter>
     </ClCompile>
+    <ClCompile Include="spt\aim.cpp">
+      <Filter>spt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -356,6 +359,9 @@
     </ClInclude>
     <ClInclude Include="spt\OrangeBox\modules\inputSystemDLL.hpp">
       <Filter>spt\OrangeBox\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\aim.hpp">
+      <Filter>spt</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

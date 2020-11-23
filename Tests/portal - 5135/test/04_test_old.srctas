@@ -1,6 +1,6 @@
 demo 04_test
 save 04_test
-settings tas_strafe_vectorial 1; tas_strafe_use_tracing 0; cl_mouseenable 0; _y_spt_afterframes_await_legacy 1
+settings tas_strafe_vectorial 1; tas_strafe_use_tracing 0; cl_mouseenable 0; _y_spt_afterframes_await_legacy 1; tas_strafe_version 3
 playspeed 16
 
 vars

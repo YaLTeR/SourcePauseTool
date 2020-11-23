@@ -85,7 +85,8 @@ namespace scripts
 		afterFramesEntries.clear();
 		saveStateIndexes.clear();
 		initCommand =
-		    "sv_cheats 1; y_spt_pause 0;_y_spt_afterframes_await_load; _y_spt_afterframes_reset_on_server_activate 0; _y_spt_resetpitchyaw";
+		    "sv_cheats 1; y_spt_pause 0;_y_spt_afterframes_await_load; _y_spt_afterframes_reset_on_server_activate 0; _y_spt_resetpitchyaw;"
+		    "tas_aim_reset";
 		duringLoad.clear();
 		saveName.clear();
 		saveStates.clear();

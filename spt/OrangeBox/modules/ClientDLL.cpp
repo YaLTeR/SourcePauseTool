@@ -13,6 +13,7 @@
 #include "..\patterns.hpp"
 #include "..\scripts\srctas_reader.hpp"
 #include "..\scripts\tests\test.hpp"
+#include "..\..\aim.hpp"
 #include "bspflags.h"
 
 #ifdef max
@@ -941,6 +942,13 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 	float va[3];
 	EngineGetViewAngles(va);
 	bool yawChanged = false;
+
+	// Use tas_aim stuff for tas_strafe_version >= 4
+	if (tas_strafe_version.GetInt() >= 4)
+	{
+		aim::UpdateView(va[PITCH], va[YAW]);
+	}
+
 	double pitchSpeed = atof(_y_spt_pitchspeed.GetString()), yawSpeed = atof(_y_spt_yawspeed.GetString());
 
 	if (pitchSpeed != 0.0f)
@@ -1064,6 +1072,11 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 			if (out.Jump && !pl.Ducking && pl.DuckPressed && tas_strafe_autojb.GetBool())
 			{
 				forceUnduck = true;
+			}
+
+			if (out.Jump && tas_strafe_jumptype.GetInt() > 0)
+			{
+				aim::SetJump();
 			}
 
 			forceJump = out.Jump;
