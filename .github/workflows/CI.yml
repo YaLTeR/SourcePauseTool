@@ -46,6 +46,8 @@ jobs:
       run: |
         $spt_filename = (Get-Item "${{ matrix.Configuration }}\spt*.dll").BaseName
         echo "::set-env name=spt_filename::$spt_filename"
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
     - uses: actions/upload-artifact@v2
       with:
         name: ${{ matrix.Configuration }} - ${{ env.spt_filename }}
