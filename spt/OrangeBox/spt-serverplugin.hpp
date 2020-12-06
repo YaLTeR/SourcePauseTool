@@ -9,6 +9,7 @@
 #include "custom_interfaces.hpp"
 #include "eiface.h"
 #include "engine\iserverplugin.h"
+#include "engine\ivdebugoverlay.h"
 #include "icvar.h"
 #include "vgui\ischeme.h"
 #include "vguimatsurface\imatsystemsurface.h"
@@ -92,6 +93,7 @@ public:
 
 IServerUnknown* GetServerPlayer();
 IVEngineServer* GetEngine();
+IVDebugOverlay* GetDebugOverlay();
 void* GetGamemovement();
 ICvar* GetCvarInterface();
 std::string GetGameDir();

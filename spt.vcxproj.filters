@@ -139,6 +139,9 @@
     <ClCompile Include="spt\aim.cpp">
       <Filter>spt</Filter>
     </ClCompile>
+    <ClCompile Include="spt\OrangeBox\vgui\graphics.cpp">
+      <Filter>spt\OrangeBox\vgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -365,6 +368,9 @@
     </ClInclude>
     <ClInclude Include="SDK\usercmd.h">
       <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\vgui\graphics.hpp">
+      <Filter>spt\OrangeBox\vgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -5,6 +5,7 @@
 #include "engine\ivmodelinfo.h"
 #include "icliententity.h"
 #include "icliententitylist.h"
+#include "trace.h"
 
 namespace utils
 {
@@ -48,6 +49,13 @@ namespace utils
 	JBData CanJB(float height);
 	bool playerEntityAvailable();
 	bool GetPunchAngleInformation(QAngle& punchAngle, QAngle& punchAngleVel);
+	void FindClosestPlane(const trace_t& tr, trace_t& out, float maxDistSqr);
+	bool TraceHit(const trace_t& tr, float maxDistSqr);
+	bool TestSeamshot(const Vector& cameraPos,
+	                  const Vector& seamPos,
+	                  const cplane_t& plane1,
+	                  const cplane_t& plane2,
+	                  QAngle& seamAngle);
 #if !defined(OE) && !defined(P2)
 	void CheckPiwSave();
 #endif

@@ -597,6 +597,24 @@ void ServerDLL::TracePlayerBBox(const Vector& start,
 	overrideMinMax = false;
 }
 
+float ServerDLL::TraceFirePortal(trace_t& tr, const Vector& startPos, const Vector& vDirection)
+{
+	auto weapon = serverDLL.GetActiveWeapon(GetServerPlayer());
+
+	if (!weapon)
+	{
+		tr.fraction = 1.0f;
+		return 0;
+	}
+
+	const int PORTAL_PLACED_BY_PLAYER = 2;
+	Vector vFinalPosition;
+	QAngle qFinalAngles;
+
+	return ORIG_TraceFirePortal(
+	    weapon, 0, false, startPos, vDirection, tr, vFinalPosition, qFinalAngles, PORTAL_PLACED_BY_PLAYER, true);
+}
+
 const Vector& __fastcall ServerDLL::HOOKED_CGameMovement__GetPlayerMaxs(void* thisptr, int edx)
 {
 	if (serverDLL.overrideMinMax)
@@ -828,8 +846,7 @@ float __fastcall ServerDLL::HOOKED_TraceFirePortal_Func(void* thisptr,
 	const auto rv = ORIG_TraceFirePortal(
 	    thisptr, edx, bPortal2, vTraceStart, vDirection, tr, vFinalPosition, qFinalAngles, iPlacedBy, bTest);
 
-	lastTraceFirePortalDistanceSq = (vFinalPosition - vTraceStart).LengthSqr();
-	lastTraceFirePortalNormal = tr.plane.normal;
+	lastPortalTrace = tr;
 
 	return rv;
 }
