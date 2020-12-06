@@ -50,6 +50,7 @@ std::unique_ptr<EngineClientWrapper> engine;
 IVEngineServer* engine_server = nullptr;
 IMatSystemSurface* surface = nullptr;
 vgui::ISchemeManager* scheme = nullptr;
+IVDebugOverlay* debugOverlay = nullptr;
 void* gm = nullptr;
 
 int lastSeed = 0;
@@ -125,6 +126,11 @@ void DefaultFOVChangeCallback(ConVar* var, char const* pOldString)
 IVEngineServer* GetEngine()
 {
 	return engine_server;
+}
+
+IVDebugOverlay* GetDebugOverlay()
+{
+	return debugOverlay;
 }
 
 void* GetGamemovement()
@@ -330,9 +336,16 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	}
 
 	engine_server = (IVEngineServer*)interfaceFactory(INTERFACEVERSION_VENGINESERVER, NULL);
+	debugOverlay = (IVDebugOverlay*)interfaceFactory(VDEBUG_OVERLAY_INTERFACE_VERSION, NULL);
 	if (!engine_server)
 	{
 		DevWarning("SPT: Failed to get the IVEngineServer interface.\n");
+	}
+
+	if (!debugOverlay)
+	{
+		DevWarning("SPT: Failed to get the debug overlay interface.\n");
+		Warning("Seam visualization has no effect.\n");
 	}
 
 #ifndef OE
@@ -1116,7 +1129,6 @@ CON_COMMAND(
 	}
 }
 
-#undef max
 void setang_exact(const QAngle& angles)
 {
 	auto player = GetServerPlayer();
@@ -1134,8 +1146,8 @@ double trace_fire_portal(QAngle angles, Vector& normal)
 
 	serverDLL.FirePortal(serverDLL.GetActiveWeapon(GetServerPlayer()), 0, false, nullptr, true);
 
-	normal = serverDLL.lastTraceFirePortalNormal;
-	return serverDLL.lastTraceFirePortalDistanceSq;
+	normal = serverDLL.lastPortalTrace.plane.normal;
+	return (serverDLL.lastPortalTrace.endpos - serverDLL.lastPortalTrace.startpos).LengthSqr();
 }
 
 QAngle firstAngle;

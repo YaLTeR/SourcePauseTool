@@ -6,6 +6,7 @@
 #include <SDK\hl_movedata.h>
 #include "..\..\utils\patterncontainer.hpp"
 #include "engine\iserverplugin.h"
+#include "trace.h"
 
 using std::ptrdiff_t;
 using std::size_t;
@@ -118,15 +119,6 @@ public:
 	static const Vector& __fastcall HOOKED_CGameMovement__GetPlayerMaxs(void* thisptr, int edx);
 	static const Vector& __fastcall HOOKED_CGameMovement__GetPlayerMins(void* thisptr, int edx);
 	static void __cdecl HOOKED_SetPredictionRandomSeed(void* usercmd);
-
-	int GetCommandNumber();
-	void TracePlayerBBox(const Vector& start,
-	                     const Vector& end,
-	                     const Vector& mins,
-	                     const Vector& maxs,
-	                     unsigned int fMask,
-	                     int collisionGroup,
-	                     trace_t& pm);
 	bool __fastcall HOOKED_CheckJumpButton_Func(void* thisptr, int edx);
 	void __fastcall HOOKED_FinishGravity_Func(void* thisptr, int edx);
 	void __fastcall HOOKED_PlayerRunCommand_Func(void* thisptr, int edx, void* ucmd, void* moveHelper);
@@ -150,6 +142,15 @@ public:
 	void __fastcall HOOKED_SlidingAndOtherStuff_Func(void* thisptr, int edx, void* a, void* b);
 	void HOOKED_MiddleOfSlidingFunction_Func();
 	bool CanTracePlayerBBox();
+	int GetCommandNumber();
+	void TracePlayerBBox(const Vector& start,
+	                     const Vector& end,
+	                     const Vector& mins,
+	                     const Vector& maxs,
+	                     unsigned int fMask,
+	                     int collisionGroup,
+	                     trace_t& pm);
+	float TraceFirePortal(trace_t& tr, const Vector& startPos, const Vector& vDirection);
 
 	void StartTimer()
 	{
@@ -176,8 +177,7 @@ public:
 
 	_SnapEyeAngles SnapEyeAngles;
 	_FirePortal FirePortal;
-	double lastTraceFirePortalDistanceSq;
-	Vector lastTraceFirePortalNormal;
+	trace_t lastPortalTrace;
 	_GetActiveWeapon GetActiveWeapon;
 	_CreateEntityByName ORIG_CreateEntityByName;
 	int* m_hPortalEnvironmentOffsetPtr;

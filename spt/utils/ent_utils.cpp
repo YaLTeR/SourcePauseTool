@@ -18,6 +18,7 @@
 #include "client_class.h"
 #include "property_getter.hpp"
 #include "string_parsing.hpp"
+#include "math.hpp"
 #undef max
 
 #if !defined(OE) && !defined(P2)
@@ -615,4 +616,118 @@ namespace utils
 		}
 	}
 #endif
+
+	void FindClosestPlane(const trace_t& tr, trace_t& out, float maxDistSqr)
+	{
+		//look for an edge point
+		Vector checkDirs[4];
+		const float invalidNormalLength = 1.1f;
+		out.fraction = 1.0f;
+
+		if (tr.startsolid || tr.allsolid || !tr.plane.normal.IsValid()
+		    || std::abs(tr.plane.normal.LengthSqr()) > invalidNormalLength)
+		{
+			return;
+		}
+
+		float planeDistanceDiff = tr.plane.normal.Dot(tr.endpos) - tr.plane.dist;
+		const float INVALID_PLANE_DISTANCE_DIFF = 1.0f;
+
+		// Sometimes the trace end position isnt on the plane? Why?
+		if (std::abs(planeDistanceDiff) > INVALID_PLANE_DISTANCE_DIFF)
+		{
+			return;
+		}
+
+		//a vector lying on a plane
+		Vector upVector = Vector(0, 0, 1);
+
+		if (tr.plane.normal.z != 0)
+		{
+			upVector = Vector(1, 0, 0);
+			upVector -= tr.plane.normal * upVector.Dot(tr.plane.normal);
+			upVector.NormalizeInPlace();
+
+			if (!upVector.IsValid())
+			{
+				Warning("Invalid upvector calculated\n");
+				return;
+			}
+		}
+		checkDirs[0] = tr.plane.normal.Cross(upVector);
+		//a vector crossing the previous one
+		checkDirs[1] = tr.plane.normal.Cross(checkDirs[0]);
+
+		checkDirs[0].NormalizeInPlace();
+		checkDirs[1].NormalizeInPlace();
+
+		//the rest is the inverse of other vectors to get 4 vectors in all directions
+		checkDirs[2] = checkDirs[0] * -1;
+		checkDirs[3] = checkDirs[1] * -1;
+
+		for (int i = 0; i < 4; i++)
+		{
+			trace_t newEdgeTr;
+			serverDLL.TraceFirePortal(newEdgeTr, tr.endpos, checkDirs[i]);
+
+			if (utils::TraceHit(newEdgeTr, maxDistSqr))
+			{
+				if (newEdgeTr.fraction < out.fraction)
+				{
+					out = newEdgeTr;
+				}
+			}
+		}
+
+		if (out.fraction < 1.0f)
+		{
+			// Hack the seam position to lie exactly on the intersection of the two surfaces
+			out.endpos -= (out.plane.normal.Dot(out.endpos) - out.plane.dist) * out.plane.normal;
+			out.endpos -= (tr.plane.normal.Dot(out.endpos) - tr.plane.dist) * tr.plane.normal;
+		}
+	}
+
+	bool TraceHit(const trace_t& tr, float maxDistSqr)
+	{
+		if (tr.fraction == 1.0f)
+			return false;
+
+		float lengthSqr = (tr.endpos - tr.startpos).LengthSqr();
+		return lengthSqr < maxDistSqr;
+	}
+
+	bool TestSeamshot(const Vector& cameraPos,
+	                  const Vector& seamPos,
+	                  const cplane_t& plane1,
+	                  const cplane_t& plane2,
+	                  QAngle& seamAngle)
+	{
+		Vector diff1 = (seamPos - cameraPos);
+		VectorAngles(diff1, seamAngle);
+		seamAngle.x = utils::NormalizeDeg(seamAngle.x);
+		seamAngle.y = utils::NormalizeDeg(seamAngle.y);
+
+		trace_t seamTrace;
+		Vector dir = seamPos - cameraPos;
+		dir.NormalizeInPlace();
+		serverDLL.TraceFirePortal(seamTrace, cameraPos, dir);
+
+		if (seamTrace.fraction == 1.0f)
+		{
+			return true;
+		}
+		else
+		{
+			float dot1 = plane1.normal.Dot(seamTrace.endpos) - plane1.dist;
+			float dot2 = plane2.normal.Dot(seamTrace.endpos) - plane2.dist;
+
+			if (dot1 < 0 || dot2 < 0)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 } // namespace utils

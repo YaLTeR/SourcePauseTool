@@ -8,6 +8,7 @@
 #include "modules\EngineDLL.hpp"
 #include "scripts\srctas_reader.hpp"
 #include "scripts\tests\test.hpp"
+#include "vgui\graphics.hpp"
 
 namespace ModuleHooks
 {
@@ -44,6 +45,7 @@ namespace ModuleHooks
 
 #ifndef OE
 		clientDLL.TickSignal.Connect(&vgui_matsurfaceDLL, &VGui_MatSurfaceDLL::NewTick);
+		clientDLL.TickSignal.Connect(vgui::DrawLines);
 		clientDLL.OngroundSignal.Connect(&vgui_matsurfaceDLL, &VGui_MatSurfaceDLL::OnGround);
 
 		serverDLL.JumpSignal.Connect(&vgui_matsurfaceDLL, &VGui_MatSurfaceDLL::Jump);
