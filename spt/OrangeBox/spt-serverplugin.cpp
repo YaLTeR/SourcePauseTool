@@ -1203,7 +1203,8 @@ CON_COMMAND(
 	// If our trace had a distance greater than the a or b distance by this amount, treat it as a seam shot.
 	constexpr double GOOD_DISTANCE_DIFFERENCE = 50.0 * 50.0;
 
-	QAngle test = a + (b - a) / 2;
+	QAngle test;
+	utils::GetMiddlePoint(a, b, test);
 	double difference;
 
 	do
@@ -1219,15 +1220,13 @@ CON_COMMAND(
 		if (test_normal == a_normal)
 		{
 			a = test;
-			test += (b - a) / 2;
-
+			utils::GetMiddlePoint(a, b, test);
 			difference = (test - a).LengthSqr();
 		}
 		else
 		{
 			b = test;
-			test += (a - b) / 2;
-
+			utils::GetMiddlePoint(a, b, test);
 			difference = (test - b).LengthSqr();
 		}
 

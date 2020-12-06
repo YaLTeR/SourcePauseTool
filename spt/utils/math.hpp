@@ -1,5 +1,11 @@
 #pragma once
 
+#ifndef OE
+#include "mathlib\vector.h"
+#else
+#include "vector.h"
+#endif
+
 namespace utils
 {
 #ifndef M_PI
@@ -11,4 +17,6 @@ namespace utils
 	double NormalizeRad(double a);
 	double NormalizeDeg(double a);
 	float RandomFloat(float min, float max);
+	void NormalizeQAngle(QAngle& angle);
+	void GetMiddlePoint(const QAngle& angle1, const QAngle& angle2, QAngle& out);
 }; // namespace utils
