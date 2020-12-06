@@ -26,6 +26,21 @@ namespace utils
 		return uniformRandom(rng);
 	}
 
+	void NormalizeQAngle(QAngle& angle)
+	{
+		angle.x = NormalizeDeg(angle.x);
+		angle.y = NormalizeDeg(angle.y);
+	}
+
+	void GetMiddlePoint(const QAngle& angle1, const QAngle& angle2, QAngle& out)
+	{
+		auto delta = angle2 - angle1;
+		NormalizeQAngle(delta);
+		delta /= 2;
+		out = angle1 + delta;
+		NormalizeQAngle(out);
+	}
+
 	// Return angle in [-Pi; Pi).
 	double NormalizeRad(double a)
 	{
