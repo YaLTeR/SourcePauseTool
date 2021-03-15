@@ -265,7 +265,9 @@ namespace patterns
 		PATTERNS(
 		    CViewEffects__Fade,
 		    "dmomm",
-		    "51 56 6A 14 8B F1 E8 ?? ?? ?? ?? 8B 54 24 10 8B C8 0F B7 02 89 44 24 10 83 C4 04 89 4C 24 04 DB 44 24 0C");
+		    "51 56 6A 14 8B F1 E8 ?? ?? ?? ?? 8B 54 24 10 8B C8 0F B7 02 89 44 24 10 83 C4 04 89 4C 24 04 DB 44 24 0C",
+		    "4104-5135",
+		    "51 8B C1 55 8B 68 24 56 33 D2 33 C9 83 FD 04 57 89 44 24 0C");
 		PATTERNS(
 		    CHudDamageIndicator__GetDamagePosition,
 		    "5135",
