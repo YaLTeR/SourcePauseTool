@@ -264,10 +264,10 @@ namespace patterns
 		    "8B 44 24 10 8B 4C 24 0C 83 EC 0C 56 50 51 8D 4C 24 0C E8 ?? ?? ?? ?? 8B 74 24 24 8B 0D ?? ?? ?? ?? 8B 11 8B 52 10");
 		PATTERNS(
 		    CViewEffects__Fade,
-		    "dmomm",
+		    "dmomm-4104-5135",
 		    "51 56 6A 14 8B F1 E8 ?? ?? ?? ?? 8B 54 24 10 8B C8 0F B7 02 89 44 24 10 83 C4 04 89 4C 24 04 DB 44 24 0C",
-		    "4104-5135",
-		    "51 8B C1 55 8B 68 24 56 33 D2 33 C9 83 FD 04 57 89 44 24 0C");
+		    "5377866",
+		    "55 8B EC 51 56 57 6A 14 89 4D FC E8 ?? ?? ?? ?? 8B 7D 08 8B F0");
 		PATTERNS(
 		    CHudDamageIndicator__GetDamagePosition,
 		    "5135",
@@ -314,6 +314,8 @@ namespace patterns
 		    "55 8B EC 83 EC 44 56 89 4D D0 8B 45 D0 8B 48 08 81 C1 ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B6 C8 85 C9",
 		    "te120",
 		    "55 8B EC 83 EC 20 56 8B F1 8B 4E 04 80 B9 48 0A 00 00 00 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5 5D C3 F3 0F 10 89 B4 0D 00 00",
+		    "icemod2013",
+		    "55 8B EC 83 EC 18 56 8B F1 8B 4E 04 80 B9 50 0A 00 00 00 74 0E 8B 46 08 83 48 28 02 32 C0 5E 8B E5 5D C3 F3 0F 10 89 D8 0D 00 00",
 		    "missinginfo1_6",
 		    "55 8B EC 83 EC 1C 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5");
 		PATTERNS(
