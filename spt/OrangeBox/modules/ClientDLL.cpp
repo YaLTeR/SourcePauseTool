@@ -96,6 +96,14 @@ void __fastcall ClientDLL::HOOKED_CViewEffects__Fade(void* thisptr, int edx, voi
 		clientDLL.ORIG_CViewEffects__Fade(thisptr, edx, data);
 }
 
+ConVar y_spt_disable_shake("y_spt_disable_shake", "0", FCVAR_ARCHIVE, "Disables all shakes.");
+
+void __fastcall ClientDLL::HOOKED_CViewEffects__Shake(void* thisptr, int edx, void* data)
+{
+	if (!y_spt_disable_shake.GetBool())
+		clientDLL.ORIG_CViewEffects__Shake(thisptr, edx, data);
+}
+
 #define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::client::##name);
 #define GET_HOOKEDFUTURE(future_name) \
 	{ \
@@ -174,6 +182,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	DEF_FUTURE(UTIL_TraceRay);
 	DEF_FUTURE(CGameMovement__CanUnDuckJump);
 	DEF_FUTURE(CViewEffects__Fade);
+	DEF_FUTURE(CViewEffects__Shake);
 	DEF_FUTURE(CHudDamageIndicator__GetDamagePosition);
 
 	GET_HOOKEDFUTURE(HudUpdate);
@@ -192,6 +201,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	GET_FUTURE(UTIL_TraceRay);
 	GET_FUTURE(CGameMovement__CanUnDuckJump);
 	GET_HOOKEDFUTURE(CViewEffects__Fade);
+	GET_HOOKEDFUTURE(CViewEffects__Shake);
 	GET_FUTURE(CHudDamageIndicator__GetDamagePosition);
 
 	if (DoesGameLookLikeHLS())
@@ -483,6 +493,9 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 
 	if (!ORIG_CViewEffects__Fade)
 		Warning("y_spt_disable_fade 1 not available\n");
+
+	if (!ORIG_CViewEffects__Shake)
+		Warning("y_spt_disable_shake 1 not available\n");
 
 	if (!ORIG_MainViewOrigin || !ORIG_UTIL_TraceRay)
 		Warning("y_spt_hud_oob 1 has no effect\n");

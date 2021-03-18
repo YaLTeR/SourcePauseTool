@@ -268,6 +268,7 @@ namespace patterns
 		    "51 56 6A 14 8B F1 E8 ?? ?? ?? ?? 8B 54 24 10 8B C8 0F B7 02 89 44 24 10 83 C4 04 89 4C 24 04 DB 44 24 0C",
 		    "5377866",
 		    "55 8B EC 51 56 57 6A 14 89 4D FC E8 ?? ?? ?? ?? 8B 7D 08 8B F0");
+		PATTERNS(CViewEffects__Shake, "4104-5135", "56 8B 74 24 ?? 8B 06 85 C0");
 		PATTERNS(
 		    CHudDamageIndicator__GetDamagePosition,
 		    "5135",
