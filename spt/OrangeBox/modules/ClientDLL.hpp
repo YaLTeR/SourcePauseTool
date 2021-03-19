@@ -49,6 +49,7 @@ typedef void(__cdecl* _UTIL_TraceRay)(const Ray_t& ray,
                                       trace_t* ptr);
 typedef bool(__fastcall* _CGameMovement__CanUnDuckJump)(void* thisptr, int edx, trace_t& ptr);
 typedef void(__fastcall* _CViewEffects__Fade)(void* thisptr, int edx, void* data);
+typedef void(__fastcall* _CViewEffects__Shake)(void* thisptr, int edx, void* data);
 typedef const Vector&(__cdecl* _MainViewOrigin)();
 
 struct afterframes_entry_t
@@ -98,6 +99,7 @@ public:
 	                                                      int whatToDraw);
 	static void __fastcall HOOKED_CViewRender__Render(void* thisptr, int edx, void* rect);
 	static void __fastcall HOOKED_CViewEffects__Fade(void* thisptr, int edx, void* data);
+	static void __fastcall HOOKED_CViewEffects__Shake(void* thisptr, int edx, void* data);
 	void __cdecl HOOKED_DoImageSpaceMotionBlur_Func(void* view, int x, int y, int w, int h);
 	bool __fastcall HOOKED_CheckJumpButton_Func(void* thisptr, int edx);
 	void __stdcall HOOKED_HudUpdate_Func(bool bActive);
@@ -189,6 +191,7 @@ protected:
 	_CViewRender__Render ORIG_CViewRender__Render;
 	_CGameMovement__CanUnDuckJump ORIG_CGameMovement__CanUnDuckJump;
 	_CViewEffects__Fade ORIG_CViewEffects__Fade;
+	_CViewEffects__Shake ORIG_CViewEffects__Shake;
 	_MainViewOrigin ORIG_MainViewOrigin;
 
 	uintptr_t* pgpGlobals;
