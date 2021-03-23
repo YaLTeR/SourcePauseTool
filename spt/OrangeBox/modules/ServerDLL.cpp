@@ -124,6 +124,32 @@ __declspec(naked) void ServerDLL::HOOKED_MiddleOfSlidingFunction()
 	}
 }
 
+__declspec(naked) void ServerDLL::HOOKED_MiddleOfTeleportTouchingEntity()
+{
+	__asm {
+		pushad;
+		pushfd;
+	}
+	__asm {
+		popfd;
+		popad;
+		jmp serverDLL.ORIG_MiddleOfTeleportTouchingEntity;
+	}
+}
+
+__declspec(naked) void ServerDLL::HOOKED_EndOfTeleportTouchingEntity()
+{
+	__asm {
+		pushad;
+		pushfd;
+	}
+	__asm {
+		popfd;
+		popad;
+		jmp serverDLL.ORIG_EndOfTeleportTouchingEntity;
+	}
+}
+
 #define PRINT_FIND(future_name) \
 	{ \
 		if (ORIG_##future_name) \
@@ -220,7 +246,6 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	DEF_FUTURE(CGameMovement__GetPlayerMins);
 	DEF_FUTURE(SetPredictionRandomSeed);
 	DEF_FUTURE(CGameMovement__DecayPunchAngle);
-
 	GET_HOOKEDFUTURE(FinishGravity);
 	GET_HOOKEDFUTURE(PlayerRunCommand);
 	GET_HOOKEDFUTURE(CheckStuck);
@@ -239,6 +264,14 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	GET_HOOKEDFUTURE(CGameMovement__GetPlayerMins);
 	GET_HOOKEDFUTURE(SetPredictionRandomSeed);
 	GET_FUTURE(CGameMovement__DecayPunchAngle);
+
+	if (DoesGameLookLikePortal())
+	{
+		DEF_FUTURE(MiddleOfTeleportTouchingEntity);
+		DEF_FUTURE(EndOfTeleportTouchingEntity);
+		GET_HOOKEDFUTURE(MiddleOfTeleportTouchingEntity);
+		GET_HOOKEDFUTURE(EndOfTeleportTouchingEntity);
+	}
 
 	// Server-side CheckJumpButton
 	if (ORIG_CheckJumpButton)
@@ -508,6 +541,11 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 		Warning("y_spt_on_slide_pause_for has no effect.\n");
 	}
 
+	if (!ORIG_MiddleOfTeleportTouchingEntity || !ORIG_EndOfTeleportTouchingEntity)
+	{
+		DevWarning("[server.dll] Could not find the teleport function!\n");
+	}
+
 	if (ORIG_CGameMovement__DecayPunchAngle)
 	{
 		offM_vecPunchAngle = *reinterpret_cast<int*>(ORIG_CGameMovement__DecayPunchAngle + 0x11);
@@ -565,6 +603,8 @@ void ServerDLL::Clear()
 	ORIG_AirAccelerate = nullptr;
 	ORIG_SlidingAndOtherStuff = nullptr;
 	ORIG_MiddleOfSlidingFunction = nullptr;
+	ORIG_MiddleOfTeleportTouchingEntity = nullptr;
+	ORIG_EndOfTeleportTouchingEntity = nullptr;
 	off1M_nOldButtons = 0;
 	off2M_nOldButtons = 0;
 	cantJumpNextTime = false;

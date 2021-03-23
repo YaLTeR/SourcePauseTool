@@ -116,6 +116,8 @@ public:
 	                                                 datamap_t* pCurMap);
 	static int __cdecl HOOKED_DispatchSpawn(void* pEntity);
 	static void HOOKED_MiddleOfSlidingFunction();
+	static void HOOKED_MiddleOfTeleportTouchingEntity();
+	static void HOOKED_EndOfTeleportTouchingEntity();
 	static const Vector& __fastcall HOOKED_CGameMovement__GetPlayerMaxs(void* thisptr, int edx);
 	static const Vector& __fastcall HOOKED_CGameMovement__GetPlayerMins(void* thisptr, int edx);
 	static void __cdecl HOOKED_SetPredictionRandomSeed(void* usercmd);
@@ -209,6 +211,8 @@ protected:
 	_TraceFirePortal ORIG_TraceFirePortal;
 	_SlidingAndOtherStuff ORIG_SlidingAndOtherStuff;
 	void* ORIG_MiddleOfSlidingFunction;
+	void* ORIG_MiddleOfTeleportTouchingEntity;
+	void* ORIG_EndOfTeleportTouchingEntity;
 	_SetPredictionRandomSeed ORIG_SetPredictionRandomSeed;
 
 	ptrdiff_t off1M_nOldButtons;
