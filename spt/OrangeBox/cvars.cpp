@@ -170,6 +170,11 @@ ConVar y_spt_hud_ent_info(
     "Display entity info on HUD. Format is \"[ent index],[prop regex],[prop regex],...,[prop regex];[ent index],...,[prop regex]\".\n");
 ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT, "When set to 1, displays SPT HUD on the left.\n");
 ConVar y_spt_hud_oob("y_spt_hud_oob", "0", FCVAR_CHEAT, "Is the player OoB?");
+ConVar y_spt_prevent_vag_crash(
+    "y_spt_prevent_vag_crash",
+    "0",
+    FCVAR_CHEAT | FCVAR_DONTRECORD,
+    "Prevents the game from crashing from too many recursive teleports (useful when searching for vertical angle glitches).\n");
 
 ConVar _y_spt_overlay("_y_spt_overlay",
                       "0",

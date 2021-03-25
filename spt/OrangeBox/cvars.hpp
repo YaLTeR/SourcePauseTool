@@ -12,6 +12,7 @@ extern ConVar y_spt_stucksave;
 extern ConVar y_spt_piwsave;
 extern ConVar y_spt_pause_demo_on_tick;
 extern ConVar y_spt_on_slide_pause_for;
+extern ConVar y_spt_prevent_vag_crash;
 
 extern ConVar tas_strafe;
 extern ConVar tas_strafe_type;

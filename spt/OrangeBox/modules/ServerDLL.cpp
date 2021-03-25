@@ -126,11 +126,18 @@ __declspec(naked) void ServerDLL::HOOKED_MiddleOfSlidingFunction()
 
 __declspec(naked) void ServerDLL::HOOKED_MiddleOfTeleportTouchingEntity()
 {
+	/**
+	* We want a pointer to the portal and the coords of whatever is being teleported. 
+	* The former is currently in ebp (which is not used here as the stack frame pointer), and the latter
+	* is somewhere on the stack.
+	*/
 	__asm {
 		pushad;
 		pushfd;
-	}
-	__asm {
+		mov ecx, ebp; // first paremeter - pass portal ref
+		mov edx, esp; // second parameter - pass stack pointer
+		add edx, 0x24; // account for pushad/pushfd
+		call ServerDLL::HOOKED_MiddleOfTeleportTouchingEntity_Func;
 		popfd;
 		popad;
 		jmp serverDLL.ORIG_MiddleOfTeleportTouchingEntity;
@@ -143,6 +150,7 @@ __declspec(naked) void ServerDLL::HOOKED_EndOfTeleportTouchingEntity()
 		pushad;
 		pushfd;
 	}
+	serverDLL.HOOKED_EndOfTeleportTouchingEntity_Func();
 	__asm {
 		popfd;
 		popad;
@@ -620,6 +628,7 @@ void ServerDLL::Clear()
 	commandNumber = 0;
 	offM_vecPunchAngle = 0;
 	offM_vecPunchAngleVel = 0;
+	recursiveTeleportCount = 0;
 }
 
 int ServerDLL::GetCommandNumber()
@@ -935,6 +944,47 @@ void ServerDLL::HOOKED_MiddleOfSlidingFunction_Func()
 			clientDLL.AddIntoAfterframesQueue(entry);
 		}
 	}
+}
+
+/**
+* A no free edicts crash when trying to do a vag happens when the 2nd teleport places the entity
+* behind the entry portal. This causes another teleport by the entry portal to be queued which
+* sometimes places the entity right back to where it started, triggering another vag. This process is
+* recursive, and would eventually cause a stack overflow if the game didn't crash from allocating an
+* edict for a shadowclone every single teleport. This function detects when there are too many recursive
+* teleports, and nudges the entity position before the teleport so that it doesn't return to exactly the
+* same spot. The position vector is on the stack at this point, so we access it via a stack pointer from
+* the original teleport function. This works for both players and other entities.
+*/
+void __fastcall ServerDLL::HOOKED_MiddleOfTeleportTouchingEntity_Func(void* portalPtr, void* tpStackPointer)
+{
+	if (!serverDLL.ORIG_EndOfTeleportTouchingEntity || !y_spt_prevent_vag_crash.GetBool())
+		return;
+	if (serverDLL.recursiveTeleportCount++ > 2)
+	{
+		Msg("spt: nudging entity to prevent more recursive teleports!\n");
+		Vector* entPos = (Vector*)((uint32_t*)tpStackPointer + 26);
+		Vector* portalNorm = *((Vector**)portalPtr + 2505) + 2;
+		DevMsg(
+		    "spt: ent coords in TeleportTouchingEntity: %f %f %f, portal norm: %f %f %f, %i recursive teleports\n",
+		    entPos->x,
+		    entPos->y,
+		    entPos->z,
+		    portalNorm->x,
+		    portalNorm->y,
+		    portalNorm->z,
+		    serverDLL.recursiveTeleportCount);
+		// push entity further into the portal so it comes further out after the teleport
+		entPos->x -= portalNorm->x;
+		entPos->y -= portalNorm->y;
+		entPos->z -= portalNorm->z;
+	}
+}
+
+void ServerDLL::HOOKED_EndOfTeleportTouchingEntity_Func()
+{
+	if (y_spt_prevent_vag_crash.GetBool())
+		recursiveTeleportCount--;
 }
 
 bool ServerDLL::CanTracePlayerBBox()

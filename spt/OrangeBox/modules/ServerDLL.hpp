@@ -143,6 +143,8 @@ public:
 	                                             bool bTest);
 	void __fastcall HOOKED_SlidingAndOtherStuff_Func(void* thisptr, int edx, void* a, void* b);
 	void HOOKED_MiddleOfSlidingFunction_Func();
+	void HOOKED_EndOfTeleportTouchingEntity_Func();
+	static void __fastcall HOOKED_MiddleOfTeleportTouchingEntity_Func(void* portalPtr, void* tpStackPointer);
 	bool CanTracePlayerBBox();
 	int GetCommandNumber();
 	void TracePlayerBBox(const Vector& start,
@@ -233,4 +235,6 @@ protected:
 
 	bool sliding;
 	bool wasSliding;
+
+	int recursiveTeleportCount;
 };
