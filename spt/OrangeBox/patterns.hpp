@@ -459,6 +459,10 @@ namespace patterns
 		PATTERNS(CGameMovement__DecayPunchAngle,
 		         "5135",
 		         "83 EC 0C 56 8B F1 8B 56 ?? D9 82 ?? ?? ?? ?? 8D 8A ?? ?? ?? ??");
+		PATTERNS(MiddleOfTeleportTouchingEntity,
+		         "5135",
+		         "8B 80 24 27 00 00 8B CD 8B A9 24 27 00 00 89 44 24 3C");
+		PATTERNS(EndOfTeleportTouchingEntity, "5135", "E8 E3 CC DB FF 8D 8C 24 B8 00 00 00 E8 17 45 F5 FF");
 	} // namespace server
 
 	namespace vguimatsurface

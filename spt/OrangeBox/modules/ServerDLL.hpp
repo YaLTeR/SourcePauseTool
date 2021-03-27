@@ -116,6 +116,8 @@ public:
 	                                                 datamap_t* pCurMap);
 	static int __cdecl HOOKED_DispatchSpawn(void* pEntity);
 	static void HOOKED_MiddleOfSlidingFunction();
+	static void HOOKED_MiddleOfTeleportTouchingEntity();
+	static void HOOKED_EndOfTeleportTouchingEntity();
 	static const Vector& __fastcall HOOKED_CGameMovement__GetPlayerMaxs(void* thisptr, int edx);
 	static const Vector& __fastcall HOOKED_CGameMovement__GetPlayerMins(void* thisptr, int edx);
 	static void __cdecl HOOKED_SetPredictionRandomSeed(void* usercmd);
@@ -141,6 +143,8 @@ public:
 	                                             bool bTest);
 	void __fastcall HOOKED_SlidingAndOtherStuff_Func(void* thisptr, int edx, void* a, void* b);
 	void HOOKED_MiddleOfSlidingFunction_Func();
+	void HOOKED_EndOfTeleportTouchingEntity_Func();
+	static void __fastcall HOOKED_MiddleOfTeleportTouchingEntity_Func(void* portalPtr, void* tpStackPointer);
 	bool CanTracePlayerBBox();
 	int GetCommandNumber();
 	void TracePlayerBBox(const Vector& start,
@@ -209,6 +213,8 @@ protected:
 	_TraceFirePortal ORIG_TraceFirePortal;
 	_SlidingAndOtherStuff ORIG_SlidingAndOtherStuff;
 	void* ORIG_MiddleOfSlidingFunction;
+	void* ORIG_MiddleOfTeleportTouchingEntity;
+	void* ORIG_EndOfTeleportTouchingEntity;
 	_SetPredictionRandomSeed ORIG_SetPredictionRandomSeed;
 
 	ptrdiff_t off1M_nOldButtons;
@@ -229,4 +235,6 @@ protected:
 
 	bool sliding;
 	bool wasSliding;
+
+	int recursiveTeleportCount;
 };
