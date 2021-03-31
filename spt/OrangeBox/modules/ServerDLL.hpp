@@ -215,6 +215,7 @@ protected:
 	void* ORIG_MiddleOfSlidingFunction;
 	void* ORIG_MiddleOfTeleportTouchingEntity;
 	void* ORIG_EndOfTeleportTouchingEntity;
+	void* ORIG_HDTF_Cap;
 	_SetPredictionRandomSeed ORIG_SetPredictionRandomSeed;
 
 	ptrdiff_t off1M_nOldButtons;

@@ -320,7 +320,13 @@ namespace patterns
 		    "icemod2013",
 		    "55 8B EC 83 EC 18 56 8B F1 8B 4E 04 80 B9 50 0A 00 00 00 74 0E 8B 46 08 83 48 28 02 32 C0 5E 8B E5 5D C3 F3 0F 10 89 D8 0D 00 00",
 		    "missinginfo1_6",
-		    "55 8B EC 83 EC 1C 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5");
+		    "55 8B EC 83 EC 1C 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5",
+			"hdtf",
+			"55 8B EC 83 EC 30 56 8B F1 8B 8E ?? ?? ?? ??");
+		PATTERNS(
+			HDTF_Cap, 
+			"first", "3C 01 74 ?? 3C 08 74 ?? 3C 0A"
+		)
 		PATTERNS(
 		    FinishGravity,
 		    "bms",
@@ -340,7 +346,9 @@ namespace patterns
 		    "missinginfo1_4_7",
 		    "55 8B EC 83 EC 0C 89 4D F8 8B 45 F8 8B 48 08 D9 05 ?? ?? ?? ?? D9 81 ?? ?? ?? ?? DA E9 DF E0 F6 C4 44",
 		    "missinginfo1_6",
-		    "8B 51 04 D9 82 ?? ?? ?? ?? D9 EE D9 C0 DD EA DF E0 DD D9 F6 C4 44 7A 3F D9 82 ?? ?? ?? ?? DA E9");
+		    "8B 51 04 D9 82 ?? ?? ?? ?? D9 EE D9 C0 DD EA DF E0 DD D9 F6 C4 44 7A 3F D9 82 ?? ?? ?? ?? DA E9",
+			"hdtf",
+			"55 8B EC 51 F3 0F 10 0D ?? ?? ?? ?? 57");
 		PATTERNS(
 		    PlayerRunCommand,
 		    "5135",

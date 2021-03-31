@@ -183,6 +183,27 @@ IServerUnknown* GetServerPlayer()
 }
 #endif
 
+bool DoesGameLookLikeHDTF()
+{
+#ifndef OE
+	if (g_pCVar)
+	{
+		if (g_pCVar->FindCommandBase("hdtf_normspeed"))
+			return true;
+
+		return false;
+	}
+
+	if (engine)
+	{
+		auto game_dir = engine->GetGameDirectory();
+		return (GetFileName(Convert(game_dir)) == L"hdtf"s);
+	}
+#endif
+
+	return false;
+}
+
 bool DoesGameLookLikePortal()
 {
 #ifndef OE

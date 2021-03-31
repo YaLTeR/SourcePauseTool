@@ -97,6 +97,7 @@ IVDebugOverlay* GetDebugOverlay();
 void* GetGamemovement();
 ICvar* GetCvarInterface();
 std::string GetGameDir();
+bool DoesGameLookLikeHDTF();
 bool DoesGameLookLikePortal();
 bool DoesGameLookLikeHLS();
 

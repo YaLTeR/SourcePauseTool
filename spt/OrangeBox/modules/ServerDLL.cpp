@@ -237,6 +237,7 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	patternContainer.Init(moduleName);
 
 	DEF_FUTURE(FinishGravity);
+	DEF_FUTURE(HDTF_Cap);
 	DEF_FUTURE(PlayerRunCommand);
 	DEF_FUTURE(CheckStuck);
 	DEF_FUTURE(MiddleOfSlidingFunction);
@@ -268,10 +269,18 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	GET_FUTURE(TracePlayerBBoxForGround2);
 	GET_FUTURE(CGameMovement__TracePlayerBBox);
 	GET_FUTURE(CPortalGameMovement__TracePlayerBBox);
+	GET_FUTURE(HDTF_Cap);
 	GET_HOOKEDFUTURE(CGameMovement__GetPlayerMaxs);
 	GET_HOOKEDFUTURE(CGameMovement__GetPlayerMins);
 	GET_HOOKEDFUTURE(SetPredictionRandomSeed);
 	GET_FUTURE(CGameMovement__DecayPunchAngle);
+
+	if (DoesGameLookLikeHDTF() && ORIG_HDTF_Cap)
+	{
+		DWORD dwOldProtect;
+		ORIG_HDTF_Cap = (void*)((uint)ORIG_HDTF_Cap + 0x2);
+		VirtualProtect(ORIG_HDTF_Cap, 1, PAGE_EXECUTE_READWRITE, &dwOldProtect);
+	}
 
 	if (DoesGameLookLikePortal())
 	{
@@ -381,6 +390,11 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 			off1M_nOldButtons = 2;
 			off2M_nOldButtons = 40;
 			break;
+
+		case 20:
+			off1M_nOldButtons = 2;
+			off2M_nOldButtons = 40;
+			break;
 		}
 	}
 	else
@@ -437,6 +451,11 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 		case 8:
 			off1M_bDucked = 1;
 			off2M_bDucked = 3416;
+			break;
+
+		case 9:
+			off1M_bDucked = 2;
+			off2M_bDucked = 4256;
 			break;
 		}
 	}
@@ -604,6 +623,9 @@ void ServerDLL::Unhook()
 void ServerDLL::Clear()
 {
 	IHookableNameFilter::Clear();
+	if (DoesGameLookLikeHDTF() && ORIG_HDTF_Cap)
+		*(reinterpret_cast<uint8_t*>(ORIG_HDTF_Cap)) = (uint8_t)(0x74);
+	ORIG_HDTF_Cap = nullptr;
 	ORIG_CheckJumpButton = nullptr;
 	ORIG_FinishGravity = nullptr;
 	ORIG_PlayerRunCommand = nullptr;
@@ -707,6 +729,12 @@ void __cdecl ServerDLL::HOOKED_SetPredictionRandomSeed(void* usercmd)
 
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 {
+	if (DoesGameLookLikeHDTF() && ORIG_HDTF_Cap)
+	{
+		*(reinterpret_cast<uint8_t*>(ORIG_HDTF_Cap)) =
+			(y_spt_hdtf_uncap.GetBool()) ? (uint8_t)(0xEB) : (uint8_t)(0x74);
+	}
+
 	const int IN_JUMP = (1 << 1);
 
 	int* pM_nOldButtons = NULL;
