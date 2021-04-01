@@ -203,6 +203,24 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	GET_HOOKEDFUTURE(CViewEffects__Fade);
 	GET_HOOKEDFUTURE(CViewEffects__Shake);
 	GET_FUTURE(CHudDamageIndicator__GetDamagePosition);
+		
+	if (DoesGameLookLikeHDTF())
+	{
+		DEF_FUTURE(HDTF_MiddleOfViewBobFuncStart);
+		GET_HOOKEDFUTURE(HDTF_MiddleOfViewBobFuncStart);
+		if (ORIG_HDTF_MiddleOfViewBobFuncStart != nullptr)
+			ORIG_HDTF_MiddleOfViewBobFuncEnd = (uint)ORIG_HDTF_MiddleOfViewBobFuncStart + 0x34;
+
+		DEF_FUTURE(HDTF_MiddleOfViewRollFunc);
+		GET_HOOKEDFUTURE(HDTF_MiddleOfViewRollFunc);
+		if (ORIG_HDTF_MiddleOfViewRollFunc != nullptr)
+		{
+			byte* offset = (byte*)((uint)ORIG_HDTF_MiddleOfViewRollFunc + 0x1);
+			ORIG_HDTF_MiddleOfViewRollFunc_JumpTo = (uint)((uint)ORIG_HDTF_MiddleOfViewRollFunc + 0x2 + *offset);
+		}
+
+	}
+
 
 	if (DoesGameLookLikeHLS())
 	{
@@ -512,6 +530,13 @@ void ClientDLL::Unhook()
 void ClientDLL::Clear()
 {
 	IHookableNameFilter::Clear();
+
+	ORIG_HDTF_MiddleOfViewBobFuncStart = nullptr;
+	ORIG_HDTF_MiddleOfViewBobFuncEnd = 0x0;
+
+	ORIG_HDTF_MiddleOfViewRollFunc = nullptr;
+	ORIG_HDTF_MiddleOfViewRollFunc_JumpTo = 0x0;
+
 	ORIG_DoImageSpaceMotionBlur = nullptr;
 	ORIG_CheckJumpButton = nullptr;
 	ORIG_HudUpdate = nullptr;
@@ -1102,6 +1127,50 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 	EngineSetViewAngles(va);
 	OngroundSignal(IsGroundEntitySet());
 	TickSignal();
+}
+
+_declspec(naked) void ClientDLL::HOOKED_HDTF_MiddleOfViewBobFuncStart()
+{
+	__asm {
+		pushad;
+		pushfd;
+	}
+
+	if (y_spt_hdtf_viewbob.GetBool())
+		_asm
+		{
+			popfd;
+			popad;
+			jmp clientDLL.ORIG_HDTF_MiddleOfViewBobFuncStart;
+		}
+	else 
+		_asm
+	    {
+		    popfd;
+		    popad;
+		    jmp clientDLL.ORIG_HDTF_MiddleOfViewBobFuncEnd;
+	    }
+}
+
+_declspec(naked) void ClientDLL::HOOKED_HDTF_MiddleOfViewRollFunc()
+{
+	__asm {
+		pushad;
+		pushfd;
+	}
+
+	if (y_spt_hdtf_viewroll.GetBool()) _asm
+	{
+		popfd;
+		popad;
+		jmp clientDLL.ORIG_HDTF_MiddleOfViewRollFunc;
+	}
+	else _asm
+	{
+		popfd;
+		popad;
+		jmp clientDLL.ORIG_HDTF_MiddleOfViewRollFunc_JumpTo;
+	}
 }
 
 void __fastcall ClientDLL::HOOKED_CreateMove_Func(void* thisptr,

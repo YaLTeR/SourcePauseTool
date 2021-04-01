@@ -117,6 +117,8 @@ public:
 	                                                    int nClearFlags,
 	                                                    int whatToDraw);
 	void __fastcall HOOKED_CViewRender__Render_Func(void* thisptr, int edx, void* rect);
+	static void HOOKED_HDTF_MiddleOfViewBobFuncStart();
+	static void HOOKED_HDTF_MiddleOfViewRollFunc();
 
 	void DelayAfterframesQueue(int delay);
 	void AddIntoAfterframesQueue(const afterframes_entry_t& entry);
@@ -193,6 +195,11 @@ protected:
 	_CViewEffects__Fade ORIG_CViewEffects__Fade;
 	_CViewEffects__Shake ORIG_CViewEffects__Shake;
 	_MainViewOrigin ORIG_MainViewOrigin;
+
+	void* ORIG_HDTF_MiddleOfViewBobFuncStart;
+	uintptr_t ORIG_HDTF_MiddleOfViewBobFuncEnd;
+	void* ORIG_HDTF_MiddleOfViewRollFunc;
+	uintptr_t ORIG_HDTF_MiddleOfViewRollFunc_JumpTo;
 
 	uintptr_t* pgpGlobals;
 	ptrdiff_t offM_pCommands;

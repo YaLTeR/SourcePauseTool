@@ -275,6 +275,12 @@ namespace patterns
 		    CHudDamageIndicator__GetDamagePosition,
 		    "5135",
 		    "83 EC 18 E8 ?? ?? ?? ?? e8 ?? ?? ?? ?? 8B 08 89 4C 24 0C 8B 50 04 6A 00 89 54 24 14 8B 40 08 6A 00 8D 4C 24 08 51 8D 54 24 18 52 89 44 24 24");
+		PATTERNS(
+			HDTF_MiddleOfViewBobFuncStart, 
+			"first", 
+			"F3 0F 10 86 ?? ?? ?? ?? F3 0F 58 03"
+		);
+		PATTERNS(HDTF_MiddleOfViewRollFunc, "first", "74 ?? E8 ?? ?? ?? ?? 8B 86 ?? ?? ?? ??");
 	} // namespace client
 
 	namespace server
@@ -325,7 +331,7 @@ namespace patterns
 			"55 8B EC 83 EC 30 56 8B F1 8B 8E ?? ?? ?? ??");
 		PATTERNS(
 			HDTF_Cap, 
-			"first", "3C 01 74 ?? 3C 08 74 ?? 3C 0A"
+			"first", "74 ?? 3C 08 74 ?? 3C 0A"
 		)
 		PATTERNS(
 		    FinishGravity,

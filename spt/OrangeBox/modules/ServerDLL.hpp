@@ -144,6 +144,9 @@ public:
 	void __fastcall HOOKED_SlidingAndOtherStuff_Func(void* thisptr, int edx, void* a, void* b);
 	void HOOKED_MiddleOfSlidingFunction_Func();
 	void HOOKED_EndOfTeleportTouchingEntity_Func();
+
+	static void HOOKED_HDTF_Cap();
+
 	static void __fastcall HOOKED_MiddleOfTeleportTouchingEntity_Func(void* portalPtr, void* tpStackPointer);
 	bool CanTracePlayerBBox();
 	int GetCommandNumber();
@@ -216,6 +219,7 @@ protected:
 	void* ORIG_MiddleOfTeleportTouchingEntity;
 	void* ORIG_EndOfTeleportTouchingEntity;
 	void* ORIG_HDTF_Cap;
+	uintptr_t ORIG_HDTF_Cap_JumpTo;
 	_SetPredictionRandomSeed ORIG_SetPredictionRandomSeed;
 
 	ptrdiff_t off1M_nOldButtons;

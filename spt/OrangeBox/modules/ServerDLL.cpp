@@ -237,7 +237,6 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	patternContainer.Init(moduleName);
 
 	DEF_FUTURE(FinishGravity);
-	DEF_FUTURE(HDTF_Cap);
 	DEF_FUTURE(PlayerRunCommand);
 	DEF_FUTURE(CheckStuck);
 	DEF_FUTURE(MiddleOfSlidingFunction);
@@ -269,17 +268,20 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	GET_FUTURE(TracePlayerBBoxForGround2);
 	GET_FUTURE(CGameMovement__TracePlayerBBox);
 	GET_FUTURE(CPortalGameMovement__TracePlayerBBox);
-	GET_FUTURE(HDTF_Cap);
 	GET_HOOKEDFUTURE(CGameMovement__GetPlayerMaxs);
 	GET_HOOKEDFUTURE(CGameMovement__GetPlayerMins);
 	GET_HOOKEDFUTURE(SetPredictionRandomSeed);
 	GET_FUTURE(CGameMovement__DecayPunchAngle);
 
-	if (DoesGameLookLikeHDTF() && ORIG_HDTF_Cap)
+	if (DoesGameLookLikeHDTF())
 	{
-		DWORD dwOldProtect;
-		ORIG_HDTF_Cap = (void*)((uint)ORIG_HDTF_Cap + 0x2);
-		VirtualProtect(ORIG_HDTF_Cap, 1, PAGE_EXECUTE_READWRITE, &dwOldProtect);
+		DEF_FUTURE(HDTF_Cap);
+		GET_HOOKEDFUTURE(HDTF_Cap);
+		if (ORIG_HDTF_Cap)
+		{
+			byte* offset = (byte*)((uint)ORIG_HDTF_Cap + 0x1);
+			ORIG_HDTF_Cap_JumpTo = (uint)((uint)ORIG_HDTF_Cap + 0x2 + *offset);
+		}
 	}
 
 	if (DoesGameLookLikePortal())
@@ -623,9 +625,8 @@ void ServerDLL::Unhook()
 void ServerDLL::Clear()
 {
 	IHookableNameFilter::Clear();
-	if (DoesGameLookLikeHDTF() && ORIG_HDTF_Cap)
-		*(reinterpret_cast<uint8_t*>(ORIG_HDTF_Cap)) = (uint8_t)(0x74);
 	ORIG_HDTF_Cap = nullptr;
+	ORIG_HDTF_Cap_JumpTo = 0x0;
 	ORIG_CheckJumpButton = nullptr;
 	ORIG_FinishGravity = nullptr;
 	ORIG_PlayerRunCommand = nullptr;
@@ -678,6 +679,7 @@ void ServerDLL::TracePlayerBBox(const Vector& start,
 	overrideMinMax = false;
 }
 
+
 float ServerDLL::TraceFirePortal(trace_t& tr, const Vector& startPos, const Vector& vDirection)
 {
 	auto weapon = serverDLL.GetActiveWeapon(GetServerPlayer());
@@ -694,6 +696,28 @@ float ServerDLL::TraceFirePortal(trace_t& tr, const Vector& startPos, const Vect
 
 	return ORIG_TraceFirePortal(
 	    weapon, 0, false, startPos, vDirection, tr, vFinalPosition, qFinalAngles, PORTAL_PLACED_BY_PLAYER, true);
+}
+
+_declspec(naked) void ServerDLL::HOOKED_HDTF_Cap() 
+{
+	__asm {
+		pushad;
+		pushfd;
+	}
+
+	if (y_spt_hdtf_uncap.GetBool()) __asm
+	{
+		popfd;
+		popad;
+		jmp serverDLL.ORIG_HDTF_Cap_JumpTo;
+	}
+
+	else __asm
+	{
+		popfd;
+		popad;
+		jmp serverDLL.ORIG_HDTF_Cap;
+	}
 }
 
 const Vector& __fastcall ServerDLL::HOOKED_CGameMovement__GetPlayerMaxs(void* thisptr, int edx)
@@ -729,11 +753,6 @@ void __cdecl ServerDLL::HOOKED_SetPredictionRandomSeed(void* usercmd)
 
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 {
-	if (DoesGameLookLikeHDTF() && ORIG_HDTF_Cap)
-	{
-		*(reinterpret_cast<uint8_t*>(ORIG_HDTF_Cap)) =
-			(y_spt_hdtf_uncap.GetBool()) ? (uint8_t)(0xEB) : (uint8_t)(0x74);
-	}
 
 	const int IN_JUMP = (1 << 1);
 
