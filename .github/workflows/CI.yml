@@ -43,15 +43,15 @@ jobs:
     - name: Build
       run: msbuild /m /nologo /p:Configuration="${{ matrix.Configuration }}" spt.sln
     - name: Get SPT DLL name
+      id: get_spt_filename
       run: |
         $spt_filename = (Get-Item "${{ matrix.Configuration }}\spt*.dll").BaseName
-        echo "::set-env name=spt_filename::$spt_filename"
-      env:
-        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+        echo "::set-output name=spt_filename::$spt_filename"
     - uses: actions/upload-artifact@v2
       with:
-        name: ${{ matrix.Configuration }} - ${{ env.spt_filename }}
-        path: ${{ matrix.Configuration }}\${{ env.spt_filename }}.dll
+        name: ${{ matrix.Configuration }} - ${{ steps.get_spt_filename.outputs.spt_filename }}
+        path: ${{ matrix.Configuration }}\${{ steps.get_spt_filename.outputs.spt_filename }}.dll
+        if-no-files-found: error
 
   Format:
     runs-on: ubuntu-18.04
