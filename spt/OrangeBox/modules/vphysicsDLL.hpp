@@ -17,6 +17,8 @@ public:
 	virtual void Unhook();
 	virtual void Clear();
 
+	bool* isgFlagPtr;
+
 protected:
 	PatternContainer patternContainer;
 };

@@ -1,6 +1,7 @@
 #include "cvars.hpp"
 
 #include "convar.h"
+#include "modules.hpp"
 
 ConVar y_spt_pause("y_spt_pause", "0", FCVAR_ARCHIVE);
 ConVar y_spt_motion_blur_fix("y_spt_motion_blur_fix", "0");
@@ -170,6 +171,7 @@ ConVar y_spt_hud_ent_info(
     "Display entity info on HUD. Format is \"[ent index],[prop regex],[prop regex],...,[prop regex];[ent index],...,[prop regex]\".\n");
 ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT, "When set to 1, displays SPT HUD on the left.\n");
 ConVar y_spt_hud_oob("y_spt_hud_oob", "0", FCVAR_CHEAT, "Is the player OoB?");
+ConVar y_spt_hud_isg("y_spt_hud_isg", "0", FCVAR_CHEAT, "Is the ISG flag set?\n");
 ConVar y_spt_prevent_vag_crash(
     "y_spt_prevent_vag_crash",
     "0",
@@ -214,6 +216,21 @@ ConVar y_spt_gamedir(
     0,
     "Sets the game directory, that is used for loading tas scripts and tests. Use the full path for the folder e.g. C:\\Steam\\steamapps\\sourcemods\\hl2oe\\\n");
 #endif
+
+#ifdef SSDK2007
+void CC_Set_ISG(const CCommand& args)
+{
+	if (vphysicsDLL.isgFlagPtr)
+		*vphysicsDLL.isgFlagPtr = args.ArgC() == 1 || atoi(args[1]);
+	else
+		Warning("y_spt_set_isg has no effect\n");
+}
+
+ConCommand y_spt_set_isg("y_spt_set_isg",
+                         CC_Set_ISG,
+                         "Sets the state of ISG in the game (1 or 0), no arguments means 1",
+                         FCVAR_DONTRECORD | FCVAR_CHEAT);
+#endif // SSDK2007
 
 ConVar* _viewmodel_fov = nullptr;
 ConVar* _sv_accelerate = nullptr;
