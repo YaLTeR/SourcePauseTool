@@ -482,4 +482,8 @@ namespace patterns
 		PATTERNS(CInputSystem__SleepUntilInput, "5135", "8B 44 24 ?? 85 C0 7D ??");
 	} // namespace inputsystem
 
+	namespace vphysics
+	{
+	} // namespace vphysics
+
 } // namespace patterns
