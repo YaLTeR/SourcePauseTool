@@ -54,8 +54,8 @@ jobs:
         if-no-files-found: error
 
   Format:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
     - name: Format
-      run: python run-clang-format.py --clang-format-executable clang-format-8 --recursive spt
+      run: python run-clang-format.py --clang-format-executable clang-format-11 --recursive spt
