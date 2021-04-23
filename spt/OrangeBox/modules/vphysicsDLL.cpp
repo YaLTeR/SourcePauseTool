@@ -67,11 +67,15 @@ void VPhysicsDLL::Hook(const std::wstring& moduleName,
 	m_Length = moduleLength;
 	patternContainer.Init(moduleName);
 
-#ifdef SSDK2007
-	this->isgFlagPtr = (bool*)moduleBase + 0xe04d4;
-#else
-	Warning("y_spt_hud_isg 1 and y_spt_set_isg have no effect\n");
-#endif // SSDK2007
+	uint32_t ORIG_MiddleOfRecheck_ov_element = NULL;
+
+	DEF_FUTURE(MiddleOfRecheck_ov_element);
+	GET_FUTURE(MiddleOfRecheck_ov_element);
+
+	if (ORIG_MiddleOfRecheck_ov_element)
+		this->isgFlagPtr = *(bool**)(ORIG_MiddleOfRecheck_ov_element + 2);
+	else
+		Warning("y_spt_hud_isg 1 and y_spt_set_isg have no effect\n");
 
 	patternContainer.Hook();
 }
