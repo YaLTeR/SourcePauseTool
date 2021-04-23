@@ -82,7 +82,7 @@ extern ConVar _y_spt_overlay_swap;
 extern ConVar y_spt_gamedir;
 #endif
 
-#ifdef SSDK2007
+#if defined(SSDK2007) || defined(SSDK2013)
 extern ConCommand y_spt_set_isg;
 #endif
 
