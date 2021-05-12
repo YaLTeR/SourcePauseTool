@@ -242,4 +242,7 @@ protected:
 	bool wasSliding;
 
 	int recursiveTeleportCount;
+
+public:
+	void* ORIG_PickupAmmoPTR;
 };

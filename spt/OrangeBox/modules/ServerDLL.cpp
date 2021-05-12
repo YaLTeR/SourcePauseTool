@@ -98,6 +98,27 @@ int __cdecl ServerDLL::HOOKED_DispatchSpawn(void* pEntity)
 	return serverDLL.ORIG_DispatchSpawn(pEntity);
 }
 
+void DisableAmmoWeaponSound(IConVar* var, const char* pOldValue, float fOldValue)
+{
+	if (serverDLL.ORIG_PickupAmmoPTR == nullptr)
+	{
+		ConWarning("command has no effect!");
+		return;
+	}
+
+	char* oldText = (char*)(serverDLL.ORIG_PickupAmmoPTR);
+	if (((ConVar*)var)->GetBool())
+		strcpy(oldText, "PLAY AG");
+	else
+		strcpy(oldText, "BaseCombatCharacter.AmmoPickup");
+}
+
+ConVar y_spt_disable_ammo_pickup_sound("y_spt_disable_ammo_pickup_sound",
+                                         "0",
+                                         FCVAR_ARCHIVE,
+                                         "Disables weapon pickup sounds.",
+                                         DisableAmmoWeaponSound);
+
 __declspec(naked) void ServerDLL::HOOKED_MiddleOfSlidingFunction()
 {
 	/**
@@ -272,6 +293,14 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	GET_HOOKEDFUTURE(CGameMovement__GetPlayerMins);
 	GET_HOOKEDFUTURE(SetPredictionRandomSeed);
 	GET_FUTURE(CGameMovement__DecayPunchAngle);
+	DEF_FUTURE(PickupAmmoPTR);
+	GET_FUTURE(PickupAmmoPTR);
+
+	if (ORIG_PickupAmmoPTR != nullptr)
+	{
+		DWORD dwOldProtect;
+		VirtualProtect(ORIG_PickupAmmoPTR, 30, PAGE_EXECUTE_READWRITE, &dwOldProtect);
+	}
 
 	if (DoesGameLookLikeHDTF())
 	{
@@ -625,6 +654,8 @@ void ServerDLL::Unhook()
 void ServerDLL::Clear()
 {
 	IHookableNameFilter::Clear();
+	EngineConCmd("y_spt_disable_ammo_pickup_sound 0");
+	ORIG_PickupAmmoPTR = nullptr;
 	ORIG_HDTF_Cap = nullptr;
 	ORIG_HDTF_Cap_JumpTo = 0x0;
 	ORIG_CheckJumpButton = nullptr;

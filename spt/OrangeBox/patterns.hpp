@@ -282,9 +282,10 @@ namespace patterns
 		PATTERNS(
 			HDTF_MiddleOfViewBobFuncStart, 
 			"first", 
-			"F3 0F 10 86 ?? ?? ?? ?? F3 0F 58 03"
-		);
+			"F3 0F 10 86 ?? ?? ?? ?? F3 0F 58 03");
 		PATTERNS(HDTF_MiddleOfViewRollFunc, "first", "74 ?? E8 ?? ?? ?? ?? 8B 86 ?? ?? ?? ??");
+		PATTERNS(PickupWeaponPTR, "1", "50 6c 61 79 65 72 2e 50 69 63 6b 75 70 57 65 61 70 6f 6e");
+
 	} // namespace client
 
 	namespace server
@@ -478,6 +479,9 @@ namespace patterns
 		         "5135",
 		         "8B 80 24 27 00 00 8B CD 8B A9 24 27 00 00 89 44 24 3C");
 		PATTERNS(EndOfTeleportTouchingEntity, "5135", "E8 E3 CC DB FF 8D 8C 24 B8 00 00 00 E8 17 45 F5 FF");
+		PATTERNS(PickupAmmoPTR,
+		         "1",
+		         "42 61 73 65 43 6f 6d 62 61 74 43 68 61 72 61 63 74 65 72 2e 41 6d 6d 6f 50 69 63 6b 75 70");
 	} // namespace server
 
 	namespace vguimatsurface

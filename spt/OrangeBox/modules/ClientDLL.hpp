@@ -218,6 +218,7 @@ protected:
 
 public:
 	ptrdiff_t offServerAbsOrigin;
+	void* ORIG_PickupWeaponPTR;
 
 protected:
 	uintptr_t pCmd;

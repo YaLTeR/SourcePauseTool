@@ -104,6 +104,26 @@ void __fastcall ClientDLL::HOOKED_CViewEffects__Shake(void* thisptr, int edx, vo
 		clientDLL.ORIG_CViewEffects__Shake(thisptr, edx, data);
 }
 
+void DisablePickupWeaponSound(IConVar* var, const char* pOldValue, float fOldValue)
+{
+	if (clientDLL.ORIG_PickupWeaponPTR == nullptr)
+	{
+		ConWarning("command has no effect!");
+		return;
+	}
+
+	char* oldText = (char*)(clientDLL.ORIG_PickupWeaponPTR);
+	if (((ConVar*)var)->GetBool())
+		strcpy(oldText, "PLAY AG");
+	else
+		strcpy(oldText, "Player.PickupWeapon");
+}
+
+ConVar y_spt_disable_weapon_pickup_sound("y_spt_disable_weapon_pickup_sound",
+	                  "0",
+	                  FCVAR_ARCHIVE,
+	                  "Disables weapon pickup sounds.", DisablePickupWeaponSound);
+
 #define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::client::##name);
 #define GET_HOOKEDFUTURE(future_name) \
 	{ \
@@ -203,7 +223,15 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	GET_HOOKEDFUTURE(CViewEffects__Fade);
 	GET_HOOKEDFUTURE(CViewEffects__Shake);
 	GET_FUTURE(CHudDamageIndicator__GetDamagePosition);
-		
+	DEF_FUTURE(PickupWeaponPTR);
+	GET_FUTURE(PickupWeaponPTR);
+
+	if (ORIG_PickupWeaponPTR != nullptr)
+	{
+		DWORD dwOldProtect;
+		VirtualProtect(ORIG_PickupWeaponPTR, 19, PAGE_EXECUTE_READWRITE, &dwOldProtect);
+	}
+
 	if (DoesGameLookLikeHDTF())
 	{
 		DEF_FUTURE(HDTF_MiddleOfViewBobFuncStart);
@@ -530,6 +558,9 @@ void ClientDLL::Unhook()
 void ClientDLL::Clear()
 {
 	IHookableNameFilter::Clear();
+
+	EngineConCmd("y_spt_disable_weapon_pickup_sound 0");
+	ORIG_PickupWeaponPTR = nullptr;
 
 	ORIG_HDTF_MiddleOfViewBobFuncStart = nullptr;
 	ORIG_HDTF_MiddleOfViewBobFuncEnd = 0x0;
