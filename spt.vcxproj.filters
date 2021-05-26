@@ -142,6 +142,9 @@
     <ClCompile Include="spt\OrangeBox\vgui\graphics.cpp">
       <Filter>spt\OrangeBox\vgui</Filter>
     </ClCompile>
+    <ClCompile Include="spt\OrangeBox\modules\vphysicsDLL.cpp">
+      <Filter>spt\OrangeBox\modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -371,6 +374,9 @@
     </ClInclude>
     <ClInclude Include="spt\OrangeBox\vgui\graphics.hpp">
       <Filter>spt\OrangeBox\vgui</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\OrangeBox\modules\vphysicsDLL.hpp">
+      <Filter>spt\OrangeBox\modules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -169,7 +169,7 @@ void VGui_MatSurfaceDLL::DrawHUD(vrect_t* screen)
 		    || y_spt_hud_script_length.GetBool() || y_spt_hud_accel.GetBool() || y_spt_hud_vars.GetBool()
 		    || y_spt_hud_portal_bubble.GetBool() || y_spt_hud_ag_sg_tester.GetBool()
 		    || !whiteSpacesOnly(y_spt_hud_ent_info.GetString()) || y_spt_hud_oob.GetBool()
-		    || y_spt_hud_velocity_angles.GetBool())
+		    || y_spt_hud_velocity_angles.GetBool() || y_spt_hud_isg.GetBool())
 		{
 			DrawTopHUD(screen, scheme, surface);
 		}
@@ -519,6 +519,13 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t* screen, vgui::IScheme* scheme, IMat
 		swprintf_s(buffer, BUFFER_SIZE, L"oob: %d", oob);
 		DRAW();
 	}
+
+#ifdef SSDK2007
+	if (y_spt_hud_isg.GetBool() && vphysicsDLL.isgFlagPtr)
+	{
+		DRAW_INT(L"isg", *(vphysicsDLL.isgFlagPtr));
+	}
+#endif
 }
 
 void VGui_MatSurfaceDLL::DrawFlagsHud(bool mutuallyExclusiveFlags,

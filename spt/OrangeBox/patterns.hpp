@@ -505,4 +505,13 @@ namespace patterns
 		PATTERNS(CInputSystem__SleepUntilInput, "5135", "8B 44 24 ?? 85 C0 7D ??");
 	} // namespace inputsystem
 
+	namespace vphysics
+	{
+		PATTERNS(MiddleOfRecheck_ov_element,
+		         "5135",
+		         "C6 05 ?? ?? ?? ?? 01 83 EE 01 3B 74 24 28 7D D3 8B 4C 24 38",
+		         "1910503",
+		         "C6 05 ?? ?? ?? ?? 01 4E 3B 75 F0 7D D3 8B 8D DC FD FF FF");
+	} // namespace vphysics
+
 } // namespace patterns
