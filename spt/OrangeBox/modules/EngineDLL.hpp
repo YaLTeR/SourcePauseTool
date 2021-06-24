@@ -25,6 +25,17 @@ typedef void(__fastcall* _VGui_Paint)(void* thisptr, int edx, int mode);
 typedef int(__fastcall* DemoPlayer__Func)(void* thisptr);
 typedef bool(__fastcall* _CEngineTrace__PointOutsideWorld)(void* thisptr, int edx, const Vector& pt);
 typedef void(__cdecl* _Host_AccumulateTime)(float dt);
+typedef void(__fastcall* _Record_Func)(void* thisptr);
+typedef void(__fastcall* _WriteConsoleCommand)(void* thisptr, int edx, char* cmdstring, int tick);
+typedef void(__fastcall* _StopRecording)(void* thisptr);
+
+enum server_state_t
+{
+	ss_dead = 0, // Dead
+	ss_loading,  // Spawning
+	ss_active,   // Running
+	ss_paused,   // Running, but paused
+};
 
 class EngineDLL : public IHookableNameFilter
 {
@@ -38,6 +49,13 @@ public:
 	virtual void Unhook();
 	virtual void Clear();
 
+	bool IsDemoRecording();
+	int GetDemoTickCount();
+	float GetDemoTime();
+	float GetAccumDemoTime();
+	const char* GetDemoName();
+	float GetCurrentRunTime();
+
 	static bool __cdecl HOOKED_SV_ActivateServer();
 	static void __fastcall HOOKED_FinishRestore(void* thisptr, int edx);
 	static void __fastcall HOOKED_SetPaused(void* thisptr, int edx, bool paused);
@@ -47,6 +65,9 @@ public:
 	static void __cdecl HOOKED_Host_AccumulateTime(float dt);
 	static void __cdecl HOOKED_Cbuf_Execute();
 	static void __fastcall HOOKED_VGui_Paint(void* thisptr, int edx, int mode);
+	static void __fastcall HOOKED_WriteConsoleCommand(void* thisptr, int edx, char* cmdstring, int tick);
+	static void __fastcall HOOKED_StopRecording(void* thisptr);
+	void __fastcall WriteConsoleCommand(char* cmdstring, int tick);
 	bool __cdecl HOOKED_SV_ActivateServer_Func();
 	void __fastcall HOOKED_FinishRestore_Func(void* thisptr, int edx);
 	void __fastcall HOOKED_SetPaused_Func(void* thisptr, int edx, bool paused);
@@ -55,6 +76,7 @@ public:
 	void __cdecl HOOKED__Host_RunFrame_Server_Func(int bFinalTick);
 	void __cdecl HOOKED_Cbuf_Execute_Func();
 	void __fastcall HOOKED_VGui_Paint_Func(void* thisptr, int edx, int mode);
+	static void __fastcall HOOKED_Record_Func(void* thisptr);
 
 	float GetTickrate() const;
 	void SetTickrate(float value);
@@ -76,6 +98,9 @@ protected:
 	_Cbuf_Execute ORIG_Cbuf_Execute;
 	_VGui_Paint ORIG_VGui_Paint;
 	_Host_AccumulateTime ORIG_Host_AccumulateTime;
+	_Record_Func ORIG_Record_Func;
+	_WriteConsoleCommand ORIG_WriteConsoleCommand;
+	_StopRecording ORIG_StopRecording;
 
 	void* pGameServer;
 	bool* pM_bLoadgame;
@@ -86,6 +111,12 @@ protected:
 	int* pM_State;
 	int* pM_nSignonState;
 	void** pDemoplayer;
+	void* pDemorecorder;
+	uintptr_t curtime;
+	uintptr_t ORIG_curtime;
+	uintptr_t ORIG_ServerState;
+
+	server_state_t GetServerState();
 
 	int GetPlaybackTick_Offset;
 	int GetTotalTicks_Offset;

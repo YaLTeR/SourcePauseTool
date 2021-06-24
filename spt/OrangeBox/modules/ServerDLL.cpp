@@ -106,6 +106,7 @@ void DisableAmmoWeaponSound(IConVar* var, const char* pOldValue, float fOldValue
 		return;
 	}
 
+	// the game queues the sound through a string, so let's just replace it
 	char* oldText = (char*)(serverDLL.ORIG_PickupAmmoPTR);
 	if (((ConVar*)var)->GetBool())
 		strcpy(oldText, "PLAY AG");
@@ -654,7 +655,12 @@ void ServerDLL::Unhook()
 void ServerDLL::Clear()
 {
 	IHookableNameFilter::Clear();
-	EngineConCmd("y_spt_disable_ammo_pickup_sound 0");
+	if (ORIG_PickupAmmoPTR != nullptr)
+	{
+		char* oldText = (char*)(ORIG_PickupAmmoPTR);
+		strcpy(oldText, "BaseCombatCharacter.AmmoPickup");
+	}
+
 	ORIG_PickupAmmoPTR = nullptr;
 	ORIG_HDTF_Cap = nullptr;
 	ORIG_HDTF_Cap_JumpTo = 0x0;

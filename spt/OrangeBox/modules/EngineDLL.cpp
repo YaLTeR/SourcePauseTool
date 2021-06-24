@@ -75,6 +75,112 @@ void __fastcall EngineDLL::HOOKED_VGui_Paint(void* thisptr, int edx, int mode)
 	engineDLL.HOOKED_VGui_Paint_Func(thisptr, edx, mode);
 }
 
+bool SPT_command_listing_evaluate(const char* candidate)
+{
+	if (candidate == "")
+		return false;
+
+	const char* const values[] = {"spt_", "tas_", "sv_cheats"};
+	for each (const char* check in values)
+	{
+		if (((std::string)candidate).find(check) != std::string::npos)
+				return true;
+	}
+	return false;
+}
+
+void __fastcall EngineDLL::HOOKED_Record_Func(void* thisptr)
+{
+	TRACE_ENTER();
+
+	engineDLL.ORIG_Record_Func(thisptr);
+
+	if (y_spt_demo_write_timestamps.GetBool())
+	{
+		char time[100]{};
+		sprintf(time, "! START RECORDING TIMESTAMP %.20f", Plat_FloatTime());
+		engineDLL.WriteConsoleCommand(time, 0);
+	}
+
+	if (!y_spt_demo_legit_check.GetBool())
+		return;
+
+	ConMsg("SPT COMMAND LISTING !!! \n");
+
+	engineDLL.WriteConsoleCommand("SPT COMMAND LISTING", 0);
+	char text[500]{};
+
+	auto icvar = GetCvarInterface();
+	ConCommandBase* cmd = icvar->GetCommands();
+
+	// Loops through the console variables and commands
+	while (cmd != NULL)
+	{
+		const char* name = cmd->GetName();
+		if (!cmd->IsCommand() && name != NULL && SPT_command_listing_evaluate(name))
+		{
+			auto convar = icvar->FindVar(name);
+			// convar found
+			if (convar != NULL)
+			{
+				sprintf(text, "\0 VAR %s      default [%s]      current s[%s] i[%d] f[%.8f] \n",
+				    name,
+					convar->GetDefault(), 
+					convar->GetString(),
+					convar->GetInt(),
+					convar->GetFloat());
+
+				ConMsg(text);
+
+				engineDLL.WriteConsoleCommand(text, -9000);
+			}
+			else
+				throw std::exception("Unable to find listed console variable!");
+		}
+		cmd = cmd->GetNext();
+	}
+}
+
+bool EngineDLL::IsDemoRecording() 
+{
+	if (engineDLL.pDemorecorder != nullptr)
+	{
+		return *(bool*)((uint)pDemorecorder + 0x646);
+	}
+
+	return false;
+}
+
+void __fastcall EngineDLL::HOOKED_StopRecording(void* thisptr) 
+{
+	TRACE_ENTER();
+
+	if (y_spt_demo_write_timestamps.GetBool())
+	{
+		char time[100]{};
+		sprintf(time, "! STOP RECORDING TIMESTAMP %.20f", Plat_FloatTime());
+		engineDLL.WriteConsoleCommand(time, engineDLL.GetDemoTickCount());
+	}
+
+	return engineDLL.ORIG_StopRecording(thisptr);
+}
+
+void __fastcall EngineDLL::HOOKED_WriteConsoleCommand(void* thisptr, int edx, char* cmdstring, int tick)
+{
+	TRACE_ENTER();
+	return engineDLL.ORIG_WriteConsoleCommand(thisptr, edx, cmdstring, tick);
+}
+
+void __fastcall EngineDLL::WriteConsoleCommand(char* cmdstring, int tick)
+{
+	if (pDemorecorder == nullptr)
+		return;
+	engineDLL.ORIG_WriteConsoleCommand((void*)((uint)pDemorecorder + 0x4),	// m_demofile
+										*(uint*)pDemorecorder,				// demorecorder vftable ptr
+										cmdstring,
+										tick);
+}
+
 #define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::engine::##name);
 #define GET_HOOKEDFUTURE(future_name) \
 	{ \
@@ -123,6 +229,111 @@ void __fastcall EngineDLL::HOOKED_VGui_Paint(void* thisptr, int edx, int mode)
 		} \
 	}
 
+int lastDemoTick = 0;
+int lastDemoTickBase = 0;
+int accumDemoTime = 0;
+
+static void ResetAccumDemoTime(const CCommand& args)
+{
+	accumDemoTime = 0;
+}
+
+static ConCommand y_spt_hud_demo_accumtime_reset("y_spt_hud_demo_accumtime_reset", ResetAccumDemoTime);
+
+int EngineDLL::GetDemoTickCount()
+{
+	if (ORIG_curtime && pDemorecorder)
+	{
+		int tick = 0;
+		int curtime = *(int*)(ORIG_curtime + 12);
+		if (IsDemoRecording())
+		{
+			int tickbase = *(int*)((int)pDemorecorder + 0x53c);
+			// wait until the tickbase is set
+			if (tickbase < lastDemoTickBase)
+				return 0;
+
+			tick = curtime - tickbase;
+			if (y_spt_hud_demo_accumtime.GetBool())
+				accumDemoTime += (tick - lastDemoTick) > 0 ? tick - lastDemoTick : 0;
+		}
+		else
+			lastDemoTickBase = curtime; 
+
+		lastDemoTick = tick;
+		return lastDemoTick;
+	}
+	return -1;
+}
+
+float EngineDLL::GetAccumDemoTime() 
+{
+	if (ORIG_curtime && pDemorecorder)
+	{
+		return accumDemoTime * GetTickrate();
+	}
+	return -1;
+}
+
+float EngineDLL::GetDemoTime()
+{
+	if (ORIG_curtime && pDemorecorder)
+	{
+		return GetDemoTickCount() * GetTickrate();
+	}
+	return -1;
+}
+
+const char* EngineDLL::GetDemoName()
+{
+	if (pDemorecorder)
+	{
+		return (const char*)((int)pDemorecorder + 0x540);
+	}
+	return "";
+}
+
+server_state_t EngineDLL::GetServerState()
+{
+	if (ORIG_ServerState)
+		return *(server_state_t*)ORIG_ServerState;
+	return ss_active;
+}
+
+
+int lastCurTick = 0;
+double lastRealTime = 0;
+float curRunTime = 0;
+
+static void ResetRunTime()
+{
+	curRunTime = 0;
+}
+
+static ConCommand y_spt_hud_timer_reset("y_spt_hud_timer_reset", ResetRunTime);
+
+float EngineDLL::GetCurrentRunTime() 
+{
+	if (!ORIG_curtime || !ORIG_ServerState)
+		return 0;
+
+	float delta =
+	    (GetServerState() == ss_paused)  
+		? Plat_FloatTime() - lastRealTime 
+		: (*(int*)(ORIG_curtime + 12) - lastCurTick) * GetTickrate();
+
+	if (lastCurTick == 0 || lastRealTime == 0)
+		delta = 0;
+
+	lastCurTick = *(int*)(ORIG_curtime + 12);
+	lastRealTime = Plat_FloatTime();
+
+	if (delta > 0)
+		curRunTime += delta;
+
+	return curRunTime;
+}
+
 void EngineDLL::Hook(const std::wstring& moduleName,
                      void* moduleHandle,
                      void* moduleBase,
@@ -140,6 +351,7 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	DEF_FUTURE(SV_ActivateServer);
 	DEF_FUTURE(FinishRestore);
 	DEF_FUTURE(Record);
+	DEF_FUTURE(Record_Func);
 	DEF_FUTURE(SetPaused);
 	DEF_FUTURE(MiddleOfSV_InitGameDLL);
 	DEF_FUTURE(VGui_Paint);
@@ -147,6 +359,10 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	DEF_FUTURE(CEngineTrace__PointOutsideWorld);
 	DEF_FUTURE(_Host_RunFrame);
 	DEF_FUTURE(Host_AccumulateTime);
+	DEF_FUTURE(WriteConsoleCommand);
+	DEF_FUTURE(curtime);
+	DEF_FUTURE(StopRecording);
+	DEF_FUTURE(ServerState);
 
 	GET_HOOKEDFUTURE(SV_ActivateServer);
 	GET_HOOKEDFUTURE(FinishRestore);
@@ -157,6 +373,40 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	GET_FUTURE(CEngineTrace__PointOutsideWorld);
 	GET_FUTURE(_Host_RunFrame);
 	GET_HOOKEDFUTURE(Host_AccumulateTime);
+	GET_HOOKEDFUTURE(Record_Func);
+	GET_HOOKEDFUTURE(WriteConsoleCommand);
+	GET_FUTURE(curtime);
+	GET_HOOKEDFUTURE(StopRecording);
+	GET_FUTURE(ServerState);
+
+	if (ORIG_curtime)
+	{
+		int add = 0;
+		int ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_curtime);
+		switch (ptnNumber)
+		{
+		case 0:
+			add = 22;
+			break;
+
+		case 1:
+			add = 26;
+			break; 
+
+		case 2:
+			add = 27;
+			break; 
+		}
+
+		ORIG_curtime = *(uintptr_t*)(ORIG_curtime + add);
+		DevMsg("cur time found at %p\n", ORIG_curtime);
+	}
+
+	if (ORIG_ServerState)
+	{
+		ORIG_ServerState = *(uintptr_t*)(ORIG_ServerState + 22);
+		DevMsg("server state found at %p\n", ORIG_ServerState);
+	}
 
 	// m_bLoadgame and pGameServer (&sv)
 	if (ORIG_SpawnPlayer)
@@ -275,6 +525,7 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 		if (ptnNumber == 0)
 		{
 			pDemoplayer = *reinterpret_cast<void***>(ORIG_Record + 132);
+			pDemorecorder = **reinterpret_cast<void****>(ORIG_Record + 0x7A);
 
 			// vftable offsets
 			GetPlaybackTick_Offset = 2;
@@ -296,7 +547,10 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 			Warning(
 			    "Record pattern had no matching clause for catching the demoplayer. y_spt_pause_demo_on_tick unavailable.");
 
-		DevMsg("Found demoplayer at %p, record is at %p.\n", pDemoplayer, ORIG_Record);
+		DevMsg("Found demoplayer at %p and demorecorder at %p, record is at %p.\n",
+		       pDemoplayer,
+		       pDemorecorder,
+		       ORIG_Record);
 	}
 	else
 	{
@@ -331,9 +585,14 @@ void EngineDLL::Clear()
 {
 	IHookableNameFilter::Clear();
 	ORIG_SV_ActivateServer = nullptr;
+	ORIG_WriteConsoleCommand = nullptr;
+	ORIG_StopRecording = nullptr;
+	curtime = 0x0;
+	ORIG_curtime = 0x0;
 	ORIG_FinishRestore = nullptr;
 	ORIG_SetPaused = nullptr;
-	ORIG__Host_RunFrame = nullptr;
+	ORIG_Record_Func = nullptr;
+	ORIG__Host_RunFrame = nullptr;	
 	ORIG__Host_RunFrame_Input = nullptr;
 	ORIG__Host_RunFrame_Server = nullptr;
 	ORIG_Cbuf_Execute = nullptr;

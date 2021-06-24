@@ -164,7 +164,12 @@ void VGui_MatSurfaceDLL::DrawHUD(vrect_t* screen)
 			DrawHopHud(screen, scheme, surface);
 		}
 
-		if (y_spt_hud_velocity.GetBool() || y_spt_hud_flags.GetBool() || y_spt_hud_moveflags.GetBool()
+		if (y_spt_hud_demo_curtime.GetBool() || y_spt_hud_timer_show.GetBool()
+		    || y_spt_hud_demo_accumtime.GetBool() ||
+			(y_spt_demo_legit_check.GetBool() &&  engineDLL.IsDemoRecording()) 
+			|| y_spt_hud_velocity.GetBool()
+		    || y_spt_hud_flags.GetBool()
+		    || y_spt_hud_moveflags.GetBool()
 		    || y_spt_hud_movecollideflags.GetBool() || y_spt_hud_collisionflags.GetBool()
 		    || y_spt_hud_script_length.GetBool() || y_spt_hud_accel.GetBool() || y_spt_hud_vars.GetBool()
 		    || y_spt_hud_portal_bubble.GetBool() || y_spt_hud_ag_sg_tester.GetBool()
@@ -422,6 +427,58 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t* screen, vgui::IScheme* scheme, IMat
 			                 surface,
 			                 buffer);
 		}
+	}
+
+	if (y_spt_hud_demo_curtime.GetBool() || y_spt_hud_demo_accumtime.GetBool())
+	{
+		int tick = engineDLL.GetDemoTickCount();
+
+		if (y_spt_hud_demo_curtime.GetBool())
+		{
+			const char* ch = engineDLL.GetDemoName();
+			const size_t len = strlen(ch) + 1;
+			wchar_t* wch = new wchar_t[len];
+			mbstowcs(wch, ch, len);
+
+			swprintf_s(buffer, BUFFER_SIZE, L"Tick: %d", tick);
+			DRAW();
+			swprintf_s(buffer, BUFFER_SIZE, L"Time: %.4f", engineDLL.GetDemoTime());
+			DRAW();
+			swprintf_s(buffer, BUFFER_SIZE, L"Name: %s", wch);
+			DRAW();
+		}
+
+		if (y_spt_hud_demo_accumtime.GetBool())
+		{
+			swprintf_s(buffer, BUFFER_SIZE, L"Accumulated demo time : %.4f", engineDLL.GetAccumDemoTime());
+			DRAW();
+		}
+	}
+
+	float curRunTime = engineDLL.GetCurrentRunTime();
+	if (y_spt_hud_timer_show.GetBool())
+	{
+		int hours = (int)(curRunTime / 3600.0f);
+		int minutes = (int)(((curRunTime / 3600.0f) - hours) * 60.0f);
+		int seconds = (int)(((((curRunTime / 3600.0f) - hours) * 60.0f) - minutes) * 60.0f);
+		int millis =
+		    (int)(((((((curRunTime / 3600.0f) - hours) * 60.0f) - minutes) * 60.0f) - seconds) * 10000.0f);
+		
+		char printout[15];
+		swprintf_s(buffer,
+		           BUFFER_SIZE,
+		           L"%02d:%02d:%02d.%04d",
+		           hours,   //hours
+		           minutes, //minutes
+		           seconds, //seconds
+		           millis);
+		DRAW();
+	}
+
+	if (y_spt_demo_legit_check.GetBool() && engineDLL.IsDemoRecording())
+	{
+		swprintf_s(buffer, BUFFER_SIZE, L"SPT loaded while recording Demo");
+		DRAW();
 	}
 
 	if (y_spt_hud_velocity.GetBool())

@@ -112,6 +112,7 @@ void DisablePickupWeaponSound(IConVar* var, const char* pOldValue, float fOldVal
 		return;
 	}
 
+	// the game queues the sound through a string, so let's just replace it
 	char* oldText = (char*)(clientDLL.ORIG_PickupWeaponPTR);
 	if (((ConVar*)var)->GetBool())
 		strcpy(oldText, "PLAY AG");
@@ -559,7 +560,12 @@ void ClientDLL::Clear()
 {
 	IHookableNameFilter::Clear();
 
-	EngineConCmd("y_spt_disable_weapon_pickup_sound 0");
+	if (ORIG_PickupWeaponPTR != nullptr)
+	{
+		char* oldText = (char*)(ORIG_PickupWeaponPTR);
+		strcpy(oldText, "Player.PickupWeapon");
+	}
+
 	ORIG_PickupWeaponPTR = nullptr;
 
 	ORIG_HDTF_MiddleOfViewBobFuncStart = nullptr;
