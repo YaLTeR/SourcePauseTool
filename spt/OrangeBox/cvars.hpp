@@ -78,6 +78,7 @@ extern ConVar y_spt_hud_oob;
 extern ConVar y_spt_hud_demo_curtime;
 extern ConVar y_spt_hud_demo_accumtime;
 extern ConVar y_spt_hud_timer_show;
+extern ConVar y_spt_hud_isg;
 
 extern ConVar _y_spt_overlay;
 extern ConVar _y_spt_overlay_type;
@@ -88,6 +89,10 @@ extern ConVar _y_spt_overlay_swap;
 
 #ifdef OE
 extern ConVar y_spt_gamedir;
+#endif
+
+#if defined(SSDK2007) || defined(SSDK2013)
+extern ConCommand y_spt_set_isg;
 #endif
 
 extern ConVar* _viewmodel_fov;

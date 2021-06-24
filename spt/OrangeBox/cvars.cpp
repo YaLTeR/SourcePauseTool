@@ -1,6 +1,7 @@
 #include "cvars.hpp"
 
 #include "convar.h"
+#include "modules.hpp"
 
 ConVar y_spt_hdtf_uncap("y_spt_hdtf_uncap", "0", FCVAR_ARCHIVE, "Enables/Disables speed cap");
 ConVar y_spt_hdtf_viewbob("y_spt_hdtf_viewbob", "1", FCVAR_ARCHIVE, "Enables/Disables all viewbobbing");
@@ -180,6 +181,7 @@ ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT, "When set to 1, displa
 ConVar y_spt_hud_oob("y_spt_hud_oob", "0", FCVAR_CHEAT, "Is the player OoB?");
 ConVar y_spt_hud_demo_curtime("y_spt_hud_demo_curtime", "0", FCVAR_ARCHIVE, "Print current demo time");
 ConVar y_spt_hud_demo_accumtime("y_spt_hud_demo_accumtime", "0", FCVAR_ARCHIVE, "Print accumulated time of demos recorded while this CVar is enabled");
+ConVar y_spt_hud_isg("y_spt_hud_isg", "0", FCVAR_CHEAT, "Is the ISG flag set?\n");
 ConVar y_spt_prevent_vag_crash(
     "y_spt_prevent_vag_crash",
     "0",
@@ -225,6 +227,21 @@ ConVar y_spt_gamedir(
     0,
     "Sets the game directory, that is used for loading tas scripts and tests. Use the full path for the folder e.g. C:\\Steam\\steamapps\\sourcemods\\hl2oe\\\n");
 #endif
+
+#if defined(SSDK2007) || defined(SSDK2013)
+void CC_Set_ISG(const CCommand& args)
+{
+	if (vphysicsDLL.isgFlagPtr)
+		*vphysicsDLL.isgFlagPtr = args.ArgC() == 1 || atoi(args[1]);
+	else
+		Warning("y_spt_set_isg has no effect\n");
+}
+
+ConCommand y_spt_set_isg("y_spt_set_isg",
+                         CC_Set_ISG,
+                         "Sets the state of ISG in the game (1 or 0), no arguments means 1",
+                         FCVAR_DONTRECORD | FCVAR_CHEAT);
+#endif // SSDK2007 || SSDK2013
 
 ConVar* _viewmodel_fov = nullptr;
 ConVar* _sv_accelerate = nullptr;

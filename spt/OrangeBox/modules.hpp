@@ -5,11 +5,13 @@
 #include "modules\inputSystemDLL.hpp"
 #include "modules\ServerDLL.hpp"
 #include "modules\vguimatsurfaceDLL.hpp"
+#include "modules\vphysicsDLL.hpp"
 
 extern EngineDLL engineDLL;
 extern ClientDLL clientDLL;
 extern InputSystemDLL inputSystemDLL;
 extern ServerDLL serverDLL;
+extern VPhysicsDLL vphysicsDLL;
 #ifndef OE
 extern VGui_MatSurfaceDLL vgui_matsurfaceDLL;
 #endif
