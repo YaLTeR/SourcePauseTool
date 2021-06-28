@@ -379,6 +379,8 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	GET_HOOKEDFUTURE(StopRecording);
 	GET_FUTURE(ServerState);
 
+	pVGUI_Paint = (uint)(ORIG_VGui_Paint);
+
 	if (ORIG_curtime)
 	{
 		int add = 0;
@@ -793,6 +795,5 @@ void __fastcall EngineDLL::HOOKED_VGui_Paint_Func(void* thisptr, int edx, int mo
 		vgui_matsurfaceDLL.DrawCrosshair((vrect_t*)clientDLL.screenRect);
 
 #endif
-
 	ORIG_VGui_Paint(thisptr, edx, mode);
 }

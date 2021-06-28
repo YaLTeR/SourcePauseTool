@@ -15,6 +15,7 @@
 #include "..\scripts\tests\test.hpp"
 #include "..\..\aim.hpp"
 #include "bspflags.h"
+#include "..\..\patterns_extensions.hpp"
 
 #ifdef max
 #undef max
@@ -173,6 +174,31 @@ ConVar y_spt_disable_weapon_pickup_sound("y_spt_disable_weapon_pickup_sound",
 		} \
 	}
 
+#define ENTITYMEMBEROFFSET_DT(modulebase, modulesize, base, size, name, len, outoff, out) \
+	{ \
+		uintptr_t ptr, stringPtr;\
+		(int)out = 0;\
+		FIND_STRING_ADDR(modulebase, modulesize, name, len, stringPtr);\
+\
+		FIND_VAR_REF(base, size, stringPtr, "68 ?? ?? ?? ?? 68 ", "", 10, ptr);\
+		if (ptr == 0x0) \
+		{\
+			FIND_VAR_REF(base, size, stringPtr, "6a ?? 68 ", "", 7, ptr);\
+			out = *(char*)(ptr + 0x1) + (int)outoff;\
+		}\
+		else \
+			out = *(int*)(ptr + 0x1) + (int)outoff;\
+		DevMsg(name " entity offset is 0x%X \n", (int)out);\
+	}\
+
+#define FIND_DT(modulebase, modulesize, name, len, out)\
+	{ \
+		uintptr_t stringAddr = 0x0;\
+		FIND_STRING_ADDR(moduleBase, moduleLength, name, len, stringAddr);\
+		FIND_VAR_REF(moduleBase, moduleLength, stringAddr, "68 ", "", 5, out);\
+		DevMsg("[client.dll] End of " #name " DataTable offset function found at %p\n", out);\
+	}
+
 void ClientDLL::Hook(const std::wstring& moduleName,
                      void* moduleHandle,
                      void* moduleBase,
@@ -205,6 +231,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	DEF_FUTURE(CViewEffects__Fade);
 	DEF_FUTURE(CViewEffects__Shake);
 	DEF_FUTURE(CHudDamageIndicator__GetDamagePosition);
+	DEF_FUTURE(MiddleOfCViewRenderRender);
 
 	GET_HOOKEDFUTURE(HudUpdate);
 	GET_HOOKEDFUTURE(GetButtonBits);
@@ -226,6 +253,22 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	GET_FUTURE(CHudDamageIndicator__GetDamagePosition);
 	DEF_FUTURE(PickupWeaponPTR);
 	GET_FUTURE(PickupWeaponPTR);
+	GET_FUTURE(MiddleOfCViewRenderRender);
+
+	if (ORIG_MiddleOfCViewRenderRender)
+	{
+		unsigned char* bytes = (reinterpret_cast<unsigned char*>(ORIG_MiddleOfCViewRenderRender));
+		int basePtr = *(int*)(bytes + 2);
+		uint offset = 0x0;
+		for (int i = 0; i < 20; i++)
+		{
+			if ((bytes[i] == 0x8B || bytes[i] == 0xFF) && bytes[i + 1] == 0x90)
+				offset = (uint)(bytes[i + 2]);
+		}
+
+		pVGUI_Paint = *(int*)(**(int**)(basePtr) + offset);
+		DevMsg("Engine VGUI_Paint found at %p\n", pVGUI_Paint);
+	}
 
 	if (ORIG_PickupWeaponPTR != nullptr)
 	{
@@ -424,53 +467,83 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 		switch (ptnNumber)
 		{
 		case 0:
+			/*
 			offMaxspeed = 4136;
 			offFlags = 736;
 			offAbsVelocity = 248;
 			offDucking = 3545;
 			offDuckJumpTime = 3552;
-			offServerSurfaceFriction = 3812;
 			offServerPreviouslyPredictedOrigin = 3692;
 			offServerAbsOrigin = 580;
+			*/
+			offServerSurfaceFriction = 3812;
 			break;
 
 		case 1:
+			/*
 			offMaxspeed = 4076;
 			offFlags = 732;
 			offAbsVelocity = 244;
 			offDucking = 3489;
 			offDuckJumpTime = 3496;
-			offServerSurfaceFriction = 3752;
 			offServerPreviouslyPredictedOrigin = 3628;
 			offServerAbsOrigin = 580;
+			*/
+			offServerSurfaceFriction = 3752;
 			break;
 
 		case 2:
+			/*
 			offMaxspeed = 4312;
 			offFlags = 844;
 			offAbsVelocity = 300;
 			offDucking = 3713;
 			offDuckJumpTime = 3720;
-			offServerSurfaceFriction = 3872;
 			offServerPreviouslyPredictedOrigin = 3752;
 			offServerAbsOrigin = 636;
+			*/
+			offServerSurfaceFriction = 3872;
 			break;
 
 		case 3:
+			/*
 			offMaxspeed = 4320;
 			offFlags = 844;
 			offAbsVelocity = 300;
 			offDucking = 3721;
 			offDuckJumpTime = 3728;
-			offServerSurfaceFriction = 3872;
 			offServerPreviouslyPredictedOrigin = 3752;
 			offServerAbsOrigin = 636;
+			*/
+			offServerSurfaceFriction = 3872;
 			break;
+
 		default:
 			Warning("GetGroundEntity did not contain matching if statement for pattern!\n");
 			break;
 		}
 	}
+
+	uintptr_t string_DT_loc, tmp, tmp2;
+	// DT_BASEPLAYER
+	FIND_DT(moduleBase, moduleLength, "DT_BasePlayer", 14, string_DT_loc);
+	tmp = string_DT_loc - 0x700; // assume the function is at most 0x700 bytes big
+	ENTITYMEMBEROFFSET_DT(moduleBase, moduleLength, (void*)tmp, 0x700, "m_flMaxspeed", 13, 0, offMaxspeed);
+	ENTITYMEMBEROFFSET_DT(moduleBase, moduleLength, (void*)tmp, 0x700, "m_fFlags", 9, 0, offFlags);
+
+	// DT_LOCALPLAYEREXCLUSIVE
+	int dt_local_off = 0;
+	int offvecVel = 0;
+	FIND_DT(moduleBase, moduleLength, "DT_LocalPlayerExclusive", 24, string_DT_loc);
+	tmp = string_DT_loc - 0x700; // assume the function is at most 0x700 bytes big
+	ENTITYMEMBEROFFSET_DT(moduleBase, moduleLength, (void*)tmp, 0x700, "m_Local", 8, 0, dt_local_off);
+	ENTITYMEMBEROFFSET_DT(moduleBase, moduleLength, (void*)tmp, 0x700, "m_vecVelocity[0]", 17, 0, offvecVel);
+
+	// DT_LOCAL
+	FIND_DT(moduleBase, moduleLength, "DT_Local", 9, string_DT_loc);
+	tmp = string_DT_loc - 0x700; // assume the function is at most 0x700 bytes big
+	ENTITYMEMBEROFFSET_DT(moduleBase, moduleLength, (void*)tmp, 0x700, "m_bDucking", 11, dt_local_off, offDucking);
+	ENTITYMEMBEROFFSET_DT(moduleBase, moduleLength, (void*)tmp, 0x700, "m_flDuckJumpTime", 17, dt_local_off, offDuckJumpTime);
 
 	if (ORIG_MiddleOfCAM_Think)
 	{
@@ -500,6 +573,68 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 
 		DevMsg("[client dll] Found GetLocalPlayer at %p.\n", ORIG_GetLocalPlayer);
 	}
+	else
+	{
+		uintptr_t mCAM_stringPtr;
+		FIND_STRING_ADDR(moduleBase, moduleLength, "Pitch: %6.1f   Yaw: %6.1f %38s", 31, mCAM_stringPtr);
+		FIND_VAR_REF(moduleBase, moduleLength, mCAM_stringPtr, "68", "", 5, mCAM_stringPtr);
+
+		if (mCAM_stringPtr)
+		{
+			unsigned char* bytes = (unsigned char*)(mCAM_stringPtr - 0x100);
+			for (int i = 0; i <= 0x100; i++)
+			{
+				if (bytes[i] == 0xe8 && (bytes[i + 4] == 0xFF || (bytes[i + 4] == 0x00)))
+				{
+					unsigned char* bytes2 =
+					    (unsigned char*)(bytes + i + 5 + *(int*)(bytes + i + 1));
+					if (bytes2[0] == 0xa1 && bytes2[5] == 0xc3)
+					{
+						ORIG_GetLocalPlayer =
+						    (_GetLocalPlayer)(reinterpret_cast<uintptr_t>(bytes2));
+						DevMsg("[client dll] Found GetLocalPlayer at %p.\n",
+						       ORIG_GetLocalPlayer);
+					}
+				}
+			}
+		}
+	}
+
+	if (offvecVel != 0 || !ORIG_CalcAbsoluteVelocity)
+	{
+		uintptr_t tmp = 0;
+		char sig[256];
+		char byte1[14];
+		PatternsExt::toHexArray(offvecVel, byte1); 
+		char byte2[14];
+		PatternsExt::toHexArray(offvecVel + 4, byte2);
+
+		sprintf(sig, "D9 ?? %s D9 ?? ?? ?? 00 00 D9 ?? %s D9 ?? ?? ?? 00 00", byte1, byte2);
+		BASIC_SIGSCAN(
+		    moduleBase,
+		    moduleLength, sig,
+		    24,
+		    tmp);
+
+		if (tmp)
+		{
+			offAbsVelocity = *(int*)(tmp + 8);
+			DevMsg("client m_vecAbsVelocity entity offset found at 0x%X\n", offAbsVelocity);
+
+			if (!ORIG_CalcAbsoluteVelocity)
+			{
+				auto newPtr = PatternsExt::BackTraceToFuncStart_Naive(tmp);
+				if (newPtr != 0x0)
+				{
+					ORIG_CalcAbsoluteVelocity = (_CalcAbsoluteVelocity)(newPtr);
+					DevMsg(
+					    "[client dll] CalcAbsoluteVelocity found at %p through function backtracking\n",
+					    ORIG_CalcAbsoluteVelocity);
+				}
+			}
+		}
+	}
+
 
 	if (ORIG_CHLClient__CanRecordDemo)
 	{
@@ -759,6 +894,7 @@ Vector ClientDLL::GetPlayerVelocity()
 	if (!ORIG_GetLocalPlayer)
 		return Vector();
 	auto player = ORIG_GetLocalPlayer();
+
 	ORIG_CalcAbsoluteVelocity(player, 0);
 	float* vel = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offAbsVelocity);
 
@@ -1266,6 +1402,7 @@ void ClientDLL::HOOKED_CViewRender__RenderView_Func(void* thisptr,
 void ClientDLL::HOOKED_CViewRender__Render_Func(void* thisptr, int edx, void* rect)
 {
 #ifndef SSDK2007
+	screenRect = rect;
 	ORIG_CViewRender__Render(thisptr, edx, rect);
 #else
 	renderingOverlay = false;

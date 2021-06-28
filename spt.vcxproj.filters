@@ -378,6 +378,9 @@
     <ClInclude Include="spt\OrangeBox\modules\vphysicsDLL.hpp">
       <Filter>spt\OrangeBox\modules</Filter>
     </ClInclude>
+    <ClInclude Include="spt\patterns_extensions.hpp">
+      <Filter>spt</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">

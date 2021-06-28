@@ -79,6 +79,7 @@ extern ConVar y_spt_hud_demo_curtime;
 extern ConVar y_spt_hud_demo_accumtime;
 extern ConVar y_spt_hud_timer_show;
 extern ConVar y_spt_hud_isg;
+extern ConVar y_spt_hud_havok_velocity;
 
 extern ConVar _y_spt_overlay;
 extern ConVar _y_spt_overlay_type;

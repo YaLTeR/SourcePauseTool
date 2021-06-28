@@ -11,6 +11,7 @@ Release OE/
 Release 2013/
 Release P2/
 Release BMS/
+Output/
 
 *.sublime-workspace
 

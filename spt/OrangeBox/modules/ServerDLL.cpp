@@ -9,6 +9,7 @@
 #include "..\overlay\overlays.hpp"
 #include "..\patterns.hpp"
 #include "ServerDLL.hpp"
+#include "..\..\patterns_extensions.hpp"
 
 #ifdef OE
 #include "SDK\usercmd.h"
@@ -243,6 +244,22 @@ __declspec(naked) void ServerDLL::HOOKED_EndOfTeleportTouchingEntity()
 		} \
 	}
 
+#define ENTITYMEMBEROFFSET(modulebase, modulesize, name, len, out) \
+	{ \
+		uintptr_t ptr, stringPtr; \
+		(int)out = 0; \
+		FIND_STRING_ADDR(modulebase, modulesize, name, len, stringPtr); \
+\
+		FIND_VAR_REF(modulebase, modulesize, stringPtr, "C7 05 ?? ?? ?? ?? ", "", 10, ptr); \
+		if (ptr != 0x0) \
+		{ \
+			ptr += 1;\
+			BASIC_SIGSCAN((void*)ptr, 50, "C7 05 ?? ?? ?? ?? ?? ?? ?? 00", 10, ptr); \
+			out = *(int*)(ptr + 0x6); \
+		} \
+		DevMsg(name " entity offset is 0x%X \n", (int)out); \
+	}
+
 void ServerDLL::Hook(const std::wstring& moduleName,
                      void* moduleHandle,
                      void* moduleBase,
@@ -257,6 +274,13 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	          ORIG_GetStepSoundVelocities = NULL, ORIG_CBaseEntity__SetCollisionGroup = NULL,
 	          ORIG_CGameMovement__DecayPunchAngle = NULL;
 	patternContainer.Init(moduleName);
+
+	ENTITYMEMBEROFFSET(moduleBase, moduleLength, "m_vecAbsOrigin", 15, clientDLL.offServerAbsOrigin);
+	ENTITYMEMBEROFFSET(moduleBase,
+	                   moduleLength,
+	                   "m_vecPreviouslyPredictedOrigin",
+	                   31,
+	                   clientDLL.offServerPreviouslyPredictedOrigin);
 
 	DEF_FUTURE(FinishGravity);
 	DEF_FUTURE(PlayerRunCommand);

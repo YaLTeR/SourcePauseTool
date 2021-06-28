@@ -188,6 +188,7 @@ ConVar y_spt_prevent_vag_crash(
     FCVAR_CHEAT | FCVAR_DONTRECORD,
     "Prevents the game from crashing from too many recursive teleports (useful when searching for vertical angle glitches).\n");
 ConVar y_spt_hud_timer_show("y_spt_hud_timer_show", "0", FCVAR_ARCHIVE, "Show timer");
+ConVar y_spt_hud_havok_velocity("y_spt_hud_havok_velocity", "1", FCVAR_ARCHIVE, "Show havok hitbox velocity");
 
 ConVar _y_spt_overlay("_y_spt_overlay",
                       "0",

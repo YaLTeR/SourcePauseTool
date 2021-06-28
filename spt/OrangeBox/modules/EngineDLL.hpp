@@ -87,6 +87,8 @@ public:
 	bool Demo_IsPlaybackPaused() const;
 	_CEngineTrace__PointOutsideWorld ORIG_CEngineTrace__PointOutsideWorld;
 
+	uint pVGUI_Paint;
+
 protected:
 	PatternContainer patternContainer;
 	_SV_ActivateServer ORIG_SV_ActivateServer;

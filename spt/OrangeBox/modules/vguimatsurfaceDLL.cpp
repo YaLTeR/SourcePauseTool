@@ -44,12 +44,24 @@ const int INDEX_MASK = MAX_EDICTS - 1;
 #define GET_FUTURE(future_name) \
 	{ \
 		auto pattern = f##future_name.get(); \
-	}
-
-#define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::vguimatsurface::##name);
-#define GET_FUTURE(future_name) \
-	{ \
-		auto pattern = f##future_name.get(); \
+		if (ORIG_##future_name) \
+		{ \
+			DevMsg("[vguimatsurface.dll] Found " #future_name " at %p (using the %s pattern).\n", \
+			       ORIG_##future_name, \
+			       pattern->name()); \
+			for (int i = 0; true; ++i) \
+			{ \
+				if (patterns::vguimatsurface::##future_name.at(i).name() == pattern->name()) \
+				{ \
+					patternContainer.AddIndex((PVOID*)&ORIG_##future_name, i, pattern->name()); \
+					break; \
+				} \
+			} \
+		} \
+		else \
+		{ \
+			DevWarning("[vguimatsurface.dll] Could not find " #future_name ".\n"); \
+		} \
 	}
 
 void VGui_MatSurfaceDLL::Hook(const std::wstring& moduleName,
@@ -164,7 +176,8 @@ void VGui_MatSurfaceDLL::DrawHUD(vrect_t* screen)
 			DrawHopHud(screen, scheme, surface);
 		}
 
-		if (y_spt_hud_demo_curtime.GetBool() || y_spt_hud_timer_show.GetBool()
+		if (y_spt_hud_havok_velocity.GetBool() ||
+			y_spt_hud_demo_curtime.GetBool() || y_spt_hud_timer_show.GetBool()
 		    || y_spt_hud_demo_accumtime.GetBool() ||
 			(y_spt_demo_legit_check.GetBool() &&  engineDLL.IsDemoRecording()) 
 			|| y_spt_hud_velocity.GetBool()
@@ -386,8 +399,11 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t* screen, vgui::IScheme* scheme, IMat
 
 	if (y_spt_hud_left.GetBool())
 		x = 6;
-	else
+	else if (screen)
 		x = screen->width - 300 + 2;
+	else
+		// default to 300 if we dont have a screen
+		x = 300;
 
 	int vertIndex = 0;
 
@@ -429,6 +445,36 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t* screen, vgui::IScheme* scheme, IMat
 		}
 	}
 
+	if (y_spt_hud_havok_velocity.GetBool())
+	{
+		switch (y_spt_hud_havok_velocity.GetInt())
+		{
+		case 3:
+		{
+			Vector* s = &(vphysicsDLL.PlayerHavokVel);
+			DRAW_TRIPLEFLOAT(L"havok vel", s->x, s->y, s->z);
+			break;
+		}
+
+		case 1:
+		{
+			float speed = vphysicsDLL.PlayerHavokVel.Length();
+			DRAW_FLOAT(L"havok vel (xyz)", speed);
+			break;
+		}
+
+		case 2:
+		{
+			float speed = vphysicsDLL.PlayerHavokVel.Length2D();
+			DRAW_FLOAT(L"havok vel (xy)", speed);
+			break;
+		}
+		}
+
+		Vector* s = &(vphysicsDLL.PlayerHavokPos);
+		DRAW_TRIPLEFLOAT(L"havok pos", s->x, s->y, s->z);
+	}
+
 	if (y_spt_hud_demo_curtime.GetBool() || y_spt_hud_demo_accumtime.GetBool())
 	{
 		int tick = engineDLL.GetDemoTickCount();
@@ -464,7 +510,6 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t* screen, vgui::IScheme* scheme, IMat
 		int millis =
 		    (int)(((((((curRunTime / 3600.0f) - hours) * 60.0f) - minutes) * 60.0f) - seconds) * 10000.0f);
 		
-		char printout[15];
 		swprintf_s(buffer,
 		           BUFFER_SIZE,
 		           L"%02d:%02d:%02d.%04d",
