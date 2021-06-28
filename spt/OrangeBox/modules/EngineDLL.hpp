@@ -49,13 +49,6 @@ public:
 	virtual void Unhook();
 	virtual void Clear();
 
-	bool IsDemoRecording();
-	int GetDemoTickCount();
-	float GetDemoTime();
-	float GetAccumDemoTime();
-	const char* GetDemoName();
-	float GetCurrentRunTime();
-
 	static bool __cdecl HOOKED_SV_ActivateServer();
 	static void __fastcall HOOKED_FinishRestore(void* thisptr, int edx);
 	static void __fastcall HOOKED_SetPaused(void* thisptr, int edx, bool paused);
@@ -65,9 +58,6 @@ public:
 	static void __cdecl HOOKED_Host_AccumulateTime(float dt);
 	static void __cdecl HOOKED_Cbuf_Execute();
 	static void __fastcall HOOKED_VGui_Paint(void* thisptr, int edx, int mode);
-	static void __fastcall HOOKED_WriteConsoleCommand(void* thisptr, int edx, char* cmdstring, int tick);
-	static void __fastcall HOOKED_StopRecording(void* thisptr);
-	void __fastcall WriteConsoleCommand(char* cmdstring, int tick);
 	bool __cdecl HOOKED_SV_ActivateServer_Func();
 	void __fastcall HOOKED_FinishRestore_Func(void* thisptr, int edx);
 	void __fastcall HOOKED_SetPaused_Func(void* thisptr, int edx, bool paused);
@@ -76,7 +66,6 @@ public:
 	void __cdecl HOOKED__Host_RunFrame_Server_Func(int bFinalTick);
 	void __cdecl HOOKED_Cbuf_Execute_Func();
 	void __fastcall HOOKED_VGui_Paint_Func(void* thisptr, int edx, int mode);
-	static void __fastcall HOOKED_Record_Func(void* thisptr);
 
 	float GetTickrate() const;
 	void SetTickrate(float value);
@@ -117,8 +106,6 @@ protected:
 	uintptr_t curtime;
 	uintptr_t ORIG_curtime;
 	uintptr_t ORIG_ServerState;
-
-	server_state_t GetServerState();
 
 	int GetPlaybackTick_Offset;
 	int GetTotalTicks_Offset;

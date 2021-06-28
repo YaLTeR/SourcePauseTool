@@ -6,7 +6,7 @@
 ConVar y_spt_hdtf_uncap("y_spt_hdtf_uncap", "0", FCVAR_ARCHIVE, "Enables/Disables speed cap");
 ConVar y_spt_hdtf_viewbob("y_spt_hdtf_viewbob", "1", FCVAR_ARCHIVE, "Enables/Disables all viewbobbing");
 ConVar y_spt_hdtf_viewroll("y_spt_hdtf_viewroll", "1", FCVAR_ARCHIVE, "Enables/Disables slight view rolling when turning");
-ConVar y_spt_pause("y_spt_pause", "0", FCVAR_ARCHIVE | FCVAR_SPT_RECORD_NOTIFY);
+ConVar y_spt_pause("y_spt_pause", "0", FCVAR_ARCHIVE);
 ConVar y_spt_motion_blur_fix("y_spt_motion_blur_fix", "0");
 ConVar y_spt_autojump("y_spt_autojump", "0", FCVAR_ARCHIVE);
 ConVar y_spt_additional_jumpboost("y_spt_additional_jumpboost",
@@ -28,12 +28,6 @@ ConVar y_spt_on_slide_pause_for("y_spt_on_slide_pause_for",
                                 "0",
                                 0,
                                 "Whenever sliding occurs in DMoMM, pause for this many ticks.");
-ConVar y_spt_demo_legit_check(
-    "y_spt_demo_legit_check",
-    "0",
-    FCVAR_ARCHIVE,
-    "Write the default and current values of all SPT cvars into every newly recorded demo & show SPT watermark if a demo is being recorded");
-ConVar y_spt_demo_write_timestamps("y_spt_demo_write_timestamps", "0", FCVAR_ARCHIVE, "Write timestamps for when the demo began and stopped recording to the dmeo");
 ConVar tas_strafe("tas_strafe", "0", FCVAR_TAS_RESET);
 ConVar tas_strafe_type(
     "tas_strafe_type",
@@ -179,15 +173,12 @@ ConVar y_spt_hud_ent_info(
     "Display entity info on HUD. Format is \"[ent index],[prop regex],[prop regex],...,[prop regex];[ent index],...,[prop regex]\".\n");
 ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT, "When set to 1, displays SPT HUD on the left.\n");
 ConVar y_spt_hud_oob("y_spt_hud_oob", "0", FCVAR_CHEAT, "Is the player OoB?");
-ConVar y_spt_hud_demo_curtime("y_spt_hud_demo_curtime", "0", FCVAR_ARCHIVE, "Print current demo time");
-ConVar y_spt_hud_demo_accumtime("y_spt_hud_demo_accumtime", "0", FCVAR_ARCHIVE, "Print accumulated time of demos recorded while this CVar is enabled");
 ConVar y_spt_hud_isg("y_spt_hud_isg", "0", FCVAR_CHEAT, "Is the ISG flag set?\n");
 ConVar y_spt_prevent_vag_crash(
     "y_spt_prevent_vag_crash",
     "0",
     FCVAR_CHEAT | FCVAR_DONTRECORD,
     "Prevents the game from crashing from too many recursive teleports (useful when searching for vertical angle glitches).\n");
-ConVar y_spt_hud_timer_show("y_spt_hud_timer_show", "0", FCVAR_ARCHIVE, "Show timer");
 ConVar y_spt_hud_havok_velocity("y_spt_hud_havok_velocity", "1", FCVAR_ARCHIVE, "Show havok hitbox velocity");
 
 ConVar _y_spt_overlay("_y_spt_overlay",

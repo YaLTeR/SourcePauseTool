@@ -17,8 +17,6 @@ extern ConVar y_spt_piwsave;
 extern ConVar y_spt_pause_demo_on_tick;
 extern ConVar y_spt_on_slide_pause_for;
 extern ConVar y_spt_prevent_vag_crash;
-extern ConVar y_spt_demo_legit_check;
-extern ConVar y_spt_demo_write_timestamps;
 
 extern ConVar tas_strafe;
 extern ConVar tas_strafe_type;
@@ -75,9 +73,6 @@ extern ConVar y_spt_hud_ag_sg_tester;
 extern ConVar y_spt_hud_ent_info;
 extern ConVar y_spt_hud_left;
 extern ConVar y_spt_hud_oob;
-extern ConVar y_spt_hud_demo_curtime;
-extern ConVar y_spt_hud_demo_accumtime;
-extern ConVar y_spt_hud_timer_show;
 extern ConVar y_spt_hud_isg;
 extern ConVar y_spt_hud_havok_velocity;
 
