@@ -9,7 +9,7 @@
 #include "..\overlay\overlays.hpp"
 #include "..\patterns.hpp"
 #include "ServerDLL.hpp"
-#include "..\..\patterns_extensions.hpp"
+#include "..\..\patterns_new.cpp"
 
 #ifdef OE
 #include "SDK\usercmd.h"
@@ -99,11 +99,15 @@ int __cdecl ServerDLL::HOOKED_DispatchSpawn(void* pEntity)
 	return serverDLL.ORIG_DispatchSpawn(pEntity);
 }
 
+#ifndef OE
 void DisableAmmoWeaponSound(IConVar* var, const char* pOldValue, float fOldValue)
+#else
+void DisableAmmoWeaponSound(ConVar* var, char const* pOldString)
+#endif
 {
 	if (serverDLL.ORIG_PickupAmmoPTR == nullptr)
 	{
-		ConWarning("command has no effect!");
+		ConWarning(1, "command has no effect!");
 		return;
 	}
 
@@ -244,21 +248,7 @@ __declspec(naked) void ServerDLL::HOOKED_EndOfTeleportTouchingEntity()
 		} \
 	}
 
-#define ENTITYMEMBEROFFSET(modulebase, modulesize, name, len, out) \
-	{ \
-		uintptr_t ptr, stringPtr; \
-		(int)out = 0; \
-		FIND_STRING_ADDR(modulebase, modulesize, name, len, stringPtr); \
-\
-		FIND_VAR_REF(modulebase, modulesize, stringPtr, "C7 05 ?? ?? ?? ?? ", "", 10, ptr); \
-		if (ptr != 0x0) \
-		{ \
-			ptr += 1;\
-			BASIC_SIGSCAN((void*)ptr, 50, "C7 05 ?? ?? ?? ?? ?? ?? ?? 00", 10, ptr); \
-			out = *(int*)(ptr + 0x6); \
-		} \
-		DevMsg(name " entity offset is 0x%X \n", (int)out); \
-	}
+using namespace PatternsExt;
 
 void ServerDLL::Hook(const std::wstring& moduleName,
                      void* moduleHandle,
@@ -266,31 +256,32 @@ void ServerDLL::Hook(const std::wstring& moduleName,
                      size_t moduleLength,
                      bool needToIntercept)
 {
+	auto startTime = std::chrono::high_resolution_clock::now();
+
 	Clear(); // Just in case.
 	m_Name = moduleName;
 	m_Base = moduleBase;
 	m_Length = moduleLength;
-	uintptr_t ORIG_CHL2_Player__HandleInteraction = NULL, ORIG_PerformFlyCollisionResolution = NULL,
-	          ORIG_GetStepSoundVelocities = NULL, ORIG_CBaseEntity__SetCollisionGroup = NULL,
-	          ORIG_CGameMovement__DecayPunchAngle = NULL;
+
 	patternContainer.Init(moduleName);
 
-	ENTITYMEMBEROFFSET(moduleBase, moduleLength, "m_vecAbsOrigin", 15, clientDLL.offServerAbsOrigin);
-	ENTITYMEMBEROFFSET(moduleBase,
-	                   moduleLength,
-	                   "m_vecPreviouslyPredictedOrigin",
-	                   31,
-	                   clientDLL.offServerPreviouslyPredictedOrigin);
+	const PatternScanner mScanner(moduleBase, moduleLength);
+
+	if (clientDLL.offServerAbsOrigin == 0)
+		clientDLL.offServerAbsOrigin = FindEntityOffset(mScanner, "m_vecAbsOrigin");
+	if (clientDLL.offServerPreviouslyPredictedOrigin == 0)
+		clientDLL.offServerPreviouslyPredictedOrigin =
+		    FindEntityOffset(mScanner, "m_vecPreviouslyPredictedOrigin");
 
 	DEF_FUTURE(FinishGravity);
 	DEF_FUTURE(PlayerRunCommand);
 	DEF_FUTURE(CheckStuck);
 	DEF_FUTURE(MiddleOfSlidingFunction);
 	DEF_FUTURE(CheckJumpButton);
-	DEF_FUTURE(CHL2_Player__HandleInteraction);
-	DEF_FUTURE(PerformFlyCollisionResolution);
-	DEF_FUTURE(GetStepSoundVelocities);
-	DEF_FUTURE(CBaseEntity__SetCollisionGroup);
+	//DEF_FUTURE(CHL2_Player__HandleInteraction);
+	//DEF_FUTURE(PerformFlyCollisionResolution);
+	//DEF_FUTURE(GetStepSoundVelocities);
+	//DEF_FUTURE(CBaseEntity__SetCollisionGroup);
 	DEF_FUTURE(AllocPooledString);
 	DEF_FUTURE(TracePlayerBBoxForGround);
 	DEF_FUTURE(TracePlayerBBoxForGround2);
@@ -299,16 +290,16 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	DEF_FUTURE(CGameMovement__GetPlayerMaxs);
 	DEF_FUTURE(CGameMovement__GetPlayerMins);
 	DEF_FUTURE(SetPredictionRandomSeed);
-	DEF_FUTURE(CGameMovement__DecayPunchAngle);
+	//DEF_FUTURE(CGameMovement__DecayPunchAngle);
 	GET_HOOKEDFUTURE(FinishGravity);
 	GET_HOOKEDFUTURE(PlayerRunCommand);
 	GET_HOOKEDFUTURE(CheckStuck);
 	GET_HOOKEDFUTURE(MiddleOfSlidingFunction);
 	GET_HOOKEDFUTURE(CheckJumpButton);
-	GET_FUTURE(CHL2_Player__HandleInteraction);
-	GET_FUTURE(PerformFlyCollisionResolution);
-	GET_FUTURE(GetStepSoundVelocities);
-	GET_FUTURE(CBaseEntity__SetCollisionGroup);
+	//GET_FUTURE(CHL2_Player__HandleInteraction);
+	//GET_FUTURE(PerformFlyCollisionResolution);
+	//GET_FUTURE(GetStepSoundVelocities);
+	//GET_FUTURE(CBaseEntity__SetCollisionGroup);
 	GET_FUTURE(AllocPooledString);
 	GET_FUTURE(TracePlayerBBoxForGround);
 	GET_FUTURE(TracePlayerBBoxForGround2);
@@ -317,7 +308,7 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	GET_HOOKEDFUTURE(CGameMovement__GetPlayerMaxs);
 	GET_HOOKEDFUTURE(CGameMovement__GetPlayerMins);
 	GET_HOOKEDFUTURE(SetPredictionRandomSeed);
-	GET_FUTURE(CGameMovement__DecayPunchAngle);
+	//GET_FUTURE(CGameMovement__DecayPunchAngle);
 	DEF_FUTURE(PickupAmmoPTR);
 	GET_FUTURE(PickupAmmoPTR);
 
@@ -352,6 +343,31 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 		int ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_CheckJumpButton);
 		switch (ptnNumber)
 		{
+		default:
+		{
+			DevMsg("CheckJumpButton: no specific case for old buttons found! Auto-detecting...\n");
+
+			uintptr_t out;
+			PatternCollection collection;
+			collection.AddPattern("8B ?? ?? F6 ?? ?? 02", 0);
+			collection.AddPattern("8B ?? ?? 84", 0);
+			collection.AddPattern("8B ?? ?? 83 ?? ?? 02", 0);
+			PatternScanner scanner(ORIG_CheckJumpButton, 0x1000);
+			out = scanner.Scan(collection);
+
+			if (out != 0x0)
+			{
+				off1M_nOldButtons = (int)(*(char*)(out + 2) / 4);
+				off2M_nOldButtons = (*(char*)(out + 5));
+				DevMsg("CheckJumpButton: Auto-detected old buttions 1 is %d and 2 is %d\n",
+				       off1M_nOldButtons,
+				       off2M_nOldButtons);
+			}
+			else
+				DevMsg("CheckJumpButton: Old buttons auto-detection failed...\n");
+			break;
+		}
+
 		case 0:
 			off1M_nOldButtons = 2;
 			off2M_nOldButtons = 40;
@@ -523,7 +539,7 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	// PlayerRunCommand
 	if (ORIG_PlayerRunCommand)
 	{
-		int ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_FinishGravity);
+		int ptnNumber = patternContainer.FindPatternIndex((PVOID*)&ORIG_PlayerRunCommand);
 		switch (ptnNumber)
 		{
 		case 0:
@@ -577,38 +593,34 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	}
 	else
 	{
-		DevWarning("[server dll] Could not find PlayerRunCommand!\n");
-		Warning("_y_spt_getvel has no effect.\n");
+		DevWarning("[server dll] Could not find PlayerRunCommand! Using alternative method to find vecabsvelocity offset\n");
+		offM_vecAbsVelocity = FindEntityOffset(mScanner, "m_vecAbsVelocity");
+		if (offM_vecAbsVelocity == 0)
+			Warning("_y_spt_getvel has no effect.\n");
 	}
 
-	if (ORIG_CHL2_Player__HandleInteraction)
-	{
-		offM_afPhysicsFlags = *reinterpret_cast<int*>(ORIG_CHL2_Player__HandleInteraction + 0x16);
-		DevMsg("Physics flags offset is %d\n", offM_afPhysicsFlags);
-	}
-
-	if (ORIG_PerformFlyCollisionResolution)
-	{
-		offM_moveCollide = *reinterpret_cast<int*>(ORIG_PerformFlyCollisionResolution + 0x8);
-		DevMsg("Move collide offset is %d\n", offM_moveCollide);
-	}
-
-	if (ORIG_GetStepSoundVelocities)
-	{
-		offM_moveType = *reinterpret_cast<int*>(ORIG_GetStepSoundVelocities + 0xB);
-		DevMsg("Move type offset is %d\n", offM_moveType);
-	}
-
-	if (ORIG_CBaseEntity__SetCollisionGroup)
-	{
-		offM_collisionGroup = *reinterpret_cast<int*>(ORIG_CBaseEntity__SetCollisionGroup + 0x5);
-		DevMsg("Collision group offset is %d\n", offM_collisionGroup);
-	}
+	offM_afPhysicsFlags = FindEntityOffset(mScanner, "m_afPhysicsFlags");
+	offM_moveCollide = FindEntityOffset(mScanner, "m_MoveCollide");
+	offM_moveType = FindEntityOffset(mScanner, "m_MoveType");
+	offM_collisionGroup = FindEntityOffset(mScanner, "m_CollisionGroup");
 
 	// CheckStuck
 	if (!ORIG_CheckStuck)
 	{
-		Warning("y_spt_stucksave has no effect.\n");
+		DevWarning(1, "[server dll] CheckStuck couldn't be found using signatures, trying string reference and back tracing instead...\n");
+		
+		uintptr_t tmp = FindStringAddress(mScanner, "%s stuck on object %i/%s");
+		tmp = FindVarReference(mScanner, tmp, "68 ");
+		tmp = BackTraceToFuncStart(mScanner, tmp, 0x150, 0, true, 0x5000);
+
+		if (tmp != 0x0)
+		{
+			DevMsg("[server dll] CheckStuck found at 0x%X (through function backtracing)\n", tmp);
+			ORIG_CheckStuck = *(_CheckStuck*)tmp;
+			patternContainer.AddHook(HOOKED_CheckStuck, (PVOID*)&ORIG_CheckStuck);
+		}
+		else
+			Warning("y_spt_stucksave has no effect.\n");
 	}
 
 	// Middle of DMoMM sliding function.
@@ -629,13 +641,17 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 		DevWarning("[server.dll] Could not find the teleport function!\n");
 	}
 
-	if (ORIG_CGameMovement__DecayPunchAngle)
-	{
-		offM_vecPunchAngle = *reinterpret_cast<int*>(ORIG_CGameMovement__DecayPunchAngle + 0x11);
-		offM_vecPunchAngleVel = *reinterpret_cast<int*>(ORIG_CGameMovement__DecayPunchAngle + 0xb);
+	int offDTLocal = 0x0;
+	uintptr_t tmp = 0x0;
+	tmp = FindDataTable(mScanner, "DT_LocalPlayerExclusive");
+	offDTLocal = PatternsExt::FindEntityOffsetThroughDT(moduleBase, moduleLength, tmp, "m_Local");
 
-		DevMsg("vecPunchAngle offset is %d\n", offM_vecPunchAngle);
-		DevMsg("vecPunchAngleVel offset is %d\n", offM_vecPunchAngleVel);
+	if (offDTLocal != 0x0)
+	{
+		uintptr_t datatable;
+		datatable = FindDataTable(mScanner, "DT_Local");
+		offM_vecPunchAngle = PatternsExt::FindEntityOffsetThroughDT(moduleBase, moduleLength, datatable, "m_vecPunchAngle", offDTLocal);
+		offM_vecPunchAngleVel = PatternsExt::FindEntityOffsetThroughDT(moduleBase, moduleLength, datatable, "m_vecPunchAngleVel", offDTLocal);
 	}
 	else
 	{
@@ -668,6 +684,11 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	}
 #endif
 	patternContainer.Hook();
+
+	auto loadTime =
+	std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime)
+	    .count();
+	DevMsg("[server dll] Done hooking in %dms\n", loadTime);
 }
 
 void ServerDLL::Unhook()

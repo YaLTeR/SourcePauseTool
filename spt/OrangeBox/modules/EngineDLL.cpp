@@ -129,6 +129,8 @@ void EngineDLL::Hook(const std::wstring& moduleName,
                      size_t moduleLength,
                      bool needToIntercept)
 {
+	auto startTime = std::chrono::high_resolution_clock::now();
+
 	Clear(); // Just in case.
 	m_Name = moduleName;
 	m_Base = moduleBase;
@@ -325,6 +327,11 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	}
 
 	patternContainer.Hook();
+
+	auto loadTime =
+	    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime)
+	        .count();
+	DevMsg("[engine dll] Done hooking in %dms\n", loadTime);
 }
 
 void EngineDLL::Unhook()

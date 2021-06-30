@@ -145,6 +145,9 @@
     <ClCompile Include="spt\OrangeBox\modules\vphysicsDLL.cpp">
       <Filter>spt\OrangeBox\modules</Filter>
     </ClCompile>
+    <ClCompile Include="spt\patterns_new.cpp">
+      <Filter>spt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -378,7 +381,7 @@
     <ClInclude Include="spt\OrangeBox\modules\vphysicsDLL.hpp">
       <Filter>spt\OrangeBox\modules</Filter>
     </ClInclude>
-    <ClInclude Include="spt\patterns_extensions.hpp">
+    <ClInclude Include="spt\patterns_new.hpp">
       <Filter>spt</Filter>
     </ClInclude>
   </ItemGroup>

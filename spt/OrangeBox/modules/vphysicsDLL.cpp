@@ -90,6 +90,8 @@ void VPhysicsDLL::Hook(const std::wstring& moduleName,
                        size_t moduleLength,
                        bool needToIntercept)
 {
+	auto startTime = std::chrono::high_resolution_clock::now();
+
 	Clear();
 	m_Name = moduleName;
 	m_Base = moduleBase;
@@ -113,6 +115,11 @@ void VPhysicsDLL::Hook(const std::wstring& moduleName,
 		Warning("y_spt_hud_isg 1 and y_spt_set_isg have no effect\n");
 
 	patternContainer.Hook();
+
+	auto loadTime =
+	    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime)
+	        .count();
+	DevMsg("[vphysics dll] Done hooking in %dms\n", loadTime);
 }
 
 void VPhysicsDLL::Unhook()

@@ -70,6 +70,8 @@ void VGui_MatSurfaceDLL::Hook(const std::wstring& moduleName,
                               size_t moduleLength,
                               bool needToIntercept)
 {
+	auto startTime = std::chrono::high_resolution_clock::now();
+
 	Clear(); // Just in case.
 	m_Name = moduleName;
 	m_Base = moduleBase;
@@ -92,6 +94,11 @@ void VGui_MatSurfaceDLL::Hook(const std::wstring& moduleName,
 		Warning("HUD drawing solutions are not available.\n");
 
 	patternContainer.Hook();
+
+	auto loadTime =
+	    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime)
+	        .count();
+	DevMsg("[vguimatsurface dll] Done hooking in %dms\n", loadTime);
 }
 
 void VGui_MatSurfaceDLL::Unhook()
