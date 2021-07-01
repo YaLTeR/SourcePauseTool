@@ -149,31 +149,32 @@ ConVar _y_spt_pitchspeed("_y_spt_pitchspeed", "0", FCVAR_TAS_RESET);
 ConVar _y_spt_yawspeed("_y_spt_yawspeed", "0", FCVAR_TAS_RESET);
 ConVar _y_spt_force_90fov("_y_spt_force_90fov", "0");
 
-ConVar y_spt_hud_velocity("y_spt_hud_velocity", "0", FCVAR_CHEAT, "Turns on the velocity hud.\n");
-ConVar y_spt_hud_flags("y_spt_hud_flags", "0", FCVAR_CHEAT, "Turns on the flags hud.\n");
-ConVar y_spt_hud_moveflags("y_spt_hud_moveflags", "0", FCVAR_CHEAT, "Turns on the move type hud.\n");
-ConVar y_spt_hud_movecollideflags("y_spt_hud_movecollideflags", "0", FCVAR_CHEAT, "Turns on the move collide hud.\n");
-ConVar y_spt_hud_collisionflags("y_spt_hud_collisionflags", "0", FCVAR_CHEAT, "Turns on the collision group hud.\n");
-ConVar y_spt_hud_accel("y_spt_hud_accel", "0", FCVAR_CHEAT, "Turns on the acceleration hud.\n");
-ConVar y_spt_hud_script_length("y_spt_hud_script_progress", "0", FCVAR_CHEAT, "Turns on the script progress hud.\n");
-ConVar y_spt_hud_portal_bubble("y_spt_hud_portal_bubble", "0", FCVAR_CHEAT, "Turns on portal bubble index hud.\n");
+ConVar y_spt_hud_velocity("y_spt_hud_velocity", "0", FCVAR_CHEAT | FCVAR_SPT_HUD, "Turns on the velocity hud.\n");
+ConVar y_spt_hud_flags("y_spt_hud_flags", "0", FCVAR_CHEAT | FCVAR_SPT_HUD, "Turns on the flags hud.\n");
+ConVar y_spt_hud_moveflags("y_spt_hud_moveflags", "0", FCVAR_CHEAT | FCVAR_SPT_HUD, "Turns on the move type hud.\n");
+ConVar y_spt_hud_movecollideflags("y_spt_hud_movecollideflags", "0", FCVAR_CHEAT | FCVAR_SPT_HUD, "Turns on the move collide hud.\n");
+ConVar y_spt_hud_collisionflags("y_spt_hud_collisionflags", "0", FCVAR_CHEAT | FCVAR_SPT_HUD, "Turns on the collision group hud.\n");
+ConVar y_spt_hud_accel("y_spt_hud_accel", "0", FCVAR_CHEAT | FCVAR_SPT_HUD, "Turns on the acceleration hud.\n");
+ConVar y_spt_hud_script_length("y_spt_hud_script_progress", "0", FCVAR_CHEAT | FCVAR_SPT_HUD, "Turns on the script progress hud.\n");
+ConVar y_spt_hud_portal_bubble("y_spt_hud_portal_bubble", "0", FCVAR_CHEAT | FCVAR_SPT_HUD, "Turns on portal bubble index hud.\n");
 ConVar y_spt_hud_decimals("y_spt_hud_decimals",
                           "2",
-                          FCVAR_CHEAT,
+                          FCVAR_CHEAT | FCVAR_SPT_HUD,
                           "Determines the number of decimals in the SPT HUD.\n");
-ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement vars HUD.\n");
+ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT | FCVAR_SPT_HUD, "Turns on the movement vars HUD.\n");
 ConVar y_spt_hud_ag_sg_tester("y_spt_hud_ag_sg_tester",
                               "0",
-                              FCVAR_CHEAT,
+                              FCVAR_CHEAT | FCVAR_SPT_HUD,
                               "Tests if angle glitch will save glitch you.\n");
 ConVar y_spt_hud_ent_info(
     "y_spt_hud_ent_info",
     "",
     FCVAR_CHEAT,
     "Display entity info on HUD. Format is \"[ent index],[prop regex],[prop regex],...,[prop regex];[ent index],...,[prop regex]\".\n");
-ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT, "When set to 1, displays SPT HUD on the left.\n");
-ConVar y_spt_hud_oob("y_spt_hud_oob", "0", FCVAR_CHEAT, "Is the player OoB?");
-ConVar y_spt_hud_isg("y_spt_hud_isg", "0", FCVAR_CHEAT, "Is the ISG flag set?\n");
+ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT | FCVAR_SPT_HUD, "When set to 1, displays SPT HUD on the left.\n");
+ConVar y_spt_hud_oob("y_spt_hud_oob", "0", FCVAR_CHEAT | FCVAR_SPT_HUD, "Is the player OoB?");
+ConVar y_spt_hud_isg("y_spt_hud_isg", "0", FCVAR_CHEAT | FCVAR_SPT_HUD, "Is the ISG flag set?\n");
+ConVar y_spt_hud_vec_velocity("y_spt_hud_vec_velocity", "0", FCVAR_CHEAT | FCVAR_SPT_HUD, "");
 ConVar y_spt_prevent_vag_crash(
     "y_spt_prevent_vag_crash",
     "0",

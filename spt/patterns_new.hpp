@@ -111,9 +111,10 @@ public:
 		concat ? strcat(out, tmp) : strcpy(out, tmp);
 	}
 
-	bool charArrayContains(const char* in, char candidate) const
+	bool charArrayContains(const char* in, char candidate, int length = 0) const
 	{
-		for (int i = 0; i < strlen(in); i++)
+		int amount = length == 0 ? strlen(in) : length;
+		for (int i = 0; i < amount; i++)
 		{
 			if (in[i] == candidate)
 				return true;
@@ -245,36 +246,19 @@ public:
 		onMatchEvaluate = [](bool*, uintptr_t*) {};
 	}
 
-	inline uintptr_t Scan(PatternCollection patterns) const
+	uintptr_t Scan(PatternCollection patterns) const
 	{
 		for (Pattern target : patterns.Patterns)
 		{
-			if (_size < target.count)
+			uintptr_t ptr = Scan(target, &patterns);
+			if (ptr == 0)
 				continue;
-
-			auto p = static_cast<const uint8_t*>(_base);
-			for (auto end = p + _size - target.count; p <= end; ++p)
-			{
-				if (target.match(p))
-				{
-					auto actualPtr = reinterpret_cast<uintptr_t>(p) + target.offset;
-					bool done = true;
-					target.onMatchEvaluate(&done, &actualPtr);
-					patterns.onMatchEvaluate(&done, &actualPtr);
-					onMatchEvaluate(&done, &actualPtr);
-
-					if (!done)
-						continue;
-
-					target.onFound(actualPtr);
-					return actualPtr;
-				}
-			}
+			return ptr;
 		}
 		return 0;
 	}
 
-	inline uintptr_t Scan(Pattern target) const
+	uintptr_t Scan(Pattern target, PatternCollection* collection = nullptr) const
 	{
 		if (_size < target.count)
 			return 0;
@@ -287,6 +271,8 @@ public:
 				auto actualPtr = reinterpret_cast<uintptr_t>(p) + target.offset;
 				bool done = true;
 				target.onMatchEvaluate(&done, &actualPtr);
+				if (collection != nullptr)
+					collection->onMatchEvaluate(&done, &actualPtr);
 				onMatchEvaluate(&done, &actualPtr);
 
 				if (!done)
@@ -299,10 +285,51 @@ public:
 		return 0;
 	}
 
-	uintptr_t _end()
+	// yes really
+	uintptr_t ScanBackward(PatternCollection patterns, uintptr_t startAddr) const
 	{
-		return (uintptr_t)_base + _size;
+		if (startAddr < (uintptr_t)_base)
+			return 0;
+
+		for (Pattern target : patterns.Patterns)
+		{
+			uintptr_t ptr = Scan(target, &patterns);
+			if (ptr == 0)
+				continue;
+			return ptr;
+		}
+		return 0;
 	}
+
+	uintptr_t ScanBackward(Pattern target, uintptr_t startAddr, PatternCollection* collection = nullptr) const
+	{
+		if (_size < target.count || startAddr < (uintptr_t)_base)
+			return 0;
+
+		auto p = static_cast<const uint8_t*>((void*)startAddr);
+		auto base = static_cast<const uint8_t*>(_base);
+		for (; p > base; --p)
+		{
+			if (target.match(p))
+			{
+				auto actualPtr = reinterpret_cast<uintptr_t>(p) + target.offset;
+				bool done = true;
+				target.onMatchEvaluate(&done, &actualPtr);
+				if (collection != nullptr)
+					collection->onMatchEvaluate(&done, &actualPtr);
+				onMatchEvaluate(&done, &actualPtr);
+
+				if (!done)
+					continue;
+
+				target.onFound(actualPtr);
+				return actualPtr;
+			}
+		}
+		return 0;
+	}
+
+	uintptr_t _end() const { return (uintptr_t)_base + _size; }
 
 	void* _base;
 	size_t _size;

@@ -20,6 +20,7 @@
 #include "Color.h"
 #include "const.h"
 #include "vgui_controls\controls.h"
+#include "..\..\patterns_new.cpp"
 
 #undef max
 #undef min
@@ -40,6 +41,7 @@ ConVar _y_spt_overlay_crosshair_color("_y_spt_overlay_crosshair_color",
                                       "Overlay crosshair RGBA color.");
 const int INDEX_MASK = MAX_EDICTS - 1;
 
+#define TAG "[vguimatsurface dll] "
 #define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::vguimatsurface::##name);
 #define GET_FUTURE(future_name) \
 	{ \
@@ -64,6 +66,8 @@ const int INDEX_MASK = MAX_EDICTS - 1;
 		} \
 	}
 
+using namespace PatternsExt;
+
 void VGui_MatSurfaceDLL::Hook(const std::wstring& moduleName,
                               void* moduleHandle,
                               void* moduleBase,
@@ -71,6 +75,8 @@ void VGui_MatSurfaceDLL::Hook(const std::wstring& moduleName,
                               bool needToIntercept)
 {
 	auto startTime = std::chrono::high_resolution_clock::now();
+
+	const PatternScanner mScanner(moduleBase, moduleLength);
 
 	Clear(); // Just in case.
 	m_Name = moduleName;
@@ -90,6 +96,49 @@ void VGui_MatSurfaceDLL::Hook(const std::wstring& moduleName,
 	GET_FUTURE(StartDrawing);
 	GET_FUTURE(FinishDrawing);
 
+	if (!ORIG_StartDrawing)
+	{
+		DevWarning(1, TAG "StartDrawing couldn't be found using signatures, finding string reference and backtracing instead..\n");
+		uintptr_t tmp = FindStringAddress(mScanner, "-pixel_offset_y");
+		tmp = FindVarReference(mScanner, tmp, "68");
+
+		if (tmp != 0)
+		{
+			uintptr_t tmp2 = BackTraceToFuncStart(mScanner, tmp, 200, 3, false, 0x10000);
+			if (tmp2 != 0)
+			{
+				DevMsg(TAG "Found StartDrawing at %p (through function backtracing)\n", tmp2);
+				ORIG_StartDrawing = (_StartDrawing)tmp2;
+			}
+
+			if (!ORIG_FinishDrawing)
+			{
+				DevWarning(1, TAG "FinishDrawing couldn't be found using signatures, finding g_bInDrawing reference and backtracing instead..\n");
+
+				Pattern p("C6 05 ?? ?? ?? ?? 01", 2);
+				p.onMatchEvaluate = _oMEArgs()
+				{
+					*foundPtr = **(uintptr_t**)foundPtr;
+					DevMsg(TAG "Found g_bInDrawing at %p\n", *foundPtr);
+				};
+				PatternScanner scanner((void*)tmp, 200);
+				tmp = scanner.Scan(p);
+				if (tmp != 0)
+				{
+					tmp = FindVarReference(mScanner, tmp, "C6 05", "00");
+					tmp = BackTraceToFuncStart(mScanner, tmp, 200, 3, false, 0x10000);
+					if (tmp != 0)
+					{
+						DevMsg(TAG "Found FinishDrawing at %p (through function backtracing)\n", tmp);
+						ORIG_FinishDrawing = (_FinishDrawing)tmp;
+					}
+				}
+
+			}	
+		}
+	}
+
+
 	if (!ORIG_FinishDrawing || !ORIG_StartDrawing)
 		Warning("HUD drawing solutions are not available.\n");
 
@@ -98,7 +147,7 @@ void VGui_MatSurfaceDLL::Hook(const std::wstring& moduleName,
 	auto loadTime =
 	    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime)
 	        .count();
-	DevMsg("[vguimatsurface dll] Done hooking in %dms\n", loadTime);
+	DevMsg(TAG "Done hooking in %dms\n", loadTime);
 }
 
 void VGui_MatSurfaceDLL::Unhook()
@@ -114,6 +163,38 @@ void VGui_MatSurfaceDLL::Clear()
 	displayHop = 0;
 	loss = 0;
 	percentage = 0;
+}
+
+bool CheckCVars()
+{
+#ifndef OE
+	auto icvar = GetCvarInterface();
+
+#ifndef P2
+	ConCommandBase* cmd = icvar->GetCommands();
+
+	// Loops through the console variables and commands
+	while (cmd != NULL)
+	{
+#else
+	ICvar::Iterator iter(icvar);
+
+	for (iter.SetFirst(); iter.IsValid(); iter.Next())
+	{
+		auto cmd = iter.Get();
+#endif
+
+		const char* name = cmd->GetName();
+		// Reset any variables that have been marked to be reset for TASes
+		if (!cmd->IsCommand() && name != NULL && cmd->IsFlagSet(FCVAR_SPT_HUD) && ((ConVar*)cmd)->GetBool())
+			return true;
+
+#ifndef P2
+		cmd = cmd->GetNext();
+#endif
+	}
+#endif
+	return false;
 }
 
 void VGui_MatSurfaceDLL::Jump()
@@ -183,15 +264,7 @@ void VGui_MatSurfaceDLL::DrawHUD(vrect_t* screen)
 			DrawHopHud(screen, scheme, surface);
 		}
 
-		if (y_spt_hud_havok_velocity.GetBool()
-			|| y_spt_hud_velocity.GetBool()
-		    || y_spt_hud_flags.GetBool()
-		    || y_spt_hud_moveflags.GetBool()
-		    || y_spt_hud_movecollideflags.GetBool() || y_spt_hud_collisionflags.GetBool()
-		    || y_spt_hud_script_length.GetBool() || y_spt_hud_accel.GetBool() || y_spt_hud_vars.GetBool()
-		    || y_spt_hud_portal_bubble.GetBool() || y_spt_hud_ag_sg_tester.GetBool()
-		    || !whiteSpacesOnly(y_spt_hud_ent_info.GetString()) || y_spt_hud_oob.GetBool()
-		    || y_spt_hud_velocity_angles.GetBool() || y_spt_hud_isg.GetBool())
+		if (CheckCVars() || !whiteSpacesOnly(y_spt_hud_ent_info.GetString()))
 		{
 			DrawTopHUD(screen, scheme, surface);
 		}
@@ -477,6 +550,12 @@ void VGui_MatSurfaceDLL::DrawTopHUD(vrect_t* screen, vgui::IScheme* scheme, IMat
 
 		Vector* s = &(vphysicsDLL.PlayerHavokPos);
 		DRAW_TRIPLEFLOAT(L"havok pos", s->x, s->y, s->z);
+	}
+
+	if (y_spt_hud_vec_velocity.GetBool())
+	{
+		Vector s = clientDLL.GetPlayerVecVelocity();
+		DRAW_TRIPLEFLOAT(L"vec vel", s.x, s.y, s.z);
 	}
 
 	if (y_spt_hud_velocity.GetBool())

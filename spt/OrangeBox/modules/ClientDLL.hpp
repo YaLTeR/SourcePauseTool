@@ -177,6 +177,7 @@ public:
 	_GetClientModeNormal ORIG_GetClientModeNormal;
 	_UTIL_TraceRay ORIG_UTIL_TraceRay;
 	bool IsGroundEntitySet();
+	Vector GetPlayerVecVelocity();
 
 	uintptr_t pVGUI_Paint;
 
@@ -217,6 +218,7 @@ protected:
 	ptrdiff_t offDuckJumpTime;
 	ptrdiff_t offServerSurfaceFriction;
 	ptrdiff_t offAbsVelocity;
+	ptrdiff_t offVecVelocity;
 	std::size_t sizeofCUserCmd;
 
 public:

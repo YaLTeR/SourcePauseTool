@@ -73,7 +73,6 @@ namespace PatternsExt
 		char sig[MAX_SIGNATURE_STRING_LEN];
 		pUtils.toHexArray(string, sig);
 		Pattern target(sig, 0);
-
 		return scanner.Scan(target);
 	}
 
@@ -102,7 +101,7 @@ namespace PatternsExt
 		return scanner.Scan(p);
 	}
 
-	static Pattern GeneratePatternFromVar(uintptr_t addr,
+	static inline Pattern GeneratePatternFromVar(uintptr_t addr,
 	                                      const char* prefix = "",
 	                                      const char* suffix = "",
 	                                      int offset = 0)
@@ -255,8 +254,8 @@ namespace PatternsExt
 
 			uchar curByte = *(uchar*)ptr;
 			uchar lastByte = *(uchar*)(ptr + 1);
-			if (!pUtils.charArrayContains(backTraceBytes, curByte)) continue;
-			if (pUtils.charArrayContains(backTraceBytes, lastByte)) continue;
+			if (!pUtils.charArrayContains(backTraceBytes, curByte, 4)) continue;
+			if (pUtils.charArrayContains(backTraceBytes, lastByte, 4)) continue;
 				
 			if (interruptLevel > 0 && (curByte == 0xCC || curByte == 0x90))
 			{
@@ -292,6 +291,15 @@ namespace PatternsExt
 		}
 
 		return 0;
+	}
+
+	static ConVar* FindCVarBase(PatternScanner scanner, const char* name) 
+	{
+		uintptr_t ptr = FindStringAddress(scanner, name);
+		if (ptr == 0)
+			return nullptr;
+		Pattern p = GeneratePatternFromVar(ptr, "68", "B9", 6);
+		return *(ConVar**)scanner.Scan(p);
 	}
 
 } // namespace PatternsExt

@@ -20,6 +20,8 @@
 using std::size_t;
 using std::uintptr_t;
 
+#define TAG "[server dll] "
+
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton(void* thisptr, int edx)
 {
 	TRACE_ENTER();
@@ -189,13 +191,13 @@ __declspec(naked) void ServerDLL::HOOKED_EndOfTeleportTouchingEntity()
 	{ \
 		if (ORIG_##future_name) \
 		{ \
-			DevMsg("[server dll] Found " #future_name " at %p (using the %s pattern).\n", \
+			DevMsg(TAG "Found " #future_name " at %p (using the %s pattern).\n", \
 			       (unsigned int)ORIG_##future_name - (unsigned int)moduleBase, \
 			       pattern->name()); \
 		} \
 		else \
 		{ \
-			DevWarning("[server dll] Could not find " #future_name ".\n"); \
+			DevWarning(TAG "Could not find " #future_name ".\n"); \
 		} \
 	}
 
@@ -203,12 +205,12 @@ __declspec(naked) void ServerDLL::HOOKED_EndOfTeleportTouchingEntity()
 	{ \
 		if (ORIG_##future_name) \
 		{ \
-			DevMsg("[server dll] Found " #future_name " at %p (using the vftable).\n", \
+			DevMsg(TAG "Found " #future_name " at %p (using the vftable).\n", \
 			       (unsigned int)ORIG_##future_name - (unsigned int)moduleBase); \
 		} \
 		else \
 		{ \
-			DevWarning("[server dll] Could not find " #future_name ".\n"); \
+			DevWarning(TAG "Could not find " #future_name ".\n"); \
 		} \
 	}
 
@@ -593,7 +595,7 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	}
 	else
 	{
-		DevWarning("[server dll] Could not find PlayerRunCommand! Using alternative method to find vecabsvelocity offset\n");
+		DevWarning(TAG "Could not find PlayerRunCommand! Using alternative method to find vecabsvelocity offset\n");
 		offM_vecAbsVelocity = FindEntityOffset(mScanner, "m_vecAbsVelocity");
 		if (offM_vecAbsVelocity == 0)
 			Warning("_y_spt_getvel has no effect.\n");
@@ -607,7 +609,7 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	// CheckStuck
 	if (!ORIG_CheckStuck)
 	{
-		DevWarning(1, "[server dll] CheckStuck couldn't be found using signatures, trying string reference and back tracing instead...\n");
+		DevWarning(1, TAG "CheckStuck couldn't be found using signatures, trying string reference and back tracing instead...\n");
 		
 		uintptr_t tmp = FindStringAddress(mScanner, "%s stuck on object %i/%s");
 		tmp = FindVarReference(mScanner, tmp, "68 ");
@@ -615,7 +617,7 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 
 		if (tmp != 0x0)
 		{
-			DevMsg("[server dll] CheckStuck found at 0x%X (through function backtracing)\n", tmp);
+			DevMsg(TAG "CheckStuck found at 0x%X (through function backtracing)\n", tmp);
 			ORIG_CheckStuck = *(_CheckStuck*)tmp;
 			patternContainer.AddHook(HOOKED_CheckStuck, (PVOID*)&ORIG_CheckStuck);
 		}
@@ -688,7 +690,7 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	auto loadTime =
 	std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime)
 	    .count();
-	DevMsg("[server dll] Done hooking in %dms\n", loadTime);
+	DevMsg(TAG "Done hooking in %dms\n", loadTime);
 }
 
 void ServerDLL::Unhook()

@@ -16,6 +16,8 @@
 using std::size_t;
 using std::uintptr_t;
 
+#define TAG "[engine dll] "
+
 bool __cdecl EngineDLL::HOOKED_SV_ActivateServer()
 {
 	TRACE_ENTER();
@@ -81,7 +83,7 @@ void __fastcall EngineDLL::HOOKED_VGui_Paint(void* thisptr, int edx, int mode)
 		auto pattern = f##future_name.get(); \
 		if (ORIG_##future_name) \
 		{ \
-			DevMsg("[engine dll] Found " #future_name " at %p (using the %s pattern).\n", \
+			DevMsg(TAG "Found " #future_name " at %p (using the %s pattern).\n", \
 			       ORIG_##future_name, \
 			       pattern->name()); \
 			patternContainer.AddHook(HOOKED_##future_name, (PVOID*)&ORIG_##future_name); \
@@ -96,7 +98,7 @@ void __fastcall EngineDLL::HOOKED_VGui_Paint(void* thisptr, int edx, int mode)
 		} \
 		else \
 		{ \
-			DevWarning("[engine dll] Could not find " #future_name ".\n"); \
+			DevWarning(TAG "Could not find " #future_name ".\n"); \
 		} \
 	}
 
@@ -105,7 +107,7 @@ void __fastcall EngineDLL::HOOKED_VGui_Paint(void* thisptr, int edx, int mode)
 		auto pattern = f##future_name.get(); \
 		if (ORIG_##future_name) \
 		{ \
-			DevMsg("[engine dll] Found " #future_name " at %p (using the %s pattern).\n", \
+			DevMsg(TAG "Found " #future_name " at %p (using the %s pattern).\n", \
 			       ORIG_##future_name, \
 			       pattern->name()); \
 			for (int i = 0; true; ++i) \
@@ -119,7 +121,7 @@ void __fastcall EngineDLL::HOOKED_VGui_Paint(void* thisptr, int edx, int mode)
 		} \
 		else \
 		{ \
-			DevWarning("[engine dll] Could not find " #future_name ".\n"); \
+			DevWarning(TAG "Could not find " #future_name ".\n"); \
 		} \
 	}
 
@@ -331,7 +333,7 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	auto loadTime =
 	    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime)
 	        .count();
-	DevMsg("[engine dll] Done hooking in %dms\n", loadTime);
+	DevMsg(TAG "Done hooking in %dms\n", loadTime);
 }
 
 void EngineDLL::Unhook()

@@ -27,6 +27,8 @@
 using std::size_t;
 using std::uintptr_t;
 
+#define TAG "[client dll] "
+
 void __cdecl ClientDLL::HOOKED_DoImageSpaceMotionBlur(void* view, int x, int y, int w, int h)
 {
 	TRACE_ENTER();
@@ -137,7 +139,7 @@ ConVar y_spt_disable_weapon_pickup_sound("y_spt_disable_weapon_pickup_sound",
 		auto pattern = f##future_name.get(); \
 		if (ORIG_##future_name) \
 		{ \
-			DevMsg("[client dll] Found " #future_name " at %p (using the %s pattern).\n", \
+			DevMsg(TAG "Found " #future_name " at %p (using the %s pattern).\n", \
 			       ORIG_##future_name, \
 			       pattern->name()); \
 			patternContainer.AddHook(HOOKED_##future_name, (PVOID*)&ORIG_##future_name); \
@@ -152,7 +154,7 @@ ConVar y_spt_disable_weapon_pickup_sound("y_spt_disable_weapon_pickup_sound",
 		} \
 		else \
 		{ \
-			DevWarning("[client dll] Could not find " #future_name ".\n"); \
+			DevWarning(TAG "Could not find " #future_name ".\n"); \
 		} \
 	}
 
@@ -161,7 +163,7 @@ ConVar y_spt_disable_weapon_pickup_sound("y_spt_disable_weapon_pickup_sound",
 		auto pattern = f##future_name.get(); \
 		if (ORIG_##future_name) \
 		{ \
-			DevMsg("[client dll] Found " #future_name " at %p (using the %s pattern).\n", \
+			DevMsg(TAG "Found " #future_name " at %p (using the %s pattern).\n", \
 			       ORIG_##future_name, \
 			       pattern->name()); \
 			for (int i = 0; true; ++i) \
@@ -175,7 +177,7 @@ ConVar y_spt_disable_weapon_pickup_sound("y_spt_disable_weapon_pickup_sound",
 		} \
 		else \
 		{ \
-			DevWarning("[client dll] Could not find " #future_name ".\n"); \
+			DevWarning(TAG "Could not find " #future_name ".\n"); \
 		} \
 	}
 
@@ -320,30 +322,50 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 			break;
 		}
 
-		DevMsg("[client dll] pgpGlobals is %p.\n", pgpGlobals);
+		DevMsg(TAG "pgpGlobals is %p.\n", pgpGlobals);
 	}
 	else
 	{
-		DevWarning(1, "[client dll] DoImageSpaceMotionBlur couldn't be found using signatures! Using string refernce and backtracing instead... \n");
+		DevWarning(1, TAG "DoImageSpaceMotionBlur couldn't be found using signatures! Using string refernce and backtracing instead... \n");
 		uintptr_t tmp = FindStringAddress(mScanner, "dev/motion_blur");
 		tmp = FindVarReference(mScanner, tmp, "68 ");
 		tmp = BackTraceToFuncStart(mScanner, tmp, 0x1000, 4, false, 0x10000);
 
 		if (tmp != 0x0)
 		{
-			DevMsg("[client dll] DoImageSpaceMotionBlur found at %p through function backtracing\n", tmp);
-			ORIG_DoImageSpaceMotionBlur = *(_DoImageSpaceMotionBlur*)tmp;
+			DevMsg(TAG "DoImageSpaceMotionBlur found at %p through function backtracing\n", tmp);
+			ORIG_DoImageSpaceMotionBlur = (_DoImageSpaceMotionBlur)tmp;
 			patternContainer.AddHook(HOOKED_DoImageSpaceMotionBlur, (PVOID*)&ORIG_DoImageSpaceMotionBlur);
 		}
 		else
 			Warning("y_spt_motion_blur_fix has no effect.\n");
 	}
 
-	if (pgpGlobals == 0)
+	if (ORIG_DoImageSpaceMotionBlur && pgpGlobals == 0)
 	{
-		auto test = g_pCVar->FindVar("sv_alternateticks");
-		auto test2 = g_pCVar->FindCommandBase("sv_alternateticks");
-		DevMsg("VAR AT %p %p\n", test, test2);
+		DevWarning(1, TAG "DoImageSpaceMotionBlur doesn't have a switch case for finding pgpGlobals, searching automatically instead...\n");
+		uintptr_t tmp = (uintptr_t)ORIG_DoImageSpaceMotionBlur;
+		PatternScanner scanner((void*)tmp, 0x200);
+		Pattern p("F3 0F 10 ?? ?? ?? ?? ??", 4);
+		p.onMatchEvaluate = _oMEArgs(&mScanner) { 
+			*done = (IS_WITHIN(*(uintptr_t*)*foundPtr, (uintptr_t)mScanner._base, mScanner._end()))
+				&& **(float**)(*foundPtr) == 180.0f; 
+		};
+		tmp = scanner.Scan(p);
+
+		if (tmp != 0)
+		{
+			unsigned char* bytes = (unsigned char*)tmp;
+			for (int i = 0; i < 0x100; i++)
+			{
+				if (bytes[-i] == 0xA1)
+				{
+					pgpGlobals = *(uintptr_t**)(bytes - i + 1);
+					DevMsg(TAG "pgpGlobals is %p.\n", pgpGlobals);
+					break;
+				}
+			}
+		}
 	}
 
 	if (ORIG_CheckJumpButton)
@@ -418,7 +440,19 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 
 	if (!ORIG_GetButtonBits)
 	{
-		Warning("+y_spt_duckspam has no effect.\n");
+		DevWarning(1, TAG "GetButtonBits couldn't be found using signatures! Using function backtracing instead... /n");
+		PatternCollection p("81 ce 00 00 20 00", 0);
+		p.AddPattern("0d 00 00 20 00", 0);
+		uintptr_t tmp = mScanner.Scan(p);
+		tmp = BackTraceToFuncStart(mScanner, tmp, 0x1000, 3, true);
+		if (tmp != 0)
+		{
+			DevMsg(TAG "GetButtonBits found at %p through function backtracing\n", tmp);
+			ORIG_GetButtonBits = (_GetButtonBits)tmp;
+			patternContainer.AddHook(HOOKED_GetButtonBits, (PVOID*)&ORIG_GetButtonBits);
+		}
+		else
+			Warning("+y_spt_duckspam has no effect.\n");
 	}
 
 	if (ORIG_CreateMove)
@@ -534,22 +568,22 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 
 		// DT_LOCALPLAYEREXCLUSIVE
 		int dt_local_off = 0;
-		int offVecVel = 0;
+		offVecVelocity = 0;
 		string_DT_loc = FindDataTable(mScanner, "DT_LocalPlayerExclusive");
 		dt_local_off = FindEntityOffsetThroughDT(moduleBase, moduleLength, string_DT_loc, "m_Local", 0);
-		offVecVel = FindEntityOffsetThroughDT(moduleBase, moduleLength, string_DT_loc, "m_vecVelocity[0]", 0);
+		offVecVelocity = FindEntityOffsetThroughDT(moduleBase, moduleLength, string_DT_loc, "m_vecVelocity[0]", 0);
 
 		// DT_LOCAL
 		string_DT_loc = FindDataTable(mScanner, "DT_Local");
 		offDucking = FindEntityOffsetThroughDT(moduleBase, moduleLength, string_DT_loc, "m_bDucking", dt_local_off);
 		offDuckJumpTime = FindEntityOffsetThroughDT(moduleBase, moduleLength, string_DT_loc, "m_flDuckJumpTime", dt_local_off);
 
-		if (offVecVel != 0)
+		if (offVecVelocity != 0)
 		{
 			uintptr_t tmp = 0;
 			char sig[256];
-			char byte1[14]; pUtils.toHexArray(offVecVel, byte1);
-			char byte2[14]; pUtils.toHexArray(offVecVel + 4, byte2);
+			char byte1[14]; pUtils.toHexArray(offVecVelocity, byte1);
+			char byte2[14]; pUtils.toHexArray(offVecVelocity + 4, byte2);
 
 			// some games use mov, some game use fld and fstp, luckily these take the same bytes
 			// this *could* break but unlikely
@@ -568,7 +602,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 					{
 						ORIG_CalcAbsoluteVelocity = (_CalcAbsoluteVelocity)(newPtr);
 						DevMsg(
-						    "[client dll] CalcAbsoluteVelocity found at %p through function backtracking\n",
+						    TAG "CalcAbsoluteVelocity found at %p through function backtracking\n",
 						    ORIG_CalcAbsoluteVelocity);
 					}
 				}
@@ -602,7 +636,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 			break;
 		}
 
-		DevMsg("[client dll] Found GetLocalPlayer at %p.\n", ORIG_GetLocalPlayer);
+		DevMsg(TAG "Found GetLocalPlayer at %p.\n", ORIG_GetLocalPlayer);
 	}
 	else
 	{
@@ -612,23 +646,22 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 
 		if (mCAM_stringPtr)
 		{
-			unsigned char* bytes = (unsigned char*)(mCAM_stringPtr - 0x100);
-			for (int i = 0; i <= 0x400; i++)
-			{
-				if (bytes[i] == 0xe8 && (bytes[i + 4] == 0xFF || (bytes[i + 4] == 0x00)))
+			PatternScanner scanner((void*)(mCAM_stringPtr - 0x100), 0x200);
+			PatternCollection p("E8 ?? ?? ?? FF", 1);
+			p.AddPattern("E8 ?? ?? ?? 00", 1);
+
+			p.onMatchEvaluate = _oMEArgs(&){
+				unsigned char* bytes2 = (unsigned char*)(*foundPtr + 4 + *(int*)(*foundPtr));
+				if (bytes2[0] == 0xa1 && bytes2[5] == 0xc3)
 				{
-					unsigned char* bytes2 =
-					    (unsigned char*)(bytes + i + 5 + *(int*)(bytes + i + 1));
-					if (bytes2[0] == 0xa1 && bytes2[5] == 0xc3)
-					{
-						ORIG_GetLocalPlayer =
-						    (_GetLocalPlayer)(reinterpret_cast<uintptr_t>(bytes2));
-						DevMsg("[client dll] Found GetLocalPlayer at %p.\n",
-						       ORIG_GetLocalPlayer);
-						break;
-					}
+					ORIG_GetLocalPlayer = (_GetLocalPlayer)(reinterpret_cast<uintptr_t>(bytes2));
+					DevMsg(TAG "Found GetLocalPlayer at %p.\n", ORIG_GetLocalPlayer);
+					*done = true;
 				}
-			}
+				*done = false;
+			};
+
+			scanner.ScanBackward(p, mCAM_stringPtr);
 		}
 	}
 
@@ -679,12 +712,12 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	if (!ORIG_MainViewOrigin || !ORIG_UTIL_TraceRay)
 		Warning("y_spt_hud_oob 1 has no effect\n");
 
-	patternContainer.Hook();
+		patternContainer.Hook();
 
 	auto loadTime =
 	    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime)
 	        .count();
-	DevMsg("[client dll] Done hooking in %dms\n", loadTime);
+	DevMsg(TAG "Done hooking in %dms\n", loadTime);
 }
 
 void ClientDLL::Unhook()
@@ -899,6 +932,17 @@ Vector ClientDLL::GetPlayerVelocity()
 
 	ORIG_CalcAbsoluteVelocity(player, 0);
 	float* vel = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offAbsVelocity);
+
+	return Vector(vel[0], vel[1], vel[2]);
+}
+
+Vector ClientDLL::GetPlayerVecVelocity() 
+{
+	if (!ORIG_GetLocalPlayer)
+		return Vector();
+
+	auto player = ORIG_GetLocalPlayer();
+	float* vel = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offVecVelocity);
 
 	return Vector(vel[0], vel[1], vel[2]);
 }

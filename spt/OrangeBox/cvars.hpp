@@ -3,7 +3,7 @@
 #include "convar.h"
 
 #define FCVAR_TAS_RESET (1 << 31)
-#define FCVAR_SPT_RECORD_NOTIFY (1 << 32)
+#define FCVAR_SPT_HUD (1 << 27)
 
 extern ConVar y_spt_hdtf_uncap;
 extern ConVar y_spt_hdtf_viewbob;
@@ -75,6 +75,7 @@ extern ConVar y_spt_hud_left;
 extern ConVar y_spt_hud_oob;
 extern ConVar y_spt_hud_isg;
 extern ConVar y_spt_hud_havok_velocity;
+extern ConVar y_spt_hud_vec_velocity;
 
 extern ConVar _y_spt_overlay;
 extern ConVar _y_spt_overlay_type;

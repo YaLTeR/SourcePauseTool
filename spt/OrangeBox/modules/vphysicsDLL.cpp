@@ -7,13 +7,15 @@
 #include "..\modules.hpp"
 #include "..\patterns.hpp"
 
+#define TAG "[vphysics dll] "
+
 #define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::vphysics::##name);
 #define GET_HOOKEDFUTURE(future_name) \
 	{ \
 		auto pattern = f##future_name.get(); \
 		if (ORIG_##future_name) \
 		{ \
-			DevMsg("[vphysics dll] Found " #future_name " at %p (using the %s pattern).\n", \
+			DevMsg(TAG "Found " #future_name " at %p (using the %s pattern).\n", \
 			       ORIG_##future_name, \
 			       pattern->name()); \
 			patternContainer.AddHook(HOOKED_##future_name, (PVOID*)&ORIG_##future_name); \
@@ -28,7 +30,7 @@
 		} \
 		else \
 		{ \
-			DevWarning("[vphysics dll] Could not find " #future_name ".\n"); \
+			DevWarning(TAG "Could not find " #future_name ".\n"); \
 		} \
 	}
 
@@ -37,7 +39,7 @@
 		auto pattern = f##future_name.get(); \
 		if (ORIG_##future_name) \
 		{ \
-			DevMsg("[vphysics dll] Found " #future_name " at %p (using the %s pattern).\n", \
+			DevMsg(TAG "Found " #future_name " at %p (using the %s pattern).\n", \
 			       ORIG_##future_name, \
 			       pattern->name()); \
 			for (int i = 0; true; ++i) \
@@ -51,7 +53,7 @@
 		} \
 		else \
 		{ \
-			DevWarning("[vphysics dll] Could not find " #future_name ".\n"); \
+			DevWarning(TAG "Could not find " #future_name ".\n"); \
 		} \
 	}
 
@@ -119,7 +121,7 @@ void VPhysicsDLL::Hook(const std::wstring& moduleName,
 	auto loadTime =
 	    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime)
 	        .count();
-	DevMsg("[vphysics dll] Done hooking in %dms\n", loadTime);
+	DevMsg(TAG "Done hooking in %dms\n", loadTime);
 }
 
 void VPhysicsDLL::Unhook()
