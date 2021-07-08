@@ -115,7 +115,7 @@ void DisablePickupWeaponSound(ConVar* var, char const* pOldString)
 {
 	if (clientDLL.ORIG_PickupWeaponPTR == nullptr)
 	{
-		ConWarning(1, "command has no effect!");
+		ConWarning(1, "command has no effect!\n");
 		return;
 	}
 
@@ -326,7 +326,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	}
 	else
 	{
-		DevWarning(1, TAG "DoImageSpaceMotionBlur couldn't be found using signatures! Using string refernce and backtracing instead... \n");
+		GENERIC_BACKTRACE_NOTE(DoImageSpaceMotionBlur)
 		uintptr_t tmp = FindStringAddress(mScanner, "dev/motion_blur");
 		tmp = FindVarReference(mScanner, tmp, "68 ");
 		tmp = BackTraceToFuncStart(mScanner, tmp, 0x1000, 4, false, 0x10000);
@@ -348,8 +348,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 		PatternScanner scanner((void*)tmp, 0x200);
 		Pattern p("F3 0F 10 ?? ?? ?? ?? ??", 4);
 		p.onMatchEvaluate = _oMEArgs(&mScanner) { 
-			*done = (IS_WITHIN(*(uintptr_t*)*foundPtr, (uintptr_t)mScanner._base, mScanner._end()))
-				&& **(float**)(*foundPtr) == 180.0f; 
+			*done = (mScanner.CheckWithin(*(uintptr_t*)*foundPtr)) && **(float**)(*foundPtr) == 180.0f; 
 		};
 		tmp = scanner.Scan(p);
 
@@ -435,12 +434,51 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 
 	if (!ORIG_HudUpdate)
 	{
-		Warning("_y_spt_afterframes has no effect.\n");
+		GENERIC_BACKTRACE_NOTE(HudUpdate);
+		uintptr_t tmp = FindStringAddress(mScanner, "(time_float)");
+		tmp = FindVarReference(mScanner, tmp, "68");
+		tmp = BackTraceToFuncStart(mScanner, tmp, 0x300, 3, true);
+
+		if (tmp != 0)
+		{
+			DevMsg(TAG "Found HudUpdate at %p through function backtracing\n", tmp);
+			ORIG_HudUpdate = (_HudUpdate)tmp;
+			patternContainer.AddHook(HOOKED_HudUpdate, (PVOID*)&ORIG_HudUpdate);
+		}
+		else
+		{
+			DevWarning(1, TAG "Method 1 for finding HudUpdate failed, trying VFTable jumping from LevelInitPreEntity instead...\n");
+			tmp = FindStringAddress(mScanner, "cl_predict 1");
+			tmp = FindVarReference(mScanner, tmp, "68");
+			tmp = BackTraceToFuncStart(mScanner, tmp, 0x300, 3, true);
+			if (tmp != 0)
+			{
+				DevMsg(TAG "Found LevelInitPreEntity at %p\n", tmp);
+				Pattern p = GeneratePatternFromVar(tmp);
+				p.onMatchEvaluate = _oMEArgs(&){
+					if (mScanner.CheckWithin(*(uintptr_t*)(*foundPtr + 4))
+						&& * foundPtr % 4 == 0)
+					{
+						// hudupdate should always be 6 vftable entires away...
+						*foundPtr = *(uintptr_t*)(*foundPtr + 4 * 6);
+						DevMsg(TAG "Found HudUpdate at %p through VFTable jumping\n", *foundPtr);
+						ORIG_HudUpdate = (_HudUpdate)*foundPtr;
+						patternContainer.AddHook(HOOKED_HudUpdate, (PVOID*)&ORIG_HudUpdate);
+						*done = true;
+					}
+					else
+						*done = false;
+				};
+				mScanner.Scan(p);
+			}
+			else
+				Warning("_y_spt_afterframes has no effect.\n");
+		}
 	}
 
 	if (!ORIG_GetButtonBits)
 	{
-		DevWarning(1, TAG "GetButtonBits couldn't be found using signatures! Using function backtracing instead... /n");
+		GENERIC_BACKTRACE_NOTE(GetButtonBits);
 		PatternCollection p("81 ce 00 00 20 00", 0);
 		p.AddPattern("0d 00 00 20 00", 0);
 		uintptr_t tmp = mScanner.Scan(p);
@@ -646,7 +684,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 
 		if (mCAM_stringPtr)
 		{
-			PatternScanner scanner((void*)(mCAM_stringPtr - 0x100), 0x200);
+			PatternScanner scanner((void*)(mCAM_stringPtr - 0x300), 0x320);
 			PatternCollection p("E8 ?? ?? ?? FF", 1);
 			p.AddPattern("E8 ?? ?? ?? 00", 1);
 
@@ -702,6 +740,38 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 
 	if (!ORIG_UTIL_TraceRay)
 		Warning("tas_strafe_version 1 not available\n");
+
+	if (!ORIG_CViewEffects__Fade || !ORIG_CViewEffects__Shake)
+	{
+		GENERIC_BACKTRACE_NOTE(CViewEffects Fade or Shake);
+		uintptr_t tmp = FindStringAddress(mScanner, "%02d: dur(%8.2f) amp(%8.2f) freq(%8.2f)");
+		tmp = FindVarReference(mScanner, tmp, "68");
+		if (tmp != 0)
+		{
+			tmp = BackTraceToFuncStart(mScanner, tmp, 0x300, 3, true);
+			tmp = FindVarReference(mScanner, tmp);
+			if (tmp % 4 == 0 && mScanner.CheckWithin(*(uintptr_t*)tmp + 4))
+			{
+				if (!ORIG_CViewEffects__Fade)
+				{
+					ORIG_CViewEffects__Fade = *(_CViewEffects__Fade*)(tmp - 0xC);
+					patternContainer.AddHook(HOOKED_CViewEffects__Fade,
+					                         (PVOID*)&ORIG_CViewEffects__Fade);
+					DevMsg(TAG "Found CViewEffects::Fade at %p through function backtracing\n",
+					       ORIG_CViewEffects__Fade);
+				}
+
+				if (!ORIG_CViewEffects__Shake)
+				{
+					ORIG_CViewEffects__Shake = *(_CViewEffects__Shake*)(tmp - 0x10);
+					patternContainer.AddHook(HOOKED_CViewEffects__Shake,
+					                         (PVOID*)&ORIG_CViewEffects__Shake);
+					DevMsg(TAG "Found CViewEffects::Shake at %p through function backtracing\n",
+					       ORIG_CViewEffects__Shake);
+				}
+			}
+		}
+	}
 
 	if (!ORIG_CViewEffects__Fade)
 		Warning("y_spt_disable_fade 1 not available\n");

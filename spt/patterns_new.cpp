@@ -8,10 +8,17 @@
 #define MAX_DT_SIZE 0x700
 #define MAX_SIGNATURE_STRING_LEN 256
 #define MAX_CHECK_CALL_BOUNDARY 0x7FFFFFFF
-#define BOUND(val, min, max)\
-	val = ((min) >= (val)) ? (min) : (val);\
-	val = ((max) <= (val)) ? (max) : (val);
+#define BOUND(val, min, max) val = ((min) > (val)) ? (min) : (((max) < (val)) ? (max) : (val));
 #define IS_WITHIN(val, min, max) (((val) >= (min)) && ((val) <= (max)))
+#define GENERIC_BACKTRACE_NOTE(name) DevWarning(1, TAG #name " couldn't be found using signatures! Using function backtracing instead...\n");
+#define READ_CALL(val) ((uintptr_t)val + 5) + *(int*)((uintptr_t)val + 1)
+#define IS_PTR_BYTE_ALIGNED(val) ((uintptr_t)val % 4 == 0)
+#ifdef OE
+#define CVARBASEOFFSET 0x18
+#else
+#define CVARBASEOFFSET 0x1c
+#endif
+#define VECTOR_INCLUDES(vec, elem) (std::find(vec.begin(), vec.end(), elem) != vec.end())
 
 namespace PatternsExt
 {
@@ -68,10 +75,10 @@ namespace PatternsExt
 	// ARGS:
 	// scanner:		PatternScanner to use
 	// string:		string to scan for
-	static uintptr_t FindStringAddress(PatternScanner scanner, const char* string)
+	static uintptr_t FindStringAddress(PatternScanner scanner, const char* string, bool appendNullByte = true)
 	{
 		char sig[MAX_SIGNATURE_STRING_LEN];
-		pUtils.toHexArray(string, sig);
+		pUtils.toHexArray(string, sig, false, appendNullByte);
 		Pattern target(sig, 0);
 		return scanner.Scan(target);
 	}
@@ -139,7 +146,7 @@ namespace PatternsExt
 			ptr2 = scanner.Scan(p);
 		}
 
-		DevMsg("%s data table found at %p!\n", name, ptr2);
+		DevMsg("%s data table found at %p\n", name, ptr2);
 		return ptr2;
 
 	eof:
@@ -179,6 +186,76 @@ namespace PatternsExt
 		if (offset == 0) DevWarning(1, "%s offset couldn't be found\n", name);
 		else DevMsg("%s offset is 0x%X\n", name, offset);
 		return offset;
+	}
+
+	static bool FindRelativeCalls(PatternScanner scanner, uintptr_t addr, int checkCallAmount, vector<uintptr_t>* locations) 
+	{
+		if (addr <= 0)
+			return false;
+
+		BOUND(checkCallAmount, 1, MAX_CHECK_CALL_BOUNDARY);
+		char pos[20] = "";
+		char neg[20] = "";
+		int j = 0x1;
+		for (int i = 0; i < 4; i++)
+		{
+			strcat(pos, (checkCallAmount / j > 1) ? " ??" : " 00");
+			strcat(neg, (checkCallAmount / j > 1) ? " ??" : " FF");
+			j *= 0x100;
+		}
+
+		// i hate this...
+		char sig[20] = "";
+		PatternCollection p;
+		sprintf(sig, "E8 %s", pos); p.AddPattern(sig, 1);
+		sprintf(sig, "E8 %s", neg); p.AddPattern(sig, 1);
+		sprintf(sig, "E9 %s", pos); p.AddPattern(sig, 1);
+		sprintf(sig, "E9 %s", neg); p.AddPattern(sig, 1);
+
+		p.onMatchEvaluate = _oMEArgs(&)
+		{
+			*done = false;
+			uintptr_t loc = *foundPtr + 4 + *(uint*)(*foundPtr);
+			if (loc == addr)
+				locations->push_back(*foundPtr);
+		};
+
+		scanner.Scan(p);
+		return (locations->size() != 0);
+	}
+
+	static uintptr_t FindVFTableEntry(PatternScanner scanner, uintptr_t addr)
+	{
+		Pattern p = GeneratePatternFromVar(addr);
+		p.onMatchEvaluate = _oMEArgs(&scanner)
+		{
+			bool isAligned = *foundPtr % 4 == 0;
+			bool isValid = scanner.CheckWithin(*foundPtr + 0x4) || scanner.CheckWithin(*foundPtr - 0x4);
+			*done = isAligned && isValid;
+			if (!*done)
+				*foundPtr = 0;
+		};
+		return scanner.Scan(p);
+	}
+
+	static bool FindVFTableEntries(PatternScanner scanner, uintptr_t addr, vector<uintptr_t>* list)
+	{
+		Pattern p = GeneratePatternFromVar(addr);
+		bool found = false;
+		p.onMatchEvaluate = _oMEArgs(&scanner, &list, &found)
+		{
+			*done = false;
+			bool isAligned = *foundPtr % 4 == 0;
+			bool isValid = scanner.CheckWithin(*foundPtr + 0x4) || scanner.CheckWithin(*foundPtr - 0x4);
+			if (isAligned && isValid)
+			{
+				found = true;
+				list->push_back(*foundPtr);
+			}
+		};
+
+		scanner.Scan(p);
+		return found;
 	}
 
 	static const char backTraceBytes[4] = {0xCC, 0x90, 0xC2, 0xC3};
@@ -268,24 +345,14 @@ namespace PatternsExt
 			if (checkVFTable)
 			{
 				uintptr_t tmp = (curByte == 0xC2) ? ptr + 0x3 : ptr + 0x1;
-				char sig[20] = "";
-				pUtils.toHexArray(tmp, sig);
-				Pattern p(sig, 0);
-				p.onMatchEvaluate = [&](bool* found, uintptr_t* foundPtr) { 
-					*found = (
-						*foundPtr % 4 == 0 && 
-						( INSIDE(scanner._base, scanner._size, *foundPtr + 0x4) ||
-						  INSIDE(scanner._base, scanner._size, *foundPtr - 0x4) )); 
-				};
-
-				if (scanner.Scan(p) != 0x0)
+				if (FindVFTableEntry(scanner, tmp) != 0x0)
 					return tmp;
 			}
 
 			if (checkCallAmount > 0 && !calledAddresses.empty())
 			{
 				uintptr_t tmp = (curByte == 0xC2) ? ptr + 0x3 : ptr + 0x1;
-				if (find(calledAddresses.begin(), calledAddresses.end(), tmp) != end(calledAddresses))
+				if (VECTOR_INCLUDES(calledAddresses, tmp))
 					return tmp;
 			}
 		}
@@ -293,13 +360,14 @@ namespace PatternsExt
 		return 0;
 	}
 
-	static ConVar* FindCVarBase(PatternScanner scanner, const char* name) 
+	static uintptr_t FindCVarBase(PatternScanner scanner, const char* name) 
 	{
 		uintptr_t ptr = FindStringAddress(scanner, name);
 		if (ptr == 0)
-			return nullptr;
+			return 0;
 		Pattern p = GeneratePatternFromVar(ptr, "68", "B9", 6);
-		return *(ConVar**)scanner.Scan(p);
+		p.onMatchEvaluate = _oMEArgs() { *foundPtr = *(uintptr_t*)*foundPtr; };
+		return scanner.Scan(p);
 	}
 
 } // namespace PatternsExt

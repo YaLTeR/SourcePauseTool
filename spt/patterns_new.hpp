@@ -28,6 +28,11 @@ public:
 		memset(intCC, 0xcc, MAX_INTERRUPT_SIZE);
 	}
 
+	inline bool checkInt(unsigned char* bytes, int size) const
+	{
+		return memcmp(bytes, intCC, size) == 0 || memcmp(bytes, int90, size) == 0;
+	}
+
 	constexpr uint8_t convertToHex(char c)
 	{
 		return (c >= '0' && c <= '9')   ? static_cast<uint8_t>(c - '0')
@@ -79,14 +84,15 @@ public:
 	//		in:		input var
 	//		out:	output var
 	//		concat:	concatenate onto out var instead of overwriting
-	void toHexArray(const char* in, char* out, bool concat = false)
+	void toHexArray(const char* in, char* out, bool concat = false, bool appendNullByte = true)
 	{
 		string s1 = in;
 		stringstream ss;
 
 		for (const auto& item : s1)
 			ss << " " << hex << int(item);
-		ss << " " << setfill('0') << setw(2) << right << hex << 00;
+		if (appendNullByte)
+			ss << " " << setfill('0') << setw(2) << right << hex << 00;
 
 		concat ? strcat(out, ss.str().c_str()) : strcpy(out, ss.str().c_str());
 	}
@@ -227,7 +233,7 @@ public:
 };
 
 typedef std::function<void(bool*, uintptr_t*)> _onMatchEvaluate;
-#define _oMEArgs(capture) [capture](bool* done, uintptr_t* foundPtr)
+#define _oMEArgs(...) [__VA_ARGS__](bool* done, uintptr_t* foundPtr)
 
 class PatternScanner
 {
@@ -329,7 +335,11 @@ public:
 		return 0;
 	}
 
-	uintptr_t _end() const { return (uintptr_t)_base + _size; }
+	inline uintptr_t _end() const { return (uintptr_t)_base + _size; }
+	inline bool CheckWithin(uintptr_t addr) const
+	{
+		return (addr >= (uintptr_t)_base && addr <= _end());
+	}
 
 	void* _base;
 	size_t _size;

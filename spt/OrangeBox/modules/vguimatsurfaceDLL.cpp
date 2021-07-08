@@ -26,10 +26,13 @@
 #undef min
 
 #ifndef OE
-ConVar y_spt_hud_hops("y_spt_hud_hops", "0", FCVAR_CHEAT, "When set to 1, displays the hop practice HUD.");
+ConVar y_spt_hud_hops("y_spt_hud_hops", "0", FCVAR_CHEAT | FCVAR_SPT_HUD, "When set to 1, displays the hop practice HUD.");
 ConVar y_spt_hud_hops_x("y_spt_hud_hops_x", "-85", FCVAR_CHEAT, "Hops HUD x offset");
 ConVar y_spt_hud_hops_y("y_spt_hud_hops_y", "100", FCVAR_CHEAT, "Hops HUD y offset");
-ConVar y_spt_hud_velocity_angles("y_spt_hud_velocity_angles", "0", FCVAR_CHEAT, "Display velocity Euler angles.");
+ConVar y_spt_hud_velocity_angles("y_spt_hud_velocity_angles",
+                                 "0",
+                                 FCVAR_CHEAT | FCVAR_SPT_HUD,
+                                 "Display velocity Euler angles.");
 ConVar _y_spt_overlay_crosshair_size("_y_spt_overlay_crosshair_size", "10", FCVAR_CHEAT, "Overlay crosshair size.");
 ConVar _y_spt_overlay_crosshair_thickness("_y_spt_overlay_crosshair_thickness",
                                           "1",
@@ -39,6 +42,13 @@ ConVar _y_spt_overlay_crosshair_color("_y_spt_overlay_crosshair_color",
                                       "0 255 0 255",
                                       FCVAR_CHEAT,
                                       "Overlay crosshair RGBA color.");
+ConVar y_spt_hud_drawing_function("y_spt_hud_drawing_function",
+                      "0",
+                      0,
+                      "Switches between options for hud drawing functions:\n \
+    0: Use functions inferred from SDK files\n \
+    1: Use scanned functions (if hud drawing routines crash the game)\n \
+    2: Use scanned functions (modified for 1.0+ BMS Retail)");
 const int INDEX_MASK = MAX_EDICTS - 1;
 
 #define TAG "[vguimatsurface dll] "
@@ -98,7 +108,7 @@ void VGui_MatSurfaceDLL::Hook(const std::wstring& moduleName,
 
 	if (!ORIG_StartDrawing)
 	{
-		DevWarning(1, TAG "StartDrawing couldn't be found using signatures, finding string reference and backtracing instead..\n");
+		GENERIC_BACKTRACE_NOTE(StartDrawing);
 		uintptr_t tmp = FindStringAddress(mScanner, "-pixel_offset_y");
 		tmp = FindVarReference(mScanner, tmp, "68");
 
@@ -113,7 +123,7 @@ void VGui_MatSurfaceDLL::Hook(const std::wstring& moduleName,
 
 			if (!ORIG_FinishDrawing)
 			{
-				DevWarning(1, TAG "FinishDrawing couldn't be found using signatures, finding g_bInDrawing reference and backtracing instead..\n");
+				GENERIC_BACKTRACE_NOTE(FinishDrawing);
 
 				Pattern p("C6 05 ?? ?? ?? ?? 01", 2);
 				p.onMatchEvaluate = _oMEArgs()
@@ -138,10 +148,62 @@ void VGui_MatSurfaceDLL::Hook(const std::wstring& moduleName,
 		}
 	}
 
-
 	if (!ORIG_FinishDrawing || !ORIG_StartDrawing)
 		Warning("HUD drawing solutions are not available.\n");
 
+	uintptr_t tmp;
+	Pattern p("c7 45 ?? ff ff ff ff", 0);
+	PatternCollection p3("89 ?? ?? 89 ?? ??", 0);
+	p3.AddPattern("8B ?? ?? 89 ?? ??", 0);
+
+	p.onMatchEvaluate = _oMEArgs(&) 
+	{
+		uintptr_t ptr1 = BackTraceToFuncStart(mScanner, *foundPtr, 0x100, 2, true);
+		if (ptr1 != 0)
+		{
+			Pattern p2 = GeneratePatternFromVar(ptr1);
+			p2.onMatchEvaluate = _oMEArgs(&)
+			{
+				uintptr_t found = *foundPtr;
+				if (found % 4 == 0 && mScanner.CheckWithin(*(uintptr_t*)(found - 4)))
+				{
+					found = *(uintptr_t*)(found - 8);
+					PatternScanner scanner((void*)found, 50);
+					uintptr_t found2 = scanner.Scan(p3);
+
+					if (found2 == 0)
+						goto eof;
+
+					unsigned char* bytes = (unsigned char*)found;
+					for (int i = 0; i < 40; i++)
+					{
+						if (pUtils.checkInt(bytes + i, 2))
+						{
+							ORIG_DrawSetTextPos = (_DrawSetTextPos)found;
+							DevMsg(TAG "DrawSetTextPos backup found at %p\n",
+							       ORIG_DrawSetTextPos);
+							*done = true;
+							return;
+						}
+					}
+				}
+				eof:
+				*done = false;
+				*foundPtr = 0;
+			};
+			uintptr_t tmp2 = mScanner.Scan(p2);
+			if (tmp2 != 0)
+			{
+				ORIG_DrawPrintText = (void*)ptr1;
+				DevMsg(TAG "DrawPrintText backup found at %p\n", ORIG_DrawPrintText);
+				*done = true;
+				return;
+			}
+		}
+		*done = false;
+	};
+
+	mScanner.Scan(p);
 	patternContainer.Hook();
 
 	auto loadTime =
@@ -405,9 +467,32 @@ static const char PROP_SEPARATOR = ',';
 
 #define DRAW() \
 	{ \
-		surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex); \
-		surface->DrawPrintText(buffer, wcslen(buffer)); \
-		++vertIndex; \
+		switch (y_spt_hud_drawing_function.GetInt())\
+		{\
+		case 0:\
+		{\
+			surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex); \
+			surface->DrawPrintText(buffer, wcslen(buffer)); \
+			++vertIndex; \
+			break;\
+		}\
+		case 1:\
+		if (ORIG_DrawSetTextPos && ORIG_DrawPrintText)\
+		{\
+			ORIG_DrawSetTextPos(surface, 0, x, 2 + (fontTall + 2) * vertIndex);\
+			((_DrawPrintText)ORIG_DrawPrintText)(surface, 0, buffer, wcslen(buffer), 0);\
+			++vertIndex;\
+			break;\
+		}\
+		case 2:\
+		if (ORIG_DrawSetTextPos && ORIG_DrawPrintText) \
+		{ \
+			ORIG_DrawSetTextPos(surface, 0, x, 2 + (fontTall + 2) * vertIndex); \
+			((_DrawPrintText2)ORIG_DrawPrintText)(surface, 0, buffer, wcslen(buffer), 0, 0); \
+			++vertIndex; \
+			break; \
+		}\
+		}\
 	}
 
 #define DRAW_FLOAT(name, floatVal) \

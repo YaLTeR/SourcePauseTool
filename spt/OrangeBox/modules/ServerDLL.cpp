@@ -102,6 +102,34 @@ int __cdecl ServerDLL::HOOKED_DispatchSpawn(void* pEntity)
 }
 
 #ifndef OE
+void ActivateFreeOOB(IConVar* var, const char* pOldValue, float fOldValue)
+{
+	if (serverDLL.freeOOBPtr1 == 0 || serverDLL.freeOOBPtr2 == 0)
+	{
+		ConWarning(1, "command has no effect!\n");
+		return;
+	}
+
+	if (((ConVar*)var)->GetBool())
+	{
+		memset((void*)serverDLL.freeOOBPtr1, 0x90, 6);
+		memset((void*)serverDLL.freeOOBPtr2, 0x90, 6);
+	}
+	else
+	{
+		memcpy((void*)serverDLL.freeOOBPtr1, serverDLL.freeOOBBytes1, 6);
+		memcpy((void*)serverDLL.freeOOBPtr2, serverDLL.freeOOBBytes2, 6);
+	}
+}
+
+ConVar y_spt_free_oob_movement("y_spt_free_oob_movement",
+                               "0",
+                               FCVAR_CHEAT | FCVAR_ARCHIVE,
+                               "Sets free OOB movement.",
+                               ActivateFreeOOB);
+#endif
+
+#ifndef OE
 void DisableAmmoWeaponSound(IConVar* var, const char* pOldValue, float fOldValue)
 #else
 void DisableAmmoWeaponSound(ConVar* var, char const* pOldString)
@@ -109,7 +137,7 @@ void DisableAmmoWeaponSound(ConVar* var, char const* pOldString)
 {
 	if (serverDLL.ORIG_PickupAmmoPTR == nullptr)
 	{
-		ConWarning(1, "command has no effect!");
+		ConWarning(1, "command has no effect!\n");
 		return;
 	}
 
@@ -271,9 +299,47 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 
 	if (clientDLL.offServerAbsOrigin == 0)
 		clientDLL.offServerAbsOrigin = FindEntityOffset(mScanner, "m_vecAbsOrigin");
+
 	if (clientDLL.offServerPreviouslyPredictedOrigin == 0)
 		clientDLL.offServerPreviouslyPredictedOrigin =
 		    FindEntityOffset(mScanner, "m_vecPreviouslyPredictedOrigin");
+
+	if (clientDLL.offServerSurfaceFriction == 0)
+	{
+		uintptr_t tmp = FindCVarBase(mScanner, "sv_bounce");
+		if (tmp != 0)
+		{
+			tmp += CVARBASEOFFSET;
+			PatternCollection p;
+			p.AddPattern(GeneratePatternFromVar(tmp, "8B ??", "", -30));
+			p.AddPattern(GeneratePatternFromVar(tmp, "A1", "", -30));
+
+			std::vector<int> foundOffsets;
+
+			PatternCollection s;
+			s.AddPattern("D8 ?? ?? ?? 00 00", 2);
+			s.AddPattern("D9 ?? ?? ?? 00 00", 2);
+			s.AddPattern("F3 0F 5C ?? ?? ?? 00 00", 4);
+			s.onMatchEvaluate = _oMEArgs() { *done = *(int*)*foundPtr > 0x100; };
+
+			p.onMatchEvaluate = _oMEArgs(&){
+				PatternScanner scanner((void*)*foundPtr, 0x100);
+				uintptr_t tmp = scanner.Scan(s);
+				if (tmp != 0)
+					foundOffsets.push_back(*(int*)tmp);
+				*done = false;
+			};
+
+			mScanner.Scan(p);
+
+			// we coerce 2 offsets from this, m_flFriction and m_surfaceFriction, the latter is always bigger than the former
+			if (foundOffsets.size() != 0)
+				clientDLL.offServerSurfaceFriction = *max_element(foundOffsets.begin(), foundOffsets.end());
+			DevMsg("m_surfaceFriction offset is 0x%X\n", clientDLL.offServerSurfaceFriction);
+		}
+	}
+
+	uintptr_t ORIG_TryPlayerMove = NULL;
 
 	DEF_FUTURE(FinishGravity);
 	DEF_FUTURE(PlayerRunCommand);
@@ -284,7 +350,7 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	//DEF_FUTURE(PerformFlyCollisionResolution);
 	//DEF_FUTURE(GetStepSoundVelocities);
 	//DEF_FUTURE(CBaseEntity__SetCollisionGroup);
-	DEF_FUTURE(AllocPooledString);
+	//DEF_FUTURE(AllocPooledString);
 	DEF_FUTURE(TracePlayerBBoxForGround);
 	DEF_FUTURE(TracePlayerBBoxForGround2);
 	DEF_FUTURE(CGameMovement__TracePlayerBBox);
@@ -293,7 +359,7 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	DEF_FUTURE(CGameMovement__GetPlayerMins);
 	DEF_FUTURE(SetPredictionRandomSeed);
 	//DEF_FUTURE(CGameMovement__DecayPunchAngle);
-	GET_HOOKEDFUTURE(FinishGravity);
+	GET_FUTURE(FinishGravity);
 	GET_HOOKEDFUTURE(PlayerRunCommand);
 	GET_HOOKEDFUTURE(CheckStuck);
 	GET_HOOKEDFUTURE(MiddleOfSlidingFunction);
@@ -302,7 +368,7 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	//GET_FUTURE(PerformFlyCollisionResolution);
 	//GET_FUTURE(GetStepSoundVelocities);
 	//GET_FUTURE(CBaseEntity__SetCollisionGroup);
-	GET_FUTURE(AllocPooledString);
+	//GET_FUTURE(AllocPooledString);
 	GET_FUTURE(TracePlayerBBoxForGround);
 	GET_FUTURE(TracePlayerBBoxForGround2);
 	GET_FUTURE(CGameMovement__TracePlayerBBox);
@@ -313,6 +379,110 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	//GET_FUTURE(CGameMovement__DecayPunchAngle);
 	DEF_FUTURE(PickupAmmoPTR);
 	GET_FUTURE(PickupAmmoPTR);
+
+	if (!ORIG_CheckJumpButton)
+	{
+		GENERIC_BACKTRACE_NOTE(CheckJumpButton);
+
+		uintptr_t tmp = FindCVarBase(mScanner, "xc_uncrouch_on_jump");
+		if (tmp == 0)
+			goto cjb_method2;
+
+		tmp = FindVarReference(mScanner, tmp + CVARBASEOFFSET);
+		tmp = BackTraceToFuncStart(mScanner, tmp, 0x600, 3, true);
+
+		if (tmp == 0)
+			goto cjb_method2;
+		else
+			goto cjb_branch;
+
+		{
+		cjb_method2:
+			PatternCollection p;
+			p.AddPattern("00 00 20 43", 0);
+			p.AddPattern("01 2a 86 43", 0);
+			p.onMatchEvaluate = _oMEArgs(&mScanner)
+			{
+				if (!IS_PTR_BYTE_ALIGNED(*foundPtr))
+				{
+					*done = false;
+					return;
+				}
+
+				uintptr_t tmp = FindVarReference(mScanner, *foundPtr, "", "EB");
+				tmp = BackTraceToFuncStart(mScanner, tmp, 0x600, 3, true);
+				*done = tmp != 0;
+				*foundPtr = *done ? tmp : 0;
+			};
+
+			tmp = mScanner.Scan(p);
+			if (tmp != 0)
+				goto cjb_branch;
+			else
+				goto cjb_eof;
+		}
+
+	
+		{
+		cjb_branch:
+			DevMsg(TAG "Found HL2 CheckJumpButton at %p through function backtracing\n", tmp);
+			ORIG_CheckJumpButton = (_CheckJumpButton)tmp;
+
+			std::vector<uintptr_t> tpm;
+			uintptr_t foundCJB = tmp;
+
+			tmp = FindVFTableEntry(mScanner, tmp);
+			if (tmp == 0)
+				goto cjb_eof;
+
+			tmp = *(uintptr_t*)(tmp + 0xC);
+			ORIG_TryPlayerMove = tmp;
+			FindVFTableEntries(mScanner, tmp, &tpm);
+
+			for (uintptr_t entry : tpm)
+			{
+				uintptr_t loc = *(uintptr_t*)(entry - 0xC);
+				if (loc != foundCJB)
+				{
+					DevMsg(TAG "Found game-specific CheckJumpButton at %p through VFTable jumping\n", loc);
+					ORIG_CheckJumpButton = (_CheckJumpButton)loc;
+					break;
+				}
+			}
+		}
+
+	cjb_eof:
+		patternContainer.AddHook(HOOKED_CheckJumpButton, (PVOID*)&ORIG_CheckJumpButton);
+	}
+
+#ifndef OE
+	if (ORIG_CheckJumpButton)
+	{
+		if (!ORIG_TryPlayerMove)
+			ORIG_TryPlayerMove = *(uintptr_t*)(FindVFTableEntry(mScanner, (uintptr_t)ORIG_CheckJumpButton) + 0xC);
+		DevMsg(TAG "TryPlayerMove found at %p through VFTable jumping\n", ORIG_TryPlayerMove);
+
+		PatternScanner scanner((void*)ORIG_TryPlayerMove, 0x700);
+		Pattern p1("F6 C4 44 0F 8A ?? ?? ?? ??", 3);
+		p1.onFound = [&](uintptr_t ptr) {
+			freeOOBPtr1 = ptr;
+			memcpy(freeOOBBytes1, (char*)ptr, 6);
+			DWORD dwOldProtect;
+			VirtualProtect((void*)ptr, 6, PAGE_EXECUTE_READWRITE, &dwOldProtect);
+			DevMsg(TAG "Free OOB predicted target JP instruction found at %p\n", ptr);
+		};
+		scanner = PatternScanner((void*)(scanner.Scan(p1) - 0x50), 0x50);
+		Pattern p2("0F 85", 0);
+		p2.onFound = [&](uintptr_t ptr) {
+			freeOOBPtr2 = ptr;
+			memcpy(freeOOBBytes2, (char*)ptr, 6);
+			DWORD dwOldProtect;
+			VirtualProtect((void*)ptr, 6, PAGE_EXECUTE_READWRITE, &dwOldProtect);
+			DevMsg(TAG "Free OOB predicted target JNE instruction found at %p\n", ptr);
+		};
+		scanner.Scan(p2);
+	};
+#endif
 
 	if (ORIG_PickupAmmoPTR != nullptr)
 	{
@@ -535,7 +705,110 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	}
 	else
 	{
-		Warning("y_spt_additional_jumpboost has no effect.\n");
+		if (ORIG_CheckJumpButton)
+		{
+			GENERIC_BACKTRACE_NOTE(FinishGravity);
+
+			DevMsg(TAG "Running method 1 -- looking 2 above CheckJumpButton in CGameMovement VFTable\n");
+			uintptr_t tmp = FindVFTableEntry(mScanner, (uintptr_t)ORIG_CheckJumpButton);
+			if (tmp == 0)
+				goto fg_method2;
+
+			tmp = *(uintptr_t*)(tmp - 8);
+			unsigned char* bytes = (unsigned char*)tmp;
+			if (pUtils.checkInt(&bytes[5], 1))
+				goto fg_method2;
+
+			ORIG_FinishGravity = (_FinishGravity)tmp;
+			goto fg_success;
+
+			{
+			fg_method2:
+				DevMsg(TAG "Running method 2 -- looking for references to CheckVelocity and comparing results to calls found in CheckJumpButton\n");
+				tmp = FindStringAddress(mScanner, "PM  Got a NaN velocity %s", false);
+				tmp = FindVarReference(mScanner, tmp, "68");
+				tmp = BackTraceToFuncStart(mScanner, tmp, 0x100, 3, true);
+				if (tmp == 0)
+					goto fg_failed;
+
+				std::vector<uintptr_t> callsToCheckVel;
+				std::vector<uintptr_t> funcsToCheckVel;
+				if (!FindRelativeCalls(mScanner, tmp, 0x3000, &callsToCheckVel))
+					goto fg_failed;
+
+				std::function<void(uintptr_t)> action = [&mScanner, &funcsToCheckVel](uintptr_t addr) {
+					funcsToCheckVel.push_back(BackTraceToFuncStart(mScanner, addr, 0x300, 3, true, 0x5000));
+				};
+				std::for_each(callsToCheckVel.begin(), callsToCheckVel.end(), action);
+
+				// assume checkjumpbutton is at most 0x700 bytes big
+				PatternScanner scanner(ORIG_CheckJumpButton, 0x700);
+				Pattern p("E8 ?? ?? ?? ??", 0);
+				p.onMatchEvaluate = _oMEArgs(&funcsToCheckVel)
+				{
+					uintptr_t dest = READ_CALL(*foundPtr);
+					*done = (VECTOR_INCLUDES(funcsToCheckVel, dest));
+					*foundPtr = (*done) ? dest : 0;
+				};
+
+				tmp = scanner.Scan(p);
+				if (tmp == 0)
+					goto fg_failed;
+
+				ORIG_FinishGravity = (_FinishGravity)tmp;
+				goto fg_success;
+			}
+
+		fg_success:
+			DevMsg(TAG "Found FinishGravity at %p\n", ORIG_FinishGravity);
+			goto fg_exit;
+		fg_failed:
+			Warning("y_spt_additional_jumpboost has no effect.\n");
+			goto fg_exit;
+		}
+
+	fg_exit:
+		;
+	}
+
+
+	if (ORIG_FinishGravity)
+	{
+		if (off2M_bDucked == 0 || off1M_bDucked == 0)
+		{
+			DevMsg(
+			    TAG
+			    "FinishGravity doesn't have set values for m_bDucked offsets! Attempting to find them automatically...\n");
+			off2M_bDucked = FindEntityOffset(mScanner, "m_flWaterJumpTime");
+
+			if (off2M_bDucked != 0)
+			{
+				PatternScanner scanner(ORIG_FinishGravity, 40);
+				Pattern p = GeneratePatternFromVar(off2M_bDucked);
+
+				uintptr_t tmp = scanner.Scan(p);
+				if (tmp != 0)
+				{
+					Pattern p2("8B ?? ??", 2);
+					p2.onMatchEvaluate = _oMEArgs(&){
+						unsigned char off = *(unsigned char*)*foundPtr;
+						if (off < 0x10)
+						{
+							off1M_bDucked = off / 4;
+							*done = true;
+							return;
+						}
+						*done = false;
+					};
+
+					scanner.ScanBackward(p2, tmp);
+				}
+			}
+
+			DevMsg(TAG "Found m_bDucked offsets are 0x%X and 0x%X\n", off1M_bDucked, off2M_bDucked);
+		}
+
+		patternContainer.AddHook(HOOKED_FinishGravity, (PVOID*)&ORIG_FinishGravity);
 	}
 
 	// PlayerRunCommand
@@ -609,7 +882,7 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	// CheckStuck
 	if (!ORIG_CheckStuck)
 	{
-		DevWarning(1, TAG "CheckStuck couldn't be found using signatures, trying string reference and back tracing instead...\n");
+		GENERIC_BACKTRACE_NOTE(CheckStuck)
 		
 		uintptr_t tmp = FindStringAddress(mScanner, "%s stuck on object %i/%s");
 		tmp = FindVarReference(mScanner, tmp, "68 ");
@@ -707,6 +980,16 @@ void ServerDLL::Clear()
 		char* oldText = (char*)(ORIG_PickupAmmoPTR);
 		strcpy(oldText, "BaseCombatCharacter.AmmoPickup");
 	}
+
+#ifndef OE
+	if (freeOOBPtr1 != 0 && freeOOBPtr2 != 0)
+	{
+		memcpy((void*)serverDLL.freeOOBPtr1, serverDLL.freeOOBBytes1, 6);
+		memcpy((void*)serverDLL.freeOOBPtr2, serverDLL.freeOOBBytes2, 6);
+	}
+	freeOOBPtr1 = 0;
+	freeOOBPtr2 = 0;
+#endif
 
 	ORIG_PickupAmmoPTR = nullptr;
 	ORIG_HDTF_Cap = nullptr;

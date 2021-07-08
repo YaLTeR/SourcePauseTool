@@ -6,6 +6,7 @@
 
 #include "..\modules.hpp"
 #include "..\patterns.hpp"
+#include "..\..\patterns_new.cpp"
 
 #define TAG "[vphysics dll] "
 
@@ -86,6 +87,7 @@ int __fastcall VPhysicsDLL::HOOKED_GetShadowPosition(void* thisptr, int edx, Vec
 	return d;
 }
 
+using namespace PatternsExt;
 void VPhysicsDLL::Hook(const std::wstring& moduleName,
                        void* moduleHandle,
                        void* moduleBase,
@@ -93,6 +95,8 @@ void VPhysicsDLL::Hook(const std::wstring& moduleName,
                        bool needToIntercept)
 {
 	auto startTime = std::chrono::high_resolution_clock::now();
+
+	const PatternScanner mScanner(moduleBase, moduleLength);
 
 	Clear();
 	m_Name = moduleName;
@@ -110,10 +114,90 @@ void VPhysicsDLL::Hook(const std::wstring& moduleName,
 	GET_HOOKEDFUTURE(GetShadowVelocity);
 	GET_HOOKEDFUTURE(GetShadowPosition);
 
+	if (!ORIG_MiddleOfRecheck_ov_element)
+	{
+		GENERIC_BACKTRACE_NOTE(MiddleOfRecheck_ov_element);
+		
+		uintptr_t tmp = FindStringAddress(mScanner, "IVP Failed at %s %d", false);
+		Pattern p = GeneratePatternFromVar(tmp, "68 ?? ?? ?? ?? 68", "", 1);
+		p.onMatchEvaluate = _oMEArgs(&mScanner)
+		{
+			uintptr_t ptr = *(uintptr_t*)*foundPtr;
+			if (mScanner.CheckWithin(ptr))
+			{
+				char* str = (char*)ptr;
+				*done = (strstr(str, "ivp_collision\\ivp_mindist_recursive.cxx") != nullptr);
+				return;
+			}
+			*done = false;
+			*foundPtr = 0;
+		};
 
-	if (ORIG_MiddleOfRecheck_ov_element)
-		this->isgFlagPtr = *(bool**)(ORIG_MiddleOfRecheck_ov_element + 2);
+		tmp = mScanner.Scan(p);
+
+		if (tmp != 0)
+		{
+			tmp = BackTraceToFuncStart(mScanner, tmp, 0x400, 3, true);
+
+			if (tmp == 0)
+				goto eof;
+
+			PatternScanner funcScanner((void*)tmp, 0x700);
+
+			PatternCollection p2("E8 ?? ?? ?? 00", 0);
+			p2.AddPattern("E9 ?? ?? ?? 00", 0);
+			p2.AddPattern("E8 ?? ?? ?? FF", 0);
+			p2.AddPattern("E9 ?? ?? ?? FF", 0);
+
+			PatternCollection p3("E8 ?? ?? ?? ?? ?? ?? ?? ?? E8", 0);
+			p3.AddPattern("E8 ?? ?? ?? ?? ?? ?? ?? E8", 0);
+
+			p2.onMatchEvaluate = _oMEArgs(&mScanner, &p3)
+			{
+				uintptr_t tmp = READ_CALL(*foundPtr);
+				if (mScanner.CheckWithin(tmp))
+				{
+					tmp = FindVFTableEntry(mScanner, tmp);
+
+					if (tmp != 0)
+					{
+						tmp = *(uintptr_t*)(tmp - 4);
+						PatternScanner newScanner((void*)tmp, 0x20);
+						if (newScanner.Scan(p3) != 0)
+						{
+							*done = true;
+							*foundPtr = READ_CALL(*foundPtr);
+							return;
+						}
+					}
+				}
+				*done = false;
+				*foundPtr = 0;
+			};
+
+			tmp = funcScanner.Scan(p2);
+
+			if (tmp == 0)
+				goto eof;
+
+			funcScanner = PatternScanner((void*)tmp, 0x200);
+			Pattern p("80 3D ?? ?? ?? ?? 00", 2);
+			p.onMatchEvaluate = _oMEArgs() {
+				*foundPtr = *(uintptr_t*)*foundPtr;
+			};
+
+			tmp = funcScanner.Scan(p);
+			DevMsg(TAG "ISG Flag pointer found at %p\n", tmp);
+			isgFlagPtr = (bool*)tmp;
+		}
+
+	eof:
+		;
+	}
 	else
+		isgFlagPtr = *(bool**)(ORIG_MiddleOfRecheck_ov_element + 2);
+
+	if (!isgFlagPtr)
 		Warning("y_spt_hud_isg 1 and y_spt_set_isg have no effect\n");
 
 	patternContainer.Hook();

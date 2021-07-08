@@ -545,10 +545,8 @@ void __cdecl EngineDLL::HOOKED_Cbuf_Execute_Func()
 void __fastcall EngineDLL::HOOKED_VGui_Paint_Func(void* thisptr, int edx, int mode)
 {
 #ifndef OE
-	if (mode == 2 && !clientDLL.renderingOverlay)
-	{
+	if (y_spt_hud_enable.GetBool() && mode == 2 && !clientDLL.renderingOverlay)
 		vgui_matsurfaceDLL.DrawHUD((vrect_t*)clientDLL.screenRect);
-	}
 
 	if (clientDLL.renderingOverlay)
 		vgui_matsurfaceDLL.DrawCrosshair((vrect_t*)clientDLL.screenRect);

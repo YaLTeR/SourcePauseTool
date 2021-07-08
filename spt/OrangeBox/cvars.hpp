@@ -76,6 +76,7 @@ extern ConVar y_spt_hud_oob;
 extern ConVar y_spt_hud_isg;
 extern ConVar y_spt_hud_havok_velocity;
 extern ConVar y_spt_hud_vec_velocity;
+extern ConVar y_spt_hud_enable;
 
 extern ConVar _y_spt_overlay;
 extern ConVar _y_spt_overlay_type;
@@ -88,7 +89,7 @@ extern ConVar _y_spt_overlay_swap;
 extern ConVar y_spt_gamedir;
 #endif
 
-#if defined(SSDK2007) || defined(SSDK2013)
+#ifndef OE
 extern ConCommand y_spt_set_isg;
 #endif
 

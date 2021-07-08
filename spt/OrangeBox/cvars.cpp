@@ -180,8 +180,8 @@ ConVar y_spt_prevent_vag_crash(
     "0",
     FCVAR_CHEAT | FCVAR_DONTRECORD,
     "Prevents the game from crashing from too many recursive teleports (useful when searching for vertical angle glitches).\n");
-ConVar y_spt_hud_havok_velocity("y_spt_hud_havok_velocity", "1", FCVAR_ARCHIVE, "Show havok hitbox velocity");
-
+ConVar y_spt_hud_havok_velocity("y_spt_hud_havok_velocity", "0", FCVAR_CHEAT, "Show havok hitbox velocity");
+ConVar y_spt_hud_enable("y_spt_hud_enable", "1", FCVAR_CHEAT, "Allow drawing hud elements");
 ConVar _y_spt_overlay("_y_spt_overlay",
                       "0",
                       FCVAR_CHEAT,
@@ -221,7 +221,7 @@ ConVar y_spt_gamedir(
     "Sets the game directory, that is used for loading tas scripts and tests. Use the full path for the folder e.g. C:\\Steam\\steamapps\\sourcemods\\hl2oe\\\n");
 #endif
 
-#if defined(SSDK2007) || defined(SSDK2013)
+#ifndef OE
 void CC_Set_ISG(const CCommand& args)
 {
 	if (vphysicsDLL.isgFlagPtr)
@@ -234,7 +234,7 @@ ConCommand y_spt_set_isg("y_spt_set_isg",
                          CC_Set_ISG,
                          "Sets the state of ISG in the game (1 or 0), no arguments means 1",
                          FCVAR_DONTRECORD | FCVAR_CHEAT);
-#endif // SSDK2007 || SSDK2013
+#endif
 
 ConVar* _viewmodel_fov = nullptr;
 ConVar* _sv_accelerate = nullptr;

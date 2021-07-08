@@ -245,4 +245,12 @@ protected:
 
 public:
 	void* ORIG_PickupAmmoPTR;
+
+#ifndef OE
+	uintptr_t freeOOBPtr1;
+	uintptr_t freeOOBPtr2;
+	char freeOOBBytes1[6] = "";
+	char freeOOBBytes2[6] = "";
+#endif // !OE
+	
 };

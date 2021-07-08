@@ -216,7 +216,6 @@ protected:
 	ptrdiff_t offFlags;
 	ptrdiff_t offDucking;
 	ptrdiff_t offDuckJumpTime;
-	ptrdiff_t offServerSurfaceFriction;
 	ptrdiff_t offAbsVelocity;
 	ptrdiff_t offVecVelocity;
 	std::size_t sizeofCUserCmd;
@@ -224,7 +223,7 @@ protected:
 public:
 	ptrdiff_t offServerAbsOrigin;
 	ptrdiff_t offServerPreviouslyPredictedOrigin;
-
+	ptrdiff_t offServerSurfaceFriction;
 	void* ORIG_PickupWeaponPTR;
 
 protected:
