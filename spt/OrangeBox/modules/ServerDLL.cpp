@@ -455,13 +455,13 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 		patternContainer.AddHook(HOOKED_CheckJumpButton, (PVOID*)&ORIG_CheckJumpButton);
 	}
 
-#ifndef OE
 	if (ORIG_CheckJumpButton)
 	{
 		if (!ORIG_TryPlayerMove)
 			ORIG_TryPlayerMove = *(uintptr_t*)(FindVFTableEntry(mScanner, (uintptr_t)ORIG_CheckJumpButton) + 0xC);
 		DevMsg(TAG "TryPlayerMove found at %p through VFTable jumping\n", ORIG_TryPlayerMove);
 
+#ifndef OE
 		PatternScanner scanner((void*)ORIG_TryPlayerMove, 0x700);
 		Pattern p1("F6 C4 44 0F 8A ?? ?? ?? ??", 3);
 		p1.onFound = [&](uintptr_t ptr) {
@@ -481,8 +481,8 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 			DevMsg(TAG "Free OOB predicted target JNE instruction found at %p\n", ptr);
 		};
 		scanner.Scan(p2);
-	};
 #endif
+	};
 
 	if (ORIG_PickupAmmoPTR != nullptr)
 	{
@@ -1118,6 +1118,8 @@ void __cdecl ServerDLL::HOOKED_SetPredictionRandomSeed(void* usercmd)
 	serverDLL.ORIG_SetPredictionRandomSeed(usercmd);
 }
 
+Vector oldmvVecVel(0, 0, 0);
+
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 {
 
@@ -1155,6 +1157,7 @@ bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 	cantJumpNextTime = false;
 
 	insideCheckJumpButton = true;
+	oldmvVecVel = mv->m_vecVelocity;
 	bool rv = ORIG_CheckJumpButton(thisptr, edx); // This function can only change the jump bit.
 	insideCheckJumpButton = false;
 
@@ -1202,6 +1205,10 @@ void __fastcall ServerDLL::HOOKED_FinishGravity_Func(void* thisptr, int edx)
 		CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t*)thisptr + off1M_nOldButtons));
 		bool ducked = *(bool*)(*((uintptr_t*)thisptr + off1M_bDucked) + off2M_bDucked);
 
+		// reset
+		mv->m_vecVelocity[0] = oldmvVecVel[0];
+		mv->m_vecVelocity[1] = oldmvVecVel[1];
+
 		// <stolen from gamemovement.cpp>
 		{
 			Vector vecForward;
@@ -1217,7 +1224,9 @@ void __fastcall ServerDLL::HOOKED_FinishGravity_Func(void* thisptr, int edx)
 			float flNewSpeed = (flSpeedAddition + mv->m_vecVelocity.Length2D());
 
 			// If we're over the maximum, we want to only boost as much as will get us to the goal speed
-			if (y_spt_additional_jumpboost.GetInt() == 1)
+			switch (y_spt_additional_jumpboost.GetInt())
+			{
+			case 1:
 			{
 				if (flNewSpeed > flMaxSpeed)
 				{
@@ -1226,10 +1235,17 @@ void __fastcall ServerDLL::HOOKED_FinishGravity_Func(void* thisptr, int edx)
 
 				if (mv->m_flForwardMove < 0.0f)
 					flSpeedAddition *= -1.0f;
+
+				vecForward *= flSpeedAddition;
+				break;
+			}
+			case 2:
+				vecForward *= mv->m_flForwardMove * flSpeedBoostPerc;
+				break;
 			}
 
 			// Add it on
-			VectorAdd((vecForward * flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity);
+			VectorAdd(vecForward, mv->m_vecVelocity, mv->m_vecVelocity);
 		}
 		// </stolen from gamemovement.cpp>
 	}

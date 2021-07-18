@@ -267,9 +267,9 @@ namespace PatternsExt
 	// scanner:		scanner to use
 	// addr:		address in the middle of the func
 	// limit:		how many bytes to look up (normally 0x100 to 0x200)
-	// interruptLevel the number of padding bytes to encounter before passing check
+	// interruptLevel	the number of padding bytes to encounter before passing check
 	// checkVFTable	enable checking for vftable entries
-	// checkCallAmount how many bytes before and after addr to check for calls to the target function (recommended value between 0x5000 to 0x10000)
+	// checkCallAmount	how many bytes before and after addr to check for calls to the target function (recommended value between 0x5000 to 0x10000)
 	static uintptr_t BackTraceToFuncStart(PatternScanner scanner, uintptr_t addr,
 		int limit = 0x600, 
 		int interruptLevel = 3, 

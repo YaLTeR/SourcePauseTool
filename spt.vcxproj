@@ -258,6 +258,9 @@
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <TargetName>spt-oe</TargetName>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>false</VcpkgEnabled>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <PreBuildEvent>
       <Command />

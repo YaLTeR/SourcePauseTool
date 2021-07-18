@@ -369,9 +369,7 @@ namespace patterns
 		    "missinginfo1_4_7",
 		    "55 8B EC 83 EC 0C 89 4D F8 8B 45 F8 8B 48 08 D9 05 ?? ?? ?? ?? D9 81 ?? ?? ?? ?? DA E9 DF E0 F6 C4 44",
 		    "missinginfo1_6",
-		    "8B 51 04 D9 82 ?? ?? ?? ?? D9 EE D9 C0 DD EA DF E0 DD D9 F6 C4 44 7A 3F D9 82 ?? ?? ?? ?? DA E9",
-			"hdtf",
-			"55 8B EC 51 F3 0F 10 0D ?? ?? ?? ?? 57 8B F9 8B 57 ?? F3 0F 10 82 ?? ?? ?? ??");
+		    "8B 51 04 D9 82 ?? ?? ?? ?? D9 EE D9 C0 DD EA DF E0 DD D9 F6 C4 44 7A 3F D9 82 ?? ?? ?? ?? DA E9");
 		PATTERNS(
 		    PlayerRunCommand,
 		    "5135",
@@ -517,7 +515,13 @@ namespace patterns
 
 	namespace inputsystem
 	{
-		PATTERNS(CInputSystem__SleepUntilInput, "5135", "8B 44 24 ?? 85 C0 7D ??");
+		PATTERNS(
+			CInputSystem__SleepUntilInput, 
+			"5135",
+			"8B 44 24 ?? 85 C0 7D ??",
+			"BMS-Retail", 
+			"55 8B EC 8B 45 ?? 83 CA FF"
+		);
 	} // namespace inputsystem
 
 	namespace vphysics
