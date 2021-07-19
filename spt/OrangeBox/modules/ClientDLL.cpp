@@ -220,7 +220,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	DEF_FUTURE(CViewEffects__Shake);
 	DEF_FUTURE(CHudDamageIndicator__GetDamagePosition);
 	DEF_FUTURE(MiddleOfCViewRenderRender);
-
+	DEF_FUTURE(ResetToneMapping);
 	GET_HOOKEDFUTURE(HudUpdate);
 	GET_HOOKEDFUTURE(GetButtonBits);
 	GET_HOOKEDFUTURE(AdjustAngles);
@@ -239,6 +239,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	GET_HOOKEDFUTURE(CViewEffects__Fade);
 	GET_HOOKEDFUTURE(CViewEffects__Shake);
 	GET_FUTURE(CHudDamageIndicator__GetDamagePosition);
+	GET_HOOKEDFUTURE(ResetToneMapping);
 	DEF_FUTURE(PickupWeaponPTR);
 	GET_FUTURE(PickupWeaponPTR);
 	GET_FUTURE(MiddleOfCViewRenderRender);
@@ -280,7 +281,6 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 		}
 
 	}
-
 
 	if (DoesGameLookLikeHLS())
 	{
@@ -781,13 +781,18 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 
 	if (!ORIG_MainViewOrigin || !ORIG_UTIL_TraceRay)
 		Warning("y_spt_hud_oob 1 has no effect\n");
+	
+	if (!ORIG_ResetToneMapping)
+		Warning("y_spt_disable_tone_map_reset has no effect\n");
 
-		patternContainer.Hook();
+	patternContainer.Hook();
 
 	auto loadTime =
 	    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime)
 	        .count();
 	DevMsg(TAG "Done hooking in %dms\n", loadTime);
+
+	patternContainer.Hook();
 }
 
 void ClientDLL::Unhook()
@@ -827,6 +832,7 @@ void ClientDLL::Clear()
 	ORIG_CViewRender__Render = nullptr;
 	ORIG_UTIL_TraceRay = nullptr;
 	ORIG_MainViewOrigin = nullptr;
+	ORIG_ResetToneMapping = nullptr;
 
 	pgpGlobals = nullptr;
 	off1M_nOldButtons = 0;
@@ -1538,4 +1544,10 @@ void ClientDLL::HOOKED_CViewRender__Render_Func(void* thisptr, int edx, void* re
 		renderingOverlay = false;
 	}
 #endif
+}
+
+void ClientDLL::HOOKED_ResetToneMapping(float value)
+{
+	if (!y_spt_disable_tone_map_reset.GetBool())
+		clientDLL.ORIG_ResetToneMapping(value);
 }

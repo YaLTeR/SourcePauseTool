@@ -57,6 +57,10 @@ public:
 	float			m_flSideMove;
 	float			m_flUpMove;
 	
+#ifdef BMS
+	float UNKNOWN001;
+#endif
+
 	float			m_flMaxSpeed;
 	float			m_flClientMaxSpeed;
 
