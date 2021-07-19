@@ -791,8 +791,6 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime)
 	        .count();
 	DevMsg(TAG "Done hooking in %dms\n", loadTime);
-
-	patternContainer.Hook();
 }
 
 void ClientDLL::Unhook()
