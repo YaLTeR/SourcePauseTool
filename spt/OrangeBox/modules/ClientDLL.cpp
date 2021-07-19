@@ -783,7 +783,41 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 		Warning("y_spt_hud_oob 1 has no effect\n");
 	
 	if (!ORIG_ResetToneMapping)
+	{
+		DevMsg("ResetToneMapping couldn't be found using existing patterns! Trying string reference instead...\n");
+		uintptr_t ptr = FindVarReference(mScanner, FindStringAddress(mScanner, "(mapname)"), "68");
+		if (ptr != 0)
+		{
+			PatternScanner scanner((void*)ptr, 0x200);
+			PatternCollection p("D9 E8", 0);
+			p.AddPattern("00 00 80 3F",0 );
+			p.onMatchEvaluate = _oMEArgs(&mScanner) {
+				unsigned char* bytes = (unsigned char*)*foundPtr;
+				for (int i = 0; i < 50; i++)
+				{
+					if (bytes[i] == 0xE8 && mScanner.CheckWithin(READ_CALL(&bytes[i])))
+					{
+						*done = true;
+						*foundPtr = READ_CALL(&bytes[i]);
+						return;
+					}
+				}
+				*foundPtr = 0;
+			};
+			ptr = scanner.Scan(p);
+			
+			if (ptr != 0)
+			{
+				DevMsg("ResetToneMapping found at %p through string reference\n", ptr);
+				ORIG_ResetToneMapping = (_ResetToneMapping)ptr;
+				patternContainer.AddHook(HOOKED_ResetToneMapping, (PVOID*)&ORIG_ResetToneMapping);
+				goto rtm_eof;
+			}
+		}
+	rtm_fail:
 		Warning("y_spt_disable_tone_map_reset has no effect\n");
+	rtm_eof:;
+	}
 
 	patternContainer.Hook();
 
