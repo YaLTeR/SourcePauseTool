@@ -55,7 +55,7 @@ namespace PatternsExt
 		};
 		Pattern second("68 ?? ?? ?? ?? 68", 6);
 		second.onFound = [&](uintptr_t ptr) {
-			foundOffset = *reinterpret_cast<int*>(ptr - 5);
+			foundOffset = *reinterpret_cast<short*>(ptr - 5);
 		};
 
 		PatternCollection collection(first);

@@ -299,7 +299,7 @@ public:
 
 		for (Pattern target : patterns.Patterns)
 		{
-			uintptr_t ptr = Scan(target, &patterns);
+			uintptr_t ptr = ScanBackward(target, startAddr, &patterns);
 			if (ptr == 0)
 				continue;
 			return ptr;

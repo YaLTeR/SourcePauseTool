@@ -919,14 +919,14 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	int offDTLocal = 0x0;
 	uintptr_t tmp = 0x0;
 	tmp = FindDataTable(mScanner, "DT_LocalPlayerExclusive");
-	offDTLocal = PatternsExt::FindEntityOffsetThroughDT(moduleBase, moduleLength, tmp, "m_Local");
+	offDTLocal = FindEntityOffsetThroughDT(moduleBase, moduleLength, tmp, "m_Local");
 
 	if (offDTLocal != 0x0)
 	{
 		uintptr_t datatable;
 		datatable = FindDataTable(mScanner, "DT_Local");
-		offM_vecPunchAngle = PatternsExt::FindEntityOffsetThroughDT(moduleBase, moduleLength, datatable, "m_vecPunchAngle", offDTLocal);
-		offM_vecPunchAngleVel = PatternsExt::FindEntityOffsetThroughDT(moduleBase, moduleLength, datatable, "m_vecPunchAngleVel", offDTLocal);
+		offM_vecPunchAngle = FindEntityOffsetThroughDT(moduleBase, moduleLength, datatable, "m_vecPunchAngle", offDTLocal);
+		offM_vecPunchAngleVel = FindEntityOffsetThroughDT(moduleBase, moduleLength, datatable, "m_vecPunchAngleVel", offDTLocal);
 	}
 	else
 	{
@@ -958,6 +958,43 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 		patternContainer.AddHook(HOOKED_TraceFirePortal, (PVOID*)&ORIG_TraceFirePortal);
 	}
 #endif
+
+	if (offM_collisionGroup != 0)
+	{
+		uintptr_t tmp = FindVarReference(mScanner, FindStringAddress(mScanner, "PlayerEnteredVehicle"));
+		if (tmp != 0)
+		{
+			PatternScanner tmpScanner((void*)(tmp - 0x300), 0x300);
+
+			PatternCollection p2;
+			p2.AddPattern(GeneratePatternFromVar(offM_collisionGroup, "39 ?? "));
+			p2.AddPattern(GeneratePatternFromVar(offM_collisionGroup, "8B ?? "));
+
+			PatternCollection p("E8 ?? ?? ?? FF", 0);
+			p.AddPattern("E8 ?? ?? ?? 00", 0);
+
+			p.onMatchEvaluate = _oMEArgs(&p2, &mScanner)
+			{
+				uintptr_t tmp = READ_CALL(*foundPtr);
+				if (!mScanner.CheckWithin(tmp))
+				{
+					*done = false;
+					return;
+				}
+				PatternScanner tmpScanner((void*)tmp, 50);
+				uintptr_t tmp2 = tmpScanner.Scan(p2);
+				*done = (tmp2 != 0);
+				*foundPtr = *done ? tmp : 0;
+			};
+
+			tmp = tmpScanner.ScanBackward(p, tmpScanner._end());
+			if (tmp != 0)
+			{
+				DevMsg(TAG "Found SetCollisionGroup at %p\n", tmp);
+				ORIG_SetCollisionGroup = (_SetCollisionGroup)tmp;
+			}
+		}
+	}
 	patternContainer.Hook();
 
 	auto loadTime =
@@ -991,6 +1028,7 @@ void ServerDLL::Clear()
 	freeOOBPtr2 = 0;
 #endif
 
+	ORIG_SetCollisionGroup = nullptr;
 	ORIG_PickupAmmoPTR = nullptr;
 	ORIG_HDTF_Cap = nullptr;
 	ORIG_HDTF_Cap_JumpTo = 0x0;
@@ -1463,6 +1501,45 @@ int ServerDLL::GetPlayerCollisionGroup() const
 	else
 		return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_collisionGroup));
 }
+
+#ifndef OE
+#ifndef P2
+CON_COMMAND(y_spt_set_collision_group, "Set player's collision group\nUsually:\n- 5 is normal collisions\n- 10 is quickclip\n") 
+{	
+	if (args.ArgC() < 2)
+	{
+		Msg("Format: y_spt_set_collision_group <collision group index>\nUsually:\n- 5 is normal collisions\n- 10 is quickclip\n");
+		return;
+	}
+
+	if (serverDLL.offM_collisionGroup == 0)
+	{
+		Warning("Command has no effect!\n");
+		return;
+	}
+
+	if (!utils::playerEntityAvailable())
+	{
+		Warning("Not in map!\n");
+		return;
+	}
+
+	int playerPtr = (int)GetServerPlayer();
+	int collide = atoi(args[1]);
+
+	if (!serverDLL.ORIG_SetCollisionGroup)
+	{
+		Warning("SetCollisionGroup function unavailable, setting collision group through direct memory overwriting, might be buggy!\n");
+		memcpy((void*)(playerPtr + serverDLL.offM_collisionGroup), &collide, sizeof(int));	
+	}
+	else
+	{
+		serverDLL.ORIG_SetCollisionGroup(playerPtr, playerPtr, collide);
+	}
+
+}
+#endif
+#endif
 
 int ServerDLL::GetEnviromentPortalHandle() const
 {

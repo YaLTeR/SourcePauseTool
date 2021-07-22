@@ -74,6 +74,7 @@ typedef void(__cdecl* _TracePlayerBBoxForGround2)(const Vector& start,
                                                   int collisionGroup,
                                                   trace_t& pm);
 typedef void(__cdecl* _SetPredictionRandomSeed)(void* usercmd);
+typedef void(__fastcall* _SetCollisionGroup)(int edx, int thisptr2, int collisionGroup);
 
 class ServerDLL : public IHookableNameFilter
 {
@@ -204,6 +205,8 @@ public:
 	Vector _maxs;
 	ptrdiff_t offM_vecPunchAngle;
 	ptrdiff_t offM_vecPunchAngleVel;
+	ptrdiff_t offM_collisionGroup;
+	_SetCollisionGroup ORIG_SetCollisionGroup;
 
 protected:
 	PatternContainer patternContainer;
@@ -233,7 +236,6 @@ protected:
 	ptrdiff_t offM_afPhysicsFlags;
 	ptrdiff_t offM_moveType;
 	ptrdiff_t offM_moveCollide;
-	ptrdiff_t offM_collisionGroup;
 
 	unsigned ticksPassed;
 	bool timerRunning;
