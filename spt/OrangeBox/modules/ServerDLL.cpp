@@ -1502,30 +1502,15 @@ int ServerDLL::GetPlayerCollisionGroup() const
 		return *reinterpret_cast<int*>(((int)GetServerPlayer() + offM_collisionGroup));
 }
 
-#ifndef OE
 #ifndef P2
-CON_COMMAND(y_spt_set_collision_group, "Set player's collision group\nUsually:\n- 5 is normal collisions\n- 10 is quickclip\n") 
+void SetCollisionGroup(int collide)
 {	
-	if (args.ArgC() < 2)
-	{
-		Msg("Format: y_spt_set_collision_group <collision group index>\nUsually:\n- 5 is normal collisions\n- 10 is quickclip\n");
-		return;
-	}
-
-	if (serverDLL.offM_collisionGroup == 0)
-	{
-		Warning("Command has no effect!\n");
-		return;
-	}
-
-	if (!utils::playerEntityAvailable())
-	{
-		Warning("Not in map!\n");
-		return;
-	}
-
 	int playerPtr = (int)GetServerPlayer();
-	int collide = atoi(args[1]);
+	if (playerPtr == 0)
+	{
+		Warning("Player entity not found!\n");
+		return;
+	}
 
 	if (!serverDLL.ORIG_SetCollisionGroup)
 	{
@@ -1533,12 +1518,36 @@ CON_COMMAND(y_spt_set_collision_group, "Set player's collision group\nUsually:\n
 		memcpy((void*)(playerPtr + serverDLL.offM_collisionGroup), &collide, sizeof(int));	
 	}
 	else
-	{
 		serverDLL.ORIG_SetCollisionGroup(playerPtr, playerPtr, collide);
-	}
 
 }
+
+#ifndef OE
+void SetCollisionGroupCallback(IConVar* var, const char* pOldValue, float fOldValue)
+#else
+void SetCollisionGroupCallback(ConVar* var, char const* pOldString)
 #endif
+{
+	if (strcmp(((ConVar*)var)->GetString(),"") == 0)
+		return;
+
+	if (serverDLL.offM_collisionGroup == 0)
+	{
+		Warning("Command has no effect!\n");
+		return;
+	}
+
+	SetCollisionGroup(((ConVar*)var)->GetInt());
+	((ConVar*)var)->SetValue("");
+}
+
+ConVar y_spt_set_collision_group(
+    "y_spt_set_collision_group",
+    "5",
+    FCVAR_CHEAT | FCVAR_ARCHIVE,
+    "Set player's collision group\nUsually:\n- 5 is normal collisions\n- 10 is quickclip\n",
+    SetCollisionGroupCallback);
+
 #endif
 
 int ServerDLL::GetEnviromentPortalHandle() const
