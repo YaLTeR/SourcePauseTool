@@ -384,6 +384,9 @@
     <ClInclude Include="spt\patterns_new.hpp">
       <Filter>spt</Filter>
     </ClInclude>
+    <ClInclude Include="spt\tick_queue.hpp">
+      <Filter>spt</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">

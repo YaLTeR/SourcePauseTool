@@ -1143,6 +1143,12 @@ void ClientDLL::OnFrame()
 	AfterFramesSignal();
 }
 
+void ClientDLL::ServerGameFrame() 
+{
+	if (pgpGlobals != 0)
+		TickQueue.Update((*(CGlobalVarsBase**)pgpGlobals)->tickcount);
+}
+
 bool ClientDLL::IsGroundEntitySet()
 {
 	if (ORIG_GetGroundEntity == nullptr || ORIG_GetLocalPlayer == nullptr)

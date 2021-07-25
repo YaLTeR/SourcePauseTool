@@ -10,6 +10,7 @@
 #include "..\..\utils\patterncontainer.hpp"
 #include "..\public\cdll_int.h"
 #include "thirdparty\Signal.h"
+#include "spt\tick_queue.hpp"
 #include "cmodel.h"
 
 using std::size_t;
@@ -180,6 +181,8 @@ public:
 	_UTIL_TraceRay ORIG_UTIL_TraceRay;
 	bool IsGroundEntitySet();
 	Vector GetPlayerVecVelocity();
+	void ServerGameFrame();
+	TicksQueue TickQueue;
 
 	uintptr_t pVGUI_Paint;
 

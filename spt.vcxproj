@@ -1818,6 +1818,7 @@ echo F|xcopy "$(OutDir)$(TargetName)$(TargetExt)" "$(ProjectDir)Output\$(TargetF
     <ClInclude Include="spt\OrangeBox\vgui\graphics.hpp" />
     <ClInclude Include="spt\patterns_new.hpp" />
     <ClInclude Include="spt\strafe_utils.hpp" />
+    <ClInclude Include="spt\tick_queue.hpp" />
     <ClInclude Include="spt\utils\ent_utils.hpp" />
     <ClInclude Include="spt\utils\patterncontainer.hpp" />
     <ClInclude Include="sptlib\sptlib.hpp" />

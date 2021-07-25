@@ -13,6 +13,7 @@
 #include "icvar.h"
 #include "vgui\ischeme.h"
 #include "vguimatsurface\imatsystemsurface.h"
+#include "thirdparty\Signal.h"
 
 //---------------------------------------------------------------------------------
 // Purpose: a sample 3rd party plugin class
@@ -31,7 +32,7 @@ public:
 	virtual const char* GetPluginDescription(void);
 	virtual void LevelInit(char const* pMapName){};
 	virtual void ServerActivate(edict_t* pEdictList, int edictCount, int clientMax){};
-	virtual void GameFrame(bool simulating){};
+	virtual void GameFrame(bool simulating);
 	virtual void LevelShutdown(void){};
 	virtual void ClientActive(edict_t* pEntity){};
 	virtual void ClientDisconnect(edict_t* pEntity){};
@@ -84,6 +85,8 @@ public:
 	// added with version 3 of the interface.
 	virtual void OnEdictAllocated(edict_t* edict){};
 	virtual void OnEdictFreed(const edict_t* edict){};
+	Gallant::Signal0<void> ServerGameFrameSignal;
+
 #endif
 
 #ifdef P2

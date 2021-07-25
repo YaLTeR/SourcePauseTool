@@ -418,6 +418,7 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	Hooks::Init(true);
 	ipc::Init();
 	ModuleHooks::ConnectSignals();
+	ServerGameFrameSignal.Connect(&clientDLL, &ClientDLL::ServerGameFrame);
 
 	auto loadTime =
 	    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime)
@@ -441,6 +442,11 @@ void CSourcePauseTool::Unload(void)
 	DisconnectTier1Libraries();
 	DisconnectTier3Libraries();
 	ipc::ShutdownIPC();
+}
+
+void CSourcePauseTool::GameFrame(bool simulating) 
+{
+	ServerGameFrameSignal();
 }
 
 const char* CSourcePauseTool::GetPluginDescription(void)
@@ -490,6 +496,30 @@ CON_COMMAND(_y_spt_afterframes, "Add a command into an afterframes queue. Usage:
 	entry.command.assign(args.Arg(2));
 
 	clientDLL.AddIntoAfterframesQueue(entry);
+}
+
+CON_COMMAND(_y_spt_afterticks, "Add a command to be executed after a specific number of ticks. Usage: _y_spt_afterticks <ticks> <command>")
+{
+	if (!engine)
+		return;
+
+#if defined(OE)
+	ArgsWrapper args(engine.get());
+#endif
+
+	if (args.ArgC() != 3)
+	{
+		Msg("Usage: _y_spt_afterticks <ticks> <command>\n");
+		return;
+	}
+
+	afterticks_entry_t entry;
+
+	std::istringstream ss(args.Arg(1));
+	ss >> entry.ticksLeft;
+	entry.command.assign(args.Arg(2));
+
+	clientDLL.TickQueue.AddToQueue(entry);
 }
 
 #if !defined(OE)

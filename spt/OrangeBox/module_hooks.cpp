@@ -42,7 +42,6 @@ namespace ModuleHooks
 #endif
 
 		clientDLL.TickSignal.Connect(&scripts::g_Tester, &scripts::Tester::DataIteration);
-
 #ifndef OE
 		clientDLL.TickSignal.Connect(&vgui_matsurfaceDLL, &VGui_MatSurfaceDLL::NewTick);
 		clientDLL.TickSignal.Connect(vgui::DrawLines);
