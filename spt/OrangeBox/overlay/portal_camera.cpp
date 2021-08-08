@@ -60,7 +60,6 @@ bool invalidPortal(IClientEntity* portal)
 
 IClientEntity* GetEnvironmentPortal()
 {
-	auto player = utils::GetPlayer();
 	int handle = utils::GetProperty<int>(0, "m_hPortalEnvironment");
 	int index = (handle & INDEX_MASK) - 1;
 
