@@ -264,7 +264,7 @@ void EngineDLL::Hook(const std::wstring& moduleName,
 	}
 
 	// SetPaused
-	if (!ORIG_FinishRestore)
+	if (!ORIG_SetPaused)
 	{
 		Warning("y_spt_pause has no effect.\n");
 	}
