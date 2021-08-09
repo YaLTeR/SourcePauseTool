@@ -24,6 +24,7 @@ namespace scripts
 		void OnAfterFrames();
 		int GetCurrentTick();
 		int GetCurrentScriptLength();
+		bool IsExecutingScript();
 
 	private:
 		bool iterationFinished;
