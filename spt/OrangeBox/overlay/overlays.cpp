@@ -24,6 +24,28 @@ CameraInformation rearViewMirrorOverlay()
 	return info;
 }
 
+CameraInformation havokViewMirrorOverlay()
+{
+	CameraInformation info;
+	Vector add(0, 0, 64);
+	Vector* pos = &(vphysicsDLL.PlayerHavokPos + add);
+
+	auto ducked = clientDLL.GetFlagsDucking();
+	auto angles = utils::GetPlayerEyeAngles();
+
+	info.x = pos->x;
+	info.y = pos->y;
+
+	if (ducked)
+		info.z = pos->z - 36;
+	else
+		info.z = pos->z;
+
+	info.pitch = angles[PITCH];
+	info.yaw = utils::NormalizeDeg(angles[YAW]);
+	return info;
+}
+
 CameraInformation sgOverlay()
 {
 	CameraInformation info;
