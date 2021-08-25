@@ -58,11 +58,10 @@
 int __fastcall VPhysicsDLL::HOOKED_GetShadowPosition(void* thisptr, int edx, Vector* worldPosition, QAngle* angles)
 {
 	TRACE_ENTER();
-	Vector* worldpos = worldPosition;
 	int GetShadowPos = vphysicsDLL.ORIG_GetShadowPosition(thisptr, edx, worldPosition, angles);
-	vphysicsDLL.PlayerHavokPos.x = worldpos->x;
-	vphysicsDLL.PlayerHavokPos.y = worldpos->y;
-	vphysicsDLL.PlayerHavokPos.z = worldpos->z;
+	vphysicsDLL.PlayerHavokPos.x = worldPosition->x;
+	vphysicsDLL.PlayerHavokPos.y = worldPosition->y;
+	vphysicsDLL.PlayerHavokPos.z = worldPosition->z;
 	return GetShadowPos;
 }
 
