@@ -54,7 +54,7 @@ extern ConVar _y_spt_afterframes_reset_on_server_activate;
 extern ConVar _y_spt_anglesetspeed;
 extern ConVar _y_spt_pitchspeed;
 extern ConVar _y_spt_yawspeed;
-extern ConVar _y_spt_force_90fov;
+extern ConVar _y_spt_force_fov;
 
 extern ConVar y_spt_hud_velocity;
 extern ConVar y_spt_hud_flags;
