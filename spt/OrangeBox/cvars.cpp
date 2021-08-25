@@ -191,7 +191,7 @@ ConVar _y_spt_overlay_type(
     "_y_spt_overlay_type",
     "0",
     FCVAR_CHEAT,
-    "Overlay type. 0 = save glitch body, 1 = angle glitch simulation, 2 = havok view mirror, 3 = rear view mirror.\n");
+    "Overlay type. 0 = save glitch body, 1 = angle glitch simulation, 2 = rear view mirror, 3 = havok view mirror.\n");
 ConVar _y_spt_overlay_portal(
     "_y_spt_overlay_portal",
     "auto",

@@ -67,10 +67,10 @@ void OverlayRenderer::modifyView(CViewSetup* view, bool overlay)
 			data = agOverlay();
 			break;
 		case 2:
-			data = havokViewMirrorOverlay();
+			data = rearViewMirrorOverlay();
 			break;
 		default:
-			data = rearViewMirrorOverlay();
+			data = havokViewMirrorOverlay();
 			break;
 		}
 
