@@ -186,7 +186,9 @@ namespace patterns
 		    "2257546",
 		    "55 8B EC A1 ?? ?? ?? ?? 83 EC 0C F3 0F 10 4D 08 0F 57 D2 83 78 30 00 56 8B F1 74 1F F3 0F 10 46 1C 0F 2F D0",
 		    "5377866",
-		    "55 8B EC A1 ?? ?? ?? ?? 83 EC 0C F3 0F 10 4D 08 F3 0F 10 15 ?? ?? ?? ?? 83 78 30 00 56 8B F1 74 1F F3 0F 10 46 1C");
+		    "55 8B EC A1 ?? ?? ?? ?? 83 EC 0C F3 0F 10 4D 08 F3 0F 10 15 ?? ?? ?? ?? 83 78 30 00 56 8B F1 74 1F F3 0F 10 46 1C",
+		    "BMS_Retail",
+		    "55 8B EC 83 EC 0C D9 45 08 56 51 D9 1C 24 8B F1 E8 ?? ?? ?? ?? D9 55 08 D9 EE DF F1 DD D8 73 50 8B 0D ?? ?? ?? ?? 8D 55 F4");
 		PATTERNS(
 		    CreateMove,
 		    "5135",
@@ -198,7 +200,9 @@ namespace patterns
 		    "2257546",
 		    "55 8B EC 83 EC 54 53 56 8B 75 08 B8 ?? ?? ?? ?? F7 EE 57 03 D6 8B F9 C1 FA 06 8B CE 8B C2 C1 E8 1F",
 		    "2257546-hl1",
-		    "55 8B EC 83 EC 50 53 8B 5D 08 B8 ?? ?? ?? ?? F7 EB 56 03 D3 C1 FA 06 8B C2 C1 E8 1F 03 C2 8B D3");
+		    "55 8B EC 83 EC 50 53 8B 5D 08 B8 ?? ?? ?? ?? F7 EB 56 03 D3 C1 FA 06 8B C2 C1 E8 1F 03 C2 8B D3",
+		    "BMS-Retail",
+		    "55 8B EC 83 EC 54 53 56 8B 75 08 B8 ?? ?? ?? ?? F7 EE 57 03 D6 8B F9 C1 FA 06 8B CE 8B C2 C1 E8 1F 03 C2 6B C0 5A");
 		PATTERNS(
 		    MiddleOfCAM_Think,
 		    "5135",
@@ -270,7 +274,9 @@ namespace patterns
 		    "55 8B EC 51 56 57 6A 14 89 4D FC E8 ?? ?? ?? ?? 8B 7D 08 8B F0");
 		PATTERNS(CViewEffects__Shake,
 		         "4104-5135",
-		         "56 8B 74 24 08 8B 06 85 C0 57 8B F9 74 05 83 F8 04 75 54 83 7F 24 20 7D 4E 6A 28");
+		         "56 8B 74 24 08 8B 06 85 C0 57 8B F9 74 05 83 F8 04 75 54 83 7F 24 20 7D 4E 6A 28",
+		         "5377866",
+		         "55 8B EC 56 8B 75 ?? 57 8B F9 8B 06 85 C0 74 ?? 83 F8 04");
 		PATTERNS(
 		    CHudDamageIndicator__GetDamagePosition,
 		    "5135",
@@ -282,7 +288,11 @@ namespace patterns
 		    "1910503",
 		    "55 8B EC 8B 0D ?? ?? ?? ?? 8B 01 8B 90 88 01 00 00 56 FF D2 8B F0 85 F6 74 09 8B 06 8B 50 08 8B CE FF D2 8B 06 F3 0F 10 45 08",
 		    "5377866",
-		    "55 8B EC 8B 0D ?? ?? ?? ?? 56 8B 01 FF 90 88 01 00 00 8B F0 85 F6 74 07 8B 06 8B CE FF 50 08 8B 06 D9 45 08");
+		    "55 8B EC 8B 0D ?? ?? ?? ?? 56 8B 01 FF 90 88 01 00 00 8B F0 85 F6 74 07 8B 06 8B CE FF 50 08 8B 06 D9 45 08",
+		    "BMS-Retail",
+		    "55 8B EC 8B 0D ?? ?? ?? ?? 56 8B 01 FF 90 ?? ?? ?? ?? 8B F0 85 F6 74 ?? 8B 06 8B CE FF 50 ?? 8B 06 D9 45 ?? 51 8B CE",
+		    "te120",
+		    "55 8B EC 8B 0D ?? ?? ?? ?? 8B 01 8B 90 ?? ?? ?? ?? 56 FF D2 8B F0 85 F6 74 ?? 8B 06 8B 50 ?? 8B CE FF D2 8B 06");
 	} // namespace client
 
 	namespace server
@@ -487,7 +497,11 @@ namespace patterns
 
 	namespace inputsystem
 	{
-		PATTERNS(CInputSystem__SleepUntilInput, "5135", "8B 44 24 ?? 85 C0 7D ??");
+		PATTERNS(CInputSystem__SleepUntilInput,
+		         "5135",
+		         "8B 44 24 ?? 85 C0 7D ??",
+		         "5377866-BMS_Retail",
+		         "55 8B EC 8B 45 ?? 83 CA FF");
 	} // namespace inputsystem
 
 	namespace vphysics
@@ -497,12 +511,11 @@ namespace patterns
 		         "C6 05 ?? ?? ?? ?? 01 83 EE 01 3B 74 24 28 7D D3 8B 4C 24 38",
 		         "1910503",
 		         "C6 05 ?? ?? ?? ?? 01 4E 3B 75 F0 7D D3 8B 8D DC FD FF FF");
-		PATTERNS(
-		    GetShadowPosition,
-		    "5135",
-		    "81 EC ?? ?? ?? ?? 8B 41 ?? 8B 40 ?? 8B 40",
-		    "BMS-Retail",
-		    "55 8B EC 81 EC ?? ?? ?? ?? A1 ?? ?? ?? ?? 33 C5 89 45 FC 8B 41 ?? 56 8B 75 ?? 57 8B 40 ?? 8B 7D ?? 8B 50");
+		PATTERNS(GetShadowPosition,
+		         "5135",
+		         "81 EC ?? ?? ?? ?? 8B 41 ?? 8B 40 ?? 8B 40",
+		         "5377866",
+		         "55 8B EC 81 EC ?? ?? ?? ?? 8B 41 08 8B 40 08 8B 50");
 	} // namespace vphysics
 
 } // namespace patterns

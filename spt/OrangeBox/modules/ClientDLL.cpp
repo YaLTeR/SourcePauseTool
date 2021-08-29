@@ -363,6 +363,12 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 			offForwardmove = 24;
 			offSidemove = 28;
 			break;
+
+		case 5:
+			offM_pCommands = 196;
+			offForwardmove = 24;
+			offSidemove = 28;
+			break;
 		}
 	}
 
