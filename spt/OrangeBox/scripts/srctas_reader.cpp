@@ -176,10 +176,16 @@ namespace scripts
 		return currentScript.GetScriptLength();
 	}
 
+	bool SourceTASReader::IsExecutingScript()
+	{
+		return currentTick <= currentScript.GetScriptLength();
+	}
+
 	void SourceTASReader::Execute()
 	{
 		iterationFinished = false;
 		SetFpsAndPlayspeed();
+		engineDLL.Demo_StopRecording();
 		currentTick = 0;
 		clientDLL.ResetAfterframesQueue();
 		currentScript.Init(fileName);
