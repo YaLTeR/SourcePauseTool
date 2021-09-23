@@ -541,17 +541,17 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	{
 		ORIG_SlidingAndOtherStuff = (_SlidingAndOtherStuff)(&ORIG_MiddleOfSlidingFunction - 0x4bb);
 		patternContainer.AddHook(HOOKED_SlidingAndOtherStuff, (PVOID*)ORIG_SlidingAndOtherStuff);
-		DevMsg("[server.dll] Found the sliding function at %p.\n", ORIG_SlidingAndOtherStuff);
+		DevMsg("[server dll] Found the sliding function at %p.\n", ORIG_SlidingAndOtherStuff);
 	}
 	else
 	{
-		DevWarning("[server.dll] Could not find the sliding code!\n");
+		DevWarning("[server dll] Could not find the sliding code!\n");
 		Warning("y_spt_on_slide_pause_for has no effect.\n");
 	}
 
 	if (!ORIG_MiddleOfTeleportTouchingEntity || !ORIG_EndOfTeleportTouchingEntity)
 	{
-		DevWarning("[server.dll] Could not find the teleport function!\n");
+		DevWarning("[server dll] Could not find the teleport function!\n");
 	}
 
 	if (ORIG_CGameMovement__DecayPunchAngle)

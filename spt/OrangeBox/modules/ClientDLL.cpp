@@ -466,14 +466,14 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	{
 		int offset = *reinterpret_cast<int*>(ORIG_CHLClient__CanRecordDemo + 1);
 		ORIG_GetClientModeNormal = (_GetClientModeNormal)(offset + ORIG_CHLClient__CanRecordDemo + 5);
-		DevMsg("[client.dll] Found GetClientModeNormal at %p\n", ORIG_GetClientModeNormal);
+		DevMsg("[client dll] Found GetClientModeNormal at %p\n", ORIG_GetClientModeNormal);
 	}
 
 	if (ORIG_CHudDamageIndicator__GetDamagePosition)
 	{
 		int offset = *reinterpret_cast<int*>(ORIG_CHudDamageIndicator__GetDamagePosition + 4);
 		ORIG_MainViewOrigin = (_MainViewOrigin)(offset + ORIG_CHudDamageIndicator__GetDamagePosition + 8);
-		DevMsg("[client.dll] Found MainViewOrigin at %p\n", ORIG_MainViewOrigin);
+		DevMsg("[client dll] Found MainViewOrigin at %p\n", ORIG_MainViewOrigin);
 	}
 
 	extern bool FoundEngineServer();
@@ -1149,7 +1149,7 @@ void ClientDLL::HOOKED_CViewRender__RenderView_Func(void* thisptr,
                                                     int nClearFlags,
                                                     int whatToDraw)
 {
-#ifndef SSDK2007
+#if !defined(SSDK2007) && !defined(SSDK2013)
 	ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
 #else
 	if (g_OverlayRenderer.shouldRenderOverlay())
@@ -1171,7 +1171,7 @@ void ClientDLL::HOOKED_CViewRender__RenderView_Func(void* thisptr,
 
 void ClientDLL::HOOKED_CViewRender__Render_Func(void* thisptr, int edx, void* rect)
 {
-#ifndef SSDK2007
+#if !defined(SSDK2007) && !defined(SSDK2013)
 	ORIG_CViewRender__Render(thisptr, edx, rect);
 #else
 	renderingOverlay = false;
