@@ -55,16 +55,6 @@
 		} \
 	}
 
-int __fastcall VPhysicsDLL::HOOKED_GetShadowPosition(void* thisptr, int edx, Vector* worldPosition, QAngle* angles)
-{
-	TRACE_ENTER();
-	int GetShadowPos = vphysicsDLL.ORIG_GetShadowPosition(thisptr, edx, worldPosition, angles);
-	vphysicsDLL.PlayerHavokPos.x = worldPosition->x;
-	vphysicsDLL.PlayerHavokPos.y = worldPosition->y;
-	vphysicsDLL.PlayerHavokPos.z = worldPosition->z;
-	return GetShadowPos;
-}
-
 void VPhysicsDLL::Hook(const std::wstring& moduleName,
                        void* moduleHandle,
                        void* moduleBase,
@@ -101,4 +91,15 @@ void VPhysicsDLL::Clear()
 {
 	IHookableNameFilter::Clear();
 	this->isgFlagPtr = nullptr;
+	ORIG_GetShadowPosition = nullptr;
+}
+
+int __fastcall VPhysicsDLL::HOOKED_GetShadowPosition(void* thisptr, int edx, Vector* worldPosition, QAngle* angles)
+{
+	TRACE_ENTER();
+	int GetShadowPos = vphysicsDLL.ORIG_GetShadowPosition(thisptr, edx, worldPosition, angles);
+	vphysicsDLL.PlayerHavokPos.x = worldPosition->x;
+	vphysicsDLL.PlayerHavokPos.y = worldPosition->y;
+	vphysicsDLL.PlayerHavokPos.z = worldPosition->z;
+	return GetShadowPos;
 }

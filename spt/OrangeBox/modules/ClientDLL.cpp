@@ -162,7 +162,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	m_Name = moduleName;
 	m_Base = moduleBase;
 	m_Length = moduleLength;
-	uintptr_t ORIG_MiddleOfCAM_Think, ORIG_CHLClient__CanRecordDemo, ORIG_CHudDamageIndicator__GetDamagePosition;
+	uintptr_t ORIG_MiddleOfCAM_Think, ORIG_CHudDamageIndicator__GetDamagePosition;
 
 	patternContainer.Init(moduleName);
 
@@ -176,7 +176,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	DEF_FUTURE(CalcAbsoluteVelocity);
 	DEF_FUTURE(DoImageSpaceMotionBlur);
 	DEF_FUTURE(CheckJumpButton);
-	DEF_FUTURE(CHLClient__CanRecordDemo);
+	DEF_FUTURE(GetClientModeNormal);
 	DEF_FUTURE(CViewRender__RenderView);
 	DEF_FUTURE(CViewRender__Render);
 	DEF_FUTURE(UTIL_TraceRay);
@@ -196,7 +196,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	GET_FUTURE(CalcAbsoluteVelocity);
 	GET_HOOKEDFUTURE(DoImageSpaceMotionBlur);
 	GET_HOOKEDFUTURE(CheckJumpButton);
-	GET_FUTURE(CHLClient__CanRecordDemo);
+	GET_FUTURE(GetClientModeNormal);
 	GET_HOOKEDFUTURE(CViewRender__RenderView);
 	GET_HOOKEDFUTURE(CViewRender__Render);
 	GET_FUTURE(UTIL_TraceRay);
@@ -462,13 +462,6 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 		DevMsg("[client dll] Found GetLocalPlayer at %p.\n", ORIG_GetLocalPlayer);
 	}
 
-	if (ORIG_CHLClient__CanRecordDemo)
-	{
-		int offset = *reinterpret_cast<int*>(ORIG_CHLClient__CanRecordDemo + 1);
-		ORIG_GetClientModeNormal = (_GetClientModeNormal)(offset + ORIG_CHLClient__CanRecordDemo + 5);
-		DevMsg("[client dll] Found GetClientModeNormal at %p\n", ORIG_GetClientModeNormal);
-	}
-
 	if (ORIG_CHudDamageIndicator__GetDamagePosition)
 	{
 		int offset = *reinterpret_cast<int*>(ORIG_CHudDamageIndicator__GetDamagePosition + 4);
@@ -534,6 +527,7 @@ void ClientDLL::Clear()
 	ORIG_CalcAbsoluteVelocity = nullptr;
 	ORIG_CViewRender__RenderView = nullptr;
 	ORIG_CViewRender__Render = nullptr;
+	ORIG_GetClientModeNormal = nullptr;
 	ORIG_UTIL_TraceRay = nullptr;
 	ORIG_MainViewOrigin = nullptr;
 	ORIG_ResetToneMapping = nullptr;
