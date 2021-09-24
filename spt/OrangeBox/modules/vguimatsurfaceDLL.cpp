@@ -44,12 +44,24 @@ const int INDEX_MASK = MAX_EDICTS - 1;
 #define GET_FUTURE(future_name) \
 	{ \
 		auto pattern = f##future_name.get(); \
-	}
-
-#define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::vguimatsurface::##name);
-#define GET_FUTURE(future_name) \
-	{ \
-		auto pattern = f##future_name.get(); \
+		if (ORIG_##future_name) \
+		{ \
+			DevMsg("[vguimatsurface dll] Found " #future_name " at %p (using the %s pattern).\n", \
+			       ORIG_##future_name, \
+			       pattern->name()); \
+			for (int i = 0; true; ++i) \
+			{ \
+				if (patterns::vguimatsurface::##future_name.at(i).name() == pattern->name()) \
+				{ \
+					patternContainer.AddIndex((PVOID*)&ORIG_##future_name, i, pattern->name()); \
+					break; \
+				} \
+			} \
+		} \
+		else \
+		{ \
+			DevWarning("[vguimatsurface dll] Could not find " #future_name ".\n"); \
+		} \
 	}
 
 void VGui_MatSurfaceDLL::Hook(const std::wstring& moduleName,
