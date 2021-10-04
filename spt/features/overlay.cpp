@@ -59,6 +59,7 @@ void Overlay::InitHooks()
 {
 	HOOK_FUNCTION(client, CViewRender__Render);
 	HOOK_FUNCTION(client, CViewRender__RenderView);
+	FIND_PATTERN(engine, GetScreenAspect);
 }
 
 void Overlay::LoadFeature()
@@ -85,6 +86,16 @@ void Overlay::LoadFeature()
 }
 
 void Overlay::UnloadFeature() {}
+
+float Overlay::GetScreenAspectRatio()
+{
+	// The VEngineClient013 interface isn't compatible between 3420 and 5135,
+	// so we hook this function instead of using the SDK
+	// TODO: implement a custom interface to be used with the IVEngineClientWrapper and/or move to spt_generic if more features need this
+	if (spt_overlay.ORIG_GetScreenAspect)
+		return spt_overlay.ORIG_GetScreenAspect();
+	return 16.0f / 9.0f; // assume 16:9 as a default
+}
 
 void Overlay::DrawCrosshair()
 {

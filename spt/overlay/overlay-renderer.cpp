@@ -1,14 +1,14 @@
 #include "stdafx.h"
 
-#ifndef OE
+#ifdef SSDK2007
 #include "..\spt-serverplugin.hpp"
 #include "..\cvars.hpp"
+#include "..\features\overlay.hpp"
 #include "SDK\hl_movedata.h"
 #include "overlay-renderer.hpp"
 #include "overlays.hpp"
 
 OverlayRenderer g_OverlayRenderer;
-const float ASPECT_RATIO = 16.0f / 9.0f;
 const int VIEW_CLEAR = 1;
 const int VIEWMODEL_MASK = ~RENDERVIEW_DRAWVIEWMODEL;
 
@@ -83,20 +83,20 @@ void OverlayRenderer::modifyView(CViewSetup* view, bool overlay)
 		if (!shouldFlipScreens())
 		{
 			int width = _y_spt_overlay_width.GetFloat();
-			int height = static_cast<int>(width / ASPECT_RATIO);
+			int height = static_cast<int>(width / spt_overlay.GetScreenAspectRatio());
 			view->width = width;
 			view->height = height;
 		}
 
 		view->fov = getFOV();
-		view->m_flAspectRatio = ASPECT_RATIO;
+		view->m_flAspectRatio = spt_overlay.GetScreenAspectRatio();
 	}
 }
 
 Rect_t OverlayRenderer::getRect()
 {
 	int width = _y_spt_overlay_width.GetFloat();
-	int height = static_cast<int>(width / ASPECT_RATIO);
+	int height = static_cast<int>(width / spt_overlay.GetScreenAspectRatio());
 
 	Rect_t rect;
 	rect.x = 0;
@@ -109,7 +109,7 @@ Rect_t OverlayRenderer::getRect()
 
 float OverlayRenderer::getFOV()
 {
-	const float ratioRatio = ASPECT_RATIO / (4.0f / 3.0f);
+	const float ratioRatio = spt_overlay.GetScreenAspectRatio() / (4.0f / 3.0f);
 	float fovRad = DEG2RAD(_y_spt_overlay_fov.GetFloat());
 	float fov = 2 * RAD2DEG(std::atan(std::tan(fovRad / 2) * ratioRatio));
 
