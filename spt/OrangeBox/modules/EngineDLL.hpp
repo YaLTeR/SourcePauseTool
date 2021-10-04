@@ -34,6 +34,9 @@ enum server_state_t
 	ss_active,   // Running
 	ss_paused,   // Running, but paused
 };
+typedef void(__fastcall* _StopRecording)(void* thisptr, int edx);
+typedef void(__fastcall* _SetSignonState)(void* thisptr, int edx, int state);
+typedef void(__cdecl* _Stop)();
 
 class EngineDLL : public IHookableNameFilter
 {
@@ -54,8 +57,11 @@ public:
 	static void __cdecl HOOKED__Host_RunFrame_Input(float accumulated_extra_samples, int bFinalTick);
 	static void __cdecl HOOKED__Host_RunFrame_Server(int bFinalTick);
 	static void __cdecl HOOKED_Host_AccumulateTime(float dt);
+	static void __fastcall HOOKED_StopRecording(void* thisptr, int edx);
+	static void __fastcall HOOKED_SetSignonState(void* thisptr, int edx, int state);
 	static void __cdecl HOOKED_Cbuf_Execute();
 	static void __fastcall HOOKED_VGui_Paint(void* thisptr, int edx, int mode);
+	static void __cdecl HOOKED_Stop();
 	bool __cdecl HOOKED_SV_ActivateServer_Func();
 	void __fastcall HOOKED_FinishRestore_Func(void* thisptr, int edx);
 	void __fastcall HOOKED_SetPaused_Func(void* thisptr, int edx, bool paused);
@@ -64,6 +70,9 @@ public:
 	void __cdecl HOOKED__Host_RunFrame_Server_Func(int bFinalTick);
 	void __cdecl HOOKED_Cbuf_Execute_Func();
 	void __fastcall HOOKED_VGui_Paint_Func(void* thisptr, int edx, int mode);
+	void __fastcall HOOKED_StopRecording_Func(void* thisptr, int edx);
+	void __fastcall HOOKED_SetSignonState_Func(void* thisptr, int edx, int state);
+	void __cdecl HOOKED_Stop_Func();
 
 	float GetTickrate() const;
 	void SetTickrate(float value);
@@ -72,6 +81,8 @@ public:
 	int Demo_GetTotalTicks() const;
 	bool Demo_IsPlayingBack() const;
 	bool Demo_IsPlaybackPaused() const;
+	void Demo_StopRecording();
+	bool Demo_IsAutoRecordingAvailable() const;
 	_CEngineTrace__PointOutsideWorld ORIG_CEngineTrace__PointOutsideWorld;
 
 	uint pVGUI_Paint;
@@ -88,6 +99,8 @@ protected:
 	_VGui_Paint ORIG_VGui_Paint;
 	_Host_AccumulateTime ORIG_Host_AccumulateTime;
 	_StopRecording ORIG_StopRecording;
+	_SetSignonState ORIG_SetSignonState;
+	_Stop ORIG_Stop;
 
 	void* pGameServer;
 	bool* pM_bLoadgame;
@@ -102,9 +115,14 @@ protected:
 	uintptr_t curtime;
 	uintptr_t ORIG_curtime;
 	uintptr_t ORIG_ServerState;
+	int currentAutoRecordDemoNumber;
+	bool isAutoRecordingDemo;
 
 	int GetPlaybackTick_Offset;
 	int GetTotalTicks_Offset;
 	int IsPlayingBack_Offset;
 	int IsPlaybackPaused_Offset;
+
+	int m_nDemoNumber_Offset;
+	int m_bRecording_Offset;
 };

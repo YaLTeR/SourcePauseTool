@@ -99,6 +99,21 @@ namespace patterns
 		    Host_AccumulateTime,
 		    "5135",
 		    "51 F3 0F 10 ?? ?? ?? ?? ?? F3 0F ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? F3 0F 11 ?? ?? ?? ?? ?? 8B 01 8B 50");
+		PATTERNS(StopRecording,
+		         "5135",
+		         "56 8B F1 8B 06 8B 50 ?? FF D2 84 C0 74 ?? 8B 86 ?? ?? ?? ?? 85 C0 57",
+		         "1910503",
+		         "55 8B EC 51 56 8B F1 8B 06 8B 50 ?? FF D2 84 C0 0F ?? ?? ?? ?? ?? 8B 86 ?? ?? ?? ?? 57");
+		PATTERNS(SetSignonState,
+		         "5135",
+		         "CC 56 8B F1 8B ?? ?? ?? ?? ?? 8B 01 8B 50 ?? FF D2 84 C0 75 ?? 8B",
+		         "1910503",
+		         "CC 55 8B EC 56 8B F1 8B ?? ?? ?? ?? ?? 8B 01 8B 50 ?? FF D2 84");
+		PATTERNS(Stop,
+		         "5135",
+		         "83 3D ?? ?? ?? ?? 01 75 ?? 8B 0D ?? ?? ?? ?? 8B 01 8B ?? ?? FF D2 84 C0 75 ?? C7",
+		         "1910503",
+		         "83 3D ?? ?? ?? ?? 01 75 ?? 8B 0D ?? ?? ?? ?? 8B 01 8B ?? ?? FF D2 84 C0 75 ?? 68");
 	} // namespace engine
 
 	namespace client
@@ -283,7 +298,9 @@ namespace patterns
 		    "55 8B EC 51 56 57 6A 14 89 4D FC E8 ?? ?? ?? ?? 8B 7D 08 8B F0");
 		PATTERNS(CViewEffects__Shake,
 		         "4104-5135",
-		         "56 8B 74 24 08 8B 06 85 C0 57 8B F9 74 05 83 F8 04 75 54 83 7F 24 20 7D 4E 6A 28");
+		         "56 8B 74 24 08 8B 06 85 C0 57 8B F9 74 05 83 F8 04 75 54 83 7F 24 20 7D 4E 6A 28",
+		         "5377866",
+		         "55 8B EC 56 8B 75 ?? 57 8B F9 8B 06 85 C0 74 ?? 83 F8 04");
 		PATTERNS(
 		    CHudDamageIndicator__GetDamagePosition,
 		    "5135",
@@ -306,7 +323,11 @@ namespace patterns
 		    "1910503",
 		    "55 8B EC 8B 0D ?? ?? ?? ?? 8B 01 8B 90 88 01 00 00 56 FF D2 8B F0 85 F6 74 09 8B 06 8B 50 08 8B CE FF D2 8B 06 F3 0F 10 45 08",
 		    "5377866",
-		    "55 8B EC 8B 0D ?? ?? ?? ?? 56 8B 01 FF 90 88 01 00 00 8B F0 85 F6 74 07 8B 06 8B CE FF 50 08 8B 06 D9 45 08");
+		    "55 8B EC 8B 0D ?? ?? ?? ?? 56 8B 01 FF 90 88 01 00 00 8B F0 85 F6 74 07 8B 06 8B CE FF 50 08 8B 06 D9 45 08",
+		    "BMS-Retail",
+		    "55 8B EC 8B 0D ?? ?? ?? ?? 56 8B 01 FF 90 ?? ?? ?? ?? 8B F0 85 F6 74 ?? 8B 06 8B CE FF 50 ?? 8B 06 D9 45 ?? 51 8B CE",
+		    "te120",
+		    "55 8B EC 8B 0D ?? ?? ?? ?? 8B 01 8B 90 ?? ?? ?? ?? 56 FF D2 8B F0 85 F6 74 ?? 8B 06 8B 50 ?? 8B CE FF D2 8B 06");
 	} // namespace client
 
 	namespace server
@@ -521,13 +542,11 @@ namespace patterns
 
 	namespace inputsystem
 	{
-		PATTERNS(
-			CInputSystem__SleepUntilInput, 
-			"5135",
-			"8B 44 24 ?? 85 C0 7D ??",
-			"BMS-Retail", 
-			"55 8B EC 8B 45 ?? 83 CA FF"
-		);
+		PATTERNS(CInputSystem__SleepUntilInput,
+		         "5135",
+		         "8B 44 24 ?? 85 C0 7D ??",
+		         "5377866-BMS_Retail",
+		         "55 8B EC 8B 45 ?? 83 CA FF");
 	} // namespace inputsystem
 
 	namespace vphysics
@@ -552,6 +571,8 @@ namespace patterns
 			"5135", 
 			"81 ec ?? ?? ?? ?? 8B 41 ?? 8B 40 ?? 8B 40 ??",
 		    "BMS-Retail",
-		    "55 8B EC 81 EC ?? ?? ?? ?? A1 ?? ?? ?? ?? 33 C5 89 45 FC 8B 41 ?? 56 8B 75 ?? 57 8B 40 ?? 8B 7D ?? 8B 50 ??");
+		    "55 8B EC 81 EC ?? ?? ?? ?? A1 ?? ?? ?? ?? 33 C5 89 45 FC 8B 41 ?? 56 8B 75 ?? 57 8B 40 ?? 8B 7D ?? 8B 50 ??",
+			"5377866",
+		    "55 8B EC 81 EC ?? ?? ?? ?? 8B 41 08 8B 40 08 8B 50");
 	} // namespace vphysics
 } // namespace patterns

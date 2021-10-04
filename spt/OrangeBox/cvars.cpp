@@ -152,7 +152,7 @@ ConVar _y_spt_anglesetspeed(
     "Determines how fast the view angle can move per tick while doing _y_spt_setyaw/_y_spt_setpitch.\n");
 ConVar _y_spt_pitchspeed("_y_spt_pitchspeed", "0", FCVAR_TAS_RESET);
 ConVar _y_spt_yawspeed("_y_spt_yawspeed", "0", FCVAR_TAS_RESET);
-ConVar _y_spt_force_90fov("_y_spt_force_90fov", "0");
+ConVar _y_spt_force_fov("_y_spt_force_fov", "0");
 
 ConVar y_spt_hud_velocity("y_spt_hud_velocity", "0", FCVAR_CHEAT | FCVAR_SPT_HUD, "Turns on the velocity hud.\n");
 ConVar y_spt_hud_flags("y_spt_hud_flags", "0", FCVAR_CHEAT | FCVAR_SPT_HUD, "Turns on the flags hud.\n");
@@ -191,10 +191,11 @@ ConVar _y_spt_overlay("_y_spt_overlay",
                       "0",
                       FCVAR_CHEAT,
                       "Enables the overlay camera in the top left of the screen.\n");
-ConVar _y_spt_overlay_type("_y_spt_overlay_type",
-                           "0",
-                           FCVAR_CHEAT,
-                           "Overlay type. 0 = save glitch body, 1 = angle glitch simulation, 2 = rear view mirror.\n");
+ConVar _y_spt_overlay_type(
+    "_y_spt_overlay_type",
+    "0",
+    FCVAR_CHEAT,
+    "Overlay type. 0 = save glitch body, 1 = angle glitch simulation, 2 = rear view mirror, 3 = havok view mirror.\n");
 ConVar _y_spt_overlay_portal(
     "_y_spt_overlay_portal",
     "auto",

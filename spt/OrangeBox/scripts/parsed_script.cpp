@@ -3,6 +3,7 @@
 #include "..\spt-serverplugin.hpp"
 #include "..\..\utils\file.hpp"
 #include "..\cvars.hpp"
+#include "..\modules.hpp"
 #include "framebulk_handler.hpp"
 #include "thirdparty\md5.hpp"
 
@@ -70,9 +71,10 @@ namespace scripts
 		++demoCount;
 		AddAfterFramesEntry(afterFramesTick,
 		                    "save " + sName + "; load " + sName + +";  _y_spt_afterframes_await_load");
-		if (!demoName.empty())
+		// Only manually record if autorecording isn't available
+		if (!engineDLL.Demo_IsAutoRecordingAvailable() && !demoName.empty())
 			AddAfterFramesEntry(afterFramesTick + 1,
-			                    "record " + demoName + "_" + std::to_string(demoCount));
+			                    "record " + demoName + "-" + std::to_string(demoCount));
 		++afterFramesTick;
 	}
 

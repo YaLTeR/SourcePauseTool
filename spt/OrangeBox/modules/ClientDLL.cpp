@@ -528,6 +528,12 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 			offForwardmove = 24;
 			offSidemove = 28;
 			break;
+
+		case 5:
+			offM_pCommands = 196;
+			offForwardmove = 24;
+			offSidemove = 28;
+			break;
 		}
 	}
 
@@ -732,7 +738,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 
 	if (!ORIG_CViewRender__OnRenderStart)
 	{
-		Warning("_y_spt_force_90fov has no effect.\n");
+		Warning("_y_spt_force_fov has no effect.\n");
 	}
 
 	if (ORIG_CViewRender__RenderView == nullptr || ORIG_CViewRender__Render == nullptr)
@@ -1524,12 +1530,12 @@ void __fastcall ClientDLL::HOOKED_CViewRender__OnRenderStart_Func(void* thisptr,
 {
 	ORIG_CViewRender__OnRenderStart(thisptr, edx);
 
-	if (!_viewmodel_fov || !_y_spt_force_90fov.GetBool())
+	if (!_viewmodel_fov || !_y_spt_force_fov.GetBool())
 		return;
 
 	float* fov = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(thisptr) + 52);
 	float* fovViewmodel = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(thisptr) + 56);
-	*fov = 90;
+	*fov = _y_spt_force_fov.GetFloat();
 	*fovViewmodel = _viewmodel_fov->GetFloat();
 }
 

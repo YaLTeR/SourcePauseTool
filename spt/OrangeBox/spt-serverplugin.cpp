@@ -296,7 +296,7 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 		if (!_viewmodel_fov)
 		{
 			DevWarning("SPT: Could not find viewmodel_fov.\n");
-			Warning("SPT: _y_spt_force_90fov has no effect.\n");
+			Warning("SPT: _y_spt_force_fov has no effect.\n");
 		}
 	}
 #else
