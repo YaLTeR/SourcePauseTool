@@ -346,13 +346,11 @@ void EngineDLL::Clear()
 {
 	IHookableNameFilter::Clear();
 	ORIG_SV_ActivateServer = nullptr;
-	ORIG_WriteConsoleCommand = nullptr;
 	ORIG_StopRecording = nullptr;
 	curtime = 0x0;
 	ORIG_curtime = 0x0;
 	ORIG_FinishRestore = nullptr;
 	ORIG_SetPaused = nullptr;
-	ORIG_Record_Func = nullptr;
 	ORIG__Host_RunFrame = nullptr;	
 	ORIG__Host_RunFrame_Input = nullptr;
 	ORIG__Host_RunFrame_Server = nullptr;

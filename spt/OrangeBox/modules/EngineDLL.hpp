@@ -25,8 +25,6 @@ typedef void(__fastcall* _VGui_Paint)(void* thisptr, int edx, int mode);
 typedef int(__fastcall* DemoPlayer__Func)(void* thisptr);
 typedef bool(__fastcall* _CEngineTrace__PointOutsideWorld)(void* thisptr, int edx, const Vector& pt);
 typedef void(__cdecl* _Host_AccumulateTime)(float dt);
-typedef void(__fastcall* _Record_Func)(void* thisptr);
-typedef void(__fastcall* _WriteConsoleCommand)(void* thisptr, int edx, char* cmdstring, int tick);
 typedef void(__fastcall* _StopRecording)(void* thisptr);
 
 enum server_state_t
@@ -89,8 +87,6 @@ protected:
 	_Cbuf_Execute ORIG_Cbuf_Execute;
 	_VGui_Paint ORIG_VGui_Paint;
 	_Host_AccumulateTime ORIG_Host_AccumulateTime;
-	_Record_Func ORIG_Record_Func;
-	_WriteConsoleCommand ORIG_WriteConsoleCommand;
 	_StopRecording ORIG_StopRecording;
 
 	void* pGameServer;
