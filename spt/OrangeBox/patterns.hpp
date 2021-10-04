@@ -305,10 +305,6 @@ namespace patterns
 		    CHudDamageIndicator__GetDamagePosition,
 		    "5135",
 		    "83 EC 18 E8 ?? ?? ?? ?? e8 ?? ?? ?? ?? 8B 08 89 4C 24 0C 8B 50 04 6A 00 89 54 24 14 8B 40 08 6A 00 8D 4C 24 08 51 8D 54 24 18 52 89 44 24 24");
-		PATTERNS(
-			HDTF_MiddleOfViewBobFuncStart, 
-			"first", 
-			"F3 0F 10 86 ?? ?? ?? ?? F3 0F 58 03");
 		PATTERNS(HDTF_MiddleOfViewRollFunc, "first", "74 ?? E8 ?? ?? ?? ?? 8B 86 ?? ?? ?? ??");
 		PATTERNS(PickupWeaponPTR, "1", "50 6c 61 79 65 72 2e 50 69 63 6b 75 70 57 65 61 70 6f 6e");
 		PATTERNS(

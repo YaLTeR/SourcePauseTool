@@ -4,7 +4,6 @@
 #include "modules.hpp"
 
 ConVar y_spt_hdtf_uncap("y_spt_hdtf_uncap", "0", FCVAR_ARCHIVE, "Enables/Disables speed cap");
-ConVar y_spt_hdtf_viewbob("y_spt_hdtf_viewbob", "1", FCVAR_ARCHIVE, "Enables/Disables all viewbobbing");
 ConVar y_spt_hdtf_viewroll("y_spt_hdtf_viewroll", "1", FCVAR_ARCHIVE, "Enables/Disables slight view rolling when turning");
 ConVar y_spt_pause("y_spt_pause", "0", FCVAR_ARCHIVE);
 ConVar y_spt_motion_blur_fix("y_spt_motion_blur_fix", "0");

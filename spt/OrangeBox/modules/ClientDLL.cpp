@@ -267,11 +267,6 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 
 	if (DoesGameLookLikeHDTF())
 	{
-		DEF_FUTURE(HDTF_MiddleOfViewBobFuncStart);
-		GET_HOOKEDFUTURE(HDTF_MiddleOfViewBobFuncStart);
-		if (ORIG_HDTF_MiddleOfViewBobFuncStart != nullptr)
-			ORIG_HDTF_MiddleOfViewBobFuncEnd = (uint)ORIG_HDTF_MiddleOfViewBobFuncStart + 0x34;
-
 		DEF_FUTURE(HDTF_MiddleOfViewRollFunc);
 		GET_HOOKEDFUTURE(HDTF_MiddleOfViewRollFunc);
 		if (ORIG_HDTF_MiddleOfViewRollFunc != nullptr)
@@ -850,9 +845,6 @@ void ClientDLL::Clear()
 	}
 
 	ORIG_PickupWeaponPTR = nullptr;
-
-	ORIG_HDTF_MiddleOfViewBobFuncStart = nullptr;
-	ORIG_HDTF_MiddleOfViewBobFuncEnd = 0x0;
 
 	ORIG_HDTF_MiddleOfViewRollFunc = nullptr;
 	ORIG_HDTF_MiddleOfViewRollFunc_JumpTo = 0x0;
@@ -1468,28 +1460,6 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 	TickSignal();
 }
 
-_declspec(naked) void ClientDLL::HOOKED_HDTF_MiddleOfViewBobFuncStart()
-{
-	__asm {
-		pushad;
-		pushfd;
-	}
-
-	if (y_spt_hdtf_viewbob.GetBool())
-		_asm
-		{
-			popfd;
-			popad;
-			jmp clientDLL.ORIG_HDTF_MiddleOfViewBobFuncStart;
-		}
-	else 
-		_asm
-	    {
-		    popfd;
-		    popad;
-		    jmp clientDLL.ORIG_HDTF_MiddleOfViewBobFuncEnd;
-	    }
-}
 
 _declspec(naked) void ClientDLL::HOOKED_HDTF_MiddleOfViewRollFunc()
 {

@@ -6,7 +6,6 @@
 #define FCVAR_SPT_HUD (1 << 27)
 
 extern ConVar y_spt_hdtf_uncap;
-extern ConVar y_spt_hdtf_viewbob;
 extern ConVar y_spt_hdtf_viewroll;
 extern ConVar y_spt_pause;
 extern ConVar y_spt_motion_blur_fix;

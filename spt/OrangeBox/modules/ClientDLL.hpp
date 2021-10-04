@@ -119,7 +119,6 @@ public:
 	                                                    int nClearFlags,
 	                                                    int whatToDraw);
 	void __fastcall HOOKED_CViewRender__Render_Func(void* thisptr, int edx, void* rect);
-	static void HOOKED_HDTF_MiddleOfViewBobFuncStart();
 	static void HOOKED_HDTF_MiddleOfViewRollFunc();
 	static void __cdecl HOOKED_ResetToneMapping(float value);
 
@@ -205,8 +204,6 @@ protected:
 	_MainViewOrigin ORIG_MainViewOrigin;
 	_ResetToneMapping ORIG_ResetToneMapping;
 
-	void* ORIG_HDTF_MiddleOfViewBobFuncStart;
-	uintptr_t ORIG_HDTF_MiddleOfViewBobFuncEnd;
 	void* ORIG_HDTF_MiddleOfViewRollFunc;
 	uintptr_t ORIG_HDTF_MiddleOfViewRollFunc_JumpTo;
 
