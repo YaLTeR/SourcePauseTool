@@ -18,6 +18,7 @@ A plugin for all your pausing needs.
     | ---------------------- | -----------------------------------------
     | Old Engine/Portal 3420 | Topmost `bin` with `AdminServer.dll` etc.
     | Old Engine mods        | `Source SDK Base\bin`
+    | Half-Life: Source      | `hl1`
     | Half-Life 2            | `hl2`
     | Half-Life 2: Episode 1 | `episodic`
     | Half-Life 2: Episode 2 | `ep2`
