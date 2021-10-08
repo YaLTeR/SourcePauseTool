@@ -15,6 +15,11 @@
 #include "vguimatsurface\imatsystemsurface.h"
 #include "thirdparty\Signal.h"
 
+// glorious hack cause p2 doesn't have conwarning for some reason
+#ifdef P2
+#define ConWarning(arg1, arg2) Warning(arg2)
+#endif
+
 //---------------------------------------------------------------------------------
 // Purpose: a sample 3rd party plugin class
 //---------------------------------------------------------------------------------
@@ -85,9 +90,10 @@ public:
 	// added with version 3 of the interface.
 	virtual void OnEdictAllocated(edict_t* edict){};
 	virtual void OnEdictFreed(const edict_t* edict){};
-	Gallant::Signal0<void> ServerGameFrameSignal;
 
 #endif
+
+	Gallant::Signal0<void> ServerGameFrameSignal;
 
 #ifdef P2
 	virtual void ClientFullyConnect(edict_t* pEntity){};
