@@ -127,11 +127,11 @@ void DisablePickupWeaponSound(ConVar* var, char const* pOldString)
 		strcpy(oldText, "Player.PickupWeapon");
 }
 
-
 ConVar y_spt_disable_weapon_pickup_sound("y_spt_disable_weapon_pickup_sound",
-	                  "0",
-	                  FCVAR_ARCHIVE,
-	                  "Disables weapon pickup sounds.", DisablePickupWeaponSound);
+                                         "0",
+                                         FCVAR_ARCHIVE,
+                                         "Disables weapon pickup sounds.",
+                                         DisablePickupWeaponSound);
 
 #define DEF_FUTURE(name) auto f##name = FindAsync(ORIG_##name, patterns::client::##name);
 #define GET_HOOKEDFUTURE(future_name) \
@@ -272,9 +272,9 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 		if (ORIG_HDTF_MiddleOfViewRollFunc != nullptr)
 		{
 			byte* offset = (byte*)((uint)ORIG_HDTF_MiddleOfViewRollFunc + 0x1);
-			ORIG_HDTF_MiddleOfViewRollFunc_JumpTo = (uint)((uint)ORIG_HDTF_MiddleOfViewRollFunc + 0x2 + *offset);
+			ORIG_HDTF_MiddleOfViewRollFunc_JumpTo =
+			    (uint)((uint)ORIG_HDTF_MiddleOfViewRollFunc + 0x2 + *offset);
 		}
-
 	}
 
 	if (DoesGameLookLikeHLS())
@@ -338,12 +338,16 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 
 	if (ORIG_DoImageSpaceMotionBlur && pgpGlobals == 0)
 	{
-		DevWarning(1, TAG "DoImageSpaceMotionBlur doesn't have a switch case for finding pgpGlobals, searching automatically instead...\n");
+		DevWarning(
+		    1,
+		    TAG
+		    "DoImageSpaceMotionBlur doesn't have a switch case for finding pgpGlobals, searching automatically instead...\n");
 		uintptr_t tmp = (uintptr_t)ORIG_DoImageSpaceMotionBlur;
 		PatternScanner scanner((void*)tmp, 0x200);
 		Pattern p("F3 0F 10 ?? ?? ?? ?? ??", 4);
-		p.onMatchEvaluate = _oMEArgs(&mScanner) { 
-			*done = (mScanner.CheckWithin(*(uintptr_t*)*foundPtr)) && **(float**)(*foundPtr) == 180.0f; 
+		p.onMatchEvaluate = _oMEArgs(&mScanner)
+		{
+			*done = (mScanner.CheckWithin(*(uintptr_t*)*foundPtr)) && **(float**)(*foundPtr) == 180.0f;
 		};
 		tmp = scanner.Scan(p);
 
@@ -442,7 +446,10 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 		}
 		else
 		{
-			DevWarning(1, TAG "Method 1 for finding HudUpdate failed, trying VFTable jumping from LevelInitPreEntity instead...\n");
+			DevWarning(
+			    1,
+			    TAG
+			    "Method 1 for finding HudUpdate failed, trying VFTable jumping from LevelInitPreEntity instead...\n");
 			tmp = FindStringAddress(mScanner, "cl_predict 1");
 			tmp = FindVarReference(mScanner, tmp, "68");
 			tmp = BackTraceToFuncStart(mScanner, tmp, 0x300, 3, true);
@@ -450,13 +457,14 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 			{
 				DevMsg(TAG "Found LevelInitPreEntity at %p\n", tmp);
 				Pattern p = GeneratePatternFromVar(tmp);
-				p.onMatchEvaluate = _oMEArgs(&){
-					if (mScanner.CheckWithin(*(uintptr_t*)(*foundPtr + 4))
-						&& * foundPtr % 4 == 0)
+				p.onMatchEvaluate = _oMEArgs(&)
+				{
+					if (mScanner.CheckWithin(*(uintptr_t*)(*foundPtr + 4)) && *foundPtr % 4 == 0)
 					{
 						// hudupdate should always be 6 vftable entires away...
 						*foundPtr = *(uintptr_t*)(*foundPtr + 4 * 6);
-						DevMsg(TAG "Found HudUpdate at %p through VFTable jumping\n", *foundPtr);
+						DevMsg(TAG "Found HudUpdate at %p through VFTable jumping\n",
+						       *foundPtr);
 						ORIG_HudUpdate = (_HudUpdate)*foundPtr;
 						patternContainer.AddHook(HOOKED_HudUpdate, (PVOID*)&ORIG_HudUpdate);
 						*done = true;
@@ -596,7 +604,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 	}
 	else
 	{
-		here:
+	here:
 		DevMsg("GetGroundEntity not found! Using datatable data to get entity offset!\n");
 
 		uintptr_t string_DT_loc;
@@ -610,19 +618,27 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 		offVecVelocity = 0;
 		string_DT_loc = FindDataTable(mScanner, "DT_LocalPlayerExclusive");
 		dt_local_off = FindEntityOffsetThroughDT(moduleBase, moduleLength, string_DT_loc, "m_Local", 0);
-		offVecVelocity = FindEntityOffsetThroughDT(moduleBase, moduleLength, string_DT_loc, "m_vecVelocity[0]", 0);
+		offVecVelocity =
+		    FindEntityOffsetThroughDT(moduleBase, moduleLength, string_DT_loc, "m_vecVelocity[0]", 0);
 
 		// DT_LOCAL
 		string_DT_loc = FindDataTable(mScanner, "DT_Local");
-		offDucking = FindEntityOffsetThroughDT(moduleBase, moduleLength, string_DT_loc, "m_bDucking", dt_local_off);
-		offDuckJumpTime = FindEntityOffsetThroughDT(moduleBase, moduleLength, string_DT_loc, "m_flDuckJumpTime", dt_local_off);
+		offDucking =
+		    FindEntityOffsetThroughDT(moduleBase, moduleLength, string_DT_loc, "m_bDucking", dt_local_off);
+		offDuckJumpTime = FindEntityOffsetThroughDT(moduleBase,
+		                                            moduleLength,
+		                                            string_DT_loc,
+		                                            "m_flDuckJumpTime",
+		                                            dt_local_off);
 
 		if (offVecVelocity != 0)
 		{
 			uintptr_t tmp = 0;
 			char sig[256];
-			char byte1[14]; pUtils.toHexArray(offVecVelocity, byte1);
-			char byte2[14]; pUtils.toHexArray(offVecVelocity + 4, byte2);
+			char byte1[14];
+			pUtils.toHexArray(offVecVelocity, byte1);
+			char byte2[14];
+			pUtils.toHexArray(offVecVelocity + 4, byte2);
 
 			// some games use mov, some game use fld and fstp, luckily these take the same bytes
 			// this *could* break but unlikely
@@ -641,7 +657,8 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 					{
 						ORIG_CalcAbsoluteVelocity = (_CalcAbsoluteVelocity)(newPtr);
 						DevMsg(
-						    TAG "CalcAbsoluteVelocity found at %p through function backtracking\n",
+						    TAG
+						    "CalcAbsoluteVelocity found at %p through function backtracking\n",
 						    ORIG_CalcAbsoluteVelocity);
 					}
 				}
@@ -689,7 +706,8 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 			PatternCollection p("E8 ?? ?? ?? FF", 1);
 			p.AddPattern("E8 ?? ?? ?? 00", 1);
 
-			p.onMatchEvaluate = _oMEArgs(&){
+			p.onMatchEvaluate = _oMEArgs(&)
+			{
 				unsigned char* bytes2 = (unsigned char*)(*foundPtr + 4 + *(int*)(*foundPtr));
 				if (bytes2[0] == 0xa1 && bytes2[5] == 0xc3)
 				{
@@ -703,7 +721,6 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 			scanner.ScanBackward(p, mCAM_stringPtr);
 		}
 	}
-
 
 	if (ORIG_CHLClient__CanRecordDemo)
 	{
@@ -782,17 +799,19 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 
 	if (!ORIG_MainViewOrigin || !ORIG_UTIL_TraceRay)
 		Warning("y_spt_hud_oob 1 has no effect\n");
-	
+
 	if (!ORIG_ResetToneMapping)
 	{
-		DevMsg("ResetToneMapping couldn't be found using existing patterns! Trying string reference instead...\n");
+		DevMsg(
+		    "ResetToneMapping couldn't be found using existing patterns! Trying string reference instead...\n");
 		uintptr_t ptr = FindVarReference(mScanner, FindStringAddress(mScanner, "(mapname)"), "68");
 		if (ptr != 0)
 		{
 			PatternScanner scanner((void*)ptr, 0x200);
 			PatternCollection p("D9 E8", 0);
-			p.AddPattern("00 00 80 3F",0 );
-			p.onMatchEvaluate = _oMEArgs(&mScanner) {
+			p.AddPattern("00 00 80 3F", 0);
+			p.onMatchEvaluate = _oMEArgs(&mScanner)
+			{
 				unsigned char* bytes = (unsigned char*)*foundPtr;
 				for (int i = 0; i < 50; i++)
 				{
@@ -806,7 +825,7 @@ void ClientDLL::Hook(const std::wstring& moduleName,
 				*foundPtr = 0;
 			};
 			ptr = scanner.Scan(p);
-			
+
 			if (ptr != 0)
 			{
 				DevMsg("ResetToneMapping found at %p through string reference\n", ptr);
@@ -1042,7 +1061,7 @@ Vector ClientDLL::GetPlayerVelocity()
 	return Vector(vel[0], vel[1], vel[2]);
 }
 
-Vector ClientDLL::GetPlayerVecVelocity() 
+Vector ClientDLL::GetPlayerVecVelocity()
 {
 	if (!ORIG_GetLocalPlayer)
 		return Vector();
@@ -1141,7 +1160,7 @@ void ClientDLL::OnFrame()
 	AfterFramesSignal();
 }
 
-void ClientDLL::ServerGameFrame() 
+void ClientDLL::ServerGameFrame()
 {
 	if (pgpGlobals != 0)
 		TickQueue.Update((*(CGlobalVarsBase**)pgpGlobals)->tickcount);
@@ -1459,7 +1478,6 @@ void __fastcall ClientDLL::HOOKED_AdjustAngles_Func(void* thisptr, int edx, floa
 	OngroundSignal(IsGroundEntitySet());
 	TickSignal();
 }
-
 
 _declspec(naked) void ClientDLL::HOOKED_HDTF_MiddleOfViewRollFunc()
 {

@@ -26,7 +26,10 @@
 #undef min
 
 #ifndef OE
-ConVar y_spt_hud_hops("y_spt_hud_hops", "0", FCVAR_CHEAT | FCVAR_SPT_HUD, "When set to 1, displays the hop practice HUD.");
+ConVar y_spt_hud_hops("y_spt_hud_hops",
+                      "0",
+                      FCVAR_CHEAT | FCVAR_SPT_HUD,
+                      "When set to 1, displays the hop practice HUD.");
 ConVar y_spt_hud_hops_x("y_spt_hud_hops_x", "-85", FCVAR_CHEAT, "Hops HUD x offset");
 ConVar y_spt_hud_hops_y("y_spt_hud_hops_y", "100", FCVAR_CHEAT, "Hops HUD y offset");
 ConVar y_spt_hud_velocity_angles("y_spt_hud_velocity_angles",
@@ -43,9 +46,9 @@ ConVar _y_spt_overlay_crosshair_color("_y_spt_overlay_crosshair_color",
                                       FCVAR_CHEAT,
                                       "Overlay crosshair RGBA color.");
 ConVar y_spt_hud_drawing_function("y_spt_hud_drawing_function",
-                      "0",
-                      0,
-                      "Switches between options for hud drawing functions:\n \
+                                  "0",
+                                  0,
+                                  "Switches between options for hud drawing functions:\n \
     0: Use functions inferred from SDK files\n \
     1: Use scanned functions (if hud drawing routines crash the game)\n \
     2: Use scanned functions (modified for 1.0+ BMS Retail)");
@@ -139,12 +142,12 @@ void VGui_MatSurfaceDLL::Hook(const std::wstring& moduleName,
 					tmp = BackTraceToFuncStart(mScanner, tmp, 200, 3, false, 0x10000);
 					if (tmp != 0)
 					{
-						DevMsg(TAG "Found FinishDrawing at %p (through function backtracing)\n", tmp);
+						DevMsg(TAG "Found FinishDrawing at %p (through function backtracing)\n",
+						       tmp);
 						ORIG_FinishDrawing = (_FinishDrawing)tmp;
 					}
 				}
-
-			}	
+			}
 		}
 	}
 
@@ -156,7 +159,7 @@ void VGui_MatSurfaceDLL::Hook(const std::wstring& moduleName,
 	PatternCollection p3("89 ?? ?? 89 ?? ??", 0);
 	p3.AddPattern("8B ?? ?? 89 ?? ??", 0);
 
-	p.onMatchEvaluate = _oMEArgs(&) 
+	p.onMatchEvaluate = _oMEArgs(&)
 	{
 		uintptr_t ptr1 = BackTraceToFuncStart(mScanner, *foundPtr, 0x100, 2, true);
 		if (ptr1 != 0)
@@ -187,7 +190,7 @@ void VGui_MatSurfaceDLL::Hook(const std::wstring& moduleName,
 						}
 					}
 				}
-				eof:
+			eof:
 				*done = false;
 				*foundPtr = 0;
 			};
@@ -467,32 +470,32 @@ static const char PROP_SEPARATOR = ',';
 
 #define DRAW() \
 	{ \
-		switch (y_spt_hud_drawing_function.GetInt())\
-		{\
-		case 0:\
-		{\
+		switch (y_spt_hud_drawing_function.GetInt()) \
+		{ \
+		case 0: \
+		{ \
 			surface->DrawSetTextPos(x, 2 + (fontTall + 2) * vertIndex); \
 			surface->DrawPrintText(buffer, wcslen(buffer)); \
 			++vertIndex; \
-			break;\
-		}\
-		case 1:\
-		if (ORIG_DrawSetTextPos && ORIG_DrawPrintText)\
-		{\
-			ORIG_DrawSetTextPos(surface, 0, x, 2 + (fontTall + 2) * vertIndex);\
-			((_DrawPrintText)ORIG_DrawPrintText)(surface, 0, buffer, wcslen(buffer), 0);\
-			++vertIndex;\
-			break;\
-		}\
-		case 2:\
-		if (ORIG_DrawSetTextPos && ORIG_DrawPrintText) \
-		{ \
-			ORIG_DrawSetTextPos(surface, 0, x, 2 + (fontTall + 2) * vertIndex); \
-			((_DrawPrintText2)ORIG_DrawPrintText)(surface, 0, buffer, wcslen(buffer), 0, 0); \
-			++vertIndex; \
 			break; \
-		}\
-		}\
+		} \
+		case 1: \
+			if (ORIG_DrawSetTextPos && ORIG_DrawPrintText) \
+			{ \
+				ORIG_DrawSetTextPos(surface, 0, x, 2 + (fontTall + 2) * vertIndex); \
+				((_DrawPrintText)ORIG_DrawPrintText)(surface, 0, buffer, wcslen(buffer), 0); \
+				++vertIndex; \
+				break; \
+			} \
+		case 2: \
+			if (ORIG_DrawSetTextPos && ORIG_DrawPrintText) \
+			{ \
+				ORIG_DrawSetTextPos(surface, 0, x, 2 + (fontTall + 2) * vertIndex); \
+				((_DrawPrintText2)ORIG_DrawPrintText)(surface, 0, buffer, wcslen(buffer), 0, 0); \
+				++vertIndex; \
+				break; \
+			} \
+		} \
 	}
 
 #define DRAW_FLOAT(name, floatVal) \

@@ -117,7 +117,7 @@ void VPhysicsDLL::Hook(const std::wstring& moduleName,
 	if (!ORIG_MiddleOfRecheck_ov_element)
 	{
 		GENERIC_BACKTRACE_NOTE(MiddleOfRecheck_ov_element);
-		
+
 		uintptr_t tmp = FindStringAddress(mScanner, "IVP Failed at %s %d", false);
 		Pattern p = GeneratePatternFromVar(tmp, "68 ?? ?? ?? ?? 68", "", 1);
 		p.onMatchEvaluate = _oMEArgs(&mScanner)
@@ -182,7 +182,8 @@ void VPhysicsDLL::Hook(const std::wstring& moduleName,
 
 			funcScanner = PatternScanner((void*)tmp, 0x200);
 			Pattern p("80 3D ?? ?? ?? ?? 00", 2);
-			p.onMatchEvaluate = _oMEArgs() {
+			p.onMatchEvaluate = _oMEArgs()
+			{
 				*foundPtr = *(uintptr_t*)*foundPtr;
 			};
 
@@ -191,8 +192,7 @@ void VPhysicsDLL::Hook(const std::wstring& moduleName,
 			isgFlagPtr = (bool*)tmp;
 		}
 
-	eof:
-		;
+	eof:;
 	}
 	else
 		isgFlagPtr = *(bool**)(ORIG_MiddleOfRecheck_ov_element + 2);

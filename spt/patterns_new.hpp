@@ -7,10 +7,9 @@
 #include <sstream>
 #include <iomanip>
 
-
 using std::hex;
-using std::stringstream;
 using std::string;
+using std::stringstream;
 
 #define MAX_INTERRUPT_SIZE 20
 
@@ -184,10 +183,10 @@ struct Pattern
 			throw std::domain_error("only hex digits, spaces and question marks are allowed");
 		}
 
-		onMatchEvaluate = [](bool*, uintptr_t*) {  };
+		onMatchEvaluate = [](bool*, uintptr_t*) {};
 		onFound = [](uintptr_t) {};
 	};
-	
+
 	inline bool match(const uint8_t* memory) const
 	{
 		for (size_t i = 0; i < count; ++i)
@@ -226,7 +225,7 @@ public:
 		Patterns.push_back(p);
 	}
 
-	void AddPattern(Pattern pattern) 
+	void AddPattern(Pattern pattern)
 	{
 		Patterns.push_back(pattern);
 	}
@@ -238,7 +237,6 @@ typedef std::function<void(bool*, uintptr_t*)> _onMatchEvaluate;
 class PatternScanner
 {
 public:
-
 	// function ran when a suitable signature is found
 	// ARGS:
 	//	(bool*) done: decides whether the address found is good and sigscanning should finish, defaults to true
@@ -335,7 +333,10 @@ public:
 		return 0;
 	}
 
-	inline uintptr_t _end() const { return (uintptr_t)_base + _size; }
+	inline uintptr_t _end() const
+	{
+		return (uintptr_t)_base + _size;
+	}
 	inline bool CheckWithin(uintptr_t addr) const
 	{
 		return (addr >= (uintptr_t)_base && addr <= _end());
@@ -344,5 +345,3 @@ public:
 	void* _base;
 	size_t _size;
 };
-
-

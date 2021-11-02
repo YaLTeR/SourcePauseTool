@@ -10,7 +10,8 @@
 #define MAX_CHECK_CALL_BOUNDARY 0x7FFFFFFF
 #define BOUND(val, min, max) val = ((min) > (val)) ? (min) : (((max) < (val)) ? (max) : (val));
 #define IS_WITHIN(val, min, max) (((val) >= (min)) && ((val) <= (max)))
-#define GENERIC_BACKTRACE_NOTE(name) DevWarning(1, TAG #name " couldn't be found using signatures! Using function backtracing instead...\n");
+#define GENERIC_BACKTRACE_NOTE(name) \
+	DevWarning(1, TAG #name " couldn't be found using signatures! Using function backtracing instead...\n");
 #define READ_CALL(val) ((uintptr_t)val + 5) + *(int*)((uintptr_t)val + 1)
 #define IS_PTR_BYTE_ALIGNED(val) ((uintptr_t)val % 4 == 0)
 #ifdef OE
@@ -43,20 +44,16 @@ namespace PatternsExt
 		PatternScanner scanner((void*)(base - MAX_DT_SIZE), MAX_DT_SIZE);
 		scanner.onMatchEvaluate = [&](bool* done, uintptr_t* ptr) {
 			uintptr_t string = *reinterpret_cast<uintptr_t*>(*ptr);
-			if (!INSIDE(moduleBase, moduleSize, string)) 
+			if (!INSIDE(moduleBase, moduleSize, string))
 				*done = false;
-			else 
+			else
 				*done = (strcmp((char*)string, name) == 0);
 		};
 
 		Pattern first("6A ?? 68", 3);
-		first.onFound = [&](uintptr_t ptr) { 
-			foundOffset = (int)*reinterpret_cast<char*>(ptr - 2); 
-		};
+		first.onFound = [&](uintptr_t ptr) { foundOffset = (int)*reinterpret_cast<char*>(ptr - 2); };
 		Pattern second("68 ?? ?? ?? ?? 68", 6);
-		second.onFound = [&](uintptr_t ptr) {
-			foundOffset = *reinterpret_cast<short*>(ptr - 5);
-		};
+		second.onFound = [&](uintptr_t ptr) { foundOffset = *reinterpret_cast<short*>(ptr - 5); };
 
 		PatternCollection collection(first);
 		collection.AddPattern(second);
@@ -109,9 +106,9 @@ namespace PatternsExt
 	}
 
 	static inline Pattern GeneratePatternFromVar(uintptr_t addr,
-	                                      const char* prefix = "",
-	                                      const char* suffix = "",
-	                                      int offset = 0)
+	                                             const char* prefix = "",
+	                                             const char* suffix = "",
+	                                             int offset = 0)
 	{
 		char sig[MAX_SIGNATURE_STRING_LEN] = "";
 		char byteString[15];
@@ -125,14 +122,14 @@ namespace PatternsExt
 	// ARGS:
 	// scanner:		PatternScanner to use
 	// name:		name of the data table
-	static uintptr_t FindDataTable(PatternScanner scanner, const char* name) 
+	static uintptr_t FindDataTable(PatternScanner scanner, const char* name)
 	{
 		uintptr_t ptr, ptr2 = 0;
 		ptr = FindStringAddress(scanner, name);
 
 		if (ptr == 0x0)
 			goto eof;
-		
+
 		ptr2 = FindVarReference(scanner, ptr, "68");
 		if (ptr2 == 0x0)
 		{
@@ -142,7 +139,7 @@ namespace PatternsExt
 				*foundPtr = FindVarReference(scanner, *foundPtr, "83 ?? ?? ?? ??");
 				*done = *foundPtr != 0x0;
 			};
-			
+
 			ptr2 = scanner.Scan(p);
 		}
 
@@ -158,7 +155,7 @@ namespace PatternsExt
 	// ARGS:
 	// scanner:		scanner to use
 	// name:		name of the offset
-	static uintptr_t FindEntityOffset(PatternScanner scanner, const char* name) 
+	static uintptr_t FindEntityOffset(PatternScanner scanner, const char* name)
 	{
 		uintptr_t tmp = 0;
 		int offset = 0;
@@ -183,12 +180,17 @@ namespace PatternsExt
 			};
 			tmp = newScanner.Scan(p);
 		}
-		if (offset == 0) DevWarning(1, "%s offset couldn't be found\n", name);
-		else DevMsg("%s offset is 0x%X\n", name, offset);
+		if (offset == 0)
+			DevWarning(1, "%s offset couldn't be found\n", name);
+		else
+			DevMsg("%s offset is 0x%X\n", name, offset);
 		return offset;
 	}
 
-	static bool FindRelativeCalls(PatternScanner scanner, uintptr_t addr, int checkCallAmount, vector<uintptr_t>* locations) 
+	static bool FindRelativeCalls(PatternScanner scanner,
+	                              uintptr_t addr,
+	                              int checkCallAmount,
+	                              vector<uintptr_t>* locations)
 	{
 		if (addr <= 0)
 			return false;
@@ -207,10 +209,14 @@ namespace PatternsExt
 		// i hate this...
 		char sig[20] = "";
 		PatternCollection p;
-		sprintf(sig, "E8 %s", pos); p.AddPattern(sig, 1);
-		sprintf(sig, "E8 %s", neg); p.AddPattern(sig, 1);
-		sprintf(sig, "E9 %s", pos); p.AddPattern(sig, 1);
-		sprintf(sig, "E9 %s", neg); p.AddPattern(sig, 1);
+		sprintf(sig, "E8 %s", pos);
+		p.AddPattern(sig, 1);
+		sprintf(sig, "E8 %s", neg);
+		p.AddPattern(sig, 1);
+		sprintf(sig, "E9 %s", pos);
+		p.AddPattern(sig, 1);
+		sprintf(sig, "E9 %s", neg);
+		p.AddPattern(sig, 1);
 
 		p.onMatchEvaluate = _oMEArgs(&)
 		{
@@ -270,11 +276,12 @@ namespace PatternsExt
 	// interruptLevel	the number of padding bytes to encounter before passing check
 	// checkVFTable	enable checking for vftable entries
 	// checkCallAmount	how many bytes before and after addr to check for calls to the target function (recommended value between 0x5000 to 0x10000)
-	static uintptr_t BackTraceToFuncStart(PatternScanner scanner, uintptr_t addr,
-		int limit = 0x600, 
-		int interruptLevel = 3, 
-		bool checkVFTable = false, 
-		uint checkCallAmount = 0) 
+	static uintptr_t BackTraceToFuncStart(PatternScanner scanner,
+	                                      uintptr_t addr,
+	                                      int limit = 0x600,
+	                                      int interruptLevel = 3,
+	                                      bool checkVFTable = false,
+	                                      uint checkCallAmount = 0)
 	{
 		using namespace std;
 
@@ -305,16 +312,21 @@ namespace PatternsExt
 			// i hate this...
 			char sig[20] = "";
 			PatternCollection p;
-			sprintf(sig, "E8 %s", pos); p.AddPattern(sig, 1);
-			sprintf(sig, "E8 %s", neg); p.AddPattern(sig, 1);
-			sprintf(sig, "E9 %s", pos); p.AddPattern(sig, 1);
-			sprintf(sig, "E9 %s", neg); p.AddPattern(sig, 1);
+			sprintf(sig, "E8 %s", pos);
+			p.AddPattern(sig, 1);
+			sprintf(sig, "E8 %s", neg);
+			p.AddPattern(sig, 1);
+			sprintf(sig, "E9 %s", pos);
+			p.AddPattern(sig, 1);
+			sprintf(sig, "E9 %s", neg);
+			p.AddPattern(sig, 1);
 
 			uintptr_t newStart = addr - checkCallAmount;
 			BOUND(newStart, (uint)scanner._base, scanner._end());
 			PatternScanner newScanner((void*)(newStart), checkCallAmount * 2);
 
-			p.onMatchEvaluate = _oMEArgs(&) {
+			p.onMatchEvaluate = _oMEArgs(&)
+			{
 				*done = false;
 				uintptr_t called = *foundPtr + 4 + *(uint*)(*foundPtr);
 				if (IS_WITHIN(called, addr - limit, addr))
@@ -331,9 +343,11 @@ namespace PatternsExt
 
 			uchar curByte = *(uchar*)ptr;
 			uchar lastByte = *(uchar*)(ptr + 1);
-			if (!pUtils.charArrayContains(backTraceBytes, curByte, 4)) continue;
-			if (pUtils.charArrayContains(backTraceBytes, lastByte, 4)) continue;
-				
+			if (!pUtils.charArrayContains(backTraceBytes, curByte, 4))
+				continue;
+			if (pUtils.charArrayContains(backTraceBytes, lastByte, 4))
+				continue;
+
 			if (interruptLevel > 0 && (curByte == 0xCC || curByte == 0x90))
 			{
 				void* ptr2 = (void*)(ptr - interruptLevel);
@@ -360,18 +374,20 @@ namespace PatternsExt
 		return 0;
 	}
 
-	static uintptr_t FindCVarBase(PatternScanner scanner, const char* name) 
+	static uintptr_t FindCVarBase(PatternScanner scanner, const char* name)
 	{
 		uintptr_t ptr = FindStringAddress(scanner, name);
 		if (ptr == 0)
 			return 0;
 		Pattern p = GeneratePatternFromVar(ptr, "68", "B9", 6);
-		p.onMatchEvaluate = _oMEArgs() { *foundPtr = *(uintptr_t*)*foundPtr; };
+		p.onMatchEvaluate = _oMEArgs()
+		{
+			*foundPtr = *(uintptr_t*)*foundPtr;
+		};
 		return scanner.Scan(p);
 	}
 
 } // namespace PatternsExt
-
 
 // old macros utilizing the old compile-time pattern systems
 /*

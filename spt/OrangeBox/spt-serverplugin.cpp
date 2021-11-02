@@ -444,7 +444,7 @@ void CSourcePauseTool::Unload(void)
 	ipc::ShutdownIPC();
 }
 
-void CSourcePauseTool::GameFrame(bool simulating) 
+void CSourcePauseTool::GameFrame(bool simulating)
 {
 	ServerGameFrameSignal();
 }
@@ -498,7 +498,8 @@ CON_COMMAND(_y_spt_afterframes, "Add a command into an afterframes queue. Usage:
 	clientDLL.AddIntoAfterframesQueue(entry);
 }
 
-CON_COMMAND(_y_spt_afterticks, "Add a command to be executed after a specific number of ticks. Usage: _y_spt_afterticks <ticks> <command>")
+CON_COMMAND(_y_spt_afterticks,
+            "Add a command to be executed after a specific number of ticks. Usage: _y_spt_afterticks <ticks> <command>")
 {
 	if (!engine)
 		return;

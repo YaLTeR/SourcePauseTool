@@ -150,10 +150,10 @@ void DisableAmmoWeaponSound(ConVar* var, char const* pOldString)
 }
 
 ConVar y_spt_disable_ammo_pickup_sound("y_spt_disable_ammo_pickup_sound",
-                                         "0",
-                                         FCVAR_ARCHIVE,
-                                         "Disables weapon pickup sounds.",
-                                         DisableAmmoWeaponSound);
+                                       "0",
+                                       FCVAR_ARCHIVE,
+                                       "Disables weapon pickup sounds.",
+                                       DisableAmmoWeaponSound);
 
 __declspec(naked) void ServerDLL::HOOKED_MiddleOfSlidingFunction()
 {
@@ -320,9 +320,13 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 			s.AddPattern("D8 ?? ?? ?? 00 00", 2);
 			s.AddPattern("D9 ?? ?? ?? 00 00", 2);
 			s.AddPattern("F3 0F 5C ?? ?? ?? 00 00", 4);
-			s.onMatchEvaluate = _oMEArgs() { *done = *(int*)*foundPtr > 0x100; };
+			s.onMatchEvaluate = _oMEArgs()
+			{
+				*done = *(int*)*foundPtr > 0x100;
+			};
 
-			p.onMatchEvaluate = _oMEArgs(&){
+			p.onMatchEvaluate = _oMEArgs(&)
+			{
 				PatternScanner scanner((void*)*foundPtr, 0x100);
 				uintptr_t tmp = scanner.Scan(s);
 				if (tmp != 0)
@@ -334,7 +338,8 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 
 			// we coerce 2 offsets from this, m_flFriction and m_surfaceFriction, the latter is always bigger than the former
 			if (foundOffsets.size() != 0)
-				clientDLL.offServerSurfaceFriction = *max_element(foundOffsets.begin(), foundOffsets.end());
+				clientDLL.offServerSurfaceFriction =
+				    *max_element(foundOffsets.begin(), foundOffsets.end());
 			DevMsg("m_surfaceFriction offset is 0x%X\n", clientDLL.offServerSurfaceFriction);
 		}
 	}
@@ -422,7 +427,6 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 				goto cjb_eof;
 		}
 
-	
 		{
 		cjb_branch:
 			DevMsg(TAG "Found HL2 CheckJumpButton at %p through function backtracing\n", tmp);
@@ -444,7 +448,9 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 				uintptr_t loc = *(uintptr_t*)(entry - 0xC);
 				if (loc != foundCJB)
 				{
-					DevMsg(TAG "Found game-specific CheckJumpButton at %p through VFTable jumping\n", loc);
+					DevMsg(TAG
+					       "Found game-specific CheckJumpButton at %p through VFTable jumping\n",
+					       loc);
 					ORIG_CheckJumpButton = (_CheckJumpButton)loc;
 					break;
 				}
@@ -458,7 +464,8 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	if (ORIG_CheckJumpButton)
 	{
 		if (!ORIG_TryPlayerMove)
-			ORIG_TryPlayerMove = *(uintptr_t*)(FindVFTableEntry(mScanner, (uintptr_t)ORIG_CheckJumpButton) + 0xC);
+			ORIG_TryPlayerMove =
+			    *(uintptr_t*)(FindVFTableEntry(mScanner, (uintptr_t)ORIG_CheckJumpButton) + 0xC);
 		DevMsg(TAG "TryPlayerMove found at %p through VFTable jumping\n", ORIG_TryPlayerMove);
 
 #ifndef OE
@@ -724,7 +731,9 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 
 			{
 			fg_method2:
-				DevMsg(TAG "Running method 2 -- looking for references to CheckVelocity and comparing results to calls found in CheckJumpButton\n");
+				DevMsg(
+				    TAG
+				    "Running method 2 -- looking for references to CheckVelocity and comparing results to calls found in CheckJumpButton\n");
 				tmp = FindStringAddress(mScanner, "PM  Got a NaN velocity %s", false);
 				tmp = FindVarReference(mScanner, tmp, "68");
 				tmp = BackTraceToFuncStart(mScanner, tmp, 0x100, 3, true);
@@ -737,7 +746,8 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 					goto fg_failed;
 
 				std::function<void(uintptr_t)> action = [&mScanner, &funcsToCheckVel](uintptr_t addr) {
-					funcsToCheckVel.push_back(BackTraceToFuncStart(mScanner, addr, 0x300, 3, true, 0x5000));
+					funcsToCheckVel.push_back(
+					    BackTraceToFuncStart(mScanner, addr, 0x300, 3, true, 0x5000));
 				};
 				std::for_each(callsToCheckVel.begin(), callsToCheckVel.end(), action);
 
@@ -767,10 +777,8 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 			goto fg_exit;
 		}
 
-	fg_exit:
-		;
+	fg_exit:;
 	}
-
 
 	if (ORIG_FinishGravity)
 	{
@@ -790,7 +798,8 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 				if (tmp != 0)
 				{
 					Pattern p2("8B ?? ??", 2);
-					p2.onMatchEvaluate = _oMEArgs(&){
+					p2.onMatchEvaluate = _oMEArgs(&)
+					{
 						unsigned char off = *(unsigned char*)*foundPtr;
 						if (off < 0x10)
 						{
@@ -868,7 +877,8 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	}
 	else
 	{
-		DevWarning(TAG "Could not find PlayerRunCommand! Using alternative method to find vecabsvelocity offset\n");
+		DevWarning(TAG
+		           "Could not find PlayerRunCommand! Using alternative method to find vecabsvelocity offset\n");
 		offM_vecAbsVelocity = FindEntityOffset(mScanner, "m_vecAbsVelocity");
 		if (offM_vecAbsVelocity == 0)
 			Warning("_y_spt_getvel has no effect.\n");
@@ -883,7 +893,7 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	if (!ORIG_CheckStuck)
 	{
 		GENERIC_BACKTRACE_NOTE(CheckStuck)
-		
+
 		uintptr_t tmp = FindStringAddress(mScanner, "%s stuck on object %i/%s");
 		tmp = FindVarReference(mScanner, tmp, "68 ");
 		tmp = BackTraceToFuncStart(mScanner, tmp, 0x150, 0, true, 0x5000);
@@ -925,8 +935,10 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	{
 		uintptr_t datatable;
 		datatable = FindDataTable(mScanner, "DT_Local");
-		offM_vecPunchAngle = FindEntityOffsetThroughDT(moduleBase, moduleLength, datatable, "m_vecPunchAngle", offDTLocal);
-		offM_vecPunchAngleVel = FindEntityOffsetThroughDT(moduleBase, moduleLength, datatable, "m_vecPunchAngleVel", offDTLocal);
+		offM_vecPunchAngle =
+		    FindEntityOffsetThroughDT(moduleBase, moduleLength, datatable, "m_vecPunchAngle", offDTLocal);
+		offM_vecPunchAngleVel =
+		    FindEntityOffsetThroughDT(moduleBase, moduleLength, datatable, "m_vecPunchAngleVel", offDTLocal);
 	}
 	else
 	{
@@ -998,8 +1010,8 @@ void ServerDLL::Hook(const std::wstring& moduleName,
 	patternContainer.Hook();
 
 	auto loadTime =
-	std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime)
-	    .count();
+	    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime)
+	        .count();
 	DevMsg(TAG "Done hooking in %dms\n", loadTime);
 }
 
@@ -1084,7 +1096,6 @@ void ServerDLL::TracePlayerBBox(const Vector& start,
 	overrideMinMax = false;
 }
 
-
 float ServerDLL::TraceFirePortal(trace_t& tr, const Vector& startPos, const Vector& vDirection)
 {
 	auto weapon = serverDLL.GetActiveWeapon(GetServerPlayer());
@@ -1103,7 +1114,7 @@ float ServerDLL::TraceFirePortal(trace_t& tr, const Vector& startPos, const Vect
 	    weapon, 0, false, startPos, vDirection, tr, vFinalPosition, qFinalAngles, PORTAL_PLACED_BY_PLAYER, true);
 }
 
-_declspec(naked) void ServerDLL::HOOKED_HDTF_Cap() 
+_declspec(naked) void ServerDLL::HOOKED_HDTF_Cap()
 {
 	__asm {
 		pushad;
@@ -1160,7 +1171,6 @@ Vector oldmvVecVel(0, 0, 0);
 
 bool __fastcall ServerDLL::HOOKED_CheckJumpButton_Func(void* thisptr, int edx)
 {
-
 	const int IN_JUMP = (1 << 1);
 
 	int* pM_nOldButtons = NULL;
@@ -1504,7 +1514,7 @@ int ServerDLL::GetPlayerCollisionGroup() const
 
 #ifndef P2
 void SetCollisionGroup(int collide)
-{	
+{
 	int playerPtr = (int)GetServerPlayer();
 	if (playerPtr == 0)
 	{
@@ -1514,12 +1524,12 @@ void SetCollisionGroup(int collide)
 
 	if (!serverDLL.ORIG_SetCollisionGroup)
 	{
-		Warning("SetCollisionGroup function unavailable, setting collision group through direct memory overwriting, might be buggy!\n");
-		memcpy((void*)(playerPtr + serverDLL.offM_collisionGroup), &collide, sizeof(int));	
+		Warning(
+		    "SetCollisionGroup function unavailable, setting collision group through direct memory overwriting, might be buggy!\n");
+		memcpy((void*)(playerPtr + serverDLL.offM_collisionGroup), &collide, sizeof(int));
 	}
 	else
 		serverDLL.ORIG_SetCollisionGroup(playerPtr, playerPtr, collide);
-
 }
 
 #ifndef OE
@@ -1528,7 +1538,7 @@ void SetCollisionGroupCallback(IConVar* var, const char* pOldValue, float fOldVa
 void SetCollisionGroupCallback(ConVar* var, char const* pOldString)
 #endif
 {
-	if (strcmp(((ConVar*)var)->GetString(),"") == 0)
+	if (strcmp(((ConVar*)var)->GetString(), "") == 0)
 		return;
 
 	if (serverDLL.offM_collisionGroup == 0)

@@ -254,5 +254,4 @@ public:
 	char freeOOBBytes1[6] = "";
 	char freeOOBBytes2[6] = "";
 #endif // !OE
-	
 };
