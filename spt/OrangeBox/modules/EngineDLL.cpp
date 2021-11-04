@@ -409,7 +409,7 @@ void EngineDLL::Clear()
 	ORIG_curtime = 0x0;
 	ORIG_FinishRestore = nullptr;
 	ORIG_SetPaused = nullptr;
-	ORIG__Host_RunFrame = nullptr;	
+	ORIG__Host_RunFrame = nullptr;
 	ORIG__Host_RunFrame_Input = nullptr;
 	ORIG__Host_RunFrame_Server = nullptr;
 	ORIG_StopRecording = nullptr;

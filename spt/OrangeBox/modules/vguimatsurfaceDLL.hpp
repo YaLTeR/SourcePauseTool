@@ -16,7 +16,8 @@ using std::uintptr_t;
 typedef void(__fastcall* _StartDrawing)(void* thisptr, int edx);
 typedef void(__fastcall* _FinishDrawing)(void* thisptr, int edx);
 typedef void(__fastcall* _DrawPrintText)(void* thisptr, int edx, const wchar_t* text, int iTextLen, int drawType);
-typedef void(__fastcall* _DrawPrintText2)(void* thisptr, int edx, const wchar_t* text, int iTextLen, int drawType, char param);
+typedef void(
+    __fastcall* _DrawPrintText2)(void* thisptr, int edx, const wchar_t* text, int iTextLen, int drawType, char param);
 typedef void(__fastcall* _DrawSetTextPos)(void* thisptr, int edx, int x, int y);
 
 class VGui_MatSurfaceDLL : public IHookableNameFilter
