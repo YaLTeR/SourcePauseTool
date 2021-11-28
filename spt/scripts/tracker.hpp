@@ -16,6 +16,7 @@ namespace scripts
 		virtual std::string GenerateTestData() const = 0;
 		virtual ValidationResult Validate(const std::string& expectedValue) const = 0;
 		virtual std::string TrackerName() const = 0;
+		virtual ~Tracker() {}
 	};
 
 	class VelocityTracker : public Tracker

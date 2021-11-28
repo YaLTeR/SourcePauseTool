@@ -8,6 +8,7 @@ namespace scripts
 		virtual bool IsTrue(int tick, int totalTicks) const = 0; // Does the condition currently hold?
 		virtual bool ShouldTerminate(int tick,
 		                             int totalTicks) const = 0; // Should the current result be set to fail?
+		virtual ~Condition() {}
 	};
 
 	class TickRangeCondition : public Condition
