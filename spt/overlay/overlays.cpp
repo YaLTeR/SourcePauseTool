@@ -4,8 +4,8 @@
 #include "..\sptlib-wrapper.hpp"
 #include "ent_utils.hpp"
 #include "math.hpp"
-#include "..\OrangeBox\modules.hpp"
-#include "..\OrangeBox\modules\ClientDLL.hpp"
+#include "..\features\shadow.hpp"
+#include "..\features\playerio.hpp"
 #include "overlays.hpp"
 #include "portal_camera.hpp"
 
@@ -27,12 +27,12 @@ CameraInformation rearViewMirrorOverlay()
 CameraInformation havokViewMirrorOverlay()
 {
 	CameraInformation info;
-	Vector havokpos = vphysicsDLL.PlayerHavokPos;
+	Vector havokpos = GetPlayerHavokPos();
 
 	constexpr float duckOffset = 28;
 	constexpr float standingOffset = 64;
 
-	auto ducked = clientDLL.GetFlagsDucking();
+	auto ducked = spt_playerio.GetFlagsDucking();
 	auto angles = utils::GetPlayerEyeAngles();
 
 	info.x = havokpos.x;

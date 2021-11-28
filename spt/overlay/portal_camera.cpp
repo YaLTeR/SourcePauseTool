@@ -6,7 +6,6 @@
 #include "ent_utils.hpp"
 #include "property_getter.hpp"
 #include "..\cvars.hpp"
-#include "..\OrangeBox\modules.hpp"
 #include "cdll_int.h"
 #include "client_class.h"
 #include "edict.h"

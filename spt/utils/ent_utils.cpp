@@ -4,21 +4,26 @@
 
 #include <limits>
 #include <regex>
+#include <sstream>
 #include <vector>
 
-#include "..\spt-serverplugin.hpp"
 #include "..\cvars.hpp"
-#include "..\OrangeBox\modules.hpp"
-#include "..\OrangeBox\modules\ClientDLL.hpp"
-#include "..\OrangeBox\modules\ServerDLL.hpp"
 #include "..\overlay\portal_camera.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "..\strafe\strafestuff.hpp"
 #include "SPTLib\sptlib.hpp"
 #include "client_class.h"
+#include "game_detection.hpp"
 #include "property_getter.hpp"
 #include "string_parsing.hpp"
 #include "math.hpp"
+#include "game_detection.hpp"
+#include "..\features\playerio.hpp"
+#include "..\features\tickrate.hpp"
+#include "..\features\tracing.hpp"
+#include "..\spt-serverplugin.hpp"
+#include "interfaces.hpp"
+
 #undef max
 
 #if !defined(OE) && !defined(P2)
@@ -27,38 +32,20 @@
 #endif
 
 #ifndef OE
-static IClientEntityList* entList;
-static IVModelInfo* modelInfo;
-static IBaseClientDLL* clientInterface;
 const int INDEX_MASK = MAX_EDICTS - 1;
 #endif
 
 namespace utils
 {
 #ifndef OE
-	void SetEntityList(IClientEntityList* list)
-	{
-		entList = list;
-	}
-
-	void SetModelInfo(IVModelInfo* info)
-	{
-		modelInfo = info;
-	}
-
-	void SetClientDLL(IBaseClientDLL* interf)
-	{
-		clientInterface = interf;
-	}
-
 	IClientEntity* GetClientEntity(int index)
 	{
-		return entList->GetClientEntity(index + 1);
+		return interfaces::entList->GetClientEntity(index + 1);
 	}
 
 	void PrintAllClientEntities()
 	{
-		int maxIndex = entList->GetHighestEntityIndex();
+		int maxIndex = interfaces::entList->GetHighestEntityIndex();
 
 		for (int i = 0; i <= maxIndex; ++i)
 		{
@@ -72,7 +59,7 @@ namespace utils
 
 	void PrintAllPortals()
 	{
-		int maxIndex = entList->GetHighestEntityIndex();
+		int maxIndex = interfaces::entList->GetHighestEntityIndex();
 
 		for (int i = 0; i <= maxIndex; ++i)
 		{
@@ -102,14 +89,14 @@ namespace utils
 	const char* GetModelName(IClientEntity* ent)
 	{
 		if (ent)
-			return modelInfo->GetModelName(ent->GetModel());
+			return interfaces::modelInfo->GetModelName(ent->GetModel());
 		else
 			return nullptr;
 	}
 
 	ClientClass* GetClass(const char* name)
 	{
-		auto list = clientInterface->GetAllClasses();
+		auto list = interfaces::clientInterface->GetAllClasses();
 
 		while (list && strcmp(list->GetName(), name) != 0)
 			list = list->m_pNext;
@@ -422,8 +409,8 @@ namespace utils
 
 	void SimulateFrames(int frames)
 	{
-		auto vars = clientDLL.GetMovementVars();
-		auto player = clientDLL.GetPlayerData();
+		auto vars = spt_playerio.GetMovementVars();
+		auto player = spt_playerio.GetPlayerData();
 		auto type = Strafe::GetPositionType(player, Strafe::HullType::NORMAL);
 
 		for (int i = 0; i < frames; ++i)
@@ -447,11 +434,9 @@ namespace utils
 		if (!ent)
 			return -1;
 
-		auto engine = GetEngine();
-
 		for (int i = 0; i < MAX_EDICTS; ++i)
 		{
-			auto e = engine->PEntityOfEntIndex(i);
+			auto e = interfaces::engine_server->PEntityOfEntIndex(i);
 			if (e && e->GetUnknown() == ent)
 				return i;
 		}
@@ -472,6 +457,27 @@ namespace utils
 	}
 #endif
 
+#ifndef P2
+	IServerUnknown* GetServerPlayer()
+	{
+		if (!interfaces::engine_server)
+			return nullptr;
+
+		auto edict = interfaces::engine_server->PEntityOfEntIndex(1);
+		if (!edict)
+			return nullptr;
+
+		return edict->GetUnknown();
+	}
+#else
+	// TODO
+	IServerUnknown* GetServerPlayer()
+	{
+		assert(false);
+		return nullptr;
+	}
+#endif
+
 	JBData CanJB(float height)
 	{
 		JBData data;
@@ -482,12 +488,12 @@ namespace utils
 		if (!utils::playerEntityAvailable())
 			return data;
 
-		Vector player_origin = clientDLL.GetPlayerEyePos();
-		Vector vel = clientDLL.GetPlayerVelocity();
+		Vector player_origin = spt_playerio.GetPlayerEyePos();
+		Vector vel = spt_playerio.GetPlayerVelocity();
 
 		constexpr float gravity = 600;
 		constexpr float groundThreshold = 2.0f;
-		float ticktime = engineDLL.GetTickrate();
+		float ticktime = spt_tickrate.GetTickrate();
 		constexpr int maxIterations = 1000;
 
 		for (int i = 0; i < maxIterations; ++i)
@@ -532,11 +538,10 @@ namespace utils
 #ifndef P2
 	static CBaseEntity* GetServerEntity(int index)
 	{
-		auto engine_server = GetEngine();
-		if (!engine_server)
+		if (!interfaces::engine_server)
 			return nullptr;
 
-		auto edict = engine_server->PEntityOfEntIndex(index);
+		auto edict = interfaces::engine_server->PEntityOfEntIndex(index);
 		if (!edict)
 			return nullptr;
 
@@ -555,12 +560,12 @@ namespace utils
 #else
 		auto ply = GetServerEntity(1);
 
-		if (ply && serverDLL.offM_vecPunchAngle != 0 && serverDLL.offM_vecPunchAngleVel != 0)
+		if (ply && spt_playerio.offM_vecPunchAngle != 0 && spt_playerio.offM_vecPunchAngleVel != 0)
 		{
 			punchAngle =
-			    *reinterpret_cast<QAngle*>(reinterpret_cast<char*>(ply) + serverDLL.offM_vecPunchAngle);
-			punchAngleVel =
-			    *reinterpret_cast<QAngle*>(reinterpret_cast<char*>(ply) + serverDLL.offM_vecPunchAngleVel);
+			    *reinterpret_cast<QAngle*>(reinterpret_cast<char*>(ply) + spt_playerio.offM_vecPunchAngle);
+			punchAngleVel = *reinterpret_cast<QAngle*>(reinterpret_cast<char*>(ply)
+			                                           + spt_playerio.offM_vecPunchAngleVel);
 			return true;
 		}
 		else
@@ -573,11 +578,10 @@ namespace utils
 #if !defined(OE) && !defined(P2)
 	static int GetServerEntityCount()
 	{
-		auto engine_server = GetEngine();
-		if (!engine_server)
+		if (!interfaces::engine_server)
 			return 0;
 
-		return engine_server->GetEntityCount();
+		return interfaces::engine_server->GetEntityCount();
 	}
 
 	void CheckPiwSave()
@@ -668,7 +672,7 @@ namespace utils
 		for (int i = 0; i < 4; i++)
 		{
 			trace_t newEdgeTr;
-			serverDLL.TraceFirePortal(newEdgeTr, tr.endpos, checkDirs[i]);
+			spt_tracing.TraceFirePortal(newEdgeTr, tr.endpos, checkDirs[i]);
 
 			if (utils::TraceHit(newEdgeTr, maxDistSqr))
 			{
@@ -710,7 +714,7 @@ namespace utils
 		trace_t seamTrace;
 		Vector dir = seamPos - cameraPos;
 		dir.NormalizeInPlace();
-		serverDLL.TraceFirePortal(seamTrace, cameraPos, dir);
+		spt_tracing.TraceFirePortal(seamTrace, cameraPos, dir);
 
 		if (seamTrace.fraction == 1.0f)
 		{

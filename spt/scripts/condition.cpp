@@ -2,13 +2,12 @@
 
 #include "condition.hpp"
 
-#include "spt\overlay\portal_camera.hpp"
+#include "..\overlay\portal_camera.hpp"
 
 #include "ent_utils.hpp"
 #include "math.hpp"
 #include "property_getter.hpp"
-#include "..\OrangeBox\modules.hpp"
-#include "..\OrangeBox\modules\ClientDLL.hpp"
+#include "..\features\playerio.hpp"
 
 namespace scripts
 {
@@ -54,9 +53,9 @@ namespace scripts
 		Vector v;
 
 		if (isPos)
-			v = clientDLL.GetPlayerEyePos();
+			v = spt_playerio.GetPlayerEyePos();
 		else
-			v = clientDLL.GetPlayerVelocity();
+			v = spt_playerio.GetPlayerVelocity();
 
 		float val;
 
@@ -136,7 +135,7 @@ namespace scripts
 		if (!utils::playerEntityAvailable())
 			return false;
 
-		Vector v = clientDLL.GetPlayerVelocity();
+		Vector v = spt_playerio.GetPlayerVelocity();
 		QAngle angles;
 		VectorAngles(v, Vector(0, 0, 1), angles);
 		float f;

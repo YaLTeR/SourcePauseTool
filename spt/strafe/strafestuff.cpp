@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "..\stdafx.hpp"
 
 #ifdef OE
@@ -9,19 +10,21 @@
 #include <iomanip>
 #include <sstream>
 
-#include "../cvars.hpp"
-#include "../module_hooks.hpp"
-#include "../OrangeBox/modules.hpp"
-#include "../OrangeBox/modules/ClientDLL.hpp"
+#include "..\cvars.hpp"
 #include "const.h"
 #include "strafe_utils.hpp"
 #include "strafestuff.hpp"
 #include "ent_utils.hpp"
+#include "game_detection.hpp"
 #include "math.hpp"
 #include "property_getter.hpp"
+#include "..\features\playerio.hpp"
+#include "..\features\tracing.hpp"
+#include "SDK\hl_movedata.h"
+#include "interfaces.hpp"
 
 #ifndef OE
-#include "../overlay/portal_camera.hpp"
+#include "..\overlay\portal_camera.hpp"
 #endif
 
 #ifdef max
@@ -36,16 +39,6 @@
 // go take a look at that instead:
 // https://github.com/HLTAS/hlstrafe
 
-ConVar tas_strafe_version("tas_strafe_version",
-                          "4",
-                          FCVAR_TAS_RESET,
-                          "Strafe version. For backwards compatibility with old scripts.");
-
-ConVar tas_strafe_afh_length("tas_strafe_afh_length", "0.0000000000000000001", FCVAR_TAS_RESET, "Magnitude of AFHs");
-ConVar tas_strafe_afh("tas_strafe_afh", "0", FCVAR_TAS_RESET, "Should AFH?");
-
-extern void* gm;
-
 namespace Strafe
 {
 	bool CanTrace()
@@ -55,11 +48,11 @@ namespace Strafe
 
 		if (tas_strafe_version.GetInt() == 1)
 		{
-			return clientDLL.ORIG_UTIL_TraceRay != nullptr;
+			return spt_tracing.ORIG_UTIL_TraceRay != nullptr;
 		}
 		else
 		{
-			return serverDLL.CanTracePlayerBBox();
+			return spt_tracing.CanTracePlayerBBox();
 		}
 	}
 
@@ -69,19 +62,19 @@ namespace Strafe
 
 	void SetMoveData()
 	{
-		data.m_nPlayerHandle = GetServerPlayer()->GetRefEHandle();
-		void** player = reinterpret_cast<void**>((char*)gm + 0x4);
-		CMoveData** mv = reinterpret_cast<CMoveData**>((char*)gm + 0x8);
+		data.m_nPlayerHandle = utils::GetServerPlayer()->GetRefEHandle();
+		void** player = reinterpret_cast<void**>((char*)interfaces::gm + 0x4);
+		CMoveData** mv = reinterpret_cast<CMoveData**>((char*)interfaces::gm + 0x8);
 		oldmv = *mv;
 		oldPlayer = *player;
 		*mv = &data;
-		*player = GetServerPlayer();
+		*player = utils::GetServerPlayer();
 	}
 
 	void UnsetMoveData()
 	{
-		void** player = reinterpret_cast<void**>((char*)gm + 0x4);
-		CMoveData** mv = reinterpret_cast<CMoveData**>((char*)gm + 0x8);
+		void** player = reinterpret_cast<void**>((char*)interfaces::gm + 0x4);
+		CMoveData** mv = reinterpret_cast<CMoveData**>((char*)interfaces::gm + 0x8);
 		*player = oldPlayer;
 		*mv = oldmv;
 	}
@@ -121,11 +114,11 @@ namespace Strafe
 			else
 				ray.Init(start, end, mins, maxs);
 
-			clientDLL.ORIG_UTIL_TraceRay(ray,
-			                             MASK_PLAYERSOLID_BRUSHONLY,
-			                             utils::GetClientEntity(0),
-			                             COLLISION_GROUP_PLAYER_MOVEMENT,
-			                             &trace);
+			spt_tracing.ORIG_UTIL_TraceRay(ray,
+			                               MASK_PLAYERSOLID_BRUSHONLY,
+			                               utils::GetClientEntity(0),
+			                               COLLISION_GROUP_PLAYER_MOVEMENT,
+			                               &trace);
 		}
 		else
 		{
@@ -138,13 +131,13 @@ namespace Strafe
 				mins.z = 36;
 
 			SetMoveData();
-			serverDLL.TracePlayerBBox(start,
-			                          end,
-			                          mins,
-			                          maxs,
-			                          MASK_PLAYERSOLID,
-			                          COLLISION_GROUP_PLAYER_MOVEMENT,
-			                          trace);
+			spt_tracing.TracePlayerBBox(start,
+			                            end,
+			                            mins,
+			                            maxs,
+			                            MASK_PLAYERSOLID,
+			                            COLLISION_GROUP_PLAYER_MOVEMENT,
+			                            trace);
 			UnsetMoveData();
 		}
 
@@ -154,16 +147,16 @@ namespace Strafe
 	void Trace(trace_t& trace, const Vector& start, const Vector& end)
 	{
 #ifndef OE
-		if (!clientDLL.ORIG_UTIL_TraceRay)
+		if (!spt_tracing.ORIG_UTIL_TraceRay)
 			return;
 
 		Ray_t ray;
 		ray.Init(start, end);
-		clientDLL.ORIG_UTIL_TraceRay(ray,
-		                             MASK_PLAYERSOLID_BRUSHONLY,
-		                             utils::GetClientEntity(0),
-		                             COLLISION_GROUP_PLAYER_MOVEMENT,
-		                             &trace);
+		spt_tracing.ORIG_UTIL_TraceRay(ray,
+		                               MASK_PLAYERSOLID_BRUSHONLY,
+		                               utils::GetClientEntity(0),
+		                               COLLISION_GROUP_PLAYER_MOVEMENT,
+		                               &trace);
 #endif
 	}
 
@@ -194,14 +187,14 @@ namespace Strafe
 
 		if (!tas_strafe_use_tracing.GetBool() || strafe_version == 0 || !CanTrace())
 		{
-			if (clientDLL.IsGroundEntitySet())
+			if (spt_playerio.IsGroundEntitySet())
 				return PositionType::GROUND;
 			else
 				return PositionType::AIR;
 		}
 		else if (strafe_version == 1)
 		{
-			if (clientDLL.IsGroundEntitySet())
+			if (spt_playerio.IsGroundEntitySet())
 				return PositionType::GROUND;
 
 			if (player.Velocity[2] > 140.f)
@@ -243,13 +236,13 @@ namespace Strafe
 
 			trace_t pm;
 
-			serverDLL.TracePlayerBBox(bumpOrigin,
-			                          point,
-			                          mins,
-			                          maxs,
-			                          MASK_PLAYERSOLID,
-			                          COLLISION_GROUP_PLAYER_MOVEMENT,
-			                          pm);
+			spt_tracing.TracePlayerBBox(bumpOrigin,
+			                            point,
+			                            mins,
+			                            maxs,
+			                            MASK_PLAYERSOLID,
+			                            COLLISION_GROUP_PLAYER_MOVEMENT,
+			                            pm);
 
 			if (pm.m_pEnt && pm.plane.normal[2] >= 0.7)
 			{
@@ -257,24 +250,24 @@ namespace Strafe
 				return PositionType::GROUND;
 			}
 
-			if (DoesGameLookLikePortal())
-				serverDLL.ORIG_TracePlayerBBoxForGround2(bumpOrigin,
-				                                         point,
-				                                         mins,
-				                                         maxs,
-				                                         GetServerPlayer(),
-				                                         MASK_PLAYERSOLID,
-				                                         COLLISION_GROUP_PLAYER_MOVEMENT,
-				                                         pm);
+			if (utils::DoesGameLookLikePortal())
+				spt_tracing.ORIG_TracePlayerBBoxForGround2(bumpOrigin,
+				                                           point,
+				                                           mins,
+				                                           maxs,
+				                                           utils::GetServerPlayer(),
+				                                           MASK_PLAYERSOLID,
+				                                           COLLISION_GROUP_PLAYER_MOVEMENT,
+				                                           pm);
 			else
-				serverDLL.ORIG_TracePlayerBBoxForGround(bumpOrigin,
-				                                        point,
-				                                        mins,
-				                                        maxs,
-				                                        GetServerPlayer(),
-				                                        MASK_PLAYERSOLID,
-				                                        COLLISION_GROUP_PLAYER_MOVEMENT,
-				                                        pm);
+				spt_tracing.ORIG_TracePlayerBBoxForGround(bumpOrigin,
+				                                          point,
+				                                          mins,
+				                                          maxs,
+				                                          utils::GetServerPlayer(),
+				                                          MASK_PLAYERSOLID,
+				                                          COLLISION_GROUP_PLAYER_MOVEMENT,
+				                                          pm);
 
 			UnsetMoveData();
 
@@ -987,84 +980,89 @@ namespace Strafe
 		}
 	}
 
-	bool StrafeJump(bool jumped,
-	                PlayerData& player,
-	                const MovementVars& vars,
-	                bool ducking,
-	                ProcessedFrame& out,
-	                bool yawChanged)
+	bool StrafeJump(bool jumped, PlayerData& player, const MovementVars& vars, ProcessedFrame& out, bool yawChanged)
 	{
+		bool rval = false;
 		if (!jumped)
-			return false;
-
-		out.Jump = true;
-		out.Processed = true;
-
-		if (yawChanged && !tas_strafe_allow_jump_override.GetBool())
 		{
-			// Yaw changed and override not permitted
-			if (tas_strafe_version.GetInt() >= 3)
-				out.Processed = false;
-			return true;
-		}
-		else if (tas_strafe_jumptype.GetInt() == 2)
-		{
-			// OE bhop
-			out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat());
-			out.Forward = true;
-			MapSpeeds(out, vars);
-
-			return true;
-		}
-		else if (tas_strafe_jumptype.GetInt() == 1)
-		{
-			float cap = vars.Maxspeed * ((ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5);
-			float speed = player.Velocity.Length2D();
-
-			if (speed >= cap)
-			{
-				// Above ABH speed
-				if (tas_strafe_afh.GetBool())
-				{ // AFH
-					out.Yaw = tas_strafe_yaw.GetFloat();
-					out.ForwardSpeed = -tas_strafe_afh_length.GetFloat();
-					return true;
-				}
-				else
-				{
-					// ABH
-					out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
-					return true;
-				}
-			}
-			else
-			{
-				// Below ABH speed, dont do anything
-				return false;
-			}
-		}
-		else if (tas_strafe_jumptype.GetInt() == 3)
-		{
-			// Glitchless bhop
-			const Vector vel = player.Velocity;
-			out.Yaw = NormalizeRad(Atan2(player.Velocity[1], player.Velocity[0])) * M_RAD2DEG;
-			out.Forward = true;
-			MapSpeeds(out, vars);
-
-			return true;
+			rval = false;
 		}
 		else
 		{
-			// Invalid jump type set
-			out.Processed = false;
-			return false;
+			out.Jump = true;
+			out.Processed = true;
+
+			if (yawChanged && !tas_strafe_allow_jump_override.GetBool())
+			{
+				// Yaw changed and override not permitted
+				if (tas_strafe_version.GetInt() >= 3)
+					out.Processed = false;
+				rval = true;
+			}
+			else if (tas_strafe_jumptype.GetInt() == 2)
+			{
+				// OE bhop
+				out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat());
+				out.Forward = true;
+				MapSpeeds(out, vars);
+
+				rval = true;
+			}
+			else if (tas_strafe_jumptype.GetInt() == 1)
+			{
+				float cap = vars.Maxspeed * ((player.Ducking || (vars.Maxspeed == 320)) ? 0.1 : 0.5);
+				float speed = player.Velocity.Length2D();
+
+				if (speed >= cap)
+				{
+					// Above ABH speed
+					if (tas_strafe_afh.GetBool())
+					{ // AFH
+						out.Yaw = tas_strafe_yaw.GetFloat();
+						out.ForwardSpeed = -tas_strafe_afh_length.GetFloat();
+						rval = true;
+					}
+					else
+					{
+						// ABH
+						out.Yaw = NormalizeDeg(tas_strafe_yaw.GetFloat() + 180);
+						rval = true;
+					}
+				}
+				else
+				{
+					// Below ABH speed, dont do anything
+					rval = false;
+				}
+			}
+			else if (tas_strafe_jumptype.GetInt() == 3)
+			{
+				// Glitchless bhop
+				const Vector vel = player.Velocity;
+				out.Yaw = NormalizeRad(Atan2(player.Velocity[1], player.Velocity[0])) * M_RAD2DEG;
+				out.Forward = true;
+				MapSpeeds(out, vars);
+
+				rval = true;
+			}
+			else
+			{
+				// Invalid jump type set
+				out.Processed = false;
+				rval = false;
+			}
 		}
+
+		// Jumpbug check
+		if (out.Jump && !player.Ducking && player.DuckPressed && tas_strafe_autojb.GetBool())
+			out.ForceUnduck = true;
+
+		return rval;
 	}
 
 	void StrafeVectorial(PlayerData& player,
 	                     const MovementVars& vars,
 	                     bool jumped,
-	                     bool ducking,
 	                     StrafeType type,
 	                     StrafeDir dir,
 	                     double target_yaw,
@@ -1072,7 +1070,7 @@ namespace Strafe
 	                     ProcessedFrame& out,
 	                     bool yawChanged)
 	{
-		if (StrafeJump(jumped, player, vars, ducking, out, yawChanged))
+		if (StrafeJump(jumped, player, vars, out, yawChanged))
 		{
 			return;
 		}
@@ -1082,7 +1080,6 @@ namespace Strafe
 		    player,
 		    vars,
 		    jumped,
-		    ducking,
 		    type,
 		    dir,
 		    target_yaw,
@@ -1127,7 +1124,6 @@ namespace Strafe
 	bool Strafe(PlayerData& player,
 	            const MovementVars& vars,
 	            bool jumped,
-	            bool ducking,
 	            StrafeType type,
 	            StrafeDir dir,
 	            double target_yaw,
@@ -1137,11 +1133,7 @@ namespace Strafe
 	            bool useGivenButtons)
 	{
 		//DevMsg("[Strafing] ducking = %d\n", (int)ducking);
-		if (StrafeJump(jumped,
-		               player,
-		               vars,
-		               ducking,
-		               out,
+		if (StrafeJump(jumped, player, vars, out,
 		               false)) // yawChanged == false when calling this function
 		{
 			return vars.OnGround;
@@ -1232,9 +1224,6 @@ namespace Strafe
 		auto newspeed = std::max(speed - drop, 0.f);
 		player.Velocity *= (newspeed / speed);
 	}
-
-	ConVar tas_strafe_lgagst_min("tas_strafe_lgagst_min", "150", FCVAR_TAS_RESET, "");
-	ConVar tas_strafe_lgagst_max("tas_strafe_lgagst_max", "270", FCVAR_TAS_RESET, "");
 
 	bool LgagstJump(PlayerData& player, const MovementVars& vars)
 	{

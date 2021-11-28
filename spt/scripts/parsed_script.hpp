@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include "..\OrangeBox\modules\ClientDLL.hpp"
+#include "..\features\afterframes.hpp"
 
 namespace scripts
 {

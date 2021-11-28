@@ -1,15 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="spt\OrangeBox\modules\EngineDLL.cpp">
-      <Filter>spt\OrangeBox\modules</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\OrangeBox\modules\ServerDLL.cpp">
-      <Filter>spt\OrangeBox\modules</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\OrangeBox\modules\ClientDLL.cpp">
-      <Filter>spt\OrangeBox\modules</Filter>
-    </ClCompile>
     <ClCompile Include="spt\stdafx.cpp">
       <Filter>spt</Filter>
     </ClCompile>
@@ -37,21 +28,6 @@
     <ClCompile Include="SPTLib\IHookableDirFilter.cpp">
       <Filter>SPTLib</Filter>
     </ClCompile>
-    <ClCompile Include="spt\utils\file.cpp">
-      <Filter>spt\utils</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\utils\math.cpp">
-      <Filter>spt\utils</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\utils\string_parsing.cpp">
-      <Filter>spt\utils</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\OrangeBox\modules\vguimatsurfaceDLL.cpp">
-      <Filter>spt\OrangeBox\modules</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\utils\patterncontainer.cpp">
-      <Filter>spt\utils</Filter>
-    </ClCompile>
     <ClCompile Include="SPTLib\Windows\DetoursUtils.cpp">
       <Filter>SPTLib\Windows</Filter>
     </ClCompile>
@@ -64,32 +40,110 @@
     <ClCompile Include="SPTLib\IHookableNameFilterOrdered.cpp">
       <Filter>SPTLib</Filter>
     </ClCompile>
-    <ClCompile Include="spt\utils\ent_utils.cpp">
-      <Filter>spt\utils</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\utils\property_getter.cpp">
-      <Filter>spt\utils</Filter>
-    </ClCompile>
     <ClCompile Include="spt\ipc\ipc.cpp">
-      <Filter>spt\ipc</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\ipc\ipc-spt.cpp">
       <Filter>spt\ipc</Filter>
     </ClCompile>
     <ClCompile Include="thirdparty\md5.cpp">
       <Filter>thirdparty</Filter>
     </ClCompile>
-    <ClCompile Include="spt\ipc\ipc-commands.cpp">
-      <Filter>spt\ipc</Filter>
+    <ClCompile Include="spt\feature.cpp">
+      <Filter>spt</Filter>
     </ClCompile>
-    <ClCompile Include="spt\OrangeBox\modules\inputSystemDLL.cpp">
-      <Filter>spt\OrangeBox\modules</Filter>
+    <ClCompile Include="spt\features\isg.cpp">
+      <Filter>spt\features</Filter>
     </ClCompile>
-    <ClCompile Include="spt\OrangeBox\modules\vphysicsDLL.cpp">
-      <Filter>spt\OrangeBox\modules</Filter>
+    <ClCompile Include="spt\features\shadow.cpp">
+      <Filter>spt\features</Filter>
     </ClCompile>
-    <ClCompile Include="spt\aim\aimstuff.cpp">
-      <Filter>spt\aim</Filter>
+    <ClCompile Include="spt\features\tas.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\playerio.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\generic.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\afterframes.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\pause.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\autojump.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\nosleep.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\hud.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\taspause.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\tickrate.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visual_fixes.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\dmomm.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\overlay.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\demo.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\fov.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\tracing.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\taslogging.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\stucksave.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\timer.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\rng.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\vag.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\ent_props.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\cvar.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\utils\ent_utils.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\utils\file.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\utils\game_detection.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\utils\math.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\utils\property_getter.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\utils\string_parsing.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\spt-serverplugin.cpp">
+      <Filter>spt</Filter>
     </ClCompile>
     <ClCompile Include="spt\overlay\overlay-renderer.cpp">
       <Filter>spt\overlay</Filter>
@@ -99,6 +153,9 @@
     </ClCompile>
     <ClCompile Include="spt\overlay\portal_camera.cpp">
       <Filter>spt\overlay</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\vgui\lines.cpp">
+      <Filter>spt\vgui</Filter>
     </ClCompile>
     <ClCompile Include="spt\scripts\condition.cpp">
       <Filter>spt\scripts</Filter>
@@ -112,7 +169,7 @@
     <ClCompile Include="spt\scripts\srctas_reader.cpp">
       <Filter>spt\scripts</Filter>
     </ClCompile>
-    <ClCompile Include="spt\scripts\test.cpp">
+    <ClCompile Include="spt\scripts\tester.cpp">
       <Filter>spt\scripts</Filter>
     </ClCompile>
     <ClCompile Include="spt\scripts\test_item.cpp">
@@ -127,23 +184,26 @@
     <ClCompile Include="spt\strafe\strafestuff.cpp">
       <Filter>spt\strafe</Filter>
     </ClCompile>
-    <ClCompile Include="spt\vgui\graphics.cpp">
-      <Filter>spt\vgui</Filter>
+    <ClCompile Include="spt\aim\aimstuff.cpp">
+      <Filter>spt\aim</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\utils\signals.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\test.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\graphics.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\ipc-spt.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\aim.cpp">
+      <Filter>spt\features</Filter>
     </ClCompile>
     <ClCompile Include="spt\vgui\vgui_utils.cpp">
       <Filter>spt\vgui</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\OrangeBox\modules.cpp">
-      <Filter>spt\OrangeBox</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\cvars.cpp">
-      <Filter>spt</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\module_hooks.cpp">
-      <Filter>spt</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\spt-serverplugin.cpp">
-      <Filter>spt</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -204,15 +264,6 @@
     <ClInclude Include="..\..\public\vstdlib\vstdlib.h">
       <Filter>SDK includes &amp; libs</Filter>
     </ClInclude>
-    <ClInclude Include="spt\OrangeBox\modules\EngineDLL.hpp">
-      <Filter>spt\OrangeBox\modules</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\OrangeBox\modules\ServerDLL.hpp">
-      <Filter>spt\OrangeBox\modules</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\OrangeBox\modules\ClientDLL.hpp">
-      <Filter>spt\OrangeBox\modules</Filter>
-    </ClInclude>
     <ClInclude Include="SDK\igamemovement.h">
       <Filter>SDK</Filter>
     </ClInclude>
@@ -249,21 +300,6 @@
     <ClInclude Include="SPTLib\IHookableDirFilter.hpp">
       <Filter>SPTLib</Filter>
     </ClInclude>
-    <ClInclude Include="spt\utils\file.hpp">
-      <Filter>spt\utils</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\utils\math.hpp">
-      <Filter>spt\utils</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\utils\string_parsing.hpp">
-      <Filter>spt\utils</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\OrangeBox\modules\vguimatsurfaceDLL.hpp">
-      <Filter>spt\OrangeBox\modules</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\utils\patterncontainer.hpp">
-      <Filter>spt\utils</Filter>
-    </ClInclude>
     <ClInclude Include="SPTLib\Windows\DetoursUtils.hpp">
       <Filter>SPTLib\Windows</Filter>
     </ClInclude>
@@ -273,19 +309,10 @@
     <ClInclude Include="SPTLib\patterns.hpp">
       <Filter>SPTLib</Filter>
     </ClInclude>
-    <ClInclude Include="spt\utils\ent_utils.hpp">
-      <Filter>spt\utils</Filter>
-    </ClInclude>
     <ClInclude Include="SPTLib\patterns_macros.hpp">
       <Filter>SPTLib</Filter>
     </ClInclude>
-    <ClInclude Include="spt\utils\property_getter.hpp">
-      <Filter>spt\utils</Filter>
-    </ClInclude>
     <ClInclude Include="spt\ipc\ipc.hpp">
-      <Filter>spt\ipc</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\ipc\ipc-spt.hpp">
       <Filter>spt\ipc</Filter>
     </ClInclude>
     <ClInclude Include="thirdparty\Delegate.h">
@@ -300,17 +327,80 @@
     <ClInclude Include="thirdparty\Signal.h">
       <Filter>thirdparty</Filter>
     </ClInclude>
-    <ClInclude Include="spt\OrangeBox\modules\inputSystemDLL.hpp">
-      <Filter>spt\OrangeBox\modules</Filter>
-    </ClInclude>
     <ClInclude Include="SDK\usercmd.h">
       <Filter>SDK</Filter>
     </ClInclude>
-    <ClInclude Include="spt\OrangeBox\modules\vphysicsDLL.hpp">
-      <Filter>spt\OrangeBox\modules</Filter>
+    <ClInclude Include="spt\feature.hpp">
+      <Filter>spt</Filter>
     </ClInclude>
-    <ClInclude Include="spt\aim\aimstuff.hpp">
-      <Filter>spt\aim</Filter>
+    <ClInclude Include="spt\features\isg.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\shadow.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\playerio.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\generic.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\afterframes.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\autojump.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\tickrate.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\overlay.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\demo.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\tracing.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\rng.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\convar.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\custom_interfaces.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\ent_utils.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\file.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\game_detection.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\interfaces.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\math.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\property_getter.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\string_parsing.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\cvars.hpp">
+      <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\patterns.hpp">
+      <Filter>spt</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\spt-serverplugin.hpp">
+      <Filter>spt</Filter>
     </ClInclude>
     <ClInclude Include="spt\overlay\overlay-renderer.hpp">
       <Filter>spt\overlay</Filter>
@@ -320,6 +410,9 @@
     </ClInclude>
     <ClInclude Include="spt\overlay\portal_camera.hpp">
       <Filter>spt\overlay</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\vgui\lines.hpp">
+      <Filter>spt\vgui</Filter>
     </ClInclude>
     <ClInclude Include="spt\scripts\condition.hpp">
       <Filter>spt\scripts</Filter>
@@ -336,7 +429,7 @@
     <ClInclude Include="spt\scripts\srctas_reader.hpp">
       <Filter>spt\scripts</Filter>
     </ClInclude>
-    <ClInclude Include="spt\scripts\test.hpp">
+    <ClInclude Include="spt\scripts\tester.hpp">
       <Filter>spt\scripts</Filter>
     </ClInclude>
     <ClInclude Include="spt\scripts\test_item.hpp">
@@ -354,29 +447,17 @@
     <ClInclude Include="spt\strafe\strafestuff.hpp">
       <Filter>spt\strafe</Filter>
     </ClInclude>
-    <ClInclude Include="spt\utils\custom_interfaces.hpp">
+    <ClInclude Include="spt\utils\signals.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
-    <ClInclude Include="spt\vgui\graphics.hpp">
-      <Filter>spt\vgui</Filter>
+    <ClInclude Include="spt\features\aim.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\aim\aimstuff.hpp">
+      <Filter>spt\aim</Filter>
     </ClInclude>
     <ClInclude Include="spt\vgui\vgui_utils.hpp">
       <Filter>spt\vgui</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\OrangeBox\modules.hpp">
-      <Filter>spt\OrangeBox</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\cvars.hpp">
-      <Filter>spt</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\module_hooks.hpp">
-      <Filter>spt</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\patterns.hpp">
-      <Filter>spt</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\spt-serverplugin.hpp">
-      <Filter>spt</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -403,12 +484,6 @@
     <Filter Include="spt">
       <UniqueIdentifier>{42277bb4-807d-445f-8dc9-abaf03016da9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="spt\OrangeBox">
-      <UniqueIdentifier>{74a03d34-0969-405d-838c-fa6350306ddf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="spt\OrangeBox\modules">
-      <UniqueIdentifier>{28768b27-be51-439b-aaa3-cf347347da1b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="SDK">
       <UniqueIdentifier>{78e5a6c2-53a8-40e3-be19-b7e7bc33f3c9}</UniqueIdentifier>
     </Filter>
@@ -427,25 +502,31 @@
     <Filter Include="thirdparty">
       <UniqueIdentifier>{20f959c6-2185-4a22-af30-a22417e39297}</UniqueIdentifier>
     </Filter>
-    <Filter Include="spt\aim">
-      <UniqueIdentifier>{991bc683-8a6e-4057-bb27-25c168cc5245}</UniqueIdentifier>
+    <Filter Include="spt\features">
+      <UniqueIdentifier>{e24a2a7d-8667-4610-887c-f14d62c9fbf7}</UniqueIdentifier>
     </Filter>
     <Filter Include="spt\overlay">
-      <UniqueIdentifier>{43d26e2d-550e-45b1-a8b2-33bcc52d9890}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="spt\scripts">
-      <UniqueIdentifier>{d1f12add-001f-41d4-a8b2-838e953930fe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="spt\strafe">
-      <UniqueIdentifier>{f705307e-d7b6-4917-a46a-152967f43e12}</UniqueIdentifier>
+      <UniqueIdentifier>{a5343f9b-ae64-4b1f-8126-a7964c98afb0}</UniqueIdentifier>
     </Filter>
     <Filter Include="spt\vgui">
-      <UniqueIdentifier>{86def951-a14f-4191-a35a-b1a9fd969cb9}</UniqueIdentifier>
+      <UniqueIdentifier>{ef90278d-c4de-4d5f-b06f-50c99a1d056f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\scripts">
+      <UniqueIdentifier>{a46aaf49-b67f-4f3a-8356-9c9c87901911}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\strafe">
+      <UniqueIdentifier>{8da5a507-6984-4ca8-a309-751bae22e3f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\aim">
+      <UniqueIdentifier>{dddef7ec-c95f-4baa-9f56-d47554ea2e86}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="thirdparty\example.txt">
       <Filter>thirdparty</Filter>
+    </Text>
+    <Text Include="spt\features\template.cpp.txt">
+      <Filter>spt\features</Filter>
     </Text>
   </ItemGroup>
 </Project>

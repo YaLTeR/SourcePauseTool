@@ -5,6 +5,7 @@
 #include "engine\ivmodelinfo.h"
 #include "icliententity.h"
 #include "icliententitylist.h"
+#include "iserverunknown.h"
 #include "trace.h"
 
 namespace utils
@@ -21,9 +22,6 @@ namespace utils
 	};
 
 	void GetAllProps(RecvTable* table, void* ptr, std::vector<propValue>& props);
-	void SetEntityList(IClientEntityList* list);
-	void SetModelInfo(IVModelInfo* modelInfo);
-	void SetClientDLL(IBaseClientDLL* interf);
 	IClientEntity* GetClientEntity(int index);
 	void PrintAllClientEntities();
 	void PrintAllPortals();
@@ -39,6 +37,7 @@ namespace utils
 	void SimulateFrames(int frames);
 	int GetIndex(void* ent);
 #endif
+	IServerUnknown* GetServerPlayer();
 	struct JBData
 	{
 		bool canJB;

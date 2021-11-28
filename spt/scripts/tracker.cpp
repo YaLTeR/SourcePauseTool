@@ -2,8 +2,7 @@
 #include "tracker.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "string_parsing.hpp"
-#include "..\OrangeBox\modules.hpp"
-#include "..\OrangeBox\modules\ClientDLL.hpp"
+#include "..\features\playerio.hpp"
 
 namespace scripts
 {
@@ -48,12 +47,12 @@ namespace scripts
 
 	std::string VelocityTracker::GenerateTestData() const
 	{
-		return GenerateVectorData(clientDLL.GetPlayerVelocity(), decimals);
+		return GenerateVectorData(spt_playerio.GetPlayerVelocity(), decimals);
 	}
 
 	ValidationResult VelocityTracker::Validate(const std::string& expectedValue) const
 	{
-		return VectorValidation(clientDLL.GetPlayerVelocity(), expectedValue, decimals);
+		return VectorValidation(spt_playerio.GetPlayerVelocity(), expectedValue, decimals);
 	}
 
 	std::string VelocityTracker::TrackerName() const
@@ -68,12 +67,12 @@ namespace scripts
 
 	std::string PosTracker::GenerateTestData() const
 	{
-		return GenerateVectorData(clientDLL.GetPlayerEyePos(), decimals);
+		return GenerateVectorData(spt_playerio.GetPlayerEyePos(), decimals);
 	}
 
 	ValidationResult PosTracker::Validate(const std::string& expectedValue) const
 	{
-		return VectorValidation(clientDLL.GetPlayerEyePos(), expectedValue, decimals);
+		return VectorValidation(spt_playerio.GetPlayerEyePos(), expectedValue, decimals);
 	}
 
 	std::string PosTracker::TrackerName() const

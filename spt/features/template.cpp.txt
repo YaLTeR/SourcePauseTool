@@ -1,0 +1,29 @@
+#include "stdafx.h"
+#include "..\feature.hpp"
+
+// Feature description
+class TemplateFeature : public Feature
+{
+public:
+protected:
+	virtual bool ShouldLoadFeature() override;
+
+	virtual void InitHooks() override;
+
+	virtual void LoadFeature() override;
+
+	virtual void UnloadFeature() override;
+};
+
+static TemplateFeature _template_feature_name;
+
+bool TemplateFeature::ShouldLoadFeature()
+{
+	return true;
+}
+
+void TemplateFeature::InitHooks() {}
+
+void TemplateFeature::LoadFeature() {}
+
+void TemplateFeature::UnloadFeature() {}
