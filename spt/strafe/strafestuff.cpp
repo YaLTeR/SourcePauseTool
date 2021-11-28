@@ -1,4 +1,4 @@
-#include "stdafx.hpp"
+#include "..\stdafx.hpp"
 
 #ifdef OE
 #include "mathlib.h"
@@ -9,19 +9,19 @@
 #include <iomanip>
 #include <sstream>
 
-#include "OrangeBox/cvars.hpp"
-#include "OrangeBox/module_hooks.hpp"
-#include "OrangeBox/modules.hpp"
-#include "OrangeBox/modules/ClientDLL.hpp"
+#include "../cvars.hpp"
+#include "../module_hooks.hpp"
+#include "../OrangeBox/modules.hpp"
+#include "../OrangeBox/modules/ClientDLL.hpp"
 #include "const.h"
 #include "strafe_utils.hpp"
 #include "strafestuff.hpp"
-#include "utils/ent_utils.hpp"
-#include "utils/math.hpp"
-#include "utils/property_getter.hpp"
+#include "ent_utils.hpp"
+#include "math.hpp"
+#include "property_getter.hpp"
 
 #ifndef OE
-#include "OrangeBox/overlay/portal_camera.hpp"
+#include "../overlay/portal_camera.hpp"
 #endif
 
 #ifdef max

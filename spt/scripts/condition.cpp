@@ -2,13 +2,13 @@
 
 #include "condition.hpp"
 
-#include <spt\OrangeBox\overlay\portal_camera.hpp>
+#include "spt\overlay\portal_camera.hpp"
 
-#include "..\..\utils\ent_utils.hpp"
-#include "..\..\utils\math.hpp"
-#include "..\..\utils\property_getter.hpp"
-#include "..\modules.hpp"
-#include "..\modules\ClientDLL.hpp"
+#include "ent_utils.hpp"
+#include "math.hpp"
+#include "property_getter.hpp"
+#include "..\OrangeBox\modules.hpp"
+#include "..\OrangeBox\modules\ClientDLL.hpp"
 
 namespace scripts
 {

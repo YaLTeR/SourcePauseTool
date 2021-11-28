@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "parsed_script.hpp"
 #include "..\spt-serverplugin.hpp"
-#include "..\..\utils\file.hpp"
+#include "file.hpp"
 #include "..\cvars.hpp"
-#include "..\modules.hpp"
+#include "..\OrangeBox\modules.hpp"
 #include "framebulk_handler.hpp"
 #include "thirdparty\md5.hpp"
 

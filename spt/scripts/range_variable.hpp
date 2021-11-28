@@ -1,8 +1,8 @@
 #pragma once
 #include <random>
 #include <sstream>
-#include "..\..\utils\math.hpp"
-#include "..\..\utils\string_parsing.hpp"
+#include "math.hpp"
+#include "string_parsing.hpp"
 
 namespace scripts
 {

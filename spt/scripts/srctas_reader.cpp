@@ -4,13 +4,13 @@
 
 #include "..\spt-serverplugin.hpp"
 
-#include "..\..\sptlib-wrapper.hpp"
-#include "..\..\utils\math.hpp"
-#include "..\..\utils\string_parsing.hpp"
+#include "..\sptlib-wrapper.hpp"
+#include "math.hpp"
+#include "string_parsing.hpp"
 #include "..\cvars.hpp"
-#include "..\modules.hpp"
-#include "..\modules\ClientDLL.hpp"
-#include "..\modules\EngineDLL.hpp"
+#include "..\OrangeBox\modules.hpp"
+#include "..\OrangeBox\modules\ClientDLL.hpp"
+#include "..\OrangeBox\modules\EngineDLL.hpp"
 #include "framebulk_handler.hpp"
 
 namespace scripts

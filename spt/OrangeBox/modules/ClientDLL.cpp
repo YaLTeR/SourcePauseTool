@@ -6,14 +6,14 @@
 #include <SPTLib\memutils.hpp>
 
 #include "..\..\sptlib-wrapper.hpp"
-#include "..\..\strafestuff.hpp"
+#include "..\strafe\strafestuff.hpp"
 #include "..\cvars.hpp"
 #include "..\modules.hpp"
 #include "..\overlay\overlay-renderer.hpp"
 #include "..\patterns.hpp"
 #include "..\scripts\srctas_reader.hpp"
-#include "..\scripts\tests\test.hpp"
-#include "..\..\aim.hpp"
+#include "..\scripts\test.hpp"
+#include "..\aim\aimstuff.hpp"
 #include "bspflags.h"
 
 #ifdef max

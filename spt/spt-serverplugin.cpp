@@ -11,9 +11,9 @@
 #include "..\utils\string_parsing.hpp"
 #include "custom_interfaces.hpp"
 #include "cvars.hpp"
-#include "modules.hpp"
+#include "OrangeBox\modules.hpp"
 #include "scripts\srctas_reader.hpp"
-#include "scripts\tests\test.hpp"
+#include "scripts\test.hpp"
 #include "..\ipc\ipc-spt.hpp"
 #include "vstdlib\random.h"
 

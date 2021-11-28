@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include "..\modules\ClientDLL.hpp"
+#include "..\OrangeBox\modules\ClientDLL.hpp"
 
 namespace scripts
 {
