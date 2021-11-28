@@ -1,12 +1,12 @@
 #include "stdafx.h"
 
-#include "aim.hpp"
+#include "aimstuff.hpp"
 
 #include "convar.h"
-#include "OrangeBox/modules.hpp"
-#include "utils/math.hpp"
-#include "utils/ent_utils.hpp"
-#include "OrangeBox/cvars.hpp"
+#include "../OrangeBox/modules.hpp"
+#include "math.hpp"
+#include "ent_utils.hpp"
+#include "../cvars.hpp"
 #include "spt/sptlib-wrapper.hpp"
 #include "tier1/checksum_md5.h"
 

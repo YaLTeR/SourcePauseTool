@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "tracker.hpp"
-#include "..\..\..\sptlib-wrapper.hpp"
-#include "..\..\..\utils\string_parsing.hpp"
-#include "..\..\modules.hpp"
-#include "..\..\modules\ClientDLL.hpp"
+#include "..\sptlib-wrapper.hpp"
+#include "string_parsing.hpp"
+#include "..\OrangeBox\modules.hpp"
+#include "..\OrangeBox\modules\ClientDLL.hpp"
 
 namespace scripts
 {

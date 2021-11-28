@@ -1,7 +1,7 @@
 #include "cvars.hpp"
 
 #include "convar.h"
-#include "modules.hpp"
+#include "OrangeBox\modules.hpp"
 
 ConVar y_spt_pause("y_spt_pause", "0", FCVAR_ARCHIVE);
 ConVar y_spt_motion_blur_fix("y_spt_motion_blur_fix", "0");

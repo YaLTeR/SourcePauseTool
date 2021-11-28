@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "convar.h"
-#include "spt\OrangeBox\spt-serverplugin.hpp"
+#include "spt\spt-serverplugin.hpp"
 #include "thirdparty\json.hpp"
 #include "ipc-spt.hpp"
 #include "spt\utils\ent_utils.hpp"
 #include "spt\utils\property_getter.hpp"
 #include "spt\utils\string_parsing.hpp"
-#include "spt\OrangeBox\scripts\srctas_reader.hpp"
+#include "spt\scripts\srctas_reader.hpp"
 
 void MapPropToJson(RecvProp* prop, void* ptr, nlohmann::json& msg)
 {

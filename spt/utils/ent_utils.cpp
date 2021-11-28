@@ -6,14 +6,14 @@
 #include <regex>
 #include <vector>
 
-#include "..\OrangeBox\spt-serverplugin.hpp"
-#include "..\OrangeBox\cvars.hpp"
+#include "..\spt-serverplugin.hpp"
+#include "..\cvars.hpp"
 #include "..\OrangeBox\modules.hpp"
 #include "..\OrangeBox\modules\ClientDLL.hpp"
 #include "..\OrangeBox\modules\ServerDLL.hpp"
-#include "..\OrangeBox\overlay\portal_camera.hpp"
+#include "..\overlay\portal_camera.hpp"
 #include "..\sptlib-wrapper.hpp"
-#include "..\strafestuff.hpp"
+#include "..\strafe\strafestuff.hpp"
 #include "SPTLib\sptlib.hpp"
 #include "client_class.h"
 #include "property_getter.hpp"

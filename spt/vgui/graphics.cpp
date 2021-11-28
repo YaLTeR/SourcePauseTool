@@ -2,10 +2,10 @@
 #include "graphics.hpp"
 #include "convar.h"
 #include "..\spt-serverplugin.hpp"
-#include "..\..\sptlib-wrapper.hpp"
-#include "..\modules.hpp"
-#include "..\..\utils\ent_utils.hpp"
-#include "..\..\utils\property_getter.hpp"
+#include "..\sptlib-wrapper.hpp"
+#include "..\OrangeBox\modules.hpp"
+#include "ent_utils.hpp"
+#include "property_getter.hpp"
 
 ConVar y_spt_drawseams("y_spt_drawseams", "0", FCVAR_CHEAT, "Draws seamshot stuff.\n");
 

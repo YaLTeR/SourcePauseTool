@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "test_item.hpp"
 #include <fstream>
-#include "..\..\..\utils\string_parsing.hpp"
+#include "string_parsing.hpp"
 #include "dbg.h"
 
 namespace scripts

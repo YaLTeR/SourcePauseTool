@@ -1,11 +1,11 @@
 #include "stdafx.h"
 
 #ifndef OE
-#include "..\..\sptlib-wrapper.hpp"
-#include "..\..\utils\ent_utils.hpp"
-#include "..\..\utils\math.hpp"
-#include "..\modules.hpp"
-#include "..\modules\ClientDLL.hpp"
+#include "..\sptlib-wrapper.hpp"
+#include "ent_utils.hpp"
+#include "math.hpp"
+#include "..\OrangeBox\modules.hpp"
+#include "..\OrangeBox\modules\ClientDLL.hpp"
 #include "overlays.hpp"
 #include "portal_camera.hpp"
 
