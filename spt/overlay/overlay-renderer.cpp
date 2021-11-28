@@ -3,8 +3,6 @@
 #ifndef OE
 #include "..\spt-serverplugin.hpp"
 #include "..\cvars.hpp"
-#include "..\OrangeBox\modules.hpp"
-#include "..\OrangeBox\modules\ClientDLL.hpp"
 #include "SDK\hl_movedata.h"
 #include "overlay-renderer.hpp"
 #include "overlays.hpp"

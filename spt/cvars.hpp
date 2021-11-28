@@ -1,6 +1,6 @@
 #pragma once
 
-#include "convar.h"
+#include "convar.hpp"
 
 #define FCVAR_TAS_RESET (1 << 31)
 
@@ -8,18 +8,22 @@ extern ConVar y_spt_pause;
 extern ConVar y_spt_motion_blur_fix;
 extern ConVar y_spt_autojump;
 extern ConVar y_spt_additional_jumpboost;
+extern ConVar y_spt_focus_nosleep;
 extern ConVar y_spt_stucksave;
 extern ConVar y_spt_piwsave;
 extern ConVar y_spt_pause_demo_on_tick;
 extern ConVar y_spt_on_slide_pause_for;
 extern ConVar y_spt_prevent_vag_crash;
 extern ConVar y_spt_disable_tone_map_reset;
+extern ConVar y_spt_drawseams;
 
 extern ConVar tas_strafe;
 extern ConVar tas_strafe_type;
 extern ConVar tas_strafe_dir;
 extern ConVar tas_strafe_yaw;
 extern ConVar tas_strafe_buttons;
+extern ConVar tas_strafe_afh;
+extern ConVar tas_strafe_afh_length;
 
 extern ConVar tas_strafe_vectorial;
 extern ConVar tas_strafe_vectorial_increment;
@@ -33,9 +37,12 @@ extern ConVar tas_reset_surface_friction;
 
 extern ConVar tas_force_onground;
 
+extern ConVar tas_anglespeed;
 extern ConVar tas_pause;
 extern ConVar tas_log;
 extern ConVar tas_strafe_lgagst;
+extern ConVar tas_strafe_lgagst_max;
+extern ConVar tas_strafe_lgagst_min;
 extern ConVar tas_strafe_lgagst_minspeed;
 extern ConVar tas_strafe_lgagst_fullmaxspeed;
 extern ConVar tas_strafe_jumptype;

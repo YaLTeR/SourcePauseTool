@@ -128,7 +128,7 @@ namespace patterns
 		    "missinginfo1_6",
 		    "55 8B EC A1 ?? ?? ?? ?? 81 EC ?? ?? ?? ?? 83 78 30 00 0F 84 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 8B 11");
 		PATTERNS(
-		    CheckJumpButton,
+		    CheckJumpButton_client,
 		    "5135",
 		    "83 EC 18 56 8B F1 8B 4E 04 80 B9 74 0F 00 00 00 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 83 C4 18 C3 D9 EE D8 91 6C 10 00 00",
 		    "4104",

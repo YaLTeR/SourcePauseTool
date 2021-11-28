@@ -36,6 +36,7 @@ namespace Strafe
 		float Bounce;
 
 		bool OnGround;
+		bool CantJump;
 		bool ReduceWishspeed;
 	};
 
@@ -84,6 +85,7 @@ namespace Strafe
 		bool Right;
 		bool Left;
 		bool Jump;
+		bool ForceUnduck;
 
 		double Yaw;
 		float ForwardSpeed;
@@ -99,6 +101,7 @@ namespace Strafe
 		    , Yaw(0)
 		    , ForwardSpeed(0)
 		    , SideSpeed(0)
+		    , ForceUnduck(false)
 		{
 		}
 	};
@@ -211,7 +214,6 @@ namespace Strafe
 	void StrafeVectorial(PlayerData& player,
 	                     const MovementVars& vars,
 	                     bool jumped,
-	                     bool ducking,
 	                     StrafeType type,
 	                     StrafeDir dir,
 	                     double target_yaw,
@@ -222,7 +224,6 @@ namespace Strafe
 	bool Strafe(PlayerData& player,
 	            const MovementVars& vars,
 	            bool jumped,
-	            bool ducking,
 	            StrafeType type,
 	            StrafeDir dir,
 	            double target_yaw,

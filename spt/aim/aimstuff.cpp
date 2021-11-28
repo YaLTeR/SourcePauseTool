@@ -2,18 +2,16 @@
 
 #include "aimstuff.hpp"
 
-#include "convar.h"
-#include "../OrangeBox/modules.hpp"
+#include "convar.hpp"
 #include "math.hpp"
 #include "ent_utils.hpp"
-#include "../cvars.hpp"
+#include "..\cvars.hpp"
 #include "spt/sptlib-wrapper.hpp"
-#include "tier1/checksum_md5.h"
+#include "..\features\rng.hpp"
+#include "..\spt-serverplugin.hpp"
 
-ConVar tas_anglespeed("tas_anglespeed",
-                      "5",
-                      FCVAR_CHEAT,
-                      "Determines the speed of angle changes when using tas_aim or when TAS strafing\n");
+#undef max
+#undef min
 
 namespace aim
 {
@@ -71,98 +69,84 @@ namespace aim
 		}
 	}
 
-	struct ViewState
+	ViewState::ViewState()
 	{
-		QAngle current;
-		QAngle target;
-
-		int ticksLeft;
-		bool set;
-		bool timedChange;
-		bool jumpedLastTick;
-
-		ViewState()
-		{
-			ticksLeft = 0;
-			set = false;
-			timedChange = false;
-			jumpedLastTick = false;
-		}
-
-		float CalculateNewYaw(float newYaw)
-		{
-			if (!set && tas_strafe.GetBool() && tas_strafe_vectorial.GetBool()
-			    && tas_strafe_version.GetInt() >= 4)
-			{
-				float targetYaw = utils::NormalizeDeg(tas_strafe_yaw.GetFloat()
-				                                      + tas_strafe_vectorial_offset.GetFloat());
-				current[YAW] = angleChange(newYaw,
-				                           current[YAW],
-				                           targetYaw,
-				                           tas_anglespeed.GetFloat(),
-				                           false,
-				                           0,
-				                           true,
-				                           jumpedLastTick);
-			}
-			else if (set)
-			{
-				current[YAW] = angleChange(newYaw,
-				                           current[YAW],
-				                           target[YAW],
-				                           tas_anglespeed.GetFloat(),
-				                           timedChange,
-				                           ticksLeft,
-				                           true,
-				                           jumpedLastTick);
-			}
-			else
-			{
-				current[YAW] = newYaw;
-			}
-
-			return current[YAW];
-		}
-
-		float CalculateNewPitch(float newPitch)
-		{
-			if (set)
-				current[PITCH] = angleChange(newPitch,
-				                             current[PITCH],
-				                             target[PITCH],
-				                             tas_anglespeed.GetFloat(),
-				                             timedChange,
-				                             ticksLeft,
-				                             false,
-				                             jumpedLastTick);
-			else
-				current[PITCH] = newPitch;
-			return current[PITCH];
-		}
-	};
-
-	static ViewState g_viewState;
-
-	void UpdateView(float& pitch, float& yaw)
-	{
-		pitch = g_viewState.CalculateNewPitch(pitch);
-		yaw = g_viewState.CalculateNewYaw(yaw);
-
-		if (g_viewState.timedChange && g_viewState.ticksLeft > 0)
-		{
-			--g_viewState.ticksLeft;
-			if (g_viewState.ticksLeft == 0)
-			{
-				g_viewState.timedChange = false;
-			}
-		}
-
-		g_viewState.jumpedLastTick = false;
+		ticksLeft = 0;
+		set = false;
+		timedChange = false;
+		jumpedLastTick = false;
 	}
 
-	void SetJump()
+	float ViewState::CalculateNewYaw(float newYaw)
 	{
-		g_viewState.jumpedLastTick = true;
+		if (!set && tas_strafe.GetBool() && tas_strafe_vectorial.GetBool() && tas_strafe_version.GetInt() >= 4)
+		{
+			float targetYaw =
+			    utils::NormalizeDeg(tas_strafe_yaw.GetFloat() + tas_strafe_vectorial_offset.GetFloat());
+			current[YAW] = angleChange(newYaw,
+			                           current[YAW],
+			                           targetYaw,
+			                           tas_anglespeed.GetFloat(),
+			                           false,
+			                           0,
+			                           true,
+			                           jumpedLastTick);
+		}
+		else if (set)
+		{
+			current[YAW] = angleChange(newYaw,
+			                           current[YAW],
+			                           target[YAW],
+			                           tas_anglespeed.GetFloat(),
+			                           timedChange,
+			                           ticksLeft,
+			                           true,
+			                           jumpedLastTick);
+		}
+		else
+		{
+			current[YAW] = newYaw;
+		}
+
+		return current[YAW];
+	}
+
+	float ViewState::CalculateNewPitch(float newPitch)
+	{
+		if (set)
+			current[PITCH] = angleChange(newPitch,
+			                             current[PITCH],
+			                             target[PITCH],
+			                             tas_anglespeed.GetFloat(),
+			                             timedChange,
+			                             ticksLeft,
+			                             false,
+			                             jumpedLastTick);
+		else
+			current[PITCH] = newPitch;
+		return current[PITCH];
+	}
+
+	void ViewState::UpdateView(float& pitch, float& yaw)
+	{
+		pitch = CalculateNewPitch(pitch);
+		yaw = CalculateNewYaw(yaw);
+
+		if (timedChange && ticksLeft > 0)
+		{
+			--ticksLeft;
+			if (ticksLeft == 0)
+			{
+				timedChange = false;
+			}
+		}
+
+		jumpedLastTick = false;
+	}
+
+	void ViewState::SetJump()
+	{
+		jumpedLastTick = true;
 	}
 
 #define IA 16807
@@ -286,7 +270,7 @@ namespace aim
 #define VECTOR_CONE_15DEGREES Vector(0.13053, 0.13053, 0.13053)
 #define VECTOR_CONE_20DEGREES Vector(0.17365, 0.17365, 0.17365)
 
-	static bool GetCone(int cone, Vector& out)
+	bool GetCone(int cone, Vector& out)
 	{
 #define DegreeCase(degree) \
 	case degree: \
@@ -325,9 +309,7 @@ namespace aim
 		float shotBias = ((shotBiasMax - shotBiasMin) * bias) + shotBiasMin;
 		float flatness = (fabsf(shotBias) * 0.5);
 
-		int command_number = serverDLL.GetCommandNumber() + commandOffset;
-		int predictionRandomSeed = MD5_PseudoRandom(command_number) & 0x7fffffff;
-		int seed = predictionRandomSeed & 255;
+		int seed = spt_rng.GetPredictionRandomSeed(commandOffset) & 255;
 		random.SetSeed(seed);
 
 		do
@@ -344,10 +326,7 @@ namespace aim
 	}
 
 	// Iteratively improves the optimal aim angle
-	static void GetAimAngleIterative(const QAngle& target,
-	                                 QAngle& current,
-	                                 int commandOffset,
-	                                 const Vector& vecSpread)
+	void GetAimAngleIterative(const QAngle& target, QAngle& current, int commandOffset, const Vector& vecSpread)
 	{
 		// v = aim angle after spread
 		// z = target aim angle
@@ -379,7 +358,7 @@ namespace aim
 	constexpr float PUNCH_DAMPING = 9.0f;
 	constexpr float PUNCH_SPRING_CONSTANT = 65.0f;
 
-	static QAngle DecayPunchAngle(QAngle m_vecPunchAngle, QAngle m_vecPunchAngleVel, int frames)
+	QAngle DecayPunchAngle(QAngle m_vecPunchAngle, QAngle m_vecPunchAngleVel, int frames)
 	{
 		const float frametime = 0.015f;
 		for (int i = 0; i < frames; ++i)
@@ -414,83 +393,4 @@ namespace aim
 
 		return m_vecPunchAngle;
 	}
-
-	CON_COMMAND(tas_aim_reset, "Resets tas_aim state")
-	{
-		g_viewState.set = false;
-		g_viewState.ticksLeft = 0;
-		g_viewState.timedChange = false;
-		g_viewState.jumpedLastTick = false;
-	}
-
-	CON_COMMAND(tas_aim, "Aims at a point.")
-	{
-#ifdef OE
-		ArgsWrapper args;
-#endif
-
-		if (args.ArgC() < 3)
-		{
-			Msg("Usage: tas_aim <pitch> <yaw> [ticks] [cone]\nWeapon cones(in degrees):\n\t- AR2: 3\n\t- Pistol & SMG: 5\n");
-			return;
-		}
-
-		float pitch = clamp(std::atof(args.Arg(1)), -89, 89);
-		float yaw = utils::NormalizeDeg(std::atof(args.Arg(2)));
-		int frames = -1;
-		int cone = -1;
-
-		if (args.ArgC() >= 4)
-			frames = std::atoi(args.Arg(3));
-
-		if (args.ArgC() >= 5)
-			cone = std::atoi(args.Arg(4));
-
-		QAngle angle(pitch, yaw, 0);
-		QAngle aimAngle = angle;
-
-		if (cone >= 0)
-		{
-			if (!utils::playerEntityAvailable())
-			{
-				Warning(
-				    "Trying to apply nospread while map not loaded in! Wait until map is loaded before issuing tas_aim with spread cone set.\n");
-				return;
-			}
-
-			Vector vecSpread;
-			if (!GetCone(cone, vecSpread))
-			{
-				Warning("Couldn't find cone: %s\n", args.Arg(4));
-				return;
-			}
-
-			// Even the first approximation seems to be relatively accurate and it seems to converge after 2nd iteration
-			for (int i = 0; i < 2; ++i)
-				GetAimAngleIterative(angle, aimAngle, frames, vecSpread);
-
-			QAngle punchAngle, punchAnglevel;
-
-			if (utils::GetPunchAngleInformation(punchAngle, punchAnglevel))
-			{
-				QAngle futurePunchAngle = DecayPunchAngle(punchAngle, punchAnglevel, frames);
-				aimAngle -= futurePunchAngle;
-				aimAngle[PITCH] = clamp(aimAngle[PITCH], -89, 89);
-			}
-		}
-
-		g_viewState.set = true;
-		g_viewState.target = aimAngle;
-
-		if (frames == -1)
-		{
-			g_viewState.timedChange = false;
-		}
-		else
-		{
-			g_viewState.timedChange = true;
-			g_viewState.ticksLeft = std::max(1, frames);
-		}
-	}
-
 } // namespace aim

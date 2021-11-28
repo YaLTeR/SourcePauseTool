@@ -1365,73 +1365,37 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="spt\aim\aimstuff.cpp" />
-    <ClCompile Include="spt\cvars.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug P2|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="spt\ipc\ipc-commands.cpp" />
-    <ClCompile Include="spt\ipc\ipc-spt.cpp" />
+    <ClCompile Include="spt\feature.cpp" />
+    <ClCompile Include="spt\features\afterframes.cpp" />
+    <ClCompile Include="spt\features\aim.cpp" />
+    <ClCompile Include="spt\features\autojump.cpp" />
+    <ClCompile Include="spt\features\cvar.cpp" />
+    <ClCompile Include="spt\features\demo.cpp" />
+    <ClCompile Include="spt\features\dmomm.cpp" />
+    <ClCompile Include="spt\features\ent_props.cpp" />
+    <ClCompile Include="spt\features\fov.cpp" />
+    <ClCompile Include="spt\features\generic.cpp" />
+    <ClCompile Include="spt\features\graphics.cpp" />
+    <ClCompile Include="spt\features\hud.cpp" />
+    <ClCompile Include="spt\features\ipc-spt.cpp" />
+    <ClCompile Include="spt\features\isg.cpp" />
+    <ClCompile Include="spt\features\nosleep.cpp" />
+    <ClCompile Include="spt\features\overlay.cpp" />
+    <ClCompile Include="spt\features\pause.cpp" />
+    <ClCompile Include="spt\features\playerio.cpp" />
+    <ClCompile Include="spt\features\rng.cpp" />
+    <ClCompile Include="spt\features\shadow.cpp" />
+    <ClCompile Include="spt\features\stucksave.cpp" />
+    <ClCompile Include="spt\features\tas.cpp" />
+    <ClCompile Include="spt\features\taslogging.cpp" />
+    <ClCompile Include="spt\features\taspause.cpp" />
+    <ClCompile Include="spt\features\test.cpp" />
+    <ClCompile Include="spt\features\tickrate.cpp" />
+    <ClCompile Include="spt\features\timer.cpp" />
+    <ClCompile Include="spt\features\tracing.cpp" />
+    <ClCompile Include="spt\features\vag.cpp" />
+    <ClCompile Include="spt\features\visual_fixes.cpp" />
     <ClCompile Include="spt\ipc\ipc.cpp" />
-    <ClCompile Include="spt\module_hooks.cpp" />
-    <ClCompile Include="spt\OrangeBox\modules.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug P2|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="spt\OrangeBox\modules\inputSystemDLL.cpp" />
-    <ClCompile Include="spt\OrangeBox\modules\vphysicsDLL.cpp" />
-    <ClCompile Include="spt\overlay\overlay-renderer.cpp" />
-    <ClCompile Include="spt\overlay\overlays.cpp" />
-    <ClCompile Include="spt\overlay\portal_camera.cpp" />
-    <ClCompile Include="spt\scripts\condition.cpp" />
-    <ClCompile Include="spt\scripts\framebulk_handler.cpp" />
-    <ClCompile Include="spt\scripts\parsed_script.cpp" />
-    <ClCompile Include="spt\scripts\srctas_reader.cpp" />
-    <ClCompile Include="spt\scripts\test.cpp" />
-    <ClCompile Include="spt\scripts\test_item.cpp" />
-    <ClCompile Include="spt\scripts\tracker.cpp" />
-    <ClCompile Include="spt\scripts\variable_container.cpp" />
-    <ClCompile Include="spt\spt-serverplugin.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug P2|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="spt\strafe\strafestuff.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug P2|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="spt\utils\ent_utils.cpp" />
-    <ClCompile Include="spt\utils\patterncontainer.cpp" />
     <ClCompile Include="sptlib\sptlib.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">sptlib-stdafx.hpp</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug P2|Win32'">sptlib-stdafx.hpp</PrecompiledHeaderFile>
@@ -1514,157 +1478,18 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="spt\OrangeBox\modules\ClientDLL.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug P2|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug P2|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">Use</PrecompiledHeader>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug P2|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdcpp14</LanguageStandard>
-    </ClCompile>
-    <ClCompile Include="spt\OrangeBox\modules\EngineDLL.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug P2|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug P2|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdcpp14</LanguageStandard>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug P2|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="spt\OrangeBox\modules\ServerDLL.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug P2|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug P2|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">Use</PrecompiledHeader>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug P2|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdcpp14</LanguageStandard>
-    </ClCompile>
-    <ClCompile Include="spt\OrangeBox\modules\vguimatsurfaceDLL.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug P2|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">Use</PrecompiledHeader>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug P2|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">stdcpp14</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">stdcpp14</LanguageStandard>
-    </ClCompile>
+    <ClCompile Include="spt\overlay\overlay-renderer.cpp" />
+    <ClCompile Include="spt\overlay\overlays.cpp" />
+    <ClCompile Include="spt\overlay\portal_camera.cpp" />
+    <ClCompile Include="spt\scripts\condition.cpp" />
+    <ClCompile Include="spt\scripts\framebulk_handler.cpp" />
+    <ClCompile Include="spt\scripts\parsed_script.cpp" />
+    <ClCompile Include="spt\scripts\srctas_reader.cpp" />
+    <ClCompile Include="spt\scripts\tester.cpp" />
+    <ClCompile Include="spt\scripts\test_item.cpp" />
+    <ClCompile Include="spt\scripts\tracker.cpp" />
+    <ClCompile Include="spt\scripts\variable_container.cpp" />
+    <ClCompile Include="spt\spt-serverplugin.cpp" />
     <ClCompile Include="spt\sptlib-wrapper.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug P2|Win32'">NotUsing</PrecompiledHeader>
@@ -1708,11 +1533,15 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release P2|Win32'">stdafx.hpp</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">stdafx.hpp</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="spt\strafe\strafestuff.cpp" />
+    <ClCompile Include="spt\utils\ent_utils.cpp" />
     <ClCompile Include="spt\utils\file.cpp" />
+    <ClCompile Include="spt\utils\game_detection.cpp" />
     <ClCompile Include="spt\utils\math.cpp" />
     <ClCompile Include="spt\utils\property_getter.cpp" />
+    <ClCompile Include="spt\utils\signals.cpp" />
     <ClCompile Include="spt\utils\string_parsing.cpp" />
-    <ClCompile Include="spt\vgui\graphics.cpp" />
+    <ClCompile Include="spt\vgui\lines.cpp" />
     <ClCompile Include="spt\vgui\vgui_utils.cpp" />
     <ClCompile Include="thirdparty\md5.cpp" />
   </ItemGroup>
@@ -1758,12 +1587,20 @@
     <ClInclude Include="SPTLib\Windows\DetoursUtils.hpp" />
     <ClInclude Include="spt\aim\aimstuff.hpp" />
     <ClInclude Include="spt\cvars.hpp" />
-    <ClInclude Include="spt\ipc\ipc-spt.hpp" />
+    <ClInclude Include="spt\feature.hpp" />
+    <ClInclude Include="spt\features\afterframes.hpp" />
+    <ClInclude Include="spt\features\aim.hpp" />
+    <ClInclude Include="spt\features\autojump.hpp" />
+    <ClInclude Include="spt\features\demo.hpp" />
+    <ClInclude Include="spt\features\generic.hpp" />
+    <ClInclude Include="spt\features\isg.hpp" />
+    <ClInclude Include="spt\features\overlay.hpp" />
+    <ClInclude Include="spt\features\playerio.hpp" />
+    <ClInclude Include="spt\features\rng.hpp" />
+    <ClInclude Include="spt\features\shadow.hpp" />
+    <ClInclude Include="spt\features\tickrate.hpp" />
+    <ClInclude Include="spt\features\tracing.hpp" />
     <ClInclude Include="spt\ipc\ipc.hpp" />
-    <ClInclude Include="spt\module_hooks.hpp" />
-    <ClInclude Include="spt\OrangeBox\modules.hpp" />
-    <ClInclude Include="spt\OrangeBox\modules\inputSystemDLL.hpp" />
-    <ClInclude Include="spt\OrangeBox\modules\vphysicsDLL.hpp" />
     <ClInclude Include="spt\overlay\overlay-renderer.hpp" />
     <ClInclude Include="spt\overlay\overlays.hpp" />
     <ClInclude Include="spt\overlay\portal_camera.hpp" />
@@ -1773,29 +1610,28 @@
     <ClInclude Include="spt\scripts\parsed_script.hpp" />
     <ClInclude Include="spt\scripts\range_variable.hpp" />
     <ClInclude Include="spt\scripts\srctas_reader.hpp" />
-    <ClInclude Include="spt\scripts\test.hpp" />
+    <ClInclude Include="spt\scripts\tester.hpp" />
     <ClInclude Include="spt\scripts\test_item.hpp" />
     <ClInclude Include="spt\scripts\tracker.hpp" />
     <ClInclude Include="spt\scripts\variable_container.hpp" />
     <ClInclude Include="spt\spt-serverplugin.hpp" />
-    <ClInclude Include="spt\strafe\strafestuff.hpp" />
-    <ClInclude Include="spt\strafe\strafe_utils.hpp" />
-    <ClInclude Include="spt\utils\custom_interfaces.hpp" />
-    <ClInclude Include="spt\utils\ent_utils.hpp" />
-    <ClInclude Include="spt\utils\patterncontainer.hpp" />
     <ClInclude Include="sptlib\sptlib.hpp" />
     <ClInclude Include="sptlib\sptlib-stdafx.hpp" />
-    <ClInclude Include="spt\OrangeBox\modules\ClientDLL.hpp" />
-    <ClInclude Include="spt\OrangeBox\modules\EngineDLL.hpp" />
-    <ClInclude Include="spt\OrangeBox\modules\ServerDLL.hpp" />
-    <ClInclude Include="spt\OrangeBox\modules\vguimatsurfaceDLL.hpp" />
     <ClInclude Include="spt\sptlib-wrapper.hpp" />
     <ClInclude Include="spt\stdafx.hpp" />
+    <ClInclude Include="spt\strafe\strafestuff.hpp" />
+    <ClInclude Include="spt\strafe\strafe_utils.hpp" />
+    <ClInclude Include="spt\utils\convar.hpp" />
+    <ClInclude Include="spt\utils\custom_interfaces.hpp" />
+    <ClInclude Include="spt\utils\ent_utils.hpp" />
     <ClInclude Include="spt\utils\file.hpp" />
+    <ClInclude Include="spt\utils\game_detection.hpp" />
+    <ClInclude Include="spt\utils\interfaces.hpp" />
     <ClInclude Include="spt\utils\math.hpp" />
     <ClInclude Include="spt\utils\property_getter.hpp" />
+    <ClInclude Include="spt\utils\signals.hpp" />
     <ClInclude Include="spt\utils\string_parsing.hpp" />
-    <ClInclude Include="spt\vgui\graphics.hpp" />
+    <ClInclude Include="spt\vgui\lines.hpp" />
     <ClInclude Include="spt\vgui\vgui_utils.hpp" />
     <ClInclude Include="thirdparty\Delegate.h" />
     <ClInclude Include="thirdparty\json.hpp" />
@@ -1808,6 +1644,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Text Include="spt\features\template.cpp.txt" />
     <Text Include="thirdparty\example.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

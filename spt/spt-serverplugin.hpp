@@ -31,7 +31,7 @@ public:
 	virtual const char* GetPluginDescription(void);
 	virtual void LevelInit(char const* pMapName){};
 	virtual void ServerActivate(edict_t* pEdictList, int edictCount, int clientMax){};
-	virtual void GameFrame(bool simulating){};
+	virtual void GameFrame(bool simulating);
 	virtual void LevelShutdown(void){};
 	virtual void ClientActive(edict_t* pEntity){};
 	virtual void ClientDisconnect(edict_t* pEntity){};
@@ -90,36 +90,3 @@ public:
 	virtual void ClientFullyConnect(edict_t* pEntity){};
 #endif
 };
-
-IServerUnknown* GetServerPlayer();
-IVEngineServer* GetEngine();
-IVDebugOverlay* GetDebugOverlay();
-void* GetGamemovement();
-ICvar* GetCvarInterface();
-std::string GetGameDir();
-bool DoesGameLookLikePortal();
-bool DoesGameLookLikeHLS();
-
-#if defined(OE)
-struct ArgsWrapper
-{
-	EngineClientWrapper* engine_pointer;
-
-	ArgsWrapper(EngineClientWrapper* engine)
-	{
-		this->engine_pointer = engine;
-	};
-
-	ArgsWrapper();
-
-	int ArgC()
-	{
-		return engine_pointer->Cmd_Argc();
-	};
-
-	const char* Arg(int arg)
-	{
-		return engine_pointer->Cmd_Argv(arg);
-	};
-};
-#endif
