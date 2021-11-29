@@ -236,11 +236,19 @@ bool FoundEngineServer()
 //
 // The plugin is a static singleton that is exported as an interface
 //
+#ifdef OE
+CSourcePauseTool g_SourcePauseTool;
+EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CSourcePauseTool,
+                                  IServerPluginCallbacks,
+                                  INTERFACEVERSION_ISERVERPLUGINCALLBACKS_VERSION_1,
+                                  g_SourcePauseTool);
+#else
 CSourcePauseTool g_SourcePauseTool;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CSourcePauseTool,
                                   IServerPluginCallbacks,
                                   INTERFACEVERSION_ISERVERPLUGINCALLBACKS,
                                   g_SourcePauseTool);
+#endif
 
 bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory)
 {
