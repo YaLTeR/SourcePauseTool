@@ -22,6 +22,7 @@
 	               #name, \
 	               reinterpret_cast<void**>(&ORIG_##name##), \
 	               reinterpret_cast<void*>(HOOKED_##name##));
+#define InitCommand(command) InitConcommandBase(command##_command)
 
 struct VFTableHook
 {
@@ -117,6 +118,9 @@ public:
 	static int GetPatternIndex(void** origPtr);
 
 	Feature();
+
+protected:
+	void InitConcommandBase(ConCommandBase& convar);
 
 private:
 	static void InitModules();

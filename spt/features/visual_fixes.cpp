@@ -92,20 +92,17 @@ void VisualFixes::LoadFeature()
 		}
 
 		DevMsg("[client dll] pgpGlobals is %p.\n", pgpGlobals);
-	}
-	else
-	{
-		Warning("y_spt_motion_blur_fix has no effect.\n");
+		InitConcommandBase(y_spt_motion_blur_fix);
 	}
 
-	if (!ORIG_CViewEffects__Fade)
-		Warning("y_spt_disable_fade 1 not available\n");
+	if (ORIG_CViewEffects__Fade)
+		InitConcommandBase(y_spt_disable_fade);
 
-	if (!ORIG_CViewEffects__Shake)
-		Warning("y_spt_disable_shake 1 not available\n");
+	if (ORIG_CViewEffects__Shake)
+		InitConcommandBase(y_spt_disable_shake);
 
-	if (!ORIG_ResetToneMapping)
-		Warning("y_spt_disable_tone_map_reset has no effect\n");
+	if (ORIG_ResetToneMapping)
+		InitConcommandBase(y_spt_disable_tone_map_reset);
 }
 
 void VisualFixes::UnloadFeature() {}

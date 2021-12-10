@@ -76,30 +76,6 @@ inline bool FStrEq(const char* sz1, const char* sz2)
 	return (Q_stricmp(sz1, sz2) == 0);
 }
 
-// For OE CVar and ConCommand registering.
-#if defined(OE)
-class CPluginConVarAccessor : public IConCommandBaseAccessor
-{
-public:
-	virtual bool RegisterConCommandBase(ConCommandBase* pCommand)
-	{
-		pCommand->AddFlags(FCVAR_PLUGIN);
-
-		// Unlink from plugin only list
-		pCommand->SetNext(0);
-
-		// Link to engine's list instead
-		g_pCVar->RegisterConCommandBase(pCommand);
-		return true;
-	}
-};
-
-CPluginConVarAccessor g_ConVarAccessor;
-
-// OE: For correct linking in VS 2015.
-int(WINAPIV* __vsnprintf)(char*, size_t, const char*, va_list) = _vsnprintf;
-#endif
-
 void CallServerCommand(const char* cmd)
 {
 	if (interfaces::engine)
@@ -181,26 +157,12 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 		DevWarning("SPT: ProcessMovement logging with tas_log is unavailable.\n");
 	}
 
-	if (!g_pCVar)
-	{
-		DevWarning("SPT: Failed to get the ICvar interface.\n");
-		Warning("SPT: Could not register any CVars and ConCommands.\n");
-		Warning("SPT: y_spt_cvar has no effect.\n");
-	}
+	if (g_pCVar)
 #if defined(OE)
-	else
 	{
-		ConCommandBaseMgr::OneTimeInit(&g_ConVarAccessor);
-
 		_viewmodel_fov = g_pCVar->FindVar("viewmodel_fov");
-		if (!_viewmodel_fov)
-		{
-			DevWarning("SPT: Could not find viewmodel_fov.\n");
-			Warning("SPT: _y_spt_force_fov has no effect.\n");
-		}
 	}
 #else
-	else
 	{
 #define GETCVAR(x) _##x = g_pCVar->FindVar(#x);
 
@@ -214,8 +176,6 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 		GETCVAR(sv_maxvelocity);
 		GETCVAR(sv_bounce);
 	}
-
-	ConVar_Register(0);
 #endif
 
 #if !defined(P2) && !defined(BMS)
@@ -285,7 +245,9 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	_EngineWarning = Warning;
 	_EngineDevWarning = DevWarning;
 
+	TickSignal.Works = true;
 	Feature::LoadFeatures();
+	Cvar_RegisterSPTCvars();
 
 	auto loadTime =
 	    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime)

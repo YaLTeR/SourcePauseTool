@@ -37,6 +37,9 @@ void AutojumpFeature::LoadFeature()
 	// Server-side CheckJumpButton
 	if (ORIG_CheckJumpButton)
 	{
+		InitConcommandBase(y_spt_autojump);
+		InitConcommandBase(_y_spt_autojump_ensure_legit);
+		JumpSignal.Works = true;
 		int ptnNumber = GetPatternIndex((void**)&ORIG_CheckJumpButton);
 		switch (ptnNumber)
 		{
@@ -143,6 +146,7 @@ void AutojumpFeature::LoadFeature()
 
 	if (ORIG_FinishGravity)
 	{
+		InitConcommandBase(y_spt_additional_jumpboost);
 		int ptnNumber = GetPatternIndex((void**)&ORIG_FinishGravity);
 		switch (ptnNumber)
 		{
@@ -247,10 +251,10 @@ bool __fastcall AutojumpFeature::HOOKED_CheckJumpButton(void* thisptr, int edx)
 
 	if (rv)
 	{
+		JumpSignal();
 		// We jumped.
 		if (_y_spt_autojump_ensure_legit.GetBool())
 		{
-			JumpSignal();
 			spt_autojump.cantJumpNextTime = true; // Prevent consecutive jumps.
 		}
 	}

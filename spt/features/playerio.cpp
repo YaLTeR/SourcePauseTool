@@ -34,19 +34,6 @@ void PlayerIOFeature::InitHooks()
 	FIND_PATTERN(server, PlayerRunCommand);
 }
 
-void PlayerIOFeature::LoadFeature()
-{
-	playerioAddressesWereFound = PlayerIOAddressesFound();
-	if (utils::DoesGameLookLikeHLS())
-	{
-		sizeofCUserCmd = 64; // Is missing a CUtlVector
-	}
-	else
-	{
-		sizeofCUserCmd = 84;
-	}
-}
-
 void PlayerIOFeature::UnloadFeature() {}
 
 void PlayerIOFeature::PreHook()
@@ -131,11 +118,6 @@ void PlayerIOFeature::PreHook()
 			offM_vecAbsVelocity = 476;
 			break;
 		}
-	}
-	else
-	{
-		DevWarning("[server dll] Could not find PlayerRunCommand!\n");
-		Warning("_y_spt_getvel has no effect.\n");
 	}
 
 	if (ORIG_CreateMove)
@@ -652,9 +634,7 @@ CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 	Warning("Velocity (xy): %f\n", vel.Length2D());
 }
 
-#if SSDK2007
-// TODO: remove fixed offsets.
-
+#if defined(SSDK2007) || defined(SSDK2013)
 CON_COMMAND(y_spt_find_portals, "Yes")
 {
 	if (spt_playerio.offServerAbsOrigin == 0)
@@ -677,6 +657,10 @@ CON_COMMAND(y_spt_find_portals, "Yes")
 		}
 	}
 }
+#endif
+
+#if SSDK2007
+// TODO: remove fixed offsets.
 
 void calculate_offset_player_pos(edict_t* saveglitch_portal, Vector& new_player_origin, QAngle& new_player_angles)
 {
@@ -833,4 +817,53 @@ CON_COMMAND(_y_spt_getangles, "Gets the view angles of the player.")
 	Warning("View Angle (y): %f\n", va.y);
 	Warning("View Angle (z): %f\n", va.z);
 	Warning("View Angle (x, y, z): %f %f %f\n", va.x, va.y, va.z);
+}
+
+void PlayerIOFeature::LoadFeature()
+{
+	if (utils::DoesGameLookLikeHLS())
+	{
+		sizeofCUserCmd = 64; // Is missing a CUtlVector
+	}
+	else
+	{
+		sizeofCUserCmd = 84;
+	}
+
+	playerioAddressesWereFound = PlayerIOAddressesFound();
+
+	if (interfaces::engine)
+	{
+		InitCommand(_y_spt_getangles);
+	}
+
+	if (playerioAddressesWereFound)
+	{
+		InitCommand(tas_print_movement_vars);
+	}
+
+	if (ORIG_GetLocalPlayer && ORIG_CalcAbsoluteVelocity && offAbsVelocity != 0)
+	{
+		InitCommand(_y_spt_getvel);
+	}
+
+	if (ORIG_GetButtonBits)
+	{
+		InitConcommandBase(DuckspamUp_Command);
+		InitConcommandBase(DuckspamDown_Command);
+	}
+
+#ifdef SSDK2007
+	if (interfaces::engine_server && interfaces::engine && utils::DoesGameLookLikePortal()
+	    && GetPatternIndex((void**)&ORIG_PlayerRunCommand) == 0) // 5135 only
+	{
+		InitCommand(y_spt_calc_relative_position);
+	}
+#endif
+#if defined(SSDK2007) || defined(SSDK2013)
+	if (utils::DoesGameLookLikePortal() && interfaces::engine_server && offServerAbsOrigin != 0)
+	{
+		InitCommand(y_spt_find_portals);
+	}
+#endif
 }

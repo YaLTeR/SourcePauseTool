@@ -19,6 +19,7 @@ class Signal0
 {
 public:
 	typedef Delegate0< void > _Delegate;
+	bool Works = false;
 
 private:
 	typedef std::set<_Delegate> DelegateList;
@@ -90,6 +91,7 @@ class Signal1
 {
 public:
 	typedef Delegate1< Param1 > _Delegate;
+	bool Works = false;
 
 private:
 	typedef std::set<_Delegate> DelegateList;
@@ -161,6 +163,7 @@ class Signal2
 {
 public:
 	typedef Delegate2< Param1, Param2 > _Delegate;
+	bool Works = false;
 
 private:
 	typedef std::set<_Delegate> DelegateList;
@@ -232,6 +235,7 @@ class Signal3
 {
 public:
 	typedef Delegate3< Param1, Param2, Param3 > _Delegate;
+	bool Works = false;
 
 private:
 	typedef std::set<_Delegate> DelegateList;
@@ -303,6 +307,7 @@ class Signal4
 {
 public:
 	typedef Delegate4< Param1, Param2, Param3, Param4 > _Delegate;
+	bool Works = false;
 
 private:
 	typedef std::set<_Delegate> DelegateList;
@@ -374,6 +379,7 @@ class Signal5
 {
 public:
 	typedef Delegate5< Param1, Param2, Param3, Param4, Param5 > _Delegate;
+	bool Works = false;
 
 private:
 	typedef std::set<_Delegate> DelegateList;
@@ -445,6 +451,7 @@ class Signal6
 {
 public:
 	typedef Delegate6< Param1, Param2, Param3, Param4, Param5, Param6 > _Delegate;
+	bool Works = false;
 
 private:
 	typedef std::set<_Delegate> DelegateList;
@@ -516,6 +523,7 @@ class Signal7
 {
 public:
 	typedef Delegate7< Param1, Param2, Param3, Param4, Param5, Param6, Param7 > _Delegate;
+	bool Works = false;
 
 private:
 	typedef std::set<_Delegate> DelegateList;
@@ -587,6 +595,7 @@ class Signal8
 {
 public:
 	typedef Delegate8< Param1, Param2, Param3, Param4, Param5, Param6, Param7, Param8 > _Delegate;
+	bool Works = false;
 
 private:
 	typedef std::set<_Delegate> DelegateList;

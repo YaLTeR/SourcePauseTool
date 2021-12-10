@@ -18,6 +18,8 @@ protected:
 
 	virtual void UnloadFeature() override;
 
+	virtual void PreHook() override;
+
 private:
 	_CViewRender__OnRenderStart ORIG_CViewRender__OnRenderStart = nullptr;
 	static void __fastcall HOOKED_CViewRender__OnRenderStart(void* thisptr, int edx);
@@ -33,6 +35,12 @@ void FOVFeatures::InitHooks()
 void FOVFeatures::LoadFeature() {}
 
 void FOVFeatures::UnloadFeature() {}
+
+void FOVFeatures::PreHook()
+{
+	if (_viewmodel_fov && ORIG_CViewRender__OnRenderStart)
+		InitConcommandBase(_y_spt_force_fov);
+}
 
 void __fastcall FOVFeatures::HOOKED_CViewRender__OnRenderStart(void* thisptr, int edx)
 {

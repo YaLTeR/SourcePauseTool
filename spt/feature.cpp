@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <future>
+#include "convar.hpp"
 #include "feature.hpp"
 #include "interfaces.hpp"
 #include "cvars.hpp"
@@ -134,6 +135,11 @@ int Feature::GetPatternIndex(void** origPtr)
 	{
 		return -1;
 	}
+}
+
+void Feature::InitConcommandBase(ConCommandBase& convar)
+{
+	Cvar_InitConCommandBase(convar, this);
 }
 
 void Feature::AddRawHook(std::string moduleName, void** origPtr, void* functionHook)

@@ -53,9 +53,9 @@ void VAG::InitHooks()
 
 void VAG::LoadFeature()
 {
-	if (!ORIG_MiddleOfTeleportTouchingEntity || !ORIG_EndOfTeleportTouchingEntity)
+	if (ORIG_MiddleOfTeleportTouchingEntity && ORIG_EndOfTeleportTouchingEntity)
 	{
-		DevWarning("[server.dll] Could not find the teleport function!\n");
+		InitConcommandBase(y_spt_prevent_vag_crash);
 	}
 	recursiveTeleportCount = 0;
 }

@@ -45,28 +45,17 @@ bool AfterframesFeature::ShouldLoadFeature()
 	return true;
 }
 
-void AfterframesFeature::LoadFeature()
-{
-	SV_ActivateServerSignal.Connect(this, &AfterframesFeature::SV_ActivateServer);
-	SetPausedSignal.Connect(this, &AfterframesFeature::SetPaused);
-	FinishRestoreSignal.Connect(this, &AfterframesFeature::FinishRestore);
-
-	if (!spt_generic.ORIG_HudUpdate)
-	{
-		Warning("_y_spt_afterframes has no effect.\n");
-	}
-	else
-	{
-		FrameSignal.Connect(this, &AfterframesFeature::OnFrame);
-		afterframesPaused = false;
-		afterframesDelay = 0;
-		afterframesQueue.clear();
-	}
-}
-
 void AfterframesFeature::UnloadFeature()
 {
 	afterframesQueue.clear();
+}
+
+void AfterframesFeature::PreHook()
+{
+	if (spt_generic.ORIG_HudUpdate)
+	{
+		AfterFramesSignal.Works = true;
+	}
 }
 
 void AfterframesFeature::OnFrame()
@@ -177,4 +166,47 @@ CON_COMMAND(
 CON_COMMAND(_y_spt_afterframes_reset, "Reset the afterframes queue.")
 {
 	spt_afterframes.ResetAfterframesQueue();
+}
+
+void AfterframesFeature::LoadFeature()
+{
+	if (AfterFramesSignal.Works)
+	{
+		InitCommand(_y_spt_afterframes);
+		InitCommand(_y_spt_afterframes_reset);
+		InitCommand(_y_spt_afterframes_wait);
+#ifndef OE
+		InitCommand(_y_spt_afterframes2);
+#endif
+
+		FrameSignal.Connect(this, &AfterframesFeature::OnFrame);
+		afterframesPaused = false;
+		afterframesDelay = 0;
+		afterframesQueue.clear();
+
+		if (SV_ActivateServerSignal.Works)
+		{
+			SV_ActivateServerSignal.Connect(this, &AfterframesFeature::SV_ActivateServer);
+			InitConcommandBase(_y_spt_afterframes_reset_on_server_activate);
+		}
+
+		if (FinishRestoreSignal.Works || SetPausedSignal.Works)
+		{
+			FinishRestoreSignal.Connect(this, &AfterframesFeature::FinishRestore);
+			SetPausedSignal.Connect(this, &AfterframesFeature::SetPaused);
+			InitCommand(_y_spt_afterframes_await_load);
+			InitConcommandBase(_y_spt_afterframes_await_legacy);
+
+			if (!SetPausedSignal.Works)
+			{
+				_y_spt_afterframes_await_legacy.SetValue(1);
+				Warning("_y_spt_afterframes_await_legacy 0 has no effect.\n");
+			}
+			else if (!FinishRestoreSignal.Works)
+			{
+				_y_spt_afterframes_await_legacy.SetValue(0);
+				Warning("_y_spt_afterframes_await_legacy 1 has no effect.\n");
+			}
+		}
+	}
 }

@@ -29,6 +29,7 @@ protected:
 	virtual bool ShouldLoadFeature() override;
 	virtual void LoadFeature() override;
 	virtual void UnloadFeature() override;
+	virtual void PreHook() override;
 
 private:
 	void OnFrame();

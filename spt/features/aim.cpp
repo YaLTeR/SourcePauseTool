@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "..\cvars.hpp"
 #include "aim.hpp"
+#include "generic.hpp"
 #include "ent_utils.hpp"
 #include "math.hpp"
 #include "playerio.hpp"
@@ -15,6 +16,10 @@ ConVar _y_spt_anglesetspeed(
     "Determines how fast the view angle can move per tick while doing _y_spt_setyaw/_y_spt_setpitch.\n");
 ConVar _y_spt_pitchspeed("_y_spt_pitchspeed", "0", FCVAR_TAS_RESET);
 ConVar _y_spt_yawspeed("_y_spt_yawspeed", "0", FCVAR_TAS_RESET);
+ConVar tas_anglespeed("tas_anglespeed",
+                      "5",
+                      FCVAR_CHEAT,
+                      "Determines the speed of angle changes when using tas_aim or when TAS strafing\n");
 
 AimFeature spt_aim;
 
@@ -212,5 +217,24 @@ CON_COMMAND(_y_spt_setangle,
 		VectorAngles(diff, angles);
 		spt_aim.SetPitch(angles[PITCH]);
 		spt_aim.SetYaw(angles[YAW]);
+	}
+}
+
+void AimFeature::LoadFeature()
+{
+	if (spt_generic.ORIG_AdjustAngles && spt_playerio.ORIG_CreateMove)
+	{
+		InitCommand(tas_aim_reset);
+		InitCommand(tas_aim);
+		InitCommand(_y_spt_setyaw);
+		InitCommand(_y_spt_setpitch);
+		InitCommand(_y_spt_resetpitchyaw);
+		InitCommand(_y_spt_setangles);
+		InitCommand(_y_spt_setangle);
+
+		InitConcommandBase(_y_spt_anglesetspeed);
+		InitConcommandBase(_y_spt_pitchspeed);
+		InitConcommandBase(_y_spt_yawspeed);
+		InitConcommandBase(tas_anglespeed);
 	}
 }

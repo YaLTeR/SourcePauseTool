@@ -30,6 +30,25 @@ void TickrateMod::InitHooks()
 	FIND_PATTERN(engine, MiddleOfSV_InitGameDLL);
 }
 
+void TickrateMod::UnloadFeature() {}
+
+CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [tickrate]")
+{
+	switch (args.ArgC())
+	{
+	case 1:
+		Msg("Current tickrate: %f\n", spt_tickrate.GetTickrate());
+		break;
+
+	case 2:
+		spt_tickrate.SetTickrate(atof(args.Arg(1)));
+		break;
+
+	default:
+		Msg("Usage: _y_spt_tickrate [tickrate]\n");
+	}
+}
+
 void TickrateMod::LoadFeature()
 {
 	// interval_per_tick
@@ -52,29 +71,8 @@ void TickrateMod::LoadFeature()
 		}
 
 		DevMsg("Found interval_per_tick at %p.\n", pIntervalPerTick);
-	}
-	else
-	{
-		Warning("_y_spt_tickrate has no effect.\n");
-		pIntervalPerTick = nullptr;
-	}
-}
 
-void TickrateMod::UnloadFeature() {}
-
-CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [tickrate]")
-{
-	switch (args.ArgC())
-	{
-	case 1:
-		Msg("Current tickrate: %f\n", spt_tickrate.GetTickrate());
-		break;
-
-	case 2:
-		spt_tickrate.SetTickrate(atof(args.Arg(1)));
-		break;
-
-	default:
-		Msg("Usage: _y_spt_tickrate [tickrate]\n");
+		if (pIntervalPerTick)
+			InitCommand(_y_spt_tickrate);
 	}
 }

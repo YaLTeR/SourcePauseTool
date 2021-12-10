@@ -1,21 +1,16 @@
 #include "stdafx.h"
 
 #include "generic.hpp"
+#include "aim.hpp"
 #include "playerio.hpp"
 #include "ent_utils.hpp"
 #include "game_detection.hpp"
+#include "tas.hpp"
 #include "signals.hpp"
+#include "..\cvars.hpp"
+#include "..\sptlib-wrapper.hpp"
 
 GenericFeature spt_generic;
-
-void GenericFeature::AdjustAngles_hook()
-{
-	if (utils::playerEntityAvailable())
-	{
-		OngroundSignal(spt_playerio.IsGroundEntitySet());
-		AdjustAngles();
-	}
-}
 
 Vector GenericFeature::GetCameraOrigin()
 {
@@ -36,6 +31,7 @@ void GenericFeature::InitHooks()
 	HOOK_FUNCTION(engine, FinishRestore);
 	HOOK_FUNCTION(engine, SetPaused);
 	HOOK_FUNCTION(engine, SV_ActivateServer);
+	HOOK_FUNCTION(client, AdjustAngles);
 	FIND_PATTERN(client, CHudDamageIndicator__GetDamagePosition);
 }
 
@@ -57,6 +53,27 @@ void GenericFeature::LoadFeature()
 }
 
 void GenericFeature::UnloadFeature() {}
+
+void GenericFeature::PreHook()
+{
+	if (ORIG_HudUpdate)
+		FrameSignal.Works = true;
+
+	if (ORIG_SV_ActivateServer)
+		SV_ActivateServerSignal.Works = true;
+
+	if (ORIG_SetPaused)
+		SetPausedSignal.Works = true;
+
+	if (ORIG_FinishRestore)
+		FinishRestoreSignal.Works = true;
+
+	if (ORIG_AdjustAngles)
+	{
+		AdjustAngles.Works = true;
+		OngroundSignal.Works = true;
+	}
+}
 
 void __stdcall GenericFeature::HOOKED_HudUpdate(bool bActive)
 {
@@ -93,4 +110,34 @@ void __fastcall GenericFeature::HOOKED_SetPaused(void* thisptr, int edx, bool pa
 	}
 
 	return spt_generic.ORIG_SetPaused(thisptr, edx, paused);
+}
+
+void __fastcall GenericFeature::HOOKED_AdjustAngles(void* thisptr, int edx, float frametime)
+{
+	spt_playerio.Set_cinput_thisptr(thisptr);
+	spt_generic.ORIG_AdjustAngles(thisptr, edx, frametime);
+
+	float va[3];
+	bool yawChanged = false;
+
+	if (!spt_playerio.pCmd)
+	{
+		return;
+	}
+
+	EngineGetViewAngles(va);
+	spt_aim.HandleAiming(va, yawChanged);
+
+	if (spt_tas.tasAddressesWereFound && tas_strafe.GetBool())
+	{
+		spt_tas.Strafe(va, yawChanged);
+	}
+
+	EngineSetViewAngles(va);
+
+	if (utils::playerEntityAvailable())
+	{
+		OngroundSignal(spt_playerio.IsGroundEntitySet());
+		AdjustAngles();
+	}
 }

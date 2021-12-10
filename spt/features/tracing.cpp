@@ -111,15 +111,6 @@ void Tracing::InitHooks()
 #endif
 }
 
-void Tracing::LoadFeature()
-{
-	if (!ORIG_UTIL_TraceRay)
-		Warning("tas_strafe_version 1 not available\n");
-
-	if (!CanTracePlayerBBox())
-		Warning("tas_strafe_version 2 not available\n");
-}
-
 void Tracing::UnloadFeature() {}
 
 float __fastcall Tracing::HOOKED_TraceFirePortal(void* thisptr,
@@ -273,3 +264,27 @@ CON_COMMAND(
 	Msg("Could not find a seam shot. Best guess: setang %.8f %.8f 0\n", test.x, test.y);
 }
 #endif
+
+void Tracing::LoadFeature()
+{
+	if (!ORIG_UTIL_TraceRay)
+		Warning("tas_strafe_version 1 not available\n");
+
+	if (!CanTracePlayerBBox())
+		Warning("tas_strafe_version 2 not available\n");
+
+#ifdef SSDK2007
+	if (utils::DoesGameLookLikePortal())
+	{
+		InitCommand(
+		    y_spt_find_seam_shot); // 5135 only but version detection doesnt properly exist, so cba to fix this
+	}
+#endif
+
+#if defined(SSDK2007) || defined(SSDK2013)
+	if (ORIG_CEngineTrace__PointOutsideWorld)
+	{
+		InitConcommandBase(y_spt_hud_oob);
+	}
+#endif
+}

@@ -140,8 +140,9 @@ void DemoStuff::LoadFeature()
 	currentAutoRecordDemoNumber = 1;
 	isAutoRecordingDemo = false;
 
-	if (ORIG_Record)
+	if (ORIG_Record && pDemoplayer)
 	{
+		InitConcommandBase(y_spt_pause_demo_on_tick);
 		TickSignal.Connect(this, &DemoStuff::OnTick);
 	}
 

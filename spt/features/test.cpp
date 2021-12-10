@@ -25,12 +25,6 @@ bool TestFeature::ShouldLoadFeature()
 
 void TestFeature::InitHooks() {}
 
-void TestFeature::LoadFeature()
-{
-	AfterFramesSignal.Connect(&scripts::g_Tester, &scripts::Tester::OnAfterFrames);
-	AdjustAngles.Connect(&scripts::g_Tester, &scripts::Tester::DataIteration);
-}
-
 void TestFeature::UnloadFeature() {}
 
 CON_COMMAND(tas_test_generate, "Generates test data for given test.")
@@ -54,5 +48,18 @@ CON_COMMAND(tas_test_automated_validate, "Validates a test, produces a log file 
 	if (args.ArgC() > 2)
 	{
 		scripts::g_Tester.RunAutomatedTest(args.Arg(1), false, args.Arg(2));
+	}
+}
+
+void TestFeature::LoadFeature()
+{
+	if (AfterFramesSignal.Works && AdjustAngles.Works)
+	{
+		AfterFramesSignal.Connect(&scripts::g_Tester, &scripts::Tester::OnAfterFrames);
+		AdjustAngles.Connect(&scripts::g_Tester, &scripts::Tester::DataIteration);
+
+		InitCommand(tas_test_generate);
+		InitCommand(tas_test_validate);
+		InitCommand(tas_test_automated_validate);
 	}
 }
