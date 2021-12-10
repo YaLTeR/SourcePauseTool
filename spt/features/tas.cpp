@@ -1,13 +1,15 @@
 #include "stdafx.h"
-#include "..\feature.hpp"
+#include "tas.hpp"
 #include "..\cvars.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "..\strafe\strafestuff.hpp"
 #include "..\scripts\srctas_reader.hpp"
 #include "aim.hpp"
 #include "generic.hpp"
+#include "ent_utils.hpp"
 #include "playerio.hpp"
 #include "interfaces.hpp"
+#include "tracing.hpp"
 #include "signals.hpp"
 
 ConVar tas_strafe("tas_strafe", "0", FCVAR_TAS_RESET);
@@ -126,10 +128,6 @@ ConVar tas_script_printvars("tas_script_printvars",
                             "Prints variable information when running .srctas scripts.\n");
 ConVar tas_script_savestates("tas_script_savestates", "1", 0, "Enables/disables savestates in .srctas scripts.\n");
 ConVar tas_script_onsuccess("tas_script_onsuccess", "", 0, "Commands to be executed when a search concludes.\n");
-ConVar tas_anglespeed("tas_anglespeed",
-                      "5",
-                      FCVAR_CHEAT,
-                      "Determines the speed of angle changes when using tas_aim or when TAS strafing\n");
 
 #ifdef OE
 ConVar y_spt_gamedir(
@@ -139,71 +137,11 @@ ConVar y_spt_gamedir(
     "Sets the game directory, that is used for loading tas scripts and tests. Use the full path for the folder e.g. C:\\Steam\\steamapps\\sourcemods\\hl2oe\\\n");
 #endif
 
-typedef void(__fastcall* _AdjustAngles)(void* thisptr, int edx, float frametime);
+TASFeature spt_tas;
 
-// Enables TAS strafing and view related functionality
-class TASFeature : public Feature
+bool TASFeature::ShouldLoadFeature()
 {
-private:
-	void __fastcall HOOKED_AdjustAngles_Func(void* thisptr, int edx, float frametime);
-	static void __fastcall HOOKED_AdjustAngles(void* thisptr, int edx, float frametime);
-	void Strafe(float* va, bool yawChanged);
-
-private:
-	_AdjustAngles ORIG_AdjustAngles;
-	bool tasAddressesWereFound;
-
-protected:
-	virtual bool ShouldLoadFeature() override
-	{
-		return interfaces::engine != nullptr;
-	}
-
-	virtual void InitHooks() override;
-
-	virtual void LoadFeature() override;
-
-	virtual void UnloadFeature() override;
-};
-
-static TASFeature spt_tas;
-
-void TASFeature::InitHooks()
-{
-	HOOK_FUNCTION(client, AdjustAngles);
-}
-
-void TASFeature::LoadFeature()
-{
-	AfterFramesSignal.Connect(&scripts::g_TASReader, &scripts::SourceTASReader::OnAfterFrames);
-	tasAddressesWereFound = ORIG_AdjustAngles && spt_playerio.PlayerIOAddressesFound();
-
-	if (!tasAddressesWereFound)
-		Warning("The full game TAS solutions are not available.\n");
-}
-
-void TASFeature::UnloadFeature() {}
-
-void __fastcall TASFeature::HOOKED_AdjustAngles_Func(void* thisptr, int edx, float frametime)
-{
-	spt_playerio.Set_cinput_thisptr(thisptr);
-	ORIG_AdjustAngles(thisptr, edx, frametime);
-
-	if (!spt_playerio.pCmd)
-		return;
-
-	float va[3];
-	bool yawChanged = false;
-	EngineGetViewAngles(va);
-	spt_aim.HandleAiming(va, yawChanged);
-
-	if (tasAddressesWereFound && tas_strafe.GetBool())
-	{
-		Strafe(va, yawChanged);
-	}
-
-	EngineSetViewAngles(va);
-	spt_generic.AdjustAngles_hook();
+	return interfaces::engine != nullptr;
 }
 
 void TASFeature::Strafe(float* va, bool yawChanged)
@@ -267,11 +205,6 @@ void TASFeature::Strafe(float* va, bool yawChanged)
 	spt_playerio.SetTASInput(va, out);
 }
 
-void __fastcall TASFeature::HOOKED_AdjustAngles(void* thisptr, int edx, float frametime)
-{
-	spt_tas.HOOKED_AdjustAngles_Func(thisptr, edx, frametime);
-}
-
 CON_COMMAND(
     tas_script_load,
     "Loads and executes an .srctas script. If an extra ticks argument is given, the script is played back at maximal FPS and without rendering until that many ticks before the end of the script. Usage: tas_load_script [script] [ticks]")
@@ -307,4 +240,63 @@ CON_COMMAND(tas_script_result_fail, "Signals an unsuccessful result in a variabl
 CON_COMMAND(tas_script_result_stop, "Signals a stop in a variable search.")
 {
 	scripts::g_TASReader.SearchResult(scripts::SearchResult::NoSearch);
+}
+
+void TASFeature::LoadFeature()
+{
+	if (AfterFramesSignal.Works)
+	{
+		InitCommand(tas_script_load);
+		InitCommand(tas_script_search);
+		InitCommand(tas_script_result_success);
+		InitCommand(tas_script_result_fail);
+		InitCommand(tas_script_result_stop);
+
+		InitConcommandBase(tas_script_printvars);
+		InitConcommandBase(tas_script_savestates);
+		InitConcommandBase(tas_script_onsuccess);
+
+#ifdef OE
+		InitConcommandBase(y_spt_gamedir);
+#endif
+		AfterFramesSignal.Connect(&scripts::g_TASReader, &scripts::SourceTASReader::OnAfterFrames);
+	}
+
+	tasAddressesWereFound = spt_generic.ORIG_AdjustAngles && spt_playerio.PlayerIOAddressesFound();
+
+	if (tasAddressesWereFound)
+	{
+		InitConcommandBase(tas_strafe);
+		InitConcommandBase(tas_strafe_type);
+		InitConcommandBase(tas_strafe_dir);
+		InitConcommandBase(tas_strafe_yaw);
+		InitConcommandBase(tas_strafe_buttons);
+		InitConcommandBase(tas_strafe_vectorial);
+		InitConcommandBase(tas_strafe_vectorial_increment);
+		InitConcommandBase(tas_strafe_vectorial_offset);
+		InitConcommandBase(tas_strafe_vectorial_snap);
+		InitConcommandBase(tas_strafe_allow_jump_override);
+		InitConcommandBase(tas_strafe_capped_limit);
+		InitConcommandBase(tas_force_airaccelerate);
+		InitConcommandBase(tas_force_wishspeed_cap);
+		InitConcommandBase(tas_reset_surface_friction);
+		InitConcommandBase(tas_force_onground);
+		InitConcommandBase(tas_strafe_version);
+		InitConcommandBase(tas_strafe_afh_length);
+		InitConcommandBase(tas_strafe_afh);
+		InitConcommandBase(tas_strafe_lgagst);
+		InitConcommandBase(tas_strafe_lgagst_minspeed);
+		InitConcommandBase(tas_strafe_lgagst_fullmaxspeed);
+		InitConcommandBase(tas_strafe_lgagst_min);
+		InitConcommandBase(tas_strafe_lgagst_max);
+		InitConcommandBase(tas_strafe_jumptype);
+
+		// Tracing related
+		if (spt_tracing.CanTracePlayerBBox())
+		{
+			InitConcommandBase(tas_strafe_hull_is_line);
+			InitConcommandBase(tas_strafe_use_tracing);
+			InitConcommandBase(tas_strafe_autojb);
+		}
+	}
 }

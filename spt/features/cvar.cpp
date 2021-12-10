@@ -5,9 +5,18 @@
 #include "interfaces.hpp"
 #include <string>
 
+class CvarStuff : public Feature
+{
+public:
+protected:
+	virtual void LoadFeature() override;
+};
+
+static CvarStuff spt_cvarstuff;
+
 CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 {
-	if (!interfaces::engine || !g_pCVar)
+	if (!g_pCVar)
 		return;
 
 	if (args.ArgC() < 2)
@@ -78,7 +87,7 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 #if !defined(OE)
 CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of the argument string.")
 {
-	if (!interfaces::engine || !g_pCVar)
+	if (!g_pCVar)
 		return;
 
 	if (args.ArgC() < 2)
@@ -122,3 +131,21 @@ CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of 
 }
 
 #endif
+
+void CvarStuff::LoadFeature()
+{
+#ifdef OE
+	if (interfaces::g_pCVar || interfaces::engine)
+	{
+		InitCommand(y_spt_cvar);
+		InitCommand(y_spt_cvar_random);
+	}
+#else
+	if (interfaces::g_pCVar)
+	{
+		InitCommand(y_spt_cvar);
+		InitCommand(y_spt_cvar_random);
+		InitCommand(y_spt_cvar2);
+	}
+#endif
+}

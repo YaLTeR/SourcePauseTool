@@ -50,8 +50,15 @@ void Overlay::InitHooks()
 
 void Overlay::LoadFeature()
 {
-	if (ORIG_CViewRender__RenderView == nullptr || ORIG_CViewRender__Render == nullptr)
-		Warning("Overlay cameras have no effect.\n");
+	if (ORIG_CViewRender__RenderView != nullptr && ORIG_CViewRender__Render != nullptr)
+	{
+		InitConcommandBase(_y_spt_overlay);
+		InitConcommandBase(_y_spt_overlay_type);
+		InitConcommandBase(_y_spt_overlay_portal);
+		InitConcommandBase(_y_spt_overlay_width);
+		InitConcommandBase(_y_spt_overlay_fov);
+		InitConcommandBase(_y_spt_overlay_swap);
+	}
 }
 
 void Overlay::UnloadFeature() {}

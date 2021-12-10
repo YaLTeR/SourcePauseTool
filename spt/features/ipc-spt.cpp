@@ -30,12 +30,6 @@ namespace ipc
 
 	static IPCFeature spt_ipc;
 
-	void IPCFeature::LoadFeature()
-	{
-		Init();
-		FrameSignal.Connect(Loop);
-	}
-
 	void IPCFeature::UnloadFeature()
 	{
 		ipc::ShutdownIPC();
@@ -351,4 +345,23 @@ CON_COMMAND(y_spt_ipc_gamedir, "Output the game directory path to IPC client.\n"
 	msg["type"] = "gamedir";
 	msg["path"] = GetGameDir();
 	ipc::Send(msg);
+}
+
+void ipc::IPCFeature::LoadFeature()
+{
+	if (FrameSignal.Works)
+	{
+		Init();
+		FrameSignal.Connect(Loop);
+#ifndef OE
+		InitCommand(y_spt_ipc_ent);
+		InitCommand(y_spt_ipc_properties);
+#endif
+		InitCommand(y_spt_ipc_echo);
+		InitCommand(y_spt_ipc_playback);
+		InitCommand(y_spt_ipc_gamedir);
+
+		InitConcommandBase(y_spt_ipc);
+		InitConcommandBase(y_spt_ipc_port);
+	}
 }

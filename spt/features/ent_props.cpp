@@ -19,6 +19,8 @@ public:
 #endif
 	}
 
+	virtual void PreHook() override;
+
 protected:
 };
 
@@ -64,3 +66,14 @@ CON_COMMAND(y_spt_print_ent_props, "Prints all props for a given entity index.")
 	}
 }
 #endif
+
+void EntUtils::PreHook()
+{
+#ifndef OE
+	InitCommand(y_spt_canjb);
+	InitCommand(y_spt_print_ents);
+	InitCommand(y_spt_print_ent_props);
+	if (utils::DoesGameLookLikePortal())
+		InitCommand(y_spt_print_portals);
+#endif
+}

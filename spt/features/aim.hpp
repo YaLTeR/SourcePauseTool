@@ -19,6 +19,7 @@ public:
 	void SetYaw(float yaw);
 	void ResetPitchYawCommands();
 	void SetJump();
+	virtual void LoadFeature() override;
 
 protected:
 private:

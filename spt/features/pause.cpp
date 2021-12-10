@@ -124,6 +124,8 @@ void PauseFeature::LoadFeature()
 		{
 			Warning("y_spt_pause 1 has no effect.\n");
 		}
+
+		InitConcommandBase(y_spt_pause);
 	}
 }
 

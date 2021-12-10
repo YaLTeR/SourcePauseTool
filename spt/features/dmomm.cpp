@@ -57,6 +57,7 @@ void DMoMM::PreHook()
 	// Middle of DMoMM sliding function.
 	if (ORIG_MiddleOfSlidingFunction)
 	{
+		InitConcommandBase(y_spt_on_slide_pause_for);
 		ORIG_SlidingAndOtherStuff = (_SlidingAndOtherStuff)(&ORIG_MiddleOfSlidingFunction - 0x4bb);
 		ADD_RAW_HOOK(server, SlidingAndOtherStuff);
 		DevMsg("[server.dll] Found the sliding function at %p.\n", ORIG_SlidingAndOtherStuff);

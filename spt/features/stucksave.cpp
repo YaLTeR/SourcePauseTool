@@ -53,9 +53,14 @@ void Stucksave::LoadFeature()
 	TickSignal.Connect(&utils::CheckPiwSave);
 
 	// CheckStuck
-	if (!ORIG_CheckStuck)
+	if (ORIG_CheckStuck)
 	{
-		Warning("y_spt_stucksave has no effect.\n");
+		InitConcommandBase(y_spt_stucksave);
+	}
+
+	if (TickSignal.Works)
+	{
+		InitConcommandBase(y_spt_piwsave);
 	}
 }
 

@@ -38,10 +38,7 @@ void TASLogging::InitHooks()
 		auto vftable = *reinterpret_cast<void***>(interfaces::gm);
 		AddVFTableHook(VFTableHook(vftable, 1, (void*)HOOKED_ProcessMovement, (void**)&ORIG_ProcessMovement),
 		               "server");
-	}
-	else
-	{
-		Warning("tas_log 1 has no effect.\n");
+		InitConcommandBase(tas_log);
 	}
 }
 

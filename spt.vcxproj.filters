@@ -205,6 +205,9 @@
     <ClCompile Include="spt\vgui\vgui_utils.cpp">
       <Filter>spt\vgui</Filter>
     </ClCompile>
+    <ClCompile Include="spt\cvars.cpp">
+      <Filter>spt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -458,6 +461,9 @@
     </ClInclude>
     <ClInclude Include="spt\vgui\vgui_utils.hpp">
       <Filter>spt\vgui</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\tas.hpp">
+      <Filter>spt\features</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

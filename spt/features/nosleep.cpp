@@ -37,9 +37,9 @@ void NoSleepFeature::InitHooks()
 
 void NoSleepFeature::LoadFeature()
 {
-	if (!ORIG_CInputSystem__SleepUntilInput)
+	if (ORIG_CInputSystem__SleepUntilInput)
 	{
-		Warning("y_spt_focus_nosleep has no effect.\n");
+		InitConcommandBase(y_spt_focus_nosleep);
 	}
 }
 

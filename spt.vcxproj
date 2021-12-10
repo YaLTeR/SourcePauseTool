@@ -1365,6 +1365,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="spt\aim\aimstuff.cpp" />
+    <ClCompile Include="spt\cvars.cpp" />
     <ClCompile Include="spt\feature.cpp" />
     <ClCompile Include="spt\features\afterframes.cpp" />
     <ClCompile Include="spt\features\aim.cpp" />
@@ -1598,6 +1599,7 @@
     <ClInclude Include="spt\features\playerio.hpp" />
     <ClInclude Include="spt\features\rng.hpp" />
     <ClInclude Include="spt\features\shadow.hpp" />
+    <ClInclude Include="spt\features\tas.hpp" />
     <ClInclude Include="spt\features\tickrate.hpp" />
     <ClInclude Include="spt\features\tracing.hpp" />
     <ClInclude Include="spt\ipc\ipc.hpp" />

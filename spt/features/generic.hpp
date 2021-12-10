@@ -15,6 +15,7 @@ typedef void(__fastcall* _SetPaused)(void* thisptr, int edx, bool paused);
 typedef void(__fastcall* _CViewRender__OnRenderStart)(void* thisptr, int edx);
 typedef const Vector&(__cdecl* _MainViewOrigin)();
 typedef void*(__cdecl* _GetClientModeNormal)();
+typedef void(__fastcall* _AdjustAngles)(void* thisptr, int edx, float frametime);
 
 // For hooks used by many features
 class GenericFeature : public Feature
@@ -26,16 +27,18 @@ public:
 	_FinishRestore ORIG_FinishRestore = nullptr;
 	_MainViewOrigin ORIG_MainViewOrigin = nullptr;
 	_GetClientModeNormal ORIG_GetClientModeNormal = nullptr;
+	_AdjustAngles ORIG_AdjustAngles = nullptr;
 	bool shouldPreventNextUnpause = false;
 
-	void AdjustAngles_hook();
 	Vector GetCameraOrigin();
 
-protected:
 	virtual bool ShouldLoadFeature() override;
+
+protected:
 	virtual void InitHooks() override;
 	virtual void LoadFeature() override;
 	virtual void UnloadFeature() override;
+	virtual void PreHook() override;
 
 private:
 	uintptr_t ORIG_CHudDamageIndicator__GetDamagePosition = 0;
@@ -45,6 +48,7 @@ private:
 	static bool __cdecl HOOKED_SV_ActivateServer();
 	static void __fastcall HOOKED_FinishRestore(void* thisptr, int edx);
 	static void __fastcall HOOKED_SetPaused(void* thisptr, int edx, bool paused);
+	static void __fastcall HOOKED_AdjustAngles(void* thisptr, int edx, float frametime);
 };
 
 extern GenericFeature spt_generic;

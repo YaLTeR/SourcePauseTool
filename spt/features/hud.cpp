@@ -8,6 +8,7 @@
 #include "vgui\ischeme.h"
 #include "vguimatsurface\imatsystemsurface.h"
 #include "..\utils\ent_utils.hpp"
+#include "game_detection.hpp"
 #include "..\utils\property_getter.hpp"
 #include "..\utils\string_parsing.hpp"
 #include "..\vgui\vgui_utils.hpp"
@@ -185,12 +186,36 @@ void HUDFeature::LoadFeature()
 	font = scheme->GetFont("DefaultFixedOutline", false);
 	hopsFont = scheme->GetFont("Trebuchet24", false);
 
-	if (!ORIG_VGui_Paint || !ORIG_FinishDrawing || !ORIG_StartDrawing)
+	if (ORIG_VGui_Paint && ORIG_FinishDrawing && ORIG_StartDrawing)
 	{
-		Warning("Speedrun hud is not available.\n");
-	}
-	else
-	{
+		// cba to make this detection more granular, this feature is a garbage fire that should be refactored anyway
+		InitConcommandBase(y_spt_hud_velocity);
+		InitConcommandBase(y_spt_hud_flags);
+		InitConcommandBase(y_spt_hud_moveflags);
+		InitConcommandBase(y_spt_hud_movecollideflags);
+		InitConcommandBase(y_spt_hud_collisionflags);
+		InitConcommandBase(y_spt_hud_accel);
+		InitConcommandBase(y_spt_hud_script_length);
+		InitConcommandBase(y_spt_hud_portal_bubble);
+		InitConcommandBase(y_spt_hud_decimals);
+		InitConcommandBase(y_spt_hud_vars);
+
+		if (utils::DoesGameLookLikePortal())
+		{
+			InitConcommandBase(y_spt_hud_ag_sg_tester);
+			InitConcommandBase(y_spt_hud_isg);
+		}
+
+		InitConcommandBase(y_spt_hud_ent_info);
+		InitConcommandBase(y_spt_hud_left);
+		InitConcommandBase(y_spt_hud_hops);
+		InitConcommandBase(y_spt_hud_hops_x);
+		InitConcommandBase(y_spt_hud_hops_y);
+		InitConcommandBase(y_spt_hud_velocity_angles);
+		InitConcommandBase(_y_spt_overlay_crosshair_size);
+		InitConcommandBase(_y_spt_overlay_crosshair_thickness);
+		InitConcommandBase(_y_spt_overlay_crosshair_color);
+
 		AdjustAngles.Connect(this, &HUDFeature::NewTick);
 		OngroundSignal.Connect(this, &HUDFeature::OnGround);
 		JumpSignal.Connect(this, &HUDFeature::Jump);
