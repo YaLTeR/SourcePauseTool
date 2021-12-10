@@ -1377,6 +1377,7 @@
     <ClCompile Include="spt\features\fov.cpp" />
     <ClCompile Include="spt\features\generic.cpp" />
     <ClCompile Include="spt\features\graphics.cpp" />
+    <ClCompile Include="spt\features\hops_hud.cpp" />
     <ClCompile Include="spt\features\hud.cpp" />
     <ClCompile Include="spt\features\ipc-spt.cpp" />
     <ClCompile Include="spt\features\isg.cpp" />
@@ -1594,7 +1595,7 @@
     <ClInclude Include="spt\features\autojump.hpp" />
     <ClInclude Include="spt\features\demo.hpp" />
     <ClInclude Include="spt\features\generic.hpp" />
-    <ClInclude Include="spt\features\isg.hpp" />
+    <ClInclude Include="spt\features\hud.hpp" />
     <ClInclude Include="spt\features\overlay.hpp" />
     <ClInclude Include="spt\features\playerio.hpp" />
     <ClInclude Include="spt\features\rng.hpp" />

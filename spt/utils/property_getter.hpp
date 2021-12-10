@@ -7,6 +7,7 @@
 #include "client_class.h"
 #include "icliententity.h"
 #include "icliententitylist.h"
+#include "ent_utils.hpp"
 
 namespace utils
 {

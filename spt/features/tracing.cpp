@@ -3,9 +3,12 @@
 #include "ent_utils.hpp"
 #include "game_detection.hpp"
 #include "generic.hpp"
+#include "hud.hpp"
 #include "math.hpp"
 #include "interfaces.hpp"
 #include "convar.h"
+#include "string_utils.hpp"
+#include "..\strafe\strafestuff.hpp"
 
 ConVar y_spt_hud_oob("y_spt_hud_oob", "0", FCVAR_CHEAT, "Is the player OoB?");
 Tracing spt_tracing;
@@ -281,10 +284,20 @@ void Tracing::LoadFeature()
 	}
 #endif
 
-#if defined(SSDK2007) || defined(SSDK2013)
+#if defined(SSDK2007)
 	if (ORIG_CEngineTrace__PointOutsideWorld)
 	{
-		InitConcommandBase(y_spt_hud_oob);
+		AddHudCallback(
+		    "oob",
+		    []() {
+			    Vector v = spt_generic.GetCameraOrigin();
+			    trace_t tr;
+			    Strafe::Trace(tr, v, v + Vector(1, 1, 1));
+
+			    int oob = spt_tracing.ORIG_CEngineTrace__PointOutsideWorld(nullptr, 0, v) && !tr.startsolid;
+			    spt_hud.DrawTopHudElement(L"oob: %d", oob);
+		    },
+		    y_spt_hud_oob);
 	}
 #endif
 }

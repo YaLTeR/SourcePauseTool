@@ -121,14 +121,15 @@ public:
 
 protected:
 	void InitConcommandBase(ConCommandBase& convar);
+	bool AddHudCallback(const char* sortKey, std::function<void()> func, ConVar& cvar);
+
+	bool moduleLoaded;
+	bool startedLoading;
 
 private:
 	static void InitModules();
 	static void Hook();
 	static void Unhook();
-
-	bool moduleLoaded;
-	bool startedLoading;
 };
 
 template<size_t PatternLength>

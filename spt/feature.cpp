@@ -4,6 +4,7 @@
 #include "feature.hpp"
 #include "interfaces.hpp"
 #include "cvars.hpp"
+#include "features\hud.hpp"
 #include "SPTLib\sptlib.hpp"
 #include "dbg.h"
 #include "SPTLib\Windows\detoursutils.hpp"
@@ -140,6 +141,23 @@ int Feature::GetPatternIndex(void** origPtr)
 void Feature::InitConcommandBase(ConCommandBase& convar)
 {
 	Cvar_InitConCommandBase(convar, this);
+}
+
+bool Feature::AddHudCallback(const char* sortKey, std::function<void()> func, ConVar& convar)
+{
+#if defined(SSDK2007)
+	bool result = spt_hud.AddHudCallback(HudCallback(
+	    sortKey, func, [&convar]() { return convar.GetBool(); }, false));
+
+	if (result)
+	{
+		InitConcommandBase(convar);
+	}
+
+	return result;
+#else
+	return false;
+#endif
 }
 
 void Feature::AddRawHook(std::string moduleName, void** origPtr, void* functionHook)

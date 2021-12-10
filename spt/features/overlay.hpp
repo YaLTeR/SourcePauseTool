@@ -22,6 +22,7 @@ protected:
 	virtual void UnloadFeature() override;
 
 private:
+	void DrawCrosshair();
 	_CViewRender__RenderView ORIG_CViewRender__RenderView = nullptr;
 	_CViewRender__Render ORIG_CViewRender__Render = nullptr;
 

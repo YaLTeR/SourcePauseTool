@@ -3,6 +3,12 @@
 #include "..\feature.hpp"
 #include "..\strafe\strafestuff.hpp"
 
+#ifdef OE
+#include "vector.h"
+#else
+#include "mathlib\vector.h"
+#endif
+
 typedef void(__fastcall* _CalcAbsoluteVelocity)(void* thisptr, int edx);
 typedef void*(__fastcall* _GetGroundEntity)(void* thisptr, int edx);
 typedef void(
@@ -44,6 +50,7 @@ public:
 	int GetPlayerMoveCollide() const;
 	int GetPlayerCollisionGroup() const;
 	void Set_cinput_thisptr(void* thisptr);
+	void OnTick();
 
 	bool duckspam = false;
 	bool forceJump = false;
@@ -61,22 +68,14 @@ public:
 	ptrdiff_t offM_vecPunchAngleVel = 0;
 	_CreateMove ORIG_CreateMove = nullptr;
 
-	void EnableDuckspam()
-	{
-		duckspam = true;
-	}
-	void DisableDuckspam()
-	{
-		duckspam = false;
-	}
-
-private:
-	_GetGroundEntity ORIG_GetGroundEntity = nullptr;
-	_GetButtonBits ORIG_GetButtonBits = nullptr;
 	_GetLocalPlayer ORIG_GetLocalPlayer = nullptr;
 	_CalcAbsoluteVelocity ORIG_CalcAbsoluteVelocity = nullptr;
+	_GetGroundEntity ORIG_GetGroundEntity = nullptr;
+	_GetButtonBits ORIG_GetButtonBits = nullptr;
 	uintptr_t ORIG_MiddleOfCAM_Think = 0;
 	uintptr_t ORIG_PlayerRunCommand = 0;
+	Vector currentVelocity;
+	Vector previousVelocity;
 
 	ptrdiff_t offM_pCommands = 0;
 	ptrdiff_t offForwardmove = 0;
@@ -89,6 +88,15 @@ private:
 	ptrdiff_t offServerSurfaceFriction = 0;
 	ptrdiff_t offServerPreviouslyPredictedOrigin = 0;
 	std::size_t sizeofCUserCmd = 0;
+
+	void EnableDuckspam()
+	{
+		duckspam = true;
+	}
+	void DisableDuckspam()
+	{
+		duckspam = false;
+	}
 
 protected:
 	virtual bool ShouldLoadFeature() override;

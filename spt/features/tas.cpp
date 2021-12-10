@@ -6,6 +6,7 @@
 #include "..\scripts\srctas_reader.hpp"
 #include "aim.hpp"
 #include "generic.hpp"
+#include "hud.hpp"
 #include "ent_utils.hpp"
 #include "playerio.hpp"
 #include "interfaces.hpp"
@@ -128,6 +129,7 @@ ConVar tas_script_printvars("tas_script_printvars",
                             "Prints variable information when running .srctas scripts.\n");
 ConVar tas_script_savestates("tas_script_savestates", "1", 0, "Enables/disables savestates in .srctas scripts.\n");
 ConVar tas_script_onsuccess("tas_script_onsuccess", "", 0, "Commands to be executed when a search concludes.\n");
+ConVar y_spt_hud_script_length("y_spt_hud_script_progress", "0", FCVAR_CHEAT, "Turns on the script progress hud.\n");
 
 #ifdef OE
 ConVar y_spt_gamedir(
@@ -260,6 +262,16 @@ void TASFeature::LoadFeature()
 		InitConcommandBase(y_spt_gamedir);
 #endif
 		AfterFramesSignal.Connect(&scripts::g_TASReader, &scripts::SourceTASReader::OnAfterFrames);
+#if defined(SSDK2007)
+		AddHudCallback(
+		    "frame",
+		    [this]() {
+			    spt_hud.DrawTopHudElement(L"frame: %d / %d",
+			                              scripts::g_TASReader.GetCurrentTick(),
+			                              scripts::g_TASReader.GetCurrentScriptLength());
+		    },
+		    y_spt_hud_script_length);
+#endif
 	}
 
 	tasAddressesWereFound = spt_generic.ORIG_AdjustAngles && spt_playerio.PlayerIOAddressesFound();
