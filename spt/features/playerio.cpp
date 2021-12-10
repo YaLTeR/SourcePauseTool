@@ -3,11 +3,14 @@
 #include "..\sptlib-wrapper.hpp"
 #include "..\strafe\strafestuff.hpp"
 #include "aim.hpp"
+#include "hud.hpp"
 #include "game_detection.hpp"
 #include "math.hpp"
 #include "playerio.hpp"
 #include "ent_utils.hpp"
 #include "interfaces.hpp"
+#include "signals.hpp"
+#include "..\overlay\portal_camera.hpp"
 
 #ifdef SSDK2007
 #include "mathlib\vmatrix.h"
@@ -18,6 +21,19 @@
 
 PlayerIOFeature spt_playerio;
 static void* cinput_thisptr = nullptr;
+
+ConVar y_spt_hud_accel("y_spt_hud_accel", "0", FCVAR_CHEAT, "Turns on the acceleration hud.\n");
+ConVar y_spt_hud_ag_sg_tester("y_spt_hud_ag_sg_tester",
+                              "0",
+                              FCVAR_CHEAT,
+                              "Tests if angle glitch will save glitch you.\n");
+ConVar y_spt_hud_flags("y_spt_hud_flags", "0", FCVAR_CHEAT, "Turns on the flags hud.\n");
+ConVar y_spt_hud_moveflags("y_spt_hud_moveflags", "0", FCVAR_CHEAT, "Turns on the move type hud.\n");
+ConVar y_spt_hud_movecollideflags("y_spt_hud_movecollideflags", "0", FCVAR_CHEAT, "Turns on the move collide hud.\n");
+ConVar y_spt_hud_collisionflags("y_spt_hud_collisionflags", "0", FCVAR_CHEAT, "Turns on the collision group hud.\n");
+ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement vars HUD.\n");
+ConVar y_spt_hud_velocity("y_spt_hud_velocity", "0", FCVAR_CHEAT, "Turns on the velocity hud.\n");
+ConVar y_spt_hud_velocity_angles("y_spt_hud_velocity_angles", "0", FCVAR_CHEAT, "Display velocity Euler angles.");
 
 bool PlayerIOFeature::ShouldLoadFeature()
 {
@@ -277,6 +293,12 @@ Strafe::MovementVars PlayerIOFeature::GetMovementVars()
 	}
 
 	auto player = ORIG_GetLocalPlayer();
+
+	if (!player)
+	{
+		return vars;
+	}
+
 	auto maxspeed = *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offMaxspeed);
 
 	auto pl = GetPlayerData();
@@ -486,9 +508,9 @@ Strafe::PlayerData PlayerIOFeature::GetPlayerData()
 
 Vector PlayerIOFeature::GetPlayerVelocity()
 {
-	if (!ORIG_GetLocalPlayer)
-		return Vector();
-	auto player = ORIG_GetLocalPlayer();
+	void* player;
+	if (!ORIG_GetLocalPlayer || !ORIG_CalcAbsoluteVelocity || !(player = ORIG_GetLocalPlayer()))
+		return Vector(0, 0, 0);
 	ORIG_CalcAbsoluteVelocity(player, 0);
 	float* vel = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(player) + offAbsVelocity);
 
@@ -604,6 +626,12 @@ int PlayerIOFeature::GetPlayerCollisionGroup() const
 void PlayerIOFeature::Set_cinput_thisptr(void* thisptr)
 {
 	cinput_thisptr = thisptr;
+}
+
+void PlayerIOFeature::OnTick()
+{
+	previousVelocity = currentVelocity;
+	currentVelocity = GetPlayerVelocity();
 }
 
 #if defined(OE)
@@ -819,6 +847,113 @@ CON_COMMAND(_y_spt_getangles, "Gets the view angles of the player.")
 	Warning("View Angle (x, y, z): %f %f %f\n", va.x, va.y, va.z);
 }
 
+const wchar* FLAGS[] = {L"FL_ONGROUND",
+                        L"FL_DUCKING",
+                        L"FL_WATERJUMP",
+                        L"FL_ONTRAIN",
+                        L"FL_INRAIN",
+                        L"FL_FROZEN",
+                        L"FL_ATCONTROLS",
+                        L"FL_CLIENT",
+                        L"FL_FAKECLIENT",
+                        L"FL_INWATER",
+                        L"FL_FLY",
+                        L"FL_SWIM",
+                        L"FL_CONVEYOR",
+                        L"FL_NPC",
+                        L"FL_GODMODE",
+                        L"FL_NOTARGET",
+                        L"FL_AIMTARGET",
+                        L"FL_PARTIALGROUND",
+                        L"FL_STATICPROP",
+                        L"FL_GRAPHED",
+                        L"FL_GRENADE",
+                        L"FL_STEPMOVEMENT",
+                        L"FL_DONTTOUCH",
+                        L"FL_BASEVELOCITY",
+                        L"FL_WORLDBRUSH",
+                        L"FL_OBJECT",
+                        L"FL_KILLME",
+                        L"FL_ONFIRE",
+                        L"FL_DISSOLVING",
+                        L"FL_TRANSRAGDOLL",
+                        L"FL_UNBLOCKABLE_BY_PLAYER"};
+
+const wchar* MOVETYPE_FLAGS[] = {L"MOVETYPE_NONE",
+                                 L"MOVETYPE_ISOMETRIC",
+                                 L"MOVETYPE_WALK",
+                                 L"MOVETYPE_STEP",
+                                 L"MOVETYPE_FLY",
+                                 L"MOVETYPE_FLYGRAVITY",
+                                 L"MOVETYPE_VPHYSICS",
+                                 L"MOVETYPE_PUSH",
+                                 L"MOVETYPE_NOCLIP",
+                                 L"MOVETYPE_LADDER",
+                                 L"MOVETYPE_OBSERVER",
+                                 L"MOVETYPE_CUSTOM"};
+
+const wchar* MOVECOLLIDE_FLAGS[] = {L"MOVECOLLIDE_DEFAULT",
+                                    L"MOVECOLLIDE_FLY_BOUNCE",
+                                    L"MOVECOLLIDE_FLY_CUSTOM",
+                                    L"MOVECOLLIDE_COUNT"};
+
+const wchar* COLLISION_GROUPS[] = {L"COLLISION_GROUP_NONE",
+                                   L"COLLISION_GROUP_DEBRIS",
+                                   L"COLLISION_GROUP_DEBRIS_TRIGGER",
+                                   L"COLLISION_GROUP_INTERACTIVE_DEBRIS",
+                                   L"COLLISION_GROUP_INTERACTIVE",
+                                   L"COLLISION_GROUP_PLAYER",
+                                   L"COLLISION_GROUP_BREAKABLE_GLASS,",
+                                   L"COLLISION_GROUP_VEHICLE",
+                                   L"COLLISION_GROUP_PLAYER_MOVEMENT",
+                                   L"COLLISION_GROUP_NPC",
+                                   L"COLLISION_GROUP_IN_VEHICLE",
+                                   L"COLLISION_GROUP_WEAPON",
+                                   L"COLLISION_GROUP_VEHICLE_CLIP",
+                                   L"COLLISION_GROUP_PROJECTILE",
+                                   L"COLLISION_GROUP_DOOR_BLOCKER",
+                                   L"COLLISION_GROUP_PASSABLE_DOOR",
+                                   L"COLLISION_GROUP_DISSOLVING",
+                                   L"COLLISION_GROUP_PUSHAWAY",
+                                   L"COLLISION_GROUP_NPC_ACTOR",
+                                   L"COLLISION_GROUP_NPC_SCRIPTED",
+                                   L"LAST_SHARED_COLLISION_GROUP"};
+
+#define DRAW_FLAGS(name, namesArray, flags, mutuallyExclusive) \
+	{ \
+		DrawFlagsHud(mutuallyExclusive, \
+		             name, \
+		             vertIndex, \
+		             x, \
+		             namesArray, \
+		             ARRAYSIZE(namesArray), \
+		             surface, \
+		             buffer, \
+		             BUFFER_SIZE, \
+		             flags, \
+		             fontTall); \
+	}
+
+#if defined(SSDK2007)
+void DrawFlagsHud(bool mutuallyExclusiveFlags, const wchar* hudName, const wchar** nameArray, int count, int flags)
+{
+	for (int u = 0; u < count; ++u)
+	{
+		if (nameArray[u])
+		{
+			if (mutuallyExclusiveFlags && flags == u)
+			{
+				spt_hud.DrawTopHudElement(L"%s: %s", hudName, nameArray[u]);
+			}
+			else if (!mutuallyExclusiveFlags)
+			{
+				spt_hud.DrawTopHudElement(L"%s: %d", nameArray[u], (flags & (1 << u)) != 0);
+			}
+		}
+	}
+}
+#endif
+
 void PlayerIOFeature::LoadFeature()
 {
 	if (utils::DoesGameLookLikeHLS())
@@ -840,11 +975,80 @@ void PlayerIOFeature::LoadFeature()
 	if (playerioAddressesWereFound)
 	{
 		InitCommand(tas_print_movement_vars);
+
+#if defined(SSDK2007)
+		AddHudCallback(
+		    "accelerate",
+		    [this]() {
+			    auto vars = GetMovementVars();
+			    spt_hud.DrawTopHudElement(L"accelerate: %.3f", vars.Accelerate);
+			    spt_hud.DrawTopHudElement(L"airaccelerate: %.3f", vars.Airaccelerate);
+			    spt_hud.DrawTopHudElement(L"ent friction: %.3f", vars.EntFriction);
+			    spt_hud.DrawTopHudElement(L"frametime: %.3f", vars.Frametime);
+			    spt_hud.DrawTopHudElement(L"friction %.3f", vars.Friction);
+			    spt_hud.DrawTopHudElement(L"maxspeed: %.3f", vars.Maxspeed);
+			    spt_hud.DrawTopHudElement(L"stopspeed: %.3f", vars.Stopspeed);
+			    spt_hud.DrawTopHudElement(L"wishspeed cap: %.3f", vars.WishspeedCap);
+			    spt_hud.DrawTopHudElement(L"onground: %d", (int)vars.OnGround);
+		    },
+		    y_spt_hud_vars);
+#endif
 	}
 
 	if (ORIG_GetLocalPlayer && ORIG_CalcAbsoluteVelocity && offAbsVelocity != 0)
 	{
 		InitCommand(_y_spt_getvel);
+#if defined(SSDK2007)
+		if (TickSignal.Works)
+		{
+			TickSignal.Connect(this, &PlayerIOFeature::OnTick);
+
+			AddHudCallback(
+			    "accel(xyz)",
+			    [this]() {
+				    Vector accel = currentVelocity - previousVelocity;
+				    spt_hud.DrawTopHudElement(L"accel(xyz): %.3f %.3f %.3f", accel.x, accel.y, accel.z);
+				    spt_hud.DrawTopHudElement(L"accel(xy): %.3f", accel.Length2D());
+			    },
+			    y_spt_hud_accel);
+		}
+
+		AddHudCallback(
+		    "vel(xyz)",
+		    [this]() {
+			    Vector currentVel = GetPlayerVelocity();
+			    spt_hud.DrawTopHudElement(L"vel(xyz): %.3f %.3f %.3f",
+			                              currentVel.x,
+			                              currentVel.y,
+			                              currentVel.z);
+			    spt_hud.DrawTopHudElement(L"vel(xy): %.3f", currentVel.Length2D());
+		    },
+		    y_spt_hud_velocity);
+
+		AddHudCallback(
+		    "vel(p/y/r)",
+		    [this]() {
+			    Vector currentVel = GetPlayerVelocity();
+			    QAngle angles;
+			    VectorAngles(currentVel, Vector(0, 0, 1), angles);
+			    spt_hud.DrawTopHudElement(L"vel(p/y/r): %.3f %.3f %.3f", angles.x, angles.y, angles.z);
+		    },
+		    y_spt_hud_velocity_angles);
+
+		if (utils::DoesGameLookLikePortal())
+		{
+			AddHudCallback(
+			    "ag sg",
+			    [this]() {
+				    Vector v = spt_playerio.GetPlayerEyePos();
+				    QAngle q;
+
+				    std::wstring result = calculateWillAGSG(v, q);
+				    spt_hud.DrawTopHudElement(L"ag sg: %s", result.c_str());
+			    },
+			    y_spt_hud_ag_sg_tester);
+		}
+#endif
 	}
 
 	if (ORIG_GetButtonBits)
@@ -860,10 +1064,58 @@ void PlayerIOFeature::LoadFeature()
 		InitCommand(y_spt_calc_relative_position);
 	}
 #endif
-#if defined(SSDK2007) || defined(SSDK2013)
+#if defined(SSDK2007)
 	if (utils::DoesGameLookLikePortal() && interfaces::engine_server && offServerAbsOrigin != 0)
 	{
 		InitCommand(y_spt_find_portals);
+	}
+
+	if (ORIG_GetLocalPlayer && offFlags != 0)
+	{
+		AddHudCallback(
+		    "fl_",
+		    [this]() {
+			    int flags = spt_playerio.GetPlayerFlags();
+			    DrawFlagsHud(false, NULL, FLAGS, ARRAYSIZE(FLAGS), flags);
+		    },
+		    y_spt_hud_flags);
+	}
+
+	if (offM_moveType != 0)
+	{
+		AddHudCallback(
+		    "moveflags",
+		    [this]() {
+			    int flags = spt_playerio.GetPlayerMoveType();
+			    DrawFlagsHud(true, L"Move type", MOVETYPE_FLAGS, ARRAYSIZE(MOVETYPE_FLAGS), flags);
+		    },
+		    y_spt_hud_moveflags);
+	}
+
+	if (offM_collisionGroup != 0)
+	{
+		AddHudCallback(
+		    "collisionflags",
+		    [this]() {
+			    int flags = spt_playerio.GetPlayerCollisionGroup();
+			    DrawFlagsHud(true,
+			                 L"Collision group",
+			                 COLLISION_GROUPS,
+			                 ARRAYSIZE(COLLISION_GROUPS),
+			                 flags);
+		    },
+		    y_spt_hud_collisionflags);
+	}
+
+	if (offM_moveCollide != 0)
+	{
+		AddHudCallback(
+		    "movecollide",
+		    [this]() {
+			    int flags = spt_playerio.GetPlayerMoveCollide();
+			    DrawFlagsHud(true, L"Move collide", MOVECOLLIDE_FLAGS, ARRAYSIZE(MOVECOLLIDE_FLAGS), flags);
+		    },
+		    y_spt_hud_movecollideflags);
 	}
 #endif
 }
