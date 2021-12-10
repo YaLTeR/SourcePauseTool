@@ -139,7 +139,7 @@
     <ClCompile Include="spt\utils\property_getter.cpp">
       <Filter>spt\utils</Filter>
     </ClCompile>
-    <ClCompile Include="spt\utils\string_parsing.cpp">
+    <ClCompile Include="spt\utils\string_utils.cpp">
       <Filter>spt\utils</Filter>
     </ClCompile>
     <ClCompile Include="spt\spt-serverplugin.cpp">
@@ -393,7 +393,7 @@
     <ClInclude Include="spt\utils\property_getter.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
-    <ClInclude Include="spt\utils\string_parsing.hpp">
+    <ClInclude Include="spt\utils\string_utils.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
     <ClInclude Include="spt\cvars.hpp">

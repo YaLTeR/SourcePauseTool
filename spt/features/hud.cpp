@@ -10,7 +10,6 @@
 #include "..\utils\ent_utils.hpp"
 #include "game_detection.hpp"
 #include "..\utils\property_getter.hpp"
-#include "..\utils\string_parsing.hpp"
 #include "..\vgui\vgui_utils.hpp"
 #include "..\scripts\srctas_reader.hpp"
 #include "autojump.hpp"
@@ -25,6 +24,7 @@
 
 #undef max
 #undef min
+#include "string_utils.hpp"
 
 typedef void(__fastcall* _StartDrawing)(void* thisptr, int edx);
 typedef void(__fastcall* _FinishDrawing)(void* thisptr, int edx);

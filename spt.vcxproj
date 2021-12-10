@@ -1541,7 +1541,7 @@
     <ClCompile Include="spt\utils\math.cpp" />
     <ClCompile Include="spt\utils\property_getter.cpp" />
     <ClCompile Include="spt\utils\signals.cpp" />
-    <ClCompile Include="spt\utils\string_parsing.cpp" />
+    <ClCompile Include="spt\utils\string_utils.cpp" />
     <ClCompile Include="spt\vgui\lines.cpp" />
     <ClCompile Include="spt\vgui\vgui_utils.cpp" />
     <ClCompile Include="thirdparty\md5.cpp" />
@@ -1632,7 +1632,7 @@
     <ClInclude Include="spt\utils\math.hpp" />
     <ClInclude Include="spt\utils\property_getter.hpp" />
     <ClInclude Include="spt\utils\signals.hpp" />
-    <ClInclude Include="spt\utils\string_parsing.hpp" />
+    <ClInclude Include="spt\utils\string_utils.hpp" />
     <ClInclude Include="spt\vgui\lines.hpp" />
     <ClInclude Include="spt\vgui\vgui_utils.hpp" />
     <ClInclude Include="thirdparty\Delegate.h" />
