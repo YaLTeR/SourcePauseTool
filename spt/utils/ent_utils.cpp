@@ -15,7 +15,7 @@
 #include "client_class.h"
 #include "game_detection.hpp"
 #include "property_getter.hpp"
-#include "string_parsing.hpp"
+#include "string_utils.hpp"
 #include "math.hpp"
 #include "game_detection.hpp"
 #include "..\features\playerio.hpp"

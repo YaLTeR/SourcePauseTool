@@ -9,7 +9,7 @@
 #include "file.hpp"
 #include "interfaces.hpp"
 #include "math.hpp"
-#include "string_parsing.hpp"
+#include "string_utils.hpp"
 #include "..\cvars.hpp"
 #include "..\features\tickrate.hpp"
 #include "framebulk_handler.hpp"

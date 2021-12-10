@@ -1,11 +1,14 @@
 #pragma once
-#include <string>
+#include <wchar.h>
+#include <tier0\wchartypes.h>
 
 bool whiteSpacesOnly(const std::string& s);
 void ReplaceAll(std::string& str, const std::string& from, const std::string& to);
 inline void GetTriplet(std::istringstream& stream, std::string& out1, std::string& out2, std::string& out3, char delim);
 void rtrim(std::string& s);
 const char* FormatTempString(const char* fmt, ...);
+const wchar* FormatTempString(const wchar* format, ...);
+const wchar* FormatTempString(const wchar* format, va_list args);
 bool IsValidUTF8(const char* string);
 
 template<typename T>
