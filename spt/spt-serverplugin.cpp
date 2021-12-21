@@ -134,6 +134,15 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 {
 	auto startTime = std::chrono::high_resolution_clock::now();
 
+	if (pluginLoaded)
+	{
+		Warning("Trying to load SPT when SPT is already loaded.\n");
+		// Failure to load causes immediate call to Unload, make sure we do nothing there
+		skipUnload = true;
+		return false;
+	}
+	pluginLoaded = true;
+
 	ConnectTier1Libraries(&interfaceFactory, 1);
 	ConnectTier3Libraries(&interfaceFactory, 1);
 
@@ -262,6 +271,13 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 
 void CSourcePauseTool::Unload(void)
 {
+	if (skipUnload)
+	{
+		// Preventing double load of plugin, do nothing on unload
+		skipUnload = false; // Enable unloading again
+		return;
+	}
+
 #if !defined(OE)
 	ConVar_Unregister();
 #endif
