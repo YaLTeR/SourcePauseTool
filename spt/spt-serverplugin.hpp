@@ -19,6 +19,10 @@
 //---------------------------------------------------------------------------------
 class CSourcePauseTool : public IServerPluginCallbacks
 {
+private:
+	bool pluginLoaded = false;
+	bool skipUnload = false;
+
 public:
 	CSourcePauseTool(){};
 	~CSourcePauseTool(){};
