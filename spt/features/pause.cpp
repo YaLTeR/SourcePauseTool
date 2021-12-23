@@ -7,6 +7,8 @@
 
 ConVar y_spt_pause("y_spt_pause", "0", FCVAR_ARCHIVE);
 
+extern ConVar tas_pause;
+
 // y_spt_pause stuff
 class PauseFeature : public Feature
 {
@@ -132,6 +134,11 @@ void PauseFeature::LoadFeature()
 void PauseFeature::SV_ActivateServer(bool result)
 {
 	DevMsg("Engine call: SV_ActivateServer() => %s;\n", (result ? "true" : "false"));
+
+	if (tas_pause.GetBool())
+	{
+		tas_pause.SetValue(0);
+	}
 
 	if (spt_generic.ORIG_SetPaused && pM_bLoadgame && pGameServer)
 	{
