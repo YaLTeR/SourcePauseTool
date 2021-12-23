@@ -211,6 +211,9 @@
     <ClCompile Include="spt\features\hops_hud.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\ihud.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -466,6 +469,9 @@
       <Filter>spt\features</Filter>
     </ClInclude>
     <ClInclude Include="spt\features\hud.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\ihud.hpp">
       <Filter>spt\features</Filter>
     </ClInclude>
   </ItemGroup>

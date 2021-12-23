@@ -11,6 +11,13 @@
 #include "interfaces.hpp"
 #include "signals.hpp"
 #include "..\overlay\portal_camera.hpp"
+#include "ihud.hpp"
+
+#ifdef OE
+#include "..\game_shared\usercmd.h"
+#else
+#include "usercmd.h"
+#endif
 
 #ifdef SSDK2007
 #include "mathlib\vmatrix.h"
@@ -411,6 +418,9 @@ void __fastcall PlayerIOFeature::HOOKED_CreateMove_Func(void* thisptr,
 	pCmd = m_pCommands + sizeofCUserCmd * (sequence_number % 90);
 
 	ORIG_CreateMove(thisptr, edx, sequence_number, input_sample_frametime, active);
+
+	auto cmd = reinterpret_cast<CUserCmd*>(pCmd);
+	spt_ihud.SetInputInfo(cmd->buttons, Vector(cmd->sidemove, cmd->forwardmove, cmd->upmove));
 
 	pCmd = 0;
 }
