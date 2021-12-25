@@ -1397,6 +1397,7 @@
     <ClCompile Include="spt\features\timer.cpp" />
     <ClCompile Include="spt\features\tracing.cpp" />
     <ClCompile Include="spt\features\vag.cpp" />
+    <ClCompile Include="spt\features\vag_searcher.cpp" />
     <ClCompile Include="spt\features\visual_fixes.cpp" />
     <ClCompile Include="spt\ipc\ipc.cpp" />
     <ClCompile Include="sptlib\sptlib.cpp">
@@ -1605,6 +1606,7 @@
     <ClInclude Include="spt\features\tas.hpp" />
     <ClInclude Include="spt\features\tickrate.hpp" />
     <ClInclude Include="spt\features\tracing.hpp" />
+    <ClInclude Include="spt\features\vag_searcher.hpp" />
     <ClInclude Include="spt\ipc\ipc.hpp" />
     <ClInclude Include="spt\overlay\overlay-renderer.hpp" />
     <ClInclude Include="spt\overlay\overlays.hpp" />

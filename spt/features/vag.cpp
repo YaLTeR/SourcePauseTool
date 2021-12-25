@@ -5,6 +5,7 @@
 #include "..\feature.hpp"
 #include "..\utils\game_detection.hpp"
 #include "..\cvars.hpp"
+#include "vag_searcher.hpp"
 
 #include "dbg.h"
 
@@ -128,6 +129,7 @@ void __fastcall VAG::HOOKED_MiddleOfTeleportTouchingEntity_Func(void* portalPtr,
 		entPos->x -= portalNorm->x;
 		entPos->y -= portalNorm->y;
 		entPos->z -= portalNorm->z;
+		spt_vag_searcher.VagCrashTriggered();
 	}
 }
 
