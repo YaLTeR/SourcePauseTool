@@ -48,7 +48,7 @@ private:
 	const int cooldown_ticks = 2;
 	int cooldown;
 	const int max_iteration = 35;
-	int iteration;
+	int iteration = 0;
 	bool crash;
 	IClientEntity* enter_portal = NULL;
 	IClientEntity* exit_portal = NULL;

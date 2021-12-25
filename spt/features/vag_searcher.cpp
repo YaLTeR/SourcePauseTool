@@ -42,13 +42,14 @@ void VagSearcher::StartSearch()
 		
 	entry_index = enter_portal->entindex();
 	exit_index = exit_portal->entindex();
-	/*
-	if (utils::GetProperty<int>(entry_index, "m_bActivated") == 0)
+	
+	if (utils::GetProperty<int>(entry_index - 1, "m_bActivated") == 0
+	    || utils::GetProperty<int>(exit_index - 1, "m_bActivated") == 0)
 	{
 		Msg("Portal not activated.\n");
 		return;
 	}
-	*/
+	
 	StartIterations();
 }
 
@@ -208,7 +209,7 @@ VagSearcher::VagSearchResult VagSearcher::RunIteration()
 }
 
 void VagSearcher::OnTick() {
-	if (iteration > 0)
+	if (IsIterating())
 	{
 		if (cooldown)
 		{
