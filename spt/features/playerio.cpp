@@ -419,8 +419,10 @@ void __fastcall PlayerIOFeature::HOOKED_CreateMove_Func(void* thisptr,
 
 	ORIG_CreateMove(thisptr, edx, sequence_number, input_sample_frametime, active);
 
+#if defined(SSDK2007)
 	auto cmd = reinterpret_cast<CUserCmd*>(pCmd);
 	spt_ihud.SetInputInfo(cmd->buttons, Vector(cmd->sidemove, cmd->forwardmove, cmd->upmove));
+#endif
 
 	pCmd = 0;
 }
