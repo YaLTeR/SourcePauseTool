@@ -37,6 +37,7 @@ private:
 	                                                      bf_read& buf,
 	                                                      int sequence_number);
 	_DecodeUserCmdFromBuffer ORIG_DecodeUserCmdFromBuffer = nullptr;
+	void CreateMove(uintptr_t pCmd);
 	void DrawRectAndCenterTxt(Color buttonColor,
 	                          int x0,
 	                          int y0,

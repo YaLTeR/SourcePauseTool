@@ -13,12 +13,6 @@
 #include "..\overlay\portal_camera.hpp"
 #include "ihud.hpp"
 
-#ifdef OE
-#include "..\game_shared\usercmd.h"
-#else
-#include "usercmd.h"
-#endif
-
 #ifdef SSDK2007
 #include "mathlib\vmatrix.h"
 #endif
@@ -146,6 +140,8 @@ void PlayerIOFeature::PreHook()
 	if (ORIG_CreateMove)
 	{
 		int index = GetPatternIndex((void**)&ORIG_CreateMove);
+		
+		CreateMoveSignal.Works = true;
 
 		switch (index)
 		{
@@ -419,10 +415,7 @@ void __fastcall PlayerIOFeature::HOOKED_CreateMove_Func(void* thisptr,
 
 	ORIG_CreateMove(thisptr, edx, sequence_number, input_sample_frametime, active);
 
-#if defined(SSDK2007)
-	auto cmd = reinterpret_cast<CUserCmd*>(pCmd);
-	spt_ihud.SetInputInfo(cmd->buttons, Vector(cmd->sidemove, cmd->forwardmove, cmd->upmove));
-#endif
+	CreateMoveSignal(pCmd);
 
 	pCmd = 0;
 }

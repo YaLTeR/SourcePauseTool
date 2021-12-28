@@ -4,6 +4,8 @@
 
 #include "..\cvars.hpp"
 #include "playerio.hpp"
+#include "signals.hpp"
+#include "property_getter.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "Color.h"
 
@@ -45,23 +47,23 @@ void InputHud::InitHooks()
 
 void InputHud::LoadFeature()
 {
-	if (loadingSuccessful)
-	{
-		ihudFont = spt_hud.scheme->GetFont(y_spt_ihud_font.GetString(), false);
+	if (!loadingSuccessful)
+		return;
+	CreateMoveSignal.Connect(this, &InputHud::CreateMove);
+	ihudFont = spt_hud.scheme->GetFont(y_spt_ihud_font.GetString(), false);
 
-		bool result = AddHudCallback("ihud", std::bind(&InputHud::DrawInputHud, this), y_spt_ihud);
-		if (result)
-		{
-			InitConcommandBase(y_spt_ihud_button_color);
-			InitConcommandBase(y_spt_ihud_shadow_color);
-			InitConcommandBase(y_spt_ihud_font_color);
-			InitConcommandBase(y_spt_ihud_shadow_font_color);
-			InitConcommandBase(y_spt_ihud_grid_size);
-			InitConcommandBase(y_spt_ihud_grid_padding);
-			InitConcommandBase(y_spt_ihud_font);
-			InitConcommandBase(y_spt_ihud_x);
-			InitConcommandBase(y_spt_ihud_y);
-		}
+	bool result = AddHudCallback("ihud", std::bind(&InputHud::DrawInputHud, this), y_spt_ihud);
+	if (result)
+	{
+		InitConcommandBase(y_spt_ihud_button_color);
+		InitConcommandBase(y_spt_ihud_shadow_color);
+		InitConcommandBase(y_spt_ihud_font_color);
+		InitConcommandBase(y_spt_ihud_shadow_font_color);
+		InitConcommandBase(y_spt_ihud_grid_size);
+		InitConcommandBase(y_spt_ihud_grid_padding);
+		InitConcommandBase(y_spt_ihud_font);
+		InitConcommandBase(y_spt_ihud_x);
+		InitConcommandBase(y_spt_ihud_y);
 	}
 }
 
@@ -171,7 +173,7 @@ void InputHud::DrawInputHud()
 		// Movement
 		Vector movement = inputMovement;
 		int movementSpeed = movement.Length();
-		int maxSpeed = movementSpeed > 150 ? 450 : 150; // For Portal TAS
+		float maxSpeed = utils::GetProperty<float>(0, "m_flMaxspeed");
 		movement /= movementSpeed > maxSpeed ? movementSpeed : maxSpeed;
 
 		// Draw
@@ -273,6 +275,12 @@ void __fastcall InputHud::HOOKED_DecodeUserCmdFromBuffer(void* thisptr, int edx,
 	auto cmd = reinterpret_cast<CUserCmd*>(pCmd);
 	spt_ihud.SetInputInfo(cmd->buttons, Vector(cmd->sidemove, cmd->forwardmove, cmd->upmove));
 	pCmd = 0;
+}
+
+void InputHud::CreateMove(uintptr_t pCmd)
+{
+	auto cmd = reinterpret_cast<CUserCmd*>(pCmd);
+	spt_ihud.SetInputInfo(cmd->buttons, Vector(cmd->sidemove, cmd->forwardmove, cmd->upmove));
 }
 
 #endif
