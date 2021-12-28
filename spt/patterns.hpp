@@ -219,6 +219,10 @@ namespace patterns
 		    "BMS-Retail",
 		    "55 8B EC 83 EC 54 53 56 8B 75 08 B8 ?? ?? ?? ?? F7 EE 57 03 D6 8B F9 C1 FA 06 8B CE 8B C2 C1 E8 1F 03 C2 6B C0 5A");
 		PATTERNS(
+		    DecodeUserCmdFromBuffer,
+		    "5135",
+		    "83 ec 54 33 c0 d9 ee 89 44 24 40 d9 54 24 0c 89 44 24 44 d9 54 24 10 89 44 24 48 d9 54 24 14 89 44 24 50 d9 54 24 18 89 44 24 04");
+		PATTERNS(
 		    MiddleOfCAM_Think,
 		    "5135",
 		    "8B 54 24 74 8B 4C 24 78 83 EC 0C 8B C4 89 10 8B 94 24 88 00 00 00 89 48 04 89 50 08 E8",

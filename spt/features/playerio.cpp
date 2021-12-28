@@ -11,6 +11,7 @@
 #include "interfaces.hpp"
 #include "signals.hpp"
 #include "..\overlay\portal_camera.hpp"
+#include "ihud.hpp"
 
 #ifdef SSDK2007
 #include "mathlib\vmatrix.h"
@@ -139,6 +140,8 @@ void PlayerIOFeature::PreHook()
 	if (ORIG_CreateMove)
 	{
 		int index = GetPatternIndex((void**)&ORIG_CreateMove);
+
+		CreateMoveSignal.Works = true;
 
 		switch (index)
 		{
@@ -411,6 +414,8 @@ void __fastcall PlayerIOFeature::HOOKED_CreateMove_Func(void* thisptr,
 	pCmd = m_pCommands + sizeofCUserCmd * (sequence_number % 90);
 
 	ORIG_CreateMove(thisptr, edx, sequence_number, input_sample_frametime, active);
+
+	CreateMoveSignal(pCmd);
 
 	pCmd = 0;
 }
