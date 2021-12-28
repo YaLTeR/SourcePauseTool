@@ -140,7 +140,7 @@ void PlayerIOFeature::PreHook()
 	if (ORIG_CreateMove)
 	{
 		int index = GetPatternIndex((void**)&ORIG_CreateMove);
-		
+
 		CreateMoveSignal.Works = true;
 
 		switch (index)
