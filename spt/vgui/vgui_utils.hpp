@@ -2,10 +2,6 @@
 
 #ifndef OE
 
-#ifdef P2
-struct AudioState_t;
-#endif
-
 class IClientMode;
 
 #include "inputsystem\buttoncode.h"
