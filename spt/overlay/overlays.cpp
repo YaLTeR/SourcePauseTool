@@ -32,16 +32,12 @@ CameraInformation havokViewMirrorOverlay()
 	constexpr float duckOffset = 28;
 	constexpr float standingOffset = 64;
 
-	auto ducked = spt_playerio.GetFlagsDucking();
+	auto offset = spt_playerio.m_vecViewOffset.GetValue();
 	auto angles = utils::GetPlayerEyeAngles();
 
 	info.x = havokpos.x;
 	info.y = havokpos.y;
-
-	if (ducked)
-		info.z = havokpos.z + duckOffset;
-	else
-		info.z = havokpos.z + standingOffset;
+	info.z = havokpos.z + offset.z;
 
 	info.pitch = angles[PITCH];
 	info.yaw = utils::NormalizeDeg(angles[YAW]);

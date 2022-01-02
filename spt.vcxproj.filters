@@ -211,6 +211,9 @@
     <ClCompile Include="spt\features\hops_hud.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
+    <ClCompile Include="spt\utils\datamap_wrapper.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
     <ClCompile Include="spt\features\ihud.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
@@ -473,6 +476,9 @@
     </ClInclude>
     <ClInclude Include="spt\features\hud.hpp">
       <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\datamap_wrapper.hpp">
+      <Filter>spt\utils</Filter>
     </ClInclude>
     <ClInclude Include="spt\features\ihud.hpp">
       <Filter>spt\features</Filter>

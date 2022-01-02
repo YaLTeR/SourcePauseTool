@@ -49,4 +49,15 @@ namespace utils
 
 		return false;
 	}
+
+	bool DoesGameLookLikeBMS()
+	{
+		if (g_pCVar)
+		{
+			if (g_pCVar->FindVar("bm_announcer"))
+				return true;
+		}
+
+		return false;
+	}
 } // namespace utils
