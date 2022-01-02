@@ -22,8 +22,3 @@
 	url = https://github.com/alliedmodders/hl2sdk.git
 	branch = episode1
 	shallow = true
-[submodule "SDK/portal2"]
-	path = SDK/portal2
-	url = https://github.com/alliedmodders/hl2sdk.git
-	branch = portal2
-	shallow = true

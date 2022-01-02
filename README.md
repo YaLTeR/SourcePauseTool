@@ -10,7 +10,6 @@ A plugin for all your pausing needs.
     | Source SDK (Base) 2013 / SteamPipe / Latest         | `spt-2013.dll`
     | Black Mesa                                          | `spt-bms.dll`
     | Source SDK (Base) 2006 / Old Engine                 | `spt-oe.dll`
-    | Portal 2                                            | `spt-p2.dll`
     | Source SDK (Base) 2007 / Source Unpack / New Engine | `spt.dll`
 
 2. Place the DLL into the correct folder:
@@ -23,7 +22,6 @@ A plugin for all your pausing needs.
     | Half-Life 2: Episode 1 | `episodic`
     | Half-Life 2: Episode 2 | `ep2`
     | Portal                 | `portal`
-    | Portal 2               | `portal2`
     | Black Mesa             | `bms`
 
 3. Launch the game.
@@ -62,7 +60,6 @@ This should open the Visual Studio Installer in another window. From the Workloa
     | Source SDK 2013 (SteamPipe/latest)                    | `Release 2013`
     | Black Mesa                                            | `Release BMS`
     | Source SDK 2006 (Old Engine)                          | `Release OE`
-    | Portal 2                                              | `Release P2`
 
 1. Click `Build > Build Solution`.
 

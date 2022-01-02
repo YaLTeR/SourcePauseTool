@@ -264,20 +264,11 @@ namespace scripts
 	void SourceTASReader::ResetConvars()
 	{
 #ifndef OE
-#ifndef P2
 		ConCommandBase* cmd = interfaces::g_pCVar->GetCommands();
 
 		// Loops through the console variables and commands
 		while (cmd != NULL)
 		{
-#else
-		ICvar::Iterator iter(g_pCVar);
-
-		for (iter.SetFirst(); iter.IsValid(); iter.Next())
-		{
-			auto cmd = iter.Get();
-#endif
-
 			const char* name = cmd->GetName();
 			// Reset any variables that have been marked to be reset for TASes
 			if (!cmd->IsCommand() && name != NULL && cmd->IsFlagSet(FCVAR_TAS_RESET))
@@ -302,9 +293,7 @@ namespace scripts
 				EngineConCmd(cmd->GetName());
 			}
 
-#ifndef P2
 			cmd = cmd->GetNext();
-#endif
 		}
 
 		// Reset any variables selected above

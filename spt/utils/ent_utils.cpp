@@ -26,7 +26,7 @@
 
 #undef max
 
-#if !defined(OE) && !defined(P2)
+#if !defined(OE)
 #define GAME_DLL
 #include "cbase.h"
 #endif
@@ -430,7 +430,6 @@ namespace utils
 	}
 	int GetIndex(void* ent)
 	{
-#ifndef P2
 		if (!ent)
 			return -1;
 
@@ -440,7 +439,7 @@ namespace utils
 			if (e && e->GetUnknown() == ent)
 				return i;
 		}
-#endif
+
 		return -1;
 	}
 
@@ -457,7 +456,6 @@ namespace utils
 	}
 #endif
 
-#ifndef P2
 	IServerUnknown* GetServerPlayer()
 	{
 		if (!interfaces::engine_server)
@@ -469,14 +467,6 @@ namespace utils
 
 		return edict->GetUnknown();
 	}
-#else
-	// TODO
-	IServerUnknown* GetServerPlayer()
-	{
-		assert(false);
-		return nullptr;
-	}
-#endif
 
 	JBData CanJB(float height)
 	{
@@ -535,7 +525,6 @@ namespace utils
 #endif
 	}
 
-#ifndef P2
 	static CBaseEntity* GetServerEntity(int index)
 	{
 		if (!interfaces::engine_server)
@@ -551,13 +540,9 @@ namespace utils
 
 		return unknown->GetBaseEntity();
 	}
-#endif
 
 	bool GetPunchAngleInformation(QAngle& punchAngle, QAngle& punchAngleVel)
 	{
-#ifdef P2
-		return false;
-#else
 		auto ply = GetServerEntity(1);
 
 		if (ply && spt_playerio.offM_vecPunchAngle != 0 && spt_playerio.offM_vecPunchAngleVel != 0)
@@ -572,10 +557,9 @@ namespace utils
 		{
 			return false;
 		}
-#endif
 	}
 
-#if !defined(OE) && !defined(P2)
+#if !defined(OE)
 	static int GetServerEntityCount()
 	{
 		if (!interfaces::engine_server)

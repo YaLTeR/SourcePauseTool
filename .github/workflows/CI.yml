@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        Configuration: [Debug, Debug BMS, Debug 2013, Debug OE, Debug P2, Release, Release BMS, Release 2013, Release OE, Release P2]
+        Configuration: [Debug, Debug BMS, Debug 2013, Debug OE, Release, Release BMS, Release 2013, Release OE]
         include:
           - Configuration: Debug
             SDK: orangebox
@@ -22,8 +22,6 @@ jobs:
             SDK: sdk2013
           - Configuration: Debug OE
             SDK: episode1
-          - Configuration: Debug P2
-            SDK: portal2
           - Configuration: Release
             SDK: orangebox
           - Configuration: Release BMS
@@ -32,8 +30,6 @@ jobs:
             SDK: sdk2013
           - Configuration: Release OE
             SDK: episode1
-          - Configuration: Release P2
-            SDK: portal2
     steps:
     - name: Checkout SPT
       uses: actions/checkout@v2

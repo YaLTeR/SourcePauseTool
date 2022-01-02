@@ -47,7 +47,7 @@ void Cvar_InitConCommandBase(ConCommandBase& concommand, void* owner)
 	}
 }
 
-#if !defined(OE) && !defined(P2)
+#if !defined(OE)
 void Cvar_RegisterSPTCvars()
 {
 	if (!g_pCVar)
@@ -83,36 +83,6 @@ void Cvar_RegisterSPTCvars()
 	if (g_pCVar)
 	{
 		ConCommandBaseMgr::OneTimeInit(&g_ConVarAccessor);
-	}
-}
-#endif
-
-#ifdef P2
-void Cvar_RegisterSPTCvars()
-{
-	if (!g_pCVar)
-		return;
-	ConVar_Register(0);
-	int identifier = y_spt_pause.GetDLLIdentifier();
-
-	ICvar::Iterator iter(g_pCVar);
-
-	for (iter.SetFirst(); iter.IsValid();)
-	{
-		auto cmd = iter.Get();
-		ConCommandBase* todelete = nullptr;
-		if (cmd->GetDLLIdentifier() == identifier)
-		{
-			if (cmd_to_feature.find(cmd) == cmd_to_feature.end())
-			{
-				DevWarning("Command %s was unloaded, because it was not initialized!\n",
-				           cmd->GetName());
-				todelete = cmd;
-			}
-		}
-		iter.Next();
-		if (todelete)
-			g_pCVar->UnregisterConCommand(todelete);
 	}
 }
 #endif
