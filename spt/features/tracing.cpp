@@ -93,9 +93,6 @@ void Tracing::InitHooks()
 	FIND_PATTERN(server, CPortalGameMovement__TracePlayerBBox);
 	FIND_PATTERN(server, TracePlayerBBoxForGround);
 	FIND_PATTERN(server, TracePlayerBBoxForGround2);
-	FIND_PATTERN(server, CGameMovement__TracePlayerBBox);
-	FIND_PATTERN(server, CGameMovement__TracePlayerBBox);
-	FIND_PATTERN(server, CGameMovement__TracePlayerBBox);
 	HOOK_FUNCTION(server, CGameMovement__GetPlayerMaxs);
 	HOOK_FUNCTION(server, CGameMovement__GetPlayerMins);
 #ifdef SSDK2007

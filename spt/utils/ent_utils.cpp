@@ -545,12 +545,10 @@ namespace utils
 	{
 		auto ply = GetServerEntity(1);
 
-		if (ply && spt_playerio.offM_vecPunchAngle != 0 && spt_playerio.offM_vecPunchAngleVel != 0)
+		if (ply)
 		{
-			punchAngle =
-			    *reinterpret_cast<QAngle*>(reinterpret_cast<char*>(ply) + spt_playerio.offM_vecPunchAngle);
-			punchAngleVel = *reinterpret_cast<QAngle*>(reinterpret_cast<char*>(ply)
-			                                           + spt_playerio.offM_vecPunchAngleVel);
+			punchAngle = spt_playerio.m_vecPunchAngle.GetValue();
+			punchAngleVel = spt_playerio.m_vecPunchAngleVel.GetValue();
 			return true;
 		}
 		else
