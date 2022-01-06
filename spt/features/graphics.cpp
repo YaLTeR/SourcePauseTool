@@ -30,7 +30,8 @@ bool GraphicsFeature::ShouldLoadFeature()
 
 void GraphicsFeature::LoadFeature()
 {
-	if (spt_tracing.ORIG_FirePortal && interfaces::debugOverlay && AdjustAngles.Works)
+	if (spt_tracing.ORIG_TraceFirePortal && spt_tracing.ORIG_GetActiveWeapon && interfaces::debugOverlay
+	    && AdjustAngles.Works)
 	{
 		InitConcommandBase(y_spt_drawseams);
 		AdjustAngles.Connect(vgui::DrawLines);

@@ -64,14 +64,12 @@ typedef bool(__fastcall* _CEngineTrace__PointOutsideWorld)(void* thisptr, int ed
 class Tracing : public Feature
 {
 public:
-	_FirePortal ORIG_FirePortal = nullptr;
 	_UTIL_TraceRay ORIG_UTIL_TraceRay = nullptr;
 	_TracePlayerBBoxForGround ORIG_TracePlayerBBoxForGround = nullptr;
 	_TracePlayerBBoxForGround2 ORIG_TracePlayerBBoxForGround2 = nullptr;
-	_SnapEyeAngles ORIG_SnapEyeAngles = nullptr;
-	trace_t lastPortalTrace;
 	_GetActiveWeapon ORIG_GetActiveWeapon = nullptr;
 	_CEngineTrace__PointOutsideWorld ORIG_CEngineTrace__PointOutsideWorld = nullptr;
+	_TraceFirePortal ORIG_TraceFirePortal = nullptr;
 
 	bool TraceClientRay(const Ray_t& ray,
 	                    unsigned int mask,
@@ -98,16 +96,6 @@ protected:
 	virtual void UnloadFeature() override;
 
 private:
-	static float __fastcall HOOKED_TraceFirePortal(void* thisptr,
-	                                               int edx,
-	                                               bool bPortal2,
-	                                               const Vector& vTraceStart,
-	                                               const Vector& vDirection,
-	                                               trace_t& tr,
-	                                               Vector& vFinalPosition,
-	                                               QAngle& qFinalAngles,
-	                                               int iPlacedBy,
-	                                               bool bTest);
 	static const Vector& __fastcall HOOKED_CGameMovement__GetPlayerMaxs(void* thisptr, int edx);
 	static const Vector& __fastcall HOOKED_CGameMovement__GetPlayerMins(void* thisptr, int edx);
 
@@ -119,7 +107,6 @@ private:
 	_CPortalGameMovement__TracePlayerBBox ORIG_CPortalGameMovement__TracePlayerBBox = nullptr;
 	_CGameMovement__GetPlayerMins ORIG_CGameMovement__GetPlayerMins = nullptr;
 	_CGameMovement__GetPlayerMaxs ORIG_CGameMovement__GetPlayerMaxs = nullptr;
-	_TraceFirePortal ORIG_TraceFirePortal = nullptr;
 };
 
 extern Tracing spt_tracing;

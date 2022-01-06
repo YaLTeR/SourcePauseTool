@@ -8,6 +8,7 @@
 #include "interfaces.hpp"
 #include "convar.h"
 #include "string_utils.hpp"
+#include "..\sptlib-wrapper.hpp"
 #include "..\strafe\strafestuff.hpp"
 
 ConVar y_spt_hud_oob("y_spt_hud_oob", "0", FCVAR_CHEAT, "Is the player OoB?");
@@ -98,39 +99,14 @@ void Tracing::InitHooks()
 #ifdef SSDK2007
 	if (utils::DoesGameLookLikePortal())
 	{
-		AddOffsetHook("server", 0x442090, "FirePortal", reinterpret_cast<void**>(&ORIG_FirePortal));
-		AddOffsetHook("server", 0x1B92F0, "SnapEyeAngles", reinterpret_cast<void**>(&ORIG_SnapEyeAngles));
 		AddOffsetHook("server", 0xCCE90, "GetActiveWeapon", reinterpret_cast<void**>(&ORIG_GetActiveWeapon));
-		AddOffsetHook("server",
-		              0x441730,
-		              "TraceFirePortal",
-		              reinterpret_cast<void**>(&ORIG_TraceFirePortal),
-		              HOOKED_TraceFirePortal);
+		AddOffsetHook("server", 0x441730, "TraceFirePortal", reinterpret_cast<void**>(&ORIG_TraceFirePortal));
 		FIND_PATTERN(engine, CEngineTrace__PointOutsideWorld);
 	}
 #endif
 }
 
 void Tracing::UnloadFeature() {}
-
-float __fastcall Tracing::HOOKED_TraceFirePortal(void* thisptr,
-                                                 int edx,
-                                                 bool bPortal2,
-                                                 const Vector& vTraceStart,
-                                                 const Vector& vDirection,
-                                                 trace_t& tr,
-                                                 Vector& vFinalPosition,
-                                                 QAngle& qFinalAngles,
-                                                 int iPlacedBy,
-                                                 bool bTest)
-{
-	const auto rv = spt_tracing.ORIG_TraceFirePortal(
-	    thisptr, edx, bPortal2, vTraceStart, vDirection, tr, vFinalPosition, qFinalAngles, iPlacedBy, bTest);
-
-	spt_tracing.lastPortalTrace = tr;
-
-	return rv;
-}
 
 const Vector& __fastcall Tracing::HOOKED_CGameMovement__GetPlayerMaxs(void* thisptr, int edx)
 {
@@ -153,29 +129,19 @@ const Vector& __fastcall Tracing::HOOKED_CGameMovement__GetPlayerMins(void* this
 }
 
 #ifdef SSDK2007
-void setang_exact(const QAngle& angles)
-{
-	auto player = utils::GetServerPlayer();
-	auto teleport = reinterpret_cast<void(__fastcall*)(void*, int, const Vector*, const QAngle*, const Vector*)>(
-	    (*reinterpret_cast<uintptr_t**>(player))[105]);
-
-	teleport(player, 0, nullptr, &angles, nullptr);
-	spt_tracing.ORIG_SnapEyeAngles(player, 0, angles);
-}
-
-// Trace as if we were firing a Portal with the given viewangles, return the squared distance to the resulting point and the normal.
 double trace_fire_portal(QAngle angles, Vector& normal)
 {
-	setang_exact(angles);
+	Vector fwd;
+	AngleVectors(angles, &fwd);
+	trace_t tr;
+	spt_tracing.TraceFirePortal(tr, spt_generic.GetCameraOrigin(), fwd);
 
-	spt_tracing.ORIG_FirePortal(spt_tracing.ORIG_GetActiveWeapon(utils::GetServerPlayer()),
-	                            0,
-	                            false,
-	                            nullptr,
-	                            true);
+	if (tr.DidHit())
+	{
+		normal = tr.plane.normal;
+	}
 
-	normal = spt_tracing.lastPortalTrace.plane.normal;
-	return (spt_tracing.lastPortalTrace.endpos - spt_tracing.lastPortalTrace.startpos).LengthSqr();
+	return (tr.endpos - tr.startpos).LengthSqr();
 }
 
 static QAngle firstAngle;
@@ -242,6 +208,7 @@ CON_COMMAND(
 		if (trace_fire_portal(test, test_normal) - distance > GOOD_DISTANCE_DIFFERENCE)
 		{
 			Msg("Found a seam shot at setang %.8f %.8f 0\n", test.x, test.y);
+			interfaces::engine->SetViewAngles(test);
 			return;
 		}
 
@@ -262,6 +229,7 @@ CON_COMMAND(
 	} while (difference > eps);
 
 	Msg("Could not find a seam shot. Best guess: setang %.8f %.8f 0\n", test.x, test.y);
+	interfaces::engine->SetViewAngles(test);
 }
 #endif
 
