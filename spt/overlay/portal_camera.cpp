@@ -15,6 +15,8 @@
 #include "overlay-renderer.hpp"
 #include "portal_camera.hpp"
 #include "tier2\tier2.h"
+#include "interfaces.hpp"
+#include "..\features\ent_props.hpp"
 
 const int INDEX_MASK = MAX_EDICTS - 1;
 
@@ -183,6 +185,8 @@ void calculateOffsetPlayer(IClientEntity* saveglitch_portal, Vector& new_player_
 {
 	auto& player_origin = utils::GetPlayerEyePosition();
 	auto& player_angles = utils::GetPlayerEyeAngles();
+	VMatrix matrix;
+	matrix.Identity();
 
 	if (isInfrontOfPortal(saveglitch_portal, player_origin))
 	{
@@ -191,23 +195,32 @@ void calculateOffsetPlayer(IClientEntity* saveglitch_portal, Vector& new_player_
 	}
 	else
 	{
-		IClientEntity* linkedPortal = GetLinkedPortal(saveglitch_portal);
-
-		if (linkedPortal)
+		edict_t* e = interfaces::engine_server->PEntityOfEntIndex(saveglitch_portal->entindex());
+		static int offset = spt_entutils.GetFieldOffset("CProp_Portal", "m_matrixThisToLinked", true);
+		if (e && offset != -1)
 		{
-			VMatrix matrix;
-			UpdatePortalTransformationMatrix(saveglitch_portal, linkedPortal, matrix);
+			uintptr_t serverEnt = reinterpret_cast<uintptr_t>(e->GetUnknown());
+			matrix = *reinterpret_cast<VMatrix*>(serverEnt + offset);
+		}
+		else
+		{
+			IClientEntity* linkedPortal = GetLinkedPortal(saveglitch_portal);
 
-			auto eye_origin = player_origin;
-			auto new_eye_origin = matrix * eye_origin;
-			new_player_origin = new_eye_origin;
-
-			new_player_angles = TransformAnglesToWorldSpace(player_angles, matrix.As3x4());
-			new_player_angles.x = AngleNormalizePositive(new_player_angles.x);
-			new_player_angles.y = AngleNormalizePositive(new_player_angles.y);
-			new_player_angles.z = AngleNormalizePositive(new_player_angles.z);
+			if (linkedPortal)
+			{
+				UpdatePortalTransformationMatrix(saveglitch_portal, linkedPortal, matrix);
+			}
 		}
 	}
+
+	auto eye_origin = player_origin;
+	auto new_eye_origin = matrix * eye_origin;
+	new_player_origin = new_eye_origin;
+
+	new_player_angles = TransformAnglesToWorldSpace(player_angles, matrix.As3x4());
+	new_player_angles.x = AngleNormalizePositive(new_player_angles.x);
+	new_player_angles.y = AngleNormalizePositive(new_player_angles.y);
+	new_player_angles.z = AngleNormalizePositive(new_player_angles.z);
 }
 
 IClientEntity* getPortal(const char* arg, bool verbose)
