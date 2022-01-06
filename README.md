@@ -67,3 +67,7 @@ This should open the Visual Studio Installer in another window. From the Workloa
 
 ### .srctas documentation
 .srctas is the SPT TAS script format. You can find its documentation [here](https://docs.google.com/document/d/11iu9kw5Ufa3-QaiR7poJWBwfe1I56wI6fBtDgmWZ8Aw).
+
+
+### Contributing
+See the contributing guide [here](CONTRIBUTING.md).
