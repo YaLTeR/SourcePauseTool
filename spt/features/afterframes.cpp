@@ -8,6 +8,9 @@
 #include <sstream>
 
 AfterframesFeature spt_afterframes;
+static std::vector<afterframes_entry_t> afterframesQueue;
+static bool afterframesPaused = false;
+static int afterframesDelay = 0;
 
 ConVar _y_spt_afterframes_await_legacy("_y_spt_afterframes_await_legacy",
                                        "0",
@@ -45,10 +48,7 @@ bool AfterframesFeature::ShouldLoadFeature()
 	return true;
 }
 
-void AfterframesFeature::UnloadFeature()
-{
-	afterframesQueue.clear();
-}
+void AfterframesFeature::UnloadFeature() {}
 
 void AfterframesFeature::PreHook()
 {
@@ -180,9 +180,6 @@ void AfterframesFeature::LoadFeature()
 #endif
 
 		FrameSignal.Connect(this, &AfterframesFeature::OnFrame);
-		afterframesPaused = false;
-		afterframesDelay = 0;
-		afterframesQueue.clear();
 
 		if (SV_ActivateServerSignal.Works)
 		{

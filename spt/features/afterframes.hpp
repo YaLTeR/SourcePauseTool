@@ -36,9 +36,6 @@ private:
 	void SV_ActivateServer(bool result);
 	void FinishRestore(void* thisptr, int edx);
 	void SetPaused(void* thisptr, int edx, bool paused);
-	std::vector<afterframes_entry_t> afterframesQueue;
-	bool afterframesPaused = false;
-	int afterframesDelay = 0;
 };
 
 extern AfterframesFeature spt_afterframes;
