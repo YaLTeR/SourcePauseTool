@@ -18,7 +18,7 @@ typedef int(__fastcall* _GetButtonBits)(void* thisptr, int edx, int bResetState)
 typedef void*(__cdecl* _GetLocalPlayer)();
 
 // This feature reads player stuff from memory and writes player stuff into memory
-class PlayerIOFeature : public Feature
+class PlayerIOFeature : public FeatureWrapper<PlayerIOFeature>
 {
 private:
 	void __fastcall HOOKED_CreateMove_Func(void* thisptr,

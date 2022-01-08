@@ -15,7 +15,7 @@ struct afterframes_entry_t
 };
 
 // This feature enables _y_spt_afterframes
-class AfterframesFeature : public Feature
+class AfterframesFeature : public FeatureWrapper<AfterframesFeature>
 {
 public:
 	void AddAfterFramesEntry(afterframes_entry_t entry);

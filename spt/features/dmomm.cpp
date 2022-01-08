@@ -16,7 +16,7 @@ ConVar y_spt_on_slide_pause_for("y_spt_on_slide_pause_for",
                                 "Whenever sliding occurs in DMoMM, pause for this many ticks.");
 
 // DMoMM stuff
-class DMoMM : public Feature
+class DMoMM : public FeatureWrapper<DMoMM>
 {
 public:
 protected:

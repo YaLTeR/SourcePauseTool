@@ -5,6 +5,7 @@
 #define FCVAR_TAS_RESET (1 << 31)
 
 void Cvar_RegisterSPTCvars();
+void Cvar_UnregisterSPTCvars();
 void Cvar_InitConCommandBase(ConCommandBase& concommand, void* owner);
 
 extern ConVar y_spt_pause;

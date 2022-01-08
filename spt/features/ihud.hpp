@@ -14,7 +14,7 @@
 typedef void(__fastcall* _DecodeUserCmdFromBuffer)(void* thisptr, int edx, bf_read& buf, int sequence_number);
 
 // Input HUD
-class InputHud : public Feature
+class InputHud : public FeatureWrapper<InputHud>
 {
 public:
 	void DrawInputHud();

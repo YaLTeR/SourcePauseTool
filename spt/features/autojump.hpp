@@ -14,7 +14,7 @@ typedef bool(__fastcall* _CheckJumpButton_client)(void* thisptr, int edx);
 typedef void(__fastcall* _FinishGravity)(void* thisptr, int edx);
 
 // y_spt_autojump
-class AutojumpFeature : public Feature
+class AutojumpFeature : public FeatureWrapper<AutojumpFeature>
 {
 public:
 	ptrdiff_t off1M_nOldButtons = 0;

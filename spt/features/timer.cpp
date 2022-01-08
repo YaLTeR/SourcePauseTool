@@ -5,7 +5,7 @@
 
 #include "convar.h"
 
-class Timer : public Feature
+class Timer : public FeatureWrapper<Timer>
 {
 public:
 	void StartTimer()

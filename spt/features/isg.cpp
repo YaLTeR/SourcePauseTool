@@ -13,7 +13,7 @@
 ConVar y_spt_hud_isg("y_spt_hud_isg", "0", FCVAR_CHEAT, "Is the ISG flag set?\n");
 
 // This feature enables the ISG setting and HUD features
-class ISGFeature : public Feature
+class ISGFeature : public FeatureWrapper<ISGFeature>
 {
 public:
 	bool* isgFlagPtr = nullptr;

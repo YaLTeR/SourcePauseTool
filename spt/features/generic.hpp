@@ -18,7 +18,7 @@ typedef void*(__cdecl* _GetClientModeNormal)();
 typedef void(__fastcall* _AdjustAngles)(void* thisptr, int edx, float frametime);
 
 // For hooks used by many features
-class GenericFeature : public Feature
+class GenericFeature : public FeatureWrapper<GenericFeature>
 {
 public:
 	_HudUpdate ORIG_HudUpdate = nullptr;

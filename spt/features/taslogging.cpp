@@ -10,7 +10,7 @@ typedef void(__fastcall* _ProcessMovement)(void* thisptr, int edx, void* pPlayer
 ConVar tas_log("tas_log", "0", 0, "If enabled, dumps a whole bunch of different stuff into the console.");
 
 // Some logging stuff that can be turned on with tas_log 1
-class TASLogging : public Feature
+class TASLogging : public FeatureWrapper<TASLogging>
 {
 public:
 protected:

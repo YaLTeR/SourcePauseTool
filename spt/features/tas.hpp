@@ -2,7 +2,7 @@
 #include "..\feature.hpp"
 
 // Enables TAS strafing and view related functionality
-class TASFeature : public Feature
+class TASFeature : public FeatureWrapper<TASFeature>
 {
 public:
 	void Strafe(float* va, bool yawChanged);

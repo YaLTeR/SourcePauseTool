@@ -16,7 +16,7 @@ ConVar y_spt_hud_hops_x("y_spt_hud_hops_x", "-85", FCVAR_CHEAT, "Hops HUD x offs
 ConVar y_spt_hud_hops_y("y_spt_hud_hops_y", "100", FCVAR_CHEAT, "Hops HUD y offset");
 
 // Hops HUD
-class HopsHud : public Feature
+class HopsHud : public FeatureWrapper<HopsHud>
 {
 public:
 	void OnGround(bool onground);

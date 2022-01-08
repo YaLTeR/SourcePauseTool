@@ -5,7 +5,7 @@
 typedef void(__cdecl* _Host_AccumulateTime)(float dt);
 ConVar tas_pause("tas_pause", "0", 0, "Does a pause where you can look around when the game is paused.\n");
 
-class TASPause : public Feature
+class TASPause : public FeatureWrapper<TASPause>
 {
 public:
 protected:

@@ -9,7 +9,7 @@ typedef struct
 	bool set = false;
 } angset_command_t;
 
-class AimFeature : public Feature
+class AimFeature : public FeatureWrapper<AimFeature>
 {
 public:
 	aim::ViewState viewState;

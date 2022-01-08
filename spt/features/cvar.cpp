@@ -5,7 +5,7 @@
 #include "interfaces.hpp"
 #include <string>
 
-class CvarStuff : public Feature
+class CvarStuff : public FeatureWrapper<CvarStuff>
 {
 public:
 protected:

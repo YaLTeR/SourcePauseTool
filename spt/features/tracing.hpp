@@ -61,7 +61,7 @@ typedef const Vector&(__fastcall* _CGameMovement__GetPlayerMins)(void* thisptr, 
 typedef bool(__fastcall* _CEngineTrace__PointOutsideWorld)(void* thisptr, int edx, const Vector& pt);
 
 // Tracing related functionality
-class Tracing : public Feature
+class Tracing : public FeatureWrapper<Tracing>
 {
 public:
 	_UTIL_TraceRay ORIG_UTIL_TraceRay = nullptr;

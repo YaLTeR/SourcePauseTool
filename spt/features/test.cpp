@@ -3,7 +3,7 @@
 #include "signals.hpp"
 #include "..\scripts\tester.hpp"
 
-class TestFeature : public Feature
+class TestFeature : public FeatureWrapper<TestFeature>
 {
 public:
 protected:
