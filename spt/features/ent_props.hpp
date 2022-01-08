@@ -47,7 +47,7 @@ struct PlayerField
 };
 
 // Initializes ent utils stuff
-class EntUtils : public Feature
+class EntUtils : public FeatureWrapper<EntUtils>
 {
 public:
 	virtual bool ShouldLoadFeature()

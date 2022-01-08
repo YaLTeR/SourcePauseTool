@@ -1148,6 +1148,7 @@
     <ClCompile Include="spt\features\overlay.cpp" />
     <ClCompile Include="spt\features\pause.cpp" />
     <ClCompile Include="spt\features\playerio.cpp" />
+    <ClCompile Include="spt\features\restart.cpp" />
     <ClCompile Include="spt\features\rng.cpp" />
     <ClCompile Include="spt\features\shadow.cpp" />
     <ClCompile Include="spt\features\stucksave.cpp" />

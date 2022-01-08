@@ -10,7 +10,7 @@ ConVar y_spt_pause("y_spt_pause", "0", FCVAR_ARCHIVE);
 extern ConVar tas_pause;
 
 // y_spt_pause stuff
-class PauseFeature : public Feature
+class PauseFeature : public FeatureWrapper<PauseFeature>
 {
 public:
 protected:

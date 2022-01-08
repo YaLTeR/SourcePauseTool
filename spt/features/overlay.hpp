@@ -6,7 +6,7 @@ typedef void(
 typedef void(__fastcall* _CViewRender__Render)(void* thisptr, int edx, void* rect);
 
 // Overlay hook stuff, could combine with overlay renderer as well
-class Overlay : public Feature
+class Overlay : public FeatureWrapper<Overlay>
 {
 public:
 	bool renderingOverlay = false;

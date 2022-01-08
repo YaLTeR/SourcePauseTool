@@ -8,7 +8,7 @@
 
 ConVar y_spt_drawseams("y_spt_drawseams", "0", FCVAR_CHEAT, "Draws seamshot stuff.\n");
 
-class GraphicsFeature : public Feature
+class GraphicsFeature : public FeatureWrapper<GraphicsFeature>
 {
 public:
 protected:

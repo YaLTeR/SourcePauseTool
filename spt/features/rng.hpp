@@ -4,7 +4,7 @@
 typedef void(__cdecl* _SetPredictionRandomSeed)(void* usercmd);
 
 // RNG prediction
-class RNGStuff : public Feature
+class RNGStuff : public FeatureWrapper<RNGStuff>
 {
 public:
 	int GetPredictionRandomSeed(int commandOffset);

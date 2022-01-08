@@ -8,7 +8,7 @@ typedef void(__fastcall* _CViewRender__OnRenderStart)(void* thisptr, int edx);
 ConVar _y_spt_force_fov("_y_spt_force_fov", "0", 0, "Force FOV to some value.");
 
 // FOV related features
-class FOVFeatures : public Feature
+class FOVFeatures : public FeatureWrapper<FOVFeatures>
 {
 public:
 protected:

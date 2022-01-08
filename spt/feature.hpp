@@ -117,7 +117,10 @@ public:
 	virtual void PreHook(){};
 	virtual void LoadFeature(){};
 	virtual void UnloadFeature(){};
+	virtual Feature* CreateNewInstance() = 0;
+	virtual void Move(Feature* instance) = 0;
 
+	static void ReloadFeatures();
 	static void LoadFeatures();
 	static void UnloadFeatures();
 
@@ -156,6 +159,21 @@ private:
 	static void InitModules();
 	static void Hook();
 	static void Unhook();
+};
+
+template<typename T>
+class FeatureWrapper : public Feature
+{
+public:
+	virtual Feature* CreateNewInstance()
+	{
+		return new T();
+	}
+
+	virtual void Move(Feature* instance)
+	{
+		*((T*)this) = std::move(*(T*)instance);
+	}
 };
 
 template<size_t PatternLength>

@@ -2,7 +2,7 @@
 #include "..\feature.hpp"
 
 // Feature description
-class TemplateFeature : public Feature
+class TemplateFeature : public FeatureWrapper<TemplateFeature>
 {
 public:
 protected:

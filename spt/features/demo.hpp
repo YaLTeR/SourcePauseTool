@@ -7,7 +7,7 @@ typedef void(__fastcall* _SetSignonState)(void* thisptr, int edx, int state);
 typedef void(__cdecl* _Stop)();
 
 // Various demo features
-class DemoStuff : public Feature
+class DemoStuff : public FeatureWrapper<DemoStuff>
 {
 public:
 	void Demo_StopRecording();

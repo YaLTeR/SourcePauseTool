@@ -30,7 +30,7 @@ struct HudCallback
 };
 
 // HUD stuff
-class HUDFeature : public Feature
+class HUDFeature : public FeatureWrapper<HUDFeature>
 {
 public:
 	bool AddHudCallback(HudCallback callback);

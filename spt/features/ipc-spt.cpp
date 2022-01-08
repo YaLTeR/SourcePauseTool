@@ -18,7 +18,7 @@ namespace ipc
 	void ShutdownIPC();
 	void Send(const nlohmann::json& msg);
 
-	class IPCFeature : public Feature
+	class IPCFeature : public FeatureWrapper<IPCFeature>
 	{
 	public:
 	protected:

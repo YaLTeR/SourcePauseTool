@@ -18,7 +18,7 @@ ConVar y_spt_disable_tone_map_reset(
     "Prevents the tone map getting reset (during each load), useful for keeping colors the same between demos.");
 
 // Misc visual fixes
-class VisualFixes : public Feature
+class VisualFixes : public FeatureWrapper<VisualFixes>
 {
 public:
 protected:

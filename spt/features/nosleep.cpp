@@ -6,7 +6,7 @@ typedef void(__fastcall* _CInputSystem__SleepUntilInput)(void* thisptr, int edx,
 ConVar y_spt_focus_nosleep("y_spt_focus_nosleep", "0", 0, "Improves FPS while alt-tabbed.");
 
 // Gives the option to disable sleeping to improve FPS while alt-tabbed
-class NoSleepFeature : public Feature
+class NoSleepFeature : public FeatureWrapper<NoSleepFeature>
 {
 public:
 protected:

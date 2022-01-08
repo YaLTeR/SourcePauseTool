@@ -9,9 +9,12 @@
 #include "dbg.h"
 #include "SPTLib\Windows\detoursutils.hpp"
 #include "SPTLib\Hooks.hpp"
+#include "cvars.hpp"
 
 static std::unordered_map<std::string, ModuleHookData> moduleHookData;
 static std::unordered_map<uintptr_t, int> patternIndices;
+static bool loadedOnce = false;
+static bool reloadingFeatures = false;
 
 static std::vector<Feature*>& GetFeatures()
 {
@@ -19,8 +22,26 @@ static std::vector<Feature*>& GetFeatures()
 	return features;
 }
 
+void Feature::ReloadFeatures()
+{
+	reloadingFeatures = true;
+	for (Feature* feature : GetFeatures())
+	{
+		auto instance = feature->CreateNewInstance();
+		feature->Move(instance);
+		delete instance;
+	}
+	reloadingFeatures = false;
+}
+
 void Feature::LoadFeatures()
 {
+	// This is a restart, reload the features
+	if (loadedOnce)
+	{
+		ReloadFeatures();
+	}
+
 	Hooks::InitInterception(true);
 
 	for (auto feature : GetFeatures())
@@ -52,6 +73,8 @@ void Feature::LoadFeatures()
 			feature->moduleLoaded = true;
 		}
 	}
+
+	loadedOnce = true;
 }
 
 void Feature::UnloadFeatures()
@@ -66,6 +89,17 @@ void Feature::UnloadFeatures()
 	}
 
 	Unhook();
+
+	for (auto feature : GetFeatures())
+	{
+		if (feature->moduleLoaded)
+		{
+			feature->~Feature();
+		}
+	}
+
+	moduleHookData.clear();
+	patternIndices.clear();
 }
 
 void Feature::AddVFTableHook(VFTableHook hook, std::string moduleEnum)
@@ -83,7 +117,8 @@ Feature::Feature()
 {
 	moduleLoaded = false;
 	startedLoading = false;
-	GetFeatures().push_back(this);
+	if (!reloadingFeatures)
+		GetFeatures().push_back(this);
 }
 
 void Feature::InitModules()

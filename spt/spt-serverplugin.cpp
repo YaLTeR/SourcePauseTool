@@ -278,14 +278,12 @@ void CSourcePauseTool::Unload(void)
 		return;
 	}
 
-#if !defined(OE)
-	ConVar_Unregister();
-#endif
-
+	Cvar_UnregisterSPTCvars();
 	DisconnectTier1Libraries();
 	DisconnectTier3Libraries();
 	Feature::UnloadFeatures();
 	Hooks::Free();
+	pluginLoaded = false;
 }
 
 const char* CSourcePauseTool::GetPluginDescription(void)

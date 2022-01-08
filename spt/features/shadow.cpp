@@ -6,7 +6,7 @@
 typedef int(__fastcall* _GetShadowPosition)(void* thisptr, int edx, Vector* worldPosition, QAngle* angles);
 
 // This feature allows access to the Havok hitbox location (aka physics shadow)
-class ShadowPosition : public Feature
+class ShadowPosition : public FeatureWrapper<ShadowPosition>
 {
 public:
 	static int __fastcall HOOKED_GetShadowPosition(void* thisptr, int edx, Vector* worldPosition, QAngle* angles);
