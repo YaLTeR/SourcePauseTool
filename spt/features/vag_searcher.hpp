@@ -6,7 +6,7 @@
 extern IClientEntity* getPortal(const char* arg, bool verbose);
 extern IClientEntity* GetLinkedPortal(IClientEntity* portal);
 
-// Feature description
+// VAG tester
 class VagSearcher : public Feature
 {
 public:

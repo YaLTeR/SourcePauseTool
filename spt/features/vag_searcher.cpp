@@ -4,6 +4,7 @@
 #include "interfaces.hpp"
 #include "property_getter.hpp"
 #include "ent_utils.hpp"
+#include "..\utils\game_detection.hpp"
 #include "playerio.hpp"
 #include "signals.hpp"
 #include "..\sptlib-wrapper.hpp"
@@ -12,9 +13,9 @@
 VagSearcher spt_vag_searcher;
 
 ConVar y_spt_vag_search_portal("y_spt_vag_search_portal",
-                               "blue",
+                               "overlay",
                                FCVAR_CHEAT,
-                               "Chooses the portal for the VAG search. Valid options are blue/orange/portal index. This is the portal you enter.\n");
+                               "Chooses the portal for the VAG search. Valid options are overlay/blue/orange/portal index. This is the portal you enter.\n");
 
 CON_COMMAND(y_spt_vag_search, "Search VAG")
 {
@@ -26,7 +27,15 @@ void VagSearcher::StartSearch()
 	if (IsIterating())
 		return;
 	
-	enter_portal = getPortal(y_spt_vag_search_portal.GetString(), false);
+	if (strcmp(y_spt_vag_search_portal.GetString(), "overlay") == 0)
+	{
+		enter_portal = getPortal(_y_spt_overlay_portal.GetString(), false);
+	}
+	else
+	{
+		enter_portal = getPortal(y_spt_vag_search_portal.GetString(), false);
+	}
+	
 	if (!enter_portal)
 	{
 		Msg("Entry portal not found, maybe try using index.\n");
@@ -55,7 +64,7 @@ void VagSearcher::StartSearch()
 
 bool VagSearcher::ShouldLoadFeature()
 {
-	return true;
+	return utils::DoesGameLookLikePortal();
 }
 
 void VagSearcher::InitHooks() {}

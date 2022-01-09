@@ -20,6 +20,8 @@ extern ConVar y_spt_prevent_vag_crash;
 extern ConVar y_spt_disable_tone_map_reset;
 extern ConVar y_spt_drawseams;
 extern ConVar y_spt_vag_search_portal;
+extern ConVar y_spt_vag_trace;
+extern ConVar y_spt_vag_target;
 
 extern ConVar tas_strafe;
 extern ConVar tas_strafe_type;
