@@ -109,6 +109,11 @@ namespace patterns
 		         "83 3D ?? ?? ?? ?? 01 75 ?? 8B 0D ?? ?? ?? ?? 8B 01 8B ?? ?? FF D2 84 C0 75 ?? C7",
 		         "1910503",
 		         "83 3D ?? ?? ?? ?? 01 75 ?? 8B 0D ?? ?? ?? ?? 8B 01 8B ?? ?? FF D2 84 C0 75 ?? 68");
+		PATTERNS(DebugDrawPhysCollide,
+		         "5135",
+		         "81 EC 38 02 00 00 53 55 33 DB 39 9C 24 48 02 00 00 56 57 75 24",
+		         "1910503",
+		         "55 8B EC 81 EC 3C 02 00 00 53 33 DB 56 57 39 5D 0C 75 20");
 	} // namespace engine
 
 	namespace client
@@ -299,7 +304,9 @@ namespace patterns
 		PATTERNS(
 		    CHudDamageIndicator__GetDamagePosition,
 		    "5135",
-		    "83 EC 18 E8 ?? ?? ?? ?? e8 ?? ?? ?? ?? 8B 08 89 4C 24 0C 8B 50 04 6A 00 89 54 24 14 8B 40 08 6A 00 8D 4C 24 08 51 8D 54 24 18 52 89 44 24 24");
+		    "83 EC 18 E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 08 89 4C 24 0C 8B 50 04 6A 00 89 54 24 14 8B 40 08 6A 00 8D 4C 24 08 51 8D 54 24 18 52 89 44 24 24",
+		    "1910503",
+		    "55 8B EC 83 EC 18 56 8B F1 E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? F3 0F 7E 00 6A 00 6A 00 8D 4D F4 66 0F D6 45 E8");
 		PATTERNS(
 		    ResetToneMapping,
 		    "5135",
@@ -312,6 +319,11 @@ namespace patterns
 		    "55 8B EC 8B 0D ?? ?? ?? ?? 56 8B 01 FF 90 ?? ?? ?? ?? 8B F0 85 F6 74 ?? 8B 06 8B CE FF 50 ?? 8B 06 D9 45 ?? 51 8B CE",
 		    "te120",
 		    "55 8B EC 8B 0D ?? ?? ?? ?? 8B 01 8B 90 ?? ?? ?? ?? 56 FF D2 8B F0 85 F6 74 ?? 8B 06 8B 50 ?? 8B CE FF D2 8B 06");
+		PATTERNS(CRendering3dView__DrawTranslucentRenderables,
+		         "5135",
+		         "55 8B EC 83 EC 34 53 8B D9 8B 83 94 00 00 00 8B 13 56 8D B3 94 00 00 00",
+		         "1910503",
+		         "55 8B EC 81 EC 9C 00 00 00 53 56 8B F1 8B 86 E8 00 00 00 8B 16 57 8D BE E8 00 00 00");
 	} // namespace client
 
 	namespace server
@@ -538,6 +550,21 @@ namespace patterns
 		    "55 8B EC 81 EC ?? ?? ?? ?? 8B 41 08 8B 40 08 8B 50",
 		    "BMS-Retail",
 		    "55 8B EC 81 EC ?? ?? ?? ?? A1 ?? ?? ?? ?? 33 C5 89 45 FC 8B 41 ?? 56 8B 75 ?? 57 8B 40 ?? 8B 7D ?? 8B 50");
+		PATTERNS(CPhysicsCollision__CreateDebugMesh,
+		         "5135",
+		         "83 EC 10 8B 4C 24 14 8B 01 8B 40 08 55 56 57 33 ED 8D 54 24 10 52",
+		         "1910503",
+		         "55 8B EC 83 EC 14 8B 4D 08 8B 01 8B 40 08 53 56 57 33 DB 8D 55 EC");
+		PATTERNS(CPhysicsCollision__DestroyDebugMesh,
+		         "5135",
+		         "8B 44 24 08 50 E8 ?? ?? ?? ?? 59 C2 08 00",
+		         "1910503",
+		         "55 8B EC 8B 45 0C 50 E8 ?? ?? ?? ?? 83 C4 04 5D C2 08 00");
+		PATTERNS(CPhysicsObject__GetPosition,
+		         "5135",
+		         "8B 49 08 81 EC 80 00 00 00 8D 04 24 50 E8 ?? ?? ?? ?? 8B 84 24 84 00 00 00 85 C0",
+		         "1910503",
+		         "55 8B EC 8B 49 08 81 EC 80 00 00 00 8D 45 80 50 E8 ?? ?? ?? ?? 8B 45 08 85 C0");
 	} // namespace vphysics
 
 } // namespace patterns

@@ -6,6 +6,7 @@
 #include "icliententity.h"
 #include "tier2\tier2.h"
 
+IClientEntity* getPortal(const char* arg, bool verbose);
 bool invalidPortal(IClientEntity* portal);
 IClientEntity* GetEnvironmentPortal();
 void calculateAGPosition(Vector& new_player_origin, QAngle& new_player_angles);

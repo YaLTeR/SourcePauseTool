@@ -39,8 +39,20 @@ void GenericFeature::LoadFeature()
 {
 	if (ORIG_CHudDamageIndicator__GetDamagePosition)
 	{
-		int offset = *reinterpret_cast<int*>(ORIG_CHudDamageIndicator__GetDamagePosition + 4);
-		ORIG_MainViewOrigin = (_MainViewOrigin)(offset + ORIG_CHudDamageIndicator__GetDamagePosition + 8);
+		int ptnNumber = GetPatternIndex((void**)&ORIG_CHudDamageIndicator__GetDamagePosition);
+		switch (ptnNumber)
+		{
+		case 0:
+			ORIG_MainViewOrigin =
+			    (_MainViewOrigin)(*reinterpret_cast<int*>(ORIG_CHudDamageIndicator__GetDamagePosition + 4)
+			                      + ORIG_CHudDamageIndicator__GetDamagePosition + 8);
+			break;
+		case 1:
+			ORIG_MainViewOrigin =
+			    (_MainViewOrigin)(*reinterpret_cast<int*>(ORIG_CHudDamageIndicator__GetDamagePosition + 10)
+			                      + ORIG_CHudDamageIndicator__GetDamagePosition + 14);
+			break;
+		}
 		DevMsg("[client.dll] Found MainViewOrigin at %p\n", ORIG_MainViewOrigin);
 	}
 

@@ -223,6 +223,12 @@
     <ClCompile Include="spt\features\restart.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\physvis.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\sg-collide-vis.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -490,6 +496,9 @@
       <Filter>spt\utils</Filter>
     </ClInclude>
     <ClInclude Include="spt\features\ent_props.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\physvis.hpp">
       <Filter>spt\features</Filter>
     </ClInclude>
   </ItemGroup>
