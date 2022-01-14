@@ -17,6 +17,7 @@ namespace interfaces
 	extern IMatSystemSurface* surface;
 	extern vgui::ISchemeManager* scheme;
 	extern IVDebugOverlay* debugOverlay;
+	extern IMaterialSystem* materialSystem;
 	extern ICvar* g_pCVar;
 	extern void* gm;
 	extern IClientEntityList* entList;
