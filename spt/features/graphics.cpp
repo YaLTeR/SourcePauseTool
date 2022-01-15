@@ -6,7 +6,7 @@
 #include "..\feature.hpp"
 #include "..\vgui\lines.hpp"
 
-ConVar y_spt_drawseams("y_spt_drawseams", "0", FCVAR_CHEAT, "Draws seamshot stuff.\n");
+ConVar y_spt_draw_seams("y_spt_draw_seams", "0", FCVAR_CHEAT, "Draws seamshot stuff.\n");
 
 class GraphicsFeature : public FeatureWrapper<GraphicsFeature>
 {
@@ -33,7 +33,7 @@ void GraphicsFeature::LoadFeature()
 	if (spt_tracing.ORIG_TraceFirePortal && spt_tracing.ORIG_GetActiveWeapon && interfaces::debugOverlay
 	    && AdjustAngles.Works)
 	{
-		InitConcommandBase(y_spt_drawseams);
+		InitConcommandBase(y_spt_draw_seams);
 		AdjustAngles.Connect(vgui::DrawLines);
 	}
 }
