@@ -8,7 +8,7 @@
 
 #include "convar.hpp"
 
-#if defined(SSDK2007)
+#if defined(SSDK2007) || defined(SSDK2013)
 
 ConVar y_spt_hud_isg("y_spt_hud_isg", "0", FCVAR_CHEAT, "Is the ISG flag set?\n");
 
@@ -69,8 +69,10 @@ void ISGFeature::LoadFeature()
 	{
 		InitCommand(y_spt_set_isg);
 
+#ifdef SSDK2007
 		AddHudCallback(
 		    "isg", []() { spt_hud.DrawTopHudElement(L"isg: %d", IsISGActive()); }, y_spt_hud_isg);
+#endif
 	}
 }
 
