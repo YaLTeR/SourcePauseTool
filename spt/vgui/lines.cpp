@@ -114,7 +114,7 @@ namespace vgui
 		if (!interfaces::debugOverlay || !utils::playerEntityAvailable())
 			return;
 
-		if (y_spt_drawseams.GetBool())
+		if (y_spt_draw_seams.GetBool())
 			DrawSeams(interfaces::debugOverlay);
 	}
 } // namespace vgui

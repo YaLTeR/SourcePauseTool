@@ -19,7 +19,7 @@ extern ConVar y_spt_pause_demo_on_tick;
 extern ConVar y_spt_on_slide_pause_for;
 extern ConVar y_spt_prevent_vag_crash;
 extern ConVar y_spt_disable_tone_map_reset;
-extern ConVar y_spt_drawseams;
+extern ConVar y_spt_draw_seams;
 extern ConVar y_spt_draw_portal_env;
 extern ConVar y_spt_draw_portal_env_type;
 extern ConVar y_spt_draw_portal_env_ents;
