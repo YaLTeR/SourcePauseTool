@@ -51,7 +51,7 @@ void VagTrace::DrawTrace()
 {
 	bool vag_trace = y_spt_vag_trace.GetBool();
 	bool vag_target = y_spt_vag_target.GetBool();
-	if (vag_trace && !vag_target)
+	if (!vag_trace && !vag_target)
 		return;
 
 	float lifeTime = spt_tickrate.GetTickrate() * 2;
@@ -85,7 +85,7 @@ void VagTrace::DrawTrace()
 		interfaces::debugOverlay->AddLineOverlay(enter_origin, exit_origin, 0, 0, 255, true, lifeTime);
 		interfaces::debugOverlay
 		    ->AddLineOverlay(CalculateAG(enter_origin, enter_angles, exit_origin, exit_angles),
-		                     exit_origin,
+		                     enter_origin,
 		                     0,
 		                     255,
 		                     0,
