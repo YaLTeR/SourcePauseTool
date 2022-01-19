@@ -18,8 +18,6 @@
 #include "interfaces.hpp"
 #include "..\features\ent_props.hpp"
 
-const int INDEX_MASK = MAX_EDICTS - 1;
-
 // From /game/shared/portal/prop_portal_shared.cpp
 void UpdatePortalTransformationMatrix(const matrix3x4_t& localToWorld,
                                       const matrix3x4_t& remoteToWorld,

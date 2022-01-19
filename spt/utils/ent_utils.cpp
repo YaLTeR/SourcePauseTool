@@ -31,10 +31,6 @@
 #include "cbase.h"
 #endif
 
-#ifndef OE
-const int INDEX_MASK = MAX_EDICTS - 1;
-#endif
-
 namespace utils
 {
 #ifndef OE

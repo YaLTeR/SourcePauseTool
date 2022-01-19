@@ -12,6 +12,7 @@
 #include "signals.hpp"
 #include "..\overlay\portal_camera.hpp"
 #include "ihud.hpp"
+#include "property_getter.hpp"
 
 #ifdef SSDK2007
 #include "mathlib\vmatrix.h"
@@ -446,18 +447,23 @@ CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 }
 
 #if defined(SSDK2007) || defined(SSDK2013)
-CON_COMMAND(y_spt_find_portals, "Yes")
+CON_COMMAND(y_spt_find_portals, "Prints info for all portals")
 {
 	for (int i = 0; i < MAX_EDICTS; ++i)
 	{
-		auto ent = interfaces::engine_server->PEntityOfEntIndex(i);
-
-		if (ent && !ent->IsFree() && !strcmp(ent->GetClassName(), "prop_portal"))
+		auto ent = utils::GetClientEntity(i);
+		if (!invalidPortal(ent))
 		{
-			auto& origin = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(ent->GetUnknown())
-			                                          + spt_playerio.offServerAbsOrigin);
+			auto color = utils::GetProperty<bool>(i, "m_bIsPortal2") ? "orange" : "blue";
+			int remoteIdx = utils::GetProperty<int>(i, "m_hLinkedPortal");
+			bool activated = utils::GetProperty<bool>(i, "m_bActivated");
+			bool closed = (remoteIdx & INDEX_MASK) == INDEX_MASK;
+			auto openStr = closed ? (activated ? "a closed" : "an invisible") : "an open";
+			auto& origin = utils::GetPortalPosition(ent);
 
-			Msg("SPT: There's a portal with index %d at %.8f %.8f %.8f.\n",
+			Msg("SPT: There's %s %s portal with index %d at %.8f %.8f %.8f.\n",
+			    openStr,
+			    color,
 			    i,
 			    origin.x,
 			    origin.y,
