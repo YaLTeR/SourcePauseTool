@@ -11,16 +11,8 @@
 
 CameraInformation rearViewMirrorOverlay()
 {
-	CameraInformation info;
-
-	auto pos = utils::GetPlayerEyePosition();
-	auto angles = utils::GetPlayerEyeAngles();
-
-	info.x = pos.x;
-	info.y = pos.y;
-	info.z = pos.z;
-	info.pitch = angles[PITCH];
-	info.yaw = utils::NormalizeDeg(angles[YAW] + 180);
+	CameraInformation info = noTransformOverlay();
+	info.yaw = utils::NormalizeDeg(info.yaw + 180);
 	return info;
 }
 
@@ -75,4 +67,19 @@ CameraInformation agOverlay()
 
 	return info;
 }
+
+CameraInformation noTransformOverlay()
+{
+	CameraInformation info;
+
+	auto pos = utils::GetPlayerEyePosition();
+	auto angles = utils::GetPlayerEyeAngles();
+	info.x = pos.x;
+	info.y = pos.y;
+	info.z = pos.z;
+	info.pitch = angles[PITCH];
+	info.yaw = utils::NormalizeDeg(angles[YAW]);
+	return info;
+}
+
 #endif
