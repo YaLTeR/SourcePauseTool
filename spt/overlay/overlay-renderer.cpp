@@ -67,8 +67,11 @@ void OverlayRenderer::modifyView(CViewSetup* view, bool overlay)
 		case 2:
 			data = rearViewMirrorOverlay();
 			break;
-		default:
+		case 3:
 			data = havokViewMirrorOverlay();
+			break;
+		default:
+			data = noTransformOverlay();
 			break;
 		}
 

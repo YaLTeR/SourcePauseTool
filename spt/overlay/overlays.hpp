@@ -6,4 +6,6 @@ CameraInformation rearViewMirrorOverlay();
 CameraInformation havokViewMirrorOverlay();
 CameraInformation sgOverlay();
 CameraInformation agOverlay();
+CameraInformation noTransformOverlay();
+
 #endif

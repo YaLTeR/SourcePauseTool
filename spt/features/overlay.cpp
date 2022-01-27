@@ -6,11 +6,15 @@ ConVar _y_spt_overlay("_y_spt_overlay",
                       "0",
                       FCVAR_CHEAT,
                       "Enables the overlay camera in the top left of the screen.\n");
-ConVar _y_spt_overlay_type(
-    "_y_spt_overlay_type",
-    "0",
-    FCVAR_CHEAT,
-    "Overlay type. 0 = save glitch body, 1 = angle glitch simulation, 2 = rear view mirror, 3 = havok view mirror.\n");
+ConVar _y_spt_overlay_type("_y_spt_overlay_type",
+                           "0",
+                           FCVAR_CHEAT,
+                           "Overlay type:\n"
+                           "  0 = save glitch body\n"
+                           "  1 = angle glitch simulation\n"
+                           "  2 = rear view mirror\n"
+                           "  3 = havok view mirror\n"
+                           "  4 = no camera transform (even when behind SG portal)\n");
 ConVar _y_spt_overlay_portal(
     "_y_spt_overlay_portal",
     "auto",
