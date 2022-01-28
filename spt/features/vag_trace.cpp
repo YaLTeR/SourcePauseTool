@@ -91,7 +91,8 @@ void VagTrace::DrawTrace()
 		                     0,
 		                     true,
 		                     lifeTime);
-		if ((exit_angles.x == 90.0f || exit_angles.x == -90.0f) && exit_angles.z == 0.0f)
+		
+		if (abs(abs(exit_angles.x) - 90) < 0.04 && abs(exit_angles.z) < 0.04)
 		{
 			// Is floor/ceiling portal
 			QAngle angle = exit_angles;
@@ -134,7 +135,7 @@ void VagTrace::DrawTrace()
 		for (angle.y = -180.0f; angle.y < 180.0f; angle.y += 1.0f)
 		{
 			Vector curr = ReverseAG(enter_origin, enter_angles, angle);
-			interfaces::debugOverlay->AddLineOverlay(curr, prev, 255, 0, 255, true, lifeTime);
+			interfaces::debugOverlay->AddLineOverlay(curr, prev, 255, 0, 255, false, lifeTime);
 			prev = curr;
 		}
 
@@ -143,7 +144,7 @@ void VagTrace::DrawTrace()
 		for (angle.y = -180.0f; angle.y < 180.0f; angle.y += 1.0f)
 		{
 			Vector curr = ReverseAG(enter_origin, enter_angles, angle);
-			interfaces::debugOverlay->AddLineOverlay(curr, prev, 0, 255, 255, true, lifeTime);
+			interfaces::debugOverlay->AddLineOverlay(curr, prev, 0, 255, 255, false, lifeTime);
 			prev = curr;
 		}
 	}
