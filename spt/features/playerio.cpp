@@ -197,7 +197,7 @@ void __fastcall PlayerIOFeature::HOOKED_CreateMove_Func(void* thisptr,
 	ORIG_CreateMove(thisptr, edx, sequence_number, input_sample_frametime, active);
 
 	CreateMoveSignal(pCmd);
-	
+
 	pCmd = 0;
 }
 

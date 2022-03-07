@@ -67,7 +67,7 @@ void VagTrace::DrawTrace()
 		                                        100,
 		                                        lifeTime);
 	}
-	
+
 	auto enter_portal = getPortal(_y_spt_overlay_portal.GetString(), false);
 	if (!enter_portal)
 		return;
@@ -91,7 +91,7 @@ void VagTrace::DrawTrace()
 		                     0,
 		                     true,
 		                     lifeTime);
-		
+
 		if (abs(abs(exit_angles.x) - 90) < 0.04 && abs(exit_angles.z) < 0.04)
 		{
 			// Is floor/ceiling portal
@@ -113,7 +113,7 @@ void VagTrace::DrawTrace()
 		                         {0.0f, -90.0f, 0.0f},
 		                         {0.0f, 180.0f, 0.0f}};
 		Vector wall_normal[4] = {{1.0f, 0.0f, 0.0f},
-		                         {0.0f, 1.0f, 0.0f}, 
+		                         {0.0f, 1.0f, 0.0f},
 		                         {0.0f, -1.0f, 0.0f},
 		                         {-1.0f, 0.0f, 0.0f}};
 		for (int i = 0; i < 4; i++)
