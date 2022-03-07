@@ -13,10 +13,11 @@
 
 VagSearcher spt_vag_searcher;
 
-ConVar y_spt_vag_search_portal("y_spt_vag_search_portal",
-                               "overlay",
-                               FCVAR_CHEAT,
-                               "Chooses the portal for the VAG search. Valid options are overlay/blue/orange/portal index. This is the portal you enter.\n");
+ConVar y_spt_vag_search_portal(
+    "y_spt_vag_search_portal",
+    "overlay",
+    FCVAR_CHEAT,
+    "Chooses the portal for the VAG search. Valid options are overlay/blue/orange/portal index. This is the portal you enter.\n");
 
 CON_COMMAND(y_spt_vag_search, "Search VAG")
 {
@@ -27,7 +28,7 @@ void VagSearcher::StartSearch()
 {
 	if (IsIterating())
 		return;
-	
+
 	if (strcmp(y_spt_vag_search_portal.GetString(), "overlay") == 0)
 	{
 		enter_portal = getPortal(_y_spt_overlay_portal.GetString(), false);
@@ -36,30 +37,30 @@ void VagSearcher::StartSearch()
 	{
 		enter_portal = getPortal(y_spt_vag_search_portal.GetString(), false);
 	}
-	
+
 	if (!enter_portal)
 	{
 		Msg("Entry portal not found, maybe try using index.\n");
 		return;
 	}
-		
+
 	exit_portal = GetLinkedPortal(enter_portal);
 	if (!exit_portal)
 	{
 		Msg("Exit portal not found, maybe try using index.\n");
 		return;
 	}
-		
+
 	entry_index = enter_portal->entindex();
 	exit_index = exit_portal->entindex();
-	
+
 	if (utils::GetProperty<int>(entry_index - 1, "m_bActivated") == 0
 	    || utils::GetProperty<int>(exit_index - 1, "m_bActivated") == 0)
 	{
 		Msg("Portal not activated.\n");
 		return;
 	}
-	
+
 	StartIterations();
 }
 
@@ -98,7 +99,7 @@ void VagSearcher::StartIterations()
 		Msg("Auto enable y_spt_prevent_vag_crash.\n");
 		y_spt_prevent_vag_crash.SetValue(1);
 	}
-    
+
 	entry_origin = utils::GetPortalPosition(enter_portal);
 	auto angle = utils::GetPortalAngles(enter_portal);
 	// angles_to_vec
@@ -222,7 +223,8 @@ VagSearcher::VagSearchResult VagSearcher::RunIteration()
 	return ITERATING;
 }
 
-void VagSearcher::OnTick() {
+void VagSearcher::OnTick()
+{
 	if (IsIterating())
 	{
 		if (cooldown)
