@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#if defined(SSDK2007)
+#if defined(SSDK2007) || defined(SSDK2013)
 #include "..\feature.hpp"
 #include "icliententity.h"
 #include "..\utils\game_detection.hpp"
@@ -18,7 +18,7 @@ ConVar y_spt_vag_trace("y_spt_vag_trace", "0", FCVAR_CHEAT, "Draws VAG trace.\n"
 ConVar y_spt_vag_target("y_spt_vag_target", "0", FCVAR_CHEAT, "Draws VAG target trace.\n");
 
 // VAG finding tool
-class VagTrace : public Feature
+class VagTrace : public FeatureWrapper<VagTrace>
 {
 public:
 	void DrawTrace();
@@ -172,9 +172,9 @@ Vector VagTrace::CalculateAG(Vector enter_origin, QAngle enter_angles, Vector ex
 	return enter_origin + transition;
 }
 
-void VagTrace::SetTarget(Vector target)
+void VagTrace::SetTarget(Vector target_pos)
 {
-	this->target = target;
+	this->target = target_pos;
 }
 
 Vector VagTrace::ReverseAG(Vector enter_origin, QAngle enter_angles, QAngle exit_angles)

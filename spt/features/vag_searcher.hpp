@@ -1,5 +1,5 @@
 #pragma once
-#if defined(SSDK2007)
+#if defined(SSDK2007) || defined(SSDK2013)
 #include "..\feature.hpp"
 #include "icliententity.h"
 
@@ -7,7 +7,7 @@ extern IClientEntity* getPortal(const char* arg, bool verbose);
 extern IClientEntity* GetLinkedPortal(IClientEntity* portal);
 
 // VAG tester
-class VagSearcher : public Feature
+class VagSearcher : public FeatureWrapper<VagSearcher>
 {
 public:
 	void StartSearch();
@@ -45,9 +45,9 @@ protected:
 	virtual void UnloadFeature() override;
 
 private:
-	const int cooldown_ticks = 2;
+	int cooldown_ticks = 2;
 	int cooldown;
-	const int max_iteration = 35;
+	int max_iteration = 35;
 	int iteration = 0;
 	bool crash;
 	IClientEntity* enter_portal = NULL;

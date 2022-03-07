@@ -1,6 +1,7 @@
 #include "stdafx.h"
-#if defined(SSDK2007)
+#if defined(SSDK2007) || defined(SSDK2013)
 #include "vag_searcher.hpp"
+
 #include "interfaces.hpp"
 #include "property_getter.hpp"
 #include "ent_utils.hpp"
@@ -76,6 +77,10 @@ void VagSearcher::LoadFeature()
 	if (TickSignal.Works)
 	{
 		TickSignal.Connect(this, &VagSearcher::OnTick);
+	}
+	if (VagCrashSignal.Works)
+	{
+		VagCrashSignal.Connect(this, &VagSearcher::VagCrashTriggered);
 	}
 }
 
