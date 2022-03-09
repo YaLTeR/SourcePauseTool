@@ -10,12 +10,15 @@
 #include "tickrate.hpp"
 #include "signals.hpp"
 #include "playerio.hpp"
-
-extern IClientEntity* getPortal(const char* arg, bool verbose);
-extern IClientEntity* GetLinkedPortal(IClientEntity* portal);
+#include "..\overlay\portal_camera.hpp"
 
 ConVar y_spt_vag_trace("y_spt_vag_trace", "0", FCVAR_CHEAT, "Draws VAG trace.\n");
 ConVar y_spt_vag_target("y_spt_vag_target", "0", FCVAR_CHEAT, "Draws VAG target trace.\n");
+ConVar y_spt_vag_trace_portal(
+    "y_spt_vag_trace_portal",
+    "overlay",
+    FCVAR_CHEAT,
+    "Chooses the portal for the VAG trace. Valid options are overlay/blue/orange/portal index. This is the portal you enter.\n");
 
 // VAG finding tool
 class VagTrace : public FeatureWrapper<VagTrace>
@@ -68,10 +71,20 @@ void VagTrace::DrawTrace()
 		                                        lifeTime);
 	}
 
-	auto enter_portal = getPortal(_y_spt_overlay_portal.GetString(), false);
+	IClientEntity* enter_portal;
+	if (strcmp(y_spt_vag_trace_portal.GetString(), "overlay") == 0)
+	{
+		enter_portal = getPortal(_y_spt_overlay_portal.GetString(), false);
+	}
+	else
+	{
+		enter_portal = getPortal(y_spt_vag_trace_portal.GetString(), false);
+	}
+
 	if (!enter_portal)
 		return;
-	auto exit_portal = GetLinkedPortal(enter_portal);
+
+	auto exit_portal = utils::FindLinkedPortal(enter_portal);
 	if (!exit_portal)
 		return;
 
@@ -198,16 +211,15 @@ Vector VagTrace::ReverseAG(Vector enter_origin, QAngle enter_angles, QAngle exit
 		invdet = 1 / det;
 	}
 
-	Vector inv_enter[3];
-	inv_enter[0][0] = (enter[1][1] * enter[2][2] - enter[2][1] * enter[1][2]) * invdet;
-	inv_enter[0][1] = (enter[0][2] * enter[2][1] - enter[0][1] * enter[2][2]) * invdet;
-	inv_enter[0][2] = (enter[0][1] * enter[1][2] - enter[0][2] * enter[1][1]) * invdet;
-	inv_enter[1][0] = (enter[1][2] * enter[2][0] - enter[1][0] * enter[2][2]) * invdet;
-	inv_enter[1][1] = (enter[0][0] * enter[2][2] - enter[0][2] * enter[2][0]) * invdet;
-	inv_enter[1][2] = (enter[1][0] * enter[0][2] - enter[0][0] * enter[1][2]) * invdet;
-	inv_enter[2][0] = (enter[1][0] * enter[2][1] - enter[2][0] * enter[1][1]) * invdet;
-	inv_enter[2][1] = (enter[2][0] * enter[0][1] - enter[0][0] * enter[2][1]) * invdet;
-	inv_enter[2][2] = (enter[0][0] * enter[1][1] - enter[1][0] * enter[0][1]) * invdet;
+	VMatrix enter_mat(enter[0][0], enter[0][1], enter[0][2], 0,
+	                  enter[1][0], enter[1][1], enter[1][2], 0,
+	                  enter[2][0], enter[2][1], enter[2][2], 0,
+	                  0, 0, 0, 1);
+	VMatrix inv;
+	enter_mat.InverseGeneral(inv);
+	Vector inv_enter[3] = {{inv[0][0], inv[0][1], inv[0][2]},
+	                       {inv[1][0], inv[1][1], inv[1][2]},
+	                       {inv[2][0], inv[2][1], inv[2][2]}};
 
 	Vector exit_portal_coords;
 	exit_portal_coords.x =
@@ -232,16 +244,14 @@ Vector VagTrace::ReverseAG(Vector enter_origin, QAngle enter_angles, QAngle exit
 		invdet = 1 / det;
 	}
 
-	Vector inv_exit_angles[3];
-	inv_exit_angles[0][0] = (exit[1][1] * exit[2][2] - exit[2][1] * exit[1][2]) * invdet;
-	inv_exit_angles[0][1] = (exit[0][2] * exit[2][1] - exit[0][1] * exit[2][2]) * invdet;
-	inv_exit_angles[0][2] = (exit[0][1] * exit[1][2] - exit[0][2] * exit[1][1]) * invdet;
-	inv_exit_angles[1][0] = (exit[1][2] * exit[2][0] - exit[1][0] * exit[2][2]) * invdet;
-	inv_exit_angles[1][1] = (exit[0][0] * exit[2][2] - exit[0][2] * exit[2][0]) * invdet;
-	inv_exit_angles[1][2] = (exit[1][0] * exit[0][2] - exit[0][0] * exit[1][2]) * invdet;
-	inv_exit_angles[2][0] = (exit[1][0] * exit[2][1] - exit[2][0] * exit[1][1]) * invdet;
-	inv_exit_angles[2][1] = (exit[2][0] * exit[0][1] - exit[0][0] * exit[2][1]) * invdet;
-	inv_exit_angles[2][2] = (exit[0][0] * exit[1][1] - exit[1][0] * exit[0][1]) * invdet;
+	VMatrix exit_mat(exit[0][0], exit[0][1], exit[0][2], 0,
+	                 exit[1][0], exit[1][1], exit[1][2], 0,
+	                 exit[2][0], exit[2][1], exit[2][2], 0,
+	                 0, 0, 0, 1);
+	exit_mat.InverseGeneral(inv);
+	Vector inv_exit_angles[3] = {{inv[0][0], inv[0][1], inv[0][2]},
+	                             {inv[1][0], inv[1][1], inv[1][2]},
+	                             {inv[2][0], inv[2][1], inv[2][2]}};
 
 	Vector delta;
 
@@ -265,6 +275,7 @@ void VagTrace::LoadFeature()
 		InitCommand(y_spt_vag_target_set);
 		InitConcommandBase(y_spt_vag_trace);
 		InitConcommandBase(y_spt_vag_target);
+		InitConcommandBase(y_spt_vag_trace_portal);
 	}
 }
 

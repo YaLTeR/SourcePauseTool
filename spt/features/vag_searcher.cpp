@@ -102,11 +102,8 @@ void VagSearcher::StartIterations()
 
 	entry_origin = utils::GetPortalPosition(enter_portal);
 	auto angle = utils::GetPortalAngles(enter_portal);
-	// angles_to_vec
-	angle *= (M_PI_F / 180);
-	entry_norm = Vector(std::cos(angle[1]) * std::cos(angle[0]),
-	                    std::sin(angle[1]) * std::cos(angle[0]),
-	                    std::sin(-angle[0]));
+	AngleVectors(angle, &entry_norm);
+
 	exit_origin = utils::GetPortalPosition(exit_portal);
 	is_crouched = (utils::GetProperty<int>(0, "m_fFlags") & 2) != 0;
 	// change z pos so player center is where the portal center is
@@ -151,7 +148,6 @@ VagSearcher::VagSearchResult VagSearcher::RunIteration()
 	auto new_player_pos = utils::GetProperty<Vector>(0, "m_vecOrigin");
 	new_player_pos.z += player_half_height;
 
-	// idk how to use this
 	auto player_portal_idx = utils::GetProperty<int>(0, "m_hPortalEnvironment") & 0xfff;
 
 	DevMsg("Player pos: %f %f %f\n", new_player_pos.x, new_player_pos.y, new_player_pos.z);

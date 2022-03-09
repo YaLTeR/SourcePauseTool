@@ -28,6 +28,7 @@ extern ConVar y_spt_draw_portal_env_wireframe;
 extern ConVar y_spt_vag_search_portal;
 extern ConVar y_spt_vag_trace;
 extern ConVar y_spt_vag_target;
+extern ConVar y_spt_vag_trace_portal;
 
 extern ConVar tas_strafe;
 extern ConVar tas_strafe_type;
