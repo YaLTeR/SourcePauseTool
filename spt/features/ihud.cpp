@@ -41,7 +41,6 @@ bool InputHud::ShouldLoadFeature()
 
 void InputHud::InitHooks()
 {
-	FIND_PATTERN(client, DecodeUserCmdFromBuffer);
 	HOOK_FUNCTION(client, DecodeUserCmdFromBuffer);
 }
 
@@ -49,7 +48,8 @@ void InputHud::LoadFeature()
 {
 	if (!loadingSuccessful)
 		return;
-	CreateMoveSignal.Connect(this, &InputHud::CreateMove);
+	if (CreateMoveSignal.Works)
+		CreateMoveSignal.Connect(this, &InputHud::CreateMove);
 	ihudFont = spt_hud.scheme->GetFont(y_spt_ihud_font.GetString(), false);
 
 	bool result = AddHudCallback("ihud", std::bind(&InputHud::DrawInputHud, this), y_spt_ihud);

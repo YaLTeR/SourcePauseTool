@@ -281,6 +281,10 @@ IClientEntity* getPortal(const char* arg, bool verbose)
 			portal = utils::GetClientEntity(portal_index);
 		}
 	}
+	else
+	{
+		portal = utils::GetClientEntity(portal_index);
+	}
 
 	return portal;
 }

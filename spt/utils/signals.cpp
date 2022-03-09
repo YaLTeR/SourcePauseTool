@@ -11,3 +11,4 @@ Gallant::Signal0<void> TickSignal;
 Gallant::Signal3<void*, int, bool> SetPausedSignal;
 Gallant::Signal1<bool> SV_ActivateServerSignal;
 Gallant::Signal1<uintptr_t> CreateMoveSignal;
+Gallant::Signal0<void> VagCrashSignal;

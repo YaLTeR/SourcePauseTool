@@ -12,3 +12,4 @@ extern Gallant::Signal0<void> TickSignal;
 extern Gallant::Signal3<void*, int, bool> SetPausedSignal;
 extern Gallant::Signal1<bool> SV_ActivateServerSignal;
 extern Gallant::Signal1<uintptr_t> CreateMoveSignal;
+extern Gallant::Signal0<void> VagCrashSignal;

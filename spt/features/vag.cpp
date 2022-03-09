@@ -5,6 +5,7 @@
 #include "..\feature.hpp"
 #include "..\utils\game_detection.hpp"
 #include "..\cvars.hpp"
+#include "signals.hpp"
 
 #include "dbg.h"
 
@@ -56,6 +57,7 @@ void VAG::LoadFeature()
 	if (ORIG_MiddleOfTeleportTouchingEntity && ORIG_EndOfTeleportTouchingEntity)
 	{
 		InitConcommandBase(y_spt_prevent_vag_crash);
+		VagCrashSignal.Works = true;
 	}
 	recursiveTeleportCount = 0;
 }
@@ -128,6 +130,7 @@ void __fastcall VAG::HOOKED_MiddleOfTeleportTouchingEntity_Func(void* portalPtr,
 		entPos->x -= portalNorm->x;
 		entPos->y -= portalNorm->y;
 		entPos->z -= portalNorm->z;
+		VagCrashSignal();
 	}
 }
 
