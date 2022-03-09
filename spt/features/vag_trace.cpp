@@ -211,10 +211,22 @@ Vector VagTrace::ReverseAG(Vector enter_origin, QAngle enter_angles, QAngle exit
 		invdet = 1 / det;
 	}
 
-	VMatrix enter_mat(enter[0][0], enter[0][1], enter[0][2], 0,
-	                  enter[1][0], enter[1][1], enter[1][2], 0,
-	                  enter[2][0], enter[2][1], enter[2][2], 0,
-	                  0, 0, 0, 1);
+	VMatrix enter_mat(enter[0][0],
+	                  enter[0][1],
+	                  enter[0][2],
+	                  0,
+	                  enter[1][0],
+	                  enter[1][1],
+	                  enter[1][2],
+	                  0,
+	                  enter[2][0],
+	                  enter[2][1],
+	                  enter[2][2],
+	                  0,
+	                  0,
+	                  0,
+	                  0,
+	                  1);
 	VMatrix inv;
 	enter_mat.InverseGeneral(inv);
 	Vector inv_enter[3] = {{inv[0][0], inv[0][1], inv[0][2]},
@@ -244,10 +256,22 @@ Vector VagTrace::ReverseAG(Vector enter_origin, QAngle enter_angles, QAngle exit
 		invdet = 1 / det;
 	}
 
-	VMatrix exit_mat(exit[0][0], exit[0][1], exit[0][2], 0,
-	                 exit[1][0], exit[1][1], exit[1][2], 0,
-	                 exit[2][0], exit[2][1], exit[2][2], 0,
-	                 0, 0, 0, 1);
+	VMatrix exit_mat(exit[0][0],
+	                 exit[0][1],
+	                 exit[0][2],
+	                 0,
+	                 exit[1][0],
+	                 exit[1][1],
+	                 exit[1][2],
+	                 0,
+	                 exit[2][0],
+	                 exit[2][1],
+	                 exit[2][2],
+	                 0,
+	                 0,
+	                 0,
+	                 0,
+	                 1);
 	exit_mat.InverseGeneral(inv);
 	Vector inv_exit_angles[3] = {{inv[0][0], inv[0][1], inv[0][2]},
 	                             {inv[1][0], inv[1][1], inv[1][2]},
