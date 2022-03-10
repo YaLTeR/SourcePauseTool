@@ -93,13 +93,8 @@ extern ConVar y_spt_hud_oob;
 extern ConVar y_spt_hud_isg;
 
 extern ConVar y_spt_ihud;
-extern ConVar y_spt_ihud_button_color;
-extern ConVar y_spt_ihud_shadow_color;
-extern ConVar y_spt_ihud_font_color;
-extern ConVar y_spt_ihud_shadow_font_color;
 extern ConVar y_spt_ihud_grid_size;
 extern ConVar y_spt_ihud_grid_padding;
-extern ConVar y_spt_ihud_font;
 extern ConVar y_spt_ihud_x;
 extern ConVar y_spt_ihud_y;
 
