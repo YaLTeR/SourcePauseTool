@@ -275,7 +275,7 @@ void InputHud::SetInputInfo(int button, Vector movement)
 bool InputHud::ModifySetting(const char* element, const char* param, const char* value)
 {
 	InputHud::Button* target;
-	if (std::strncmp(element, "anlges", 16) == 0)
+	if (std::strncmp(element, "angles", 16) == 0)
 	{
 		target = &anglesSetting;
 	}
