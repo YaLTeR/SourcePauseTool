@@ -43,7 +43,7 @@ jobs:
         run: |
           $spt_filename = (Get-Item "${{ matrix.Configuration }}\spt*.dll").BaseName
           echo "::set-output name=spt_filename::$spt_filename"
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.Configuration }} - ${{ steps.get_spt_filename.outputs.spt_filename }}
           path: ${{ matrix.Configuration }}\${{ steps.get_spt_filename.outputs.spt_filename }}.dll
