@@ -408,12 +408,9 @@ void InputHud::DrawInputHud()
 
 	if (y_spt_ihud.GetBool())
 	{
-		if (tasPreset)
+		Vector ang = currentAng - previousAng;
+		if (tasPreset || anglesSetting.enabled)
 		{
-			gridSize /= 2;
-
-			// Angle
-			Vector ang = currentAng - previousAng;
 			while (ang.x < -180.0f)
 				ang.x += 360.0f;
 			if (ang.x > 180.0f)
@@ -425,6 +422,10 @@ void InputHud::DrawInputHud()
 				ang *= pow(len / 180.0f, 0.2);
 				ang.y *= -1;
 			}
+		}
+		if (tasPreset)
+		{
+			gridSize /= 2;
 
 			// Movement
 			Vector movement = inputMovement;
@@ -530,19 +531,6 @@ void InputHud::DrawInputHud()
 			// mouse
 			if (anglesSetting.enabled)
 			{
-				Vector ang = currentAng - previousAng;
-				while (ang.x < -180.0f)
-					ang.x += 360.0f;
-				if (ang.x > 180.0f)
-					ang.x -= 360.0f;
-				float len = ang.Length();
-				if (len > 0)
-				{
-					ang /= len;
-					ang *= pow(len / 180.0f, 0.2);
-					ang.y *= -1;
-				}
-
 				int r = gridSize;
 				int cX = xOffset + (anglesSetting.y + 1) * (gridSize + padding) - padding / 2;
 				int cY = yOffset + (anglesSetting.x + 1) * (gridSize + padding) - padding / 2;
