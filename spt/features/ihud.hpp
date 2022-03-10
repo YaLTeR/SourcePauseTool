@@ -4,6 +4,7 @@
 #include "..\feature.hpp"
 #include "hud.hpp"
 #include "basehandle.h"
+#include "Color.h"
 
 #ifdef OE
 #include "..\game_shared\usercmd.h"
@@ -19,6 +20,26 @@ class InputHud : public FeatureWrapper<InputHud>
 public:
 	void DrawInputHud();
 	void SetInputInfo(int button, Vector movement);
+	bool ModifySetting(const char* element, const char* param, const char* value);
+
+	struct Button
+	{
+		bool enabled;
+		std::wstring text;
+		vgui::HFont font;
+		int x;
+		int y;
+		int width;
+		int hight;
+		Color background;
+		Color highlight;
+		Color textcolor;
+		Color texthighlight;
+		int mask;
+	};
+	bool tasPreset = false;
+	std::map<std::string, Button> buttonSetting;
+	Button anglesSetting;
 
 protected:
 	virtual bool ShouldLoadFeature() override;
@@ -45,12 +66,20 @@ private:
 	                          int y1,
 	                          vgui::HFont font,
 	                          Color textColor,
-	                          IMatSystemSurface* surface,
 	                          const wchar_t* text);
+	void DrawButton(Button button);
+	Color StringToColor(const char* hex);
+
+	IMatSystemSurface* surface;
+
+	int xOffset;
+	int yOffset;
+	int gridSize;
+	int padding;
+
 	Vector inputMovement;
 	Vector currentAng;
 	Vector previousAng;
-	vgui::HFont ihudFont;
 	int buttonBits;
 
 	bool awaitingFrameDraw;
