@@ -42,6 +42,11 @@ CON_COMMAND(
 				return;
 			}
 		}
+		if (std::strncmp(param, "text", 16) != 0 && std::strncmp(param, "width", 16) != 0
+		    && std::strncmp(param, "height", 16) != 0 && std::strncmp(param, "texthighlight", 16) != 0)
+		{
+			spt_ihud.ModifySetting("angles", param, value);
+		}
 	}
 	else if (!spt_ihud.ModifySetting(element, param, value))
 	{
@@ -275,8 +280,10 @@ void InputHud::SetInputInfo(int button, Vector movement)
 bool InputHud::ModifySetting(const char* element, const char* param, const char* value)
 {
 	InputHud::Button* target;
+	bool angle = false;
 	if (std::strncmp(element, "angles", 16) == 0)
 	{
+		angle = true;
 		target = &anglesSetting;
 	}
 	else if (buttonSetting.find(element) != buttonSetting.end())
@@ -294,6 +301,11 @@ bool InputHud::ModifySetting(const char* element, const char* param, const char*
 	}
 	else if (std::strncmp(param, "text", 16) == 0)
 	{
+		if (angle)
+		{
+			Msg("angles font has no effect\n");
+			return true;
+		}
 		// only works for ASCII
 		std::string str(value);
 		std::wstring wstr(str.begin(), str.end());
@@ -313,10 +325,20 @@ bool InputHud::ModifySetting(const char* element, const char* param, const char*
 	}
 	else if (std::strncmp(param, "width", 16) == 0)
 	{
+		if (angle)
+		{
+			Msg("angles width has no effect\n");
+			return true;
+		}
 		target->width = std::atoi(value);
 	}
 	else if (std::strncmp(param, "height", 16) == 0)
 	{
+		if (angle)
+		{
+			Msg("angles height has no effect\n");
+			return true;
+		}
 		target->hight = std::atoi(value);
 	}
 	else if (std::strncmp(param, "background", 16) == 0)
@@ -333,6 +355,11 @@ bool InputHud::ModifySetting(const char* element, const char* param, const char*
 	}
 	else if (std::strncmp(param, "texthighlight", 16) == 0)
 	{
+		if (angle)
+		{
+			Msg("angles texthighlight has no effect\n");
+			return true;
+		}
 		target->texthighlight = StringToColor(value);
 	}
 	else
