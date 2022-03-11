@@ -10,11 +10,11 @@
 
 InputHud spt_ihud;
 
-ConVar y_spt_ihud("y_spt_ihud", "0", FCVAR_CHEAT, "Draws movement inputs of client.\n");
-ConVar y_spt_ihud_grid_size("y_spt_ihud_grid_size", "60", FCVAR_CHEAT, "Grid size of input HUD.\n");
-ConVar y_spt_ihud_grid_padding("y_spt_ihud_grid_padding", "2", FCVAR_CHEAT, "Padding between grids of input HUD.");
-ConVar y_spt_ihud_x("y_spt_ihud_x", "2", FCVAR_CHEAT, "X offset of input HUD.\n");
-ConVar y_spt_ihud_y("y_spt_ihud_y", "2", FCVAR_CHEAT, "Y offset of input HUD.\n");
+ConVar y_spt_ihud("y_spt_ihud", "0", 0, "Draws movement inputs of client.\n");
+ConVar y_spt_ihud_grid_size("y_spt_ihud_grid_size", "60", 0, "Grid size of input HUD.\n");
+ConVar y_spt_ihud_grid_padding("y_spt_ihud_grid_padding", "2", 0, "Padding between grids of input HUD.");
+ConVar y_spt_ihud_x("y_spt_ihud_x", "2", 0, "X offset of input HUD.\n");
+ConVar y_spt_ihud_y("y_spt_ihud_y", "2", 0, "Y offset of input HUD.\n");
 
 CON_COMMAND(
     y_spt_ihud_modify,
