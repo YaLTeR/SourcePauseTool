@@ -18,7 +18,7 @@ ConVar y_spt_ihud_y("y_spt_ihud_y", "2", 0, "Y offset of input HUD.\n");
 
 CON_COMMAND(
     y_spt_ihud_modify,
-    "y_spt_ihud_modify <element|all> <param> <value> - modifies parameters in given element.\nParams: enabled, text, font, x, y, width, height, background, highlight, textcolor, texthighlight.\n")
+    "y_spt_ihud_modify <element|all> <param> <value> - Modifies parameters in given element.\nParams: enabled, text, font, x, y, width, height, background, highlight, textcolor, texthighlight.\n")
 {
 	if (args.ArgC() != 4)
 	{
@@ -408,13 +408,15 @@ void InputHud::DrawInputHud()
 
 	if (y_spt_ihud.GetBool())
 	{
-		Vector ang = currentAng - previousAng;
+		Vector ang;
 		if (tasPreset || anglesSetting.enabled)
 		{
+			ang = {previousAng.y - currentAng.y, previousAng.x - currentAng.x, 0};
 			while (ang.x < -180.0f)
 				ang.x += 360.0f;
 			if (ang.x > 180.0f)
 				ang.x -= 360.0f;
+
 			float len = ang.Length();
 			if (len > 0)
 			{
@@ -442,8 +444,8 @@ void InputHud::DrawInputHud()
 			int cY2 = (yOffset + yOffset + 5 * (gridSize + padding) - padding) / 2;
 			int movX = cX1 + r * movement.x;
 			int movY = cY1 - r * movement.y;
-			int angX = cX2 + r * ang.y;
-			int angY = cY2 + r * ang.x;
+			int angX = cX2 + r * ang.x;
+			int angY = cY2 + r * ang.y;
 			surface->DrawSetColor(anglesSetting.background);
 			surface->DrawFilledRect(xOffset,
 			                        yOffset,
@@ -534,8 +536,8 @@ void InputHud::DrawInputHud()
 				int r = gridSize;
 				int cX = xOffset + (anglesSetting.y + 1) * (gridSize + padding) - padding / 2;
 				int cY = yOffset + (anglesSetting.x + 1) * (gridSize + padding) - padding / 2;
-				int angX = cX + r * ang.y;
-				int angY = cY + r * ang.x;
+				int angX = cX + r * ang.x;
+				int angY = cY + r * ang.y;
 				surface->DrawSetColor(anglesSetting.background);
 				surface->DrawFilledRect(xOffset + anglesSetting.y * (gridSize + padding),
 				                        yOffset + anglesSetting.x * (gridSize + padding),
