@@ -32,7 +32,7 @@ CON_COMMAND(
 	const char* param = args.Arg(2);
 	const char* value = args.Arg(3);
 
-	if (std::strncmp(element, "all", 16) == 0)
+	if (std::strcmp(element, "all") == 0)
 	{
 		for (const auto& kv : spt_ihud.buttonSetting)
 		{
@@ -42,8 +42,8 @@ CON_COMMAND(
 				return;
 			}
 		}
-		if (std::strncmp(param, "text", 16) != 0 && std::strncmp(param, "width", 16) != 0
-		    && std::strncmp(param, "height", 16) != 0 && std::strncmp(param, "texthighlight", 16) != 0)
+		if (std::strcmp(param, "text") != 0 && std::strcmp(param, "width") != 0
+		    && std::strcmp(param, "height") != 0 && std::strcmp(param, "texthighlight") != 0)
 		{
 			spt_ihud.ModifySetting("angles", param, value);
 		}
@@ -61,7 +61,7 @@ CON_COMMAND(y_spt_ihud_preset, "Load ihud preset.\nValid options: normal, normal
 		Msg("Usage: y_spt_ihud_preset <preset>\nPresets: normal, normal_mouse, tas.\n");
 	}
 	const char* preset = args.Arg(1);
-	if (std::strncmp(preset, "normal", 16) == 0)
+	if (std::strcmp(preset, "normal") == 0)
 	{
 		spt_ihud.tasPreset = false;
 		InputHud::Button* button = &spt_ihud.buttonSetting["forward"];
@@ -121,7 +121,7 @@ CON_COMMAND(y_spt_ihud_preset, "Load ihud preset.\nValid options: normal, normal
 
 		spt_ihud.anglesSetting.enabled = false;
 	}
-	else if (std::strncmp(preset, "normal_mouse", 16) == 0)
+	else if (std::strcmp(preset, "normal_mouse") == 0)
 	{
 		spt_ihud.tasPreset = false;
 		InputHud::Button* button = &spt_ihud.buttonSetting["forward"];
@@ -183,7 +183,7 @@ CON_COMMAND(y_spt_ihud_preset, "Load ihud preset.\nValid options: normal, normal
 		spt_ihud.anglesSetting.x = 1;
 		spt_ihud.anglesSetting.y = 4;
 	}
-	else if (std::strncmp(preset, "tas", 16) == 0)
+	else if (std::strcmp(preset, "tas") == 0)
 	{
 		spt_ihud.tasPreset = true;
 	}
@@ -281,7 +281,7 @@ bool InputHud::ModifySetting(const char* element, const char* param, const char*
 {
 	InputHud::Button* target;
 	bool angle = false;
-	if (std::strncmp(element, "angles", 16) == 0)
+	if (std::strcmp(element, "angles") == 0)
 	{
 		angle = true;
 		target = &anglesSetting;
@@ -295,11 +295,11 @@ bool InputHud::ModifySetting(const char* element, const char* param, const char*
 		return false;
 	}
 
-	if (std::strncmp(param, "enabled", 16) == 0)
+	if (std::strcmp(param, "enabled") == 0)
 	{
 		target->enabled = std::atoi(value);
 	}
-	else if (std::strncmp(param, "text", 16) == 0)
+	else if (std::strcmp(param, "text") == 0)
 	{
 		if (angle)
 		{
@@ -311,19 +311,19 @@ bool InputHud::ModifySetting(const char* element, const char* param, const char*
 		std::wstring wstr(str.begin(), str.end());
 		target->text = wstr;
 	}
-	else if (std::strncmp(param, "font", 16) == 0)
+	else if (std::strcmp(param, "font") == 0)
 	{
 		target->font = spt_hud.scheme->GetFont(value, false);
 	}
-	else if (std::strncmp(param, "x", 16) == 0)
+	else if (std::strcmp(param, "x") == 0)
 	{
 		target->x = std::atoi(value);
 	}
-	else if (std::strncmp(param, "y", 16) == 0)
+	else if (std::strcmp(param, "y") == 0)
 	{
 		target->y = std::atoi(value);
 	}
-	else if (std::strncmp(param, "width", 16) == 0)
+	else if (std::strcmp(param, "width") == 0)
 	{
 		if (angle)
 		{
@@ -332,7 +332,7 @@ bool InputHud::ModifySetting(const char* element, const char* param, const char*
 		}
 		target->width = std::atoi(value);
 	}
-	else if (std::strncmp(param, "height", 16) == 0)
+	else if (std::strcmp(param, "height") == 0)
 	{
 		if (angle)
 		{
@@ -341,19 +341,19 @@ bool InputHud::ModifySetting(const char* element, const char* param, const char*
 		}
 		target->hight = std::atoi(value);
 	}
-	else if (std::strncmp(param, "background", 16) == 0)
+	else if (std::strcmp(param, "background") == 0)
 	{
 		target->background = StringToColor(value);
 	}
-	else if (std::strncmp(param, "highlight", 16) == 0)
+	else if (std::strcmp(param, "highlight") == 0)
 	{
 		target->highlight = StringToColor(value);
 	}
-	else if (std::strncmp(param, "textcolor", 16) == 0)
+	else if (std::strcmp(param, "textcolor") == 0)
 	{
 		target->textcolor = StringToColor(value);
 	}
-	else if (std::strncmp(param, "texthighlight", 16) == 0)
+	else if (std::strcmp(param, "texthighlight") == 0)
 	{
 		if (angle)
 		{
