@@ -1286,6 +1286,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">stdafx.hpp</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="spt\strafe\strafestuff.cpp" />
+    <ClCompile Include="spt\utils\command.cpp" />
     <ClCompile Include="spt\utils\datamap_wrapper.cpp" />
     <ClCompile Include="spt\utils\ent_utils.cpp" />
     <ClCompile Include="spt\utils\file.cpp" />
@@ -1379,6 +1380,7 @@
     <ClInclude Include="spt\stdafx.hpp" />
     <ClInclude Include="spt\strafe\strafestuff.hpp" />
     <ClInclude Include="spt\strafe\strafe_utils.hpp" />
+    <ClInclude Include="spt\utils\command.hpp" />
     <ClInclude Include="spt\utils\convar.hpp" />
     <ClInclude Include="spt\utils\custom_interfaces.hpp" />
     <ClInclude Include="spt\utils\datamap_wrapper.hpp" />
