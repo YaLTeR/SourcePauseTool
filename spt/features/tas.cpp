@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "tas.hpp"
 #include "..\cvars.hpp"
+#include "command.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "..\strafe\strafestuff.hpp"
 #include "..\scripts\srctas_reader.hpp"
@@ -207,9 +208,12 @@ void TASFeature::Strafe(float* va, bool yawChanged)
 	spt_playerio.SetTASInput(va, out);
 }
 
-CON_COMMAND(
+CON_COMMAND_AUTOCOMPLETEFILE(
     tas_script_load,
-    "Loads and executes an .srctas script. If an extra ticks argument is given, the script is played back at maximal FPS and without rendering until that many ticks before the end of the script. Usage: tas_load_script [script] [ticks]")
+    "Loads and executes an .srctas script. If an extra ticks argument is given, the script is played back at maximal FPS and without rendering until that many ticks before the end of the script. Usage: tas_load_script [script] [ticks]",
+    0,
+    "",
+    ".srctas")
 {
 	if (args.ArgC() == 2)
 		scripts::g_TASReader.ExecuteScript(args.Arg(1));

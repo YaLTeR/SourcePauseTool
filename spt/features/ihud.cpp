@@ -3,6 +3,7 @@
 #include "ihud.hpp"
 
 #include "..\cvars.hpp"
+#include "command.hpp"
 #include "playerio.hpp"
 #include "signals.hpp"
 #include "property_getter.hpp"
@@ -54,7 +55,10 @@ CON_COMMAND(
 	}
 }
 
-CON_COMMAND(y_spt_ihud_preset, "Load ihud preset.\nValid options: normal, normal_mouse, tas.\n")
+CON_COMMAND_AUTOCOMPLETE(y_spt_ihud_preset,
+                         "Load ihud preset.\nValid options: normal, normal_mouse, tas.\n",
+                         0,
+                         ({"normal", "normal_mouse", "tas"}))
 {
 	if (args.ArgC() != 2)
 	{
