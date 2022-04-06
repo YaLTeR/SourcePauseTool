@@ -2,51 +2,48 @@ name: CI
 
 on:
   push:
-    paths-ignore: 'README.md'
+    paths-ignore:
+      - '.gitattributes'
+      - '.github/*'
+      - '.gitignore'
+      - 'README.md'
   pull_request:
-    paths-ignore: 'README.md'
+    paths-ignore:
+      - '.gitattributes'
+      - '.github/*'
+      - '.gitignore'
+      - 'README.md'
 
 jobs:
   Build:
+    name: Build (${{ matrix.configuration}}${{ matrix.config.Configuration_2 }})
     runs-on: windows-2019
     strategy:
       fail-fast: false
       matrix:
-        Configuration: [Debug, Debug BMS, Debug 2013, Debug OE, Release, Release BMS, Release 2013, Release OE]
-        include:
-          - Configuration: Debug
-            SDK: orangebox
-          - Configuration: Debug BMS
-            SDK: bms
-          - Configuration: Debug 2013
-            SDK: sdk2013
-          - Configuration: Debug OE
-            SDK: episode1
-          - Configuration: Release
-            SDK: orangebox
-          - Configuration: Release BMS
-            SDK: bms
-          - Configuration: Release 2013
-            SDK: sdk2013
-          - Configuration: Release OE
-            SDK: episode1
+        Configuration: [Release, Debug]
+        config:
+          - {SDK: orangebox}
+          - {SDK: bms, Configuration_2: ' BMS'}
+          - {SDK: sdk2013, Configuration_2: ' 2013'}
+          - {SDK: episode1, Configuration_2: ' OE'}
     steps:
       - name: Checkout SPT
         uses: actions/checkout@v3
       - name: Checkout submodules
-        run: git submodule update --init -j $env:NUMBER_OF_PROCESSORS SPTLib SDK\${{ matrix.SDK }}
-      - uses: microsoft/setup-msbuild@v1
+        run: git submodule update --init -j $env:NUMBER_OF_PROCESSORS SPTLib SDK\${{ matrix.config.SDK }}
+      - uses: microsoft/setup-msbuild@v1.1
       - name: Build
-        run: msbuild /m /nologo /p:Configuration="${{ matrix.Configuration }}" spt.sln
+        run: msbuild -m -nologo -p:Configuration="${{ matrix.Configuration }}${{ matrix.config.Configuration_2 }}" spt.sln
       - name: Get SPT DLL name
         id: get_spt_filename
         run: |
-          $spt_filename = (Get-Item "${{ matrix.Configuration }}\spt*.dll").BaseName
+          $spt_filename = (Get-Item "${{ matrix.Configuration }}${{ matrix.config.Configuration_2 }}\spt*.dll").BaseName
           echo "::set-output name=spt_filename::$spt_filename"
       - uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.Configuration }} - ${{ steps.get_spt_filename.outputs.spt_filename }}
-          path: ${{ matrix.Configuration }}\${{ steps.get_spt_filename.outputs.spt_filename }}.dll
+          name: ${{ matrix.Configuration }}${{ matrix.config.Configuration_2 }} - ${{ steps.get_spt_filename.outputs.spt_filename }}
+          path: ${{ matrix.Configuration }}${{ matrix.config.Configuration_2 }}\${{ steps.get_spt_filename.outputs.spt_filename }}.dll
           if-no-files-found: error
 
   Format:
@@ -54,4 +51,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Format
-        run: python run-clang-format.py --clang-format-executable clang-format-11 --recursive spt
+        run: |
+          chmod +x run-clang-format.py
+          ./run-clang-format.py --clang-format-executable clang-format-11 --recursive spt
