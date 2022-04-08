@@ -78,7 +78,6 @@ int AutoCompletList::AutoCompletionFileFunc(const char* partial,
 			{
 				completion.push_back(p.path().stem().string());
 			}
-			
 		}
 	}
 	return AutoCompletionFunc(partial, commands);
