@@ -269,8 +269,7 @@ void TASFeature::LoadFeature()
 #if defined(SSDK2007)
 		AddHudCallback(
 		    "frame",
-		    [this]()
-		    {
+		    [this]() {
 			    spt_hud.DrawTopHudElement(L"frame: %d / %d",
 			                              scripts::g_TASReader.GetCurrentTick(),
 			                              scripts::g_TASReader.GetCurrentScriptLength());
