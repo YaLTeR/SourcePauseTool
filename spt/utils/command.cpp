@@ -30,6 +30,7 @@ int AutoCompletList::AutoCompletionFunc(const char* partial,
 		std::strncpy(commands[count],
 		             (std::string(command) + " " + item).c_str(),
 		             COMMAND_COMPLETION_ITEM_LENGTH);
+		commands[count][COMMAND_COMPLETION_ITEM_LENGTH - 1] = '\0';
 		count++;
 	}
 	return count;
@@ -38,13 +39,46 @@ int AutoCompletList::AutoCompletionFunc(const char* partial,
 int AutoCompletList::AutoCompletionFileFunc(const char* partial,
                                             char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
+	char* substring = (char*)partial;
+	if (std::strstr(partial, command))
+	{
+		substring = (char*)partial + strlen(command) + 1;
+	}
+	char* pch = std::strrchr(substring, '/');
+	char path[255];
+	std::string dir = GetGameDir() + subdirectory;
+	if (pch)
+	{
+		std::strncpy(path, substring, pch - substring + 1);
+		path[pch - substring + 1] = '\0';
+		dir = dir + "/" + path;
+	}
 	std::string ext(extension);
 	completion.clear();
-	for (auto& p : fs::directory_iterator(GetGameDir() + subdirectory))
+	for (auto& p : fs::directory_iterator(dir))
 	{
-		if (p.path().extension() == ext)
+		if (fs::is_directory(p.status()))
 		{
-			completion.push_back(p.path().stem().string());
+			if (pch)
+			{
+				completion.push_back(path + p.path().stem().string() + "/");
+			}
+			else
+			{
+				completion.push_back(p.path().stem().string() + "/");
+			}
+		}
+		else if (p.path().extension() == ext)
+		{
+			if (pch)
+			{
+				completion.push_back(path + p.path().stem().string());
+			}
+			else
+			{
+				completion.push_back(p.path().stem().string());
+			}
+			
 		}
 	}
 	return AutoCompletionFunc(partial, commands);
