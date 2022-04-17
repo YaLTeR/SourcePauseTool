@@ -325,6 +325,7 @@ namespace patterns
 		         "55 8B EC 83 EC 34 53 8B D9 8B 83 94 00 00 00 8B 13 56 8D B3 94 00 00 00",
 		         "1910503",
 		         "55 8B EC 81 EC 9C 00 00 00 53 56 8B F1 8B 86 E8 00 00 00 8B 16 57 8D BE E8 00 00 00");
+		PATTERNS(C_BaseAnimating__SetSequence, "5135", "8B 44 24 04 56 8B F1 39 86");
 	} // namespace client
 
 	namespace server
