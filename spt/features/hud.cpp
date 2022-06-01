@@ -28,6 +28,7 @@ void HUDFeature::DrawTopHudElement(const wchar* format, ...)
 	va_list args;
 	va_start(args, format);
 	const wchar* text = FormatTempString(format, args);
+	va_end(args);
 
 	surface->DrawSetTextFont(font);
 	surface->DrawSetTextColor(255, 255, 255, 255);

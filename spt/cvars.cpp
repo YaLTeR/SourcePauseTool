@@ -27,6 +27,7 @@ void FormatConCmd(const char* fmt, ...)
 	va_list args;
 	va_start(args, fmt);
 	vsprintf_s(BUFFER, ARRAYSIZE(BUFFER), fmt, args);
+	va_end(args);
 
 	EngineConCmd(BUFFER);
 }

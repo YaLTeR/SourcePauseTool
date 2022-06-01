@@ -375,6 +375,7 @@ void ipc::Print(const char* msg, ...)
 		va_list args;
 		va_start(args, msg);
 		vsnprintf(buffer, buflen - 1, msg, args);
+		va_end(args);
 
 		PRINT_FUNC(buffer);
 	}

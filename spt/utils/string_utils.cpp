@@ -34,6 +34,7 @@ const char* FormatTempString(const char* value, ...)
 	va_list args;
 	va_start(args, value);
 	vsprintf_s(FORMAT_BUFFER, ARRAYSIZE(FORMAT_BUFFER), value, args);
+	va_end(args);
 	return FORMAT_BUFFER;
 }
 
@@ -41,7 +42,10 @@ const wchar* FormatTempString(const wchar* format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	return FormatTempString(format, args);
+	const wchar* output = FormatTempString(format, args);
+	va_end(args);
+
+	return output;
 }
 
 const wchar* FormatTempString(const wchar* format, va_list args)
