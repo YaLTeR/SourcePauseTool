@@ -1,4 +1,3 @@
-import configargparse
 import os
 import re
 import shutil
@@ -7,6 +6,22 @@ import subprocess
 
 TEST_GAMEBUILDS = []
 TEST_FILE = 'testoutput.log'
+
+def parse_args(filepath):
+    args = {
+        'b5135': None,
+        'steampipe': None
+    }
+    with open(filepath, 'r') as file:
+        for line in file:
+            line_args = line.split('=')
+            if len(line_args) < 2:
+                print(line, 'is not a valid config line')
+            else:
+                build = line_args[0].strip()
+                path = line_args[1].strip()
+                args[build] = path
+    return args
 
 def copy_all(src, dst):
     """Copy all files from src to dst"""
@@ -100,12 +115,11 @@ def add_build_path(build_number, build_path, build_executable, spt_path, spt_nam
 
 def find_paths():
     """Look up paths for different game builds from the config file."""
-    args = configargparse.ArgParser(default_config_files=['config.ini'])
-    args.add_argument('--b5135', default="")
-    args.add_argument('--steampipe', default="")
-    parsed_args = args.parse_args()
-    add_build_path("5135", parsed_args.b5135, "hl2.exe", get_2007_spt(), "spt")
-    add_build_path("steampipe", parsed_args.steampipe, "hl2.exe", get_2013_spt(), "spt-2013")
+    args = parse_args('config.ini')
+    if args['b5135'] is not None:
+        add_build_path("5135", args['b5135'], "hl2.exe", get_2007_spt(), "spt") 
+    if args['steampipe'] is not None:
+        add_build_path("steampipe", args['steampipe'], "hl2.exe", get_2013_spt(), "spt-2013")
 
     for build in TEST_GAMEBUILDS:
         if build.path:
