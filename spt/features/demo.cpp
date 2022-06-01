@@ -62,6 +62,18 @@ bool DemoStuff::Demo_IsAutoRecordingAvailable() const
 	return (ORIG_StopRecording && ORIG_SetSignonState);
 }
 
+void DemoStuff::StartAutorecord()
+{
+	spt_demostuff.isAutoRecordingDemo = true;
+	spt_demostuff.currentAutoRecordDemoNumber = 0;
+}
+
+void DemoStuff::StopAutorecord()
+{
+	spt_demostuff.isAutoRecordingDemo = false;
+	spt_demostuff.currentAutoRecordDemoNumber = 1;
+}
+
 bool DemoStuff::ShouldLoadFeature()
 {
 	return true;
@@ -135,37 +147,14 @@ void DemoStuff::InitHooks()
 	HOOK_FUNCTION(engine, Stop);
 }
 
-void DemoStuff::LoadFeature()
-{
-	currentAutoRecordDemoNumber = 1;
-	isAutoRecordingDemo = false;
-
-	if (ORIG_Record && pDemoplayer)
-	{
-		InitConcommandBase(y_spt_pause_demo_on_tick);
-		TickSignal.Connect(this, &DemoStuff::OnTick);
-	}
-
-	if (!ORIG_StopRecording || !ORIG_SetSignonState)
-	{
-		Warning(
-		    "TAS demo recording may overwrite demos if level transitions and saveloads are present in the same script.\n");
-	}
-	else if (!ORIG_Stop)
-	{
-		Warning("Manually stopping a TAS demo recording won't stop autorecording.\n");
-	}
-}
-
 void DemoStuff::UnloadFeature() {}
 
 void __fastcall DemoStuff::HOOKED_StopRecording(void* thisptr, int edx)
 { // This hook will get called twice per loaded save (in most games/versions, at least, according to SAR people), once with m_bLoadgame being false and the next one being true
-	if (!scripts::g_TASReader.IsExecutingScript())
+	if (!spt_demostuff.isAutoRecordingDemo)
 	{
 		spt_demostuff.ORIG_StopRecording(thisptr, edx);
-		spt_demostuff.isAutoRecordingDemo = false;
-		spt_demostuff.currentAutoRecordDemoNumber = 1;
+		spt_demostuff.StopAutorecord();
 		return;
 	}
 
@@ -180,23 +169,19 @@ void __fastcall DemoStuff::HOOKED_StopRecording(void* thisptr, int edx)
 		*pM_nDemoNumber = spt_demostuff.currentAutoRecordDemoNumber;
 		*pM_bRecording = true;
 	}
-	else
-	{
-		spt_demostuff.currentAutoRecordDemoNumber = 1;
-	}
 }
 
 void __fastcall DemoStuff::HOOKED_SetSignonState(void* thisptr, int edx, int state)
 {
 	// This hook only makes sense if StopRecording is also properly hooked
-	if (spt_demostuff.ORIG_StopRecording && scripts::g_TASReader.IsExecutingScript())
+	if (spt_demostuff.ORIG_StopRecording && spt_demostuff.isAutoRecordingDemo)
 	{
 		bool* pM_bRecording = (bool*)((uint32_t)thisptr + spt_demostuff.m_bRecording_Offset);
 		int* pM_nDemoNumber = (int*)((uint32_t)thisptr + spt_demostuff.m_nDemoNumber_Offset);
 
 		// SIGNONSTATE_SPAWN (5): ready to receive entity packets
 		// SIGNONSTATE_FULL may be called twice on a load depending on the game and on specific situations. Using SIGNONSTATE_SPAWN for demo number increase instead
-		if (state == 5 && spt_demostuff.isAutoRecordingDemo)
+		if (state == 5)
 		{
 			spt_demostuff.currentAutoRecordDemoNumber++;
 		}
@@ -205,17 +190,16 @@ void __fastcall DemoStuff::HOOKED_SetSignonState(void* thisptr, int edx, int sta
 		// After a load, the engine's demo recorder will only start recording when it reaches this state, so this is a good time to set the flag if needed
 		else if (state == 6)
 		{
-			// Changing sessions may put the recording flag down
-			// Start recording again
-			if (spt_demostuff.isAutoRecordingDemo)
-			{
-				*pM_bRecording = true;
-			}
-
 			// We may have just started the first recording, so set our autorecording flag and take control over the demo number
 			if (*pM_bRecording)
 			{
-				spt_demostuff.isAutoRecordingDemo = true;
+				// When we start recording, we put demo number at 0, so that if we start recording before a map is loaded the first demo number is 1
+				// if we have demo number at 0 here, it means we started recording when already in map (we did not receive SIGNONSTATE_SPAWN in between)
+				if (spt_demostuff.currentAutoRecordDemoNumber == 0)
+				{
+					spt_demostuff.currentAutoRecordDemoNumber = 1;
+				}
+
 				*pM_nDemoNumber = spt_demostuff.currentAutoRecordDemoNumber;
 			}
 		}
@@ -226,8 +210,8 @@ void __fastcall DemoStuff::HOOKED_SetSignonState(void* thisptr, int edx, int sta
 void __cdecl DemoStuff::HOOKED_Stop()
 {
 	spt_demostuff.isAutoRecordingDemo = false;
-	if (spt_demostuff.ORIG_Stop)
-		spt_demostuff.ORIG_Stop();
+	spt_demostuff.currentAutoRecordDemoNumber = 1;
+	spt_demostuff.ORIG_Stop();
 }
 
 void DemoStuff::OnTick()
@@ -243,5 +227,47 @@ void DemoStuff::OnTick()
 			if (tick == Demo_GetPlaybackTick())
 				EngineConCmd("demo_pause");
 		}
+	}
+}
+
+CON_COMMAND(y_spt_record, "Starts autorecording a demo.")
+{
+	if (args.ArgC() == 1)
+	{
+		Msg("Usage: y_spt_record <filepath> [incremental]\n");
+		return;
+	}
+
+#ifdef OE
+	_record->Dispatch();
+#else
+	_record->Dispatch(args);
+#endif
+	spt_demostuff.StartAutorecord();
+}
+
+CON_COMMAND(y_spt_record_stop, "Stops recording a demo.")
+{
+#ifdef OE
+	_stop->Dispatch();
+#else
+	_stop->Dispatch(args);
+#endif
+	if (!spt_demostuff.ORIG_Stop)
+		spt_demostuff.StopAutorecord();
+}
+
+void DemoStuff::LoadFeature()
+{
+	if (ORIG_Record && pDemoplayer)
+	{
+		InitConcommandBase(y_spt_pause_demo_on_tick);
+		TickSignal.Connect(this, &DemoStuff::OnTick);
+	}
+
+	if (ORIG_StopRecording && ORIG_SetSignonState)
+	{
+		InitCommand(y_spt_record);
+		InitCommand(y_spt_record_stop);
 	}
 }

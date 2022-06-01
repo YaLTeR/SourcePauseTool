@@ -2,7 +2,9 @@
 #include "cvars.hpp"
 #include "feature.hpp"
 #include "interfaces.hpp"
+#include "sptlib-wrapper.hpp"
 #include "tier1\tier1.h"
+#include <stdarg.h>
 
 static std::unordered_map<ConCommandBase*, void*> cmd_to_feature;
 
@@ -16,6 +18,17 @@ void Cvar_InitConCommandBase(ConCommandBase& concommand, void* owner)
 	{
 		cmd_to_feature[&concommand] = owner;
 	}
+}
+
+void FormatConCmd(const char* fmt, ...)
+{
+	static char BUFFER[8192];
+
+	va_list args;
+	va_start(args, fmt);
+	vsprintf_s(BUFFER, ARRAYSIZE(BUFFER), fmt, args);
+
+	EngineConCmd(BUFFER);
 }
 
 #if defined(OE)
