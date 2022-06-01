@@ -7,6 +7,7 @@
 void Cvar_RegisterSPTCvars();
 void Cvar_UnregisterSPTCvars();
 void Cvar_InitConCommandBase(ConCommandBase& concommand, void* owner);
+void FormatConCmd(const char* fmt, ...);
 
 extern ConVar y_spt_pause;
 extern ConVar y_spt_motion_blur_fix;
@@ -114,6 +115,8 @@ extern ConCommand y_spt_set_isg;
 #endif
 
 extern ConVar* _viewmodel_fov;
+extern ConCommand* _record;
+extern ConCommand* _stop;
 extern ConVar* _sv_accelerate;
 extern ConVar* _sv_airaccelerate;
 extern ConVar* _sv_friction;

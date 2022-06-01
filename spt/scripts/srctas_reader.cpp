@@ -194,8 +194,15 @@ namespace scripts
 		currentScript.Init(fileName);
 
 		auto demoName = currentScript.GetDemoName();
-		if (!demoName.empty())
+
+		if (spt_demostuff.Demo_IsAutoRecordingAvailable())
+		{
+			currentScript.AddAfterFramesEntry(demoDelay, "y_spt_record " + demoName);
+		}
+		else
+		{
 			currentScript.AddAfterFramesEntry(demoDelay, "record " + demoName);
+		}
 
 		for (auto& entry : currentScript.afterFramesEntries)
 		{

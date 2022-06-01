@@ -61,6 +61,8 @@ namespace interfaces
 } // namespace interfaces
 
 ConVar* _viewmodel_fov = nullptr;
+ConCommand* _record = nullptr;
+ConCommand* _stop = nullptr;
 ConVar* _sv_accelerate = nullptr;
 ConVar* _sv_airaccelerate = nullptr;
 ConVar* _sv_friction = nullptr;
@@ -176,6 +178,7 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 #else
 	{
 #define GETCVAR(x) _##x = g_pCVar->FindVar(#x);
+#define GETCMD(x) _##x = g_pCVar->FindCommand(#x);
 
 		GETCVAR(sv_airaccelerate);
 		GETCVAR(sv_accelerate);
@@ -186,6 +189,8 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 		GETCVAR(sv_gravity);
 		GETCVAR(sv_maxvelocity);
 		GETCVAR(sv_bounce);
+		GETCMD(record);
+		GETCMD(stop);
 	}
 #endif
 

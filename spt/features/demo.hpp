@@ -16,6 +16,10 @@ public:
 	bool Demo_IsPlayingBack() const;
 	bool Demo_IsPlaybackPaused() const;
 	bool Demo_IsAutoRecordingAvailable() const;
+	void StartAutorecord();
+	void StopAutorecord();
+
+	_Stop ORIG_Stop = nullptr;
 
 protected:
 	virtual bool ShouldLoadFeature() override;
@@ -30,14 +34,13 @@ private:
 	int IsPlayingBack_Offset = 0;
 	int IsPlaybackPaused_Offset = 0;
 	void** pDemoplayer = nullptr;
-	int currentAutoRecordDemoNumber = 0;
+	int currentAutoRecordDemoNumber = 1;
 	int m_nDemoNumber_Offset = 0;
 	int m_bRecording_Offset = 0;
 	bool isAutoRecordingDemo = false;
 
 	_StopRecording ORIG_StopRecording = nullptr;
 	_SetSignonState ORIG_SetSignonState = nullptr;
-	_Stop ORIG_Stop = nullptr;
 	uintptr_t ORIG_Record = 0;
 
 	static void __fastcall HOOKED_StopRecording(void* thisptr, int edx);
