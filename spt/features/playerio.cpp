@@ -382,11 +382,23 @@ bool PlayerIOFeature::PlayerIOAddressesFound()
 	       && interfaces::engine_server != nullptr;
 }
 
-void PlayerIOFeature::SetTASInput(float* va, const Strafe::ProcessedFrame& out)
+void PlayerIOFeature::SetTASInput(float* va, const Strafe::ProcessedFrame& _out)
 {
+	Strafe::ProcessedFrame out = _out;
 	// This bool is set if strafing should occur
 	if (out.Processed)
 	{
+#define CHECK_FINITE(value) \
+	if (!std::isfinite(value)) \
+	{ \
+		Warning("Strafe input " #value " was %f, reverting to 0.\n", value); \
+		value = 0; \
+	}
+
+		CHECK_FINITE(out.ForwardSpeed);
+		CHECK_FINITE(out.SideSpeed);
+		CHECK_FINITE(out.Yaw);
+
 		if (out.Jump && tas_strafe_jumptype.GetInt() > 0)
 		{
 			spt_aim.SetJump();
