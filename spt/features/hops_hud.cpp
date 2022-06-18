@@ -469,8 +469,6 @@ void HopsHud::PrintStrafeCol(std::function<void(const ljstats::SegmentStats&, wc
 			break;
 		}
 
-		float weight = segment.ticks / (float)ticks;
-
 		func(segment, buffer, x, y);
 		surface->DrawSetTextPos(x, y);
 		surface->DrawPrintText(buffer, wcslen(buffer));
@@ -516,11 +514,9 @@ void HopsHud::DrawHopHud()
 	swprintf_s(buffer, BUFFER_SIZE, fmt, value); \
 	DrawBuffer();
 
-	if (hopsFont == 0)
+	if (hopsFont == 0 && !spt_hud.GetFont(FONT_Trebuchet24, hopsFont))
 	{
-		if (!spt_hud.scheme)
-			return;
-		hopsFont = spt_hud.scheme->GetFont("Trebuchet24", false);
+		return;
 	}
 
 	auto surface = spt_hud.surface;

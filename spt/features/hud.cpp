@@ -14,6 +14,10 @@ ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT, "When set to 1, displa
 
 HUDFeature spt_hud;
 
+const std::string FONT_DefaultFixedOutline = "DefaultFixedOutline";
+const std::string FONT_Trebuchet20 = "Trebuchet20";
+const std::string FONT_Trebuchet24 = "Trebuchet24";
+
 bool HUDFeature::AddHudCallback(HudCallback callback)
 {
 	if (!this->loadingSuccessful)
@@ -25,6 +29,13 @@ bool HUDFeature::AddHudCallback(HudCallback callback)
 
 void HUDFeature::DrawTopHudElement(const wchar* format, ...)
 {
+	vgui::HFont font;
+
+	if (!GetFont(FONT_DefaultFixedOutline, font))
+	{
+		return;
+	}
+
 	va_list args;
 	va_start(args, format);
 	const wchar* text = FormatTempString(format, args);
@@ -44,6 +55,30 @@ bool HUDFeature::ShouldLoadFeature()
 	return true;
 }
 
+bool HUDFeature::GetFont(const std::string& fontName, vgui::HFont& fontOut)
+{
+	if (fonts.find(fontName) != fonts.end())
+	{
+		fontOut = fonts[fontName];
+		return true;
+	}
+	else
+	{
+		auto scheme = vgui::GetScheme();
+
+		if (scheme)
+		{
+			fontOut = scheme->GetFont(fontName.c_str());
+			fonts[fontName] = fontOut;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+}
+
 void HUDFeature::InitHooks()
 {
 	FIND_PATTERN(vguimatsurface, StartDrawing);
@@ -58,11 +93,6 @@ void HUDFeature::LoadFeature()
 		InitConcommandBase(y_spt_hud_left);
 		cl_showpos = interfaces::g_pCVar->FindVar("cl_showpos");
 		cl_showfps = interfaces::g_pCVar->FindVar("cl_showfps");
-		scheme = vgui::GetScheme();
-		if (scheme)
-		{
-			font = scheme->GetFont("DefaultFixedOutline", false);
-		}
 	}
 }
 
@@ -76,9 +106,9 @@ void HUDFeature::UnloadFeature() {}
 void HUDFeature::DrawHUD()
 {
 	surface = (IMatSystemSurface*)vgui::surface();
-	scheme = vgui::GetScheme();
+	vgui::HFont font;
 
-	if (!surface || !scheme)
+	if (!surface || !GetFont(FONT_DefaultFixedOutline, font))
 		return;
 
 	ORIG_StartDrawing(surface, 0);

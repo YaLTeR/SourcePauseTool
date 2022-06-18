@@ -224,11 +224,11 @@ void InputHud::LoadFeature()
 		InitConcommandBase(y_spt_ihud_x);
 		InitConcommandBase(y_spt_ihud_y);
 	}
-	vgui::HFont font = spt_hud.scheme->GetFont("Trebuchet20", false);
 	Color background = {0, 0, 0, 233};
 	Color highlight = {255, 255, 255, 66};
 	Color textcolor = {255, 255, 255, 66};
 	Color texthighlight = {0, 0, 0, 233};
+	const std::string font = FONT_Trebuchet20;
 
 	const int IN_ATTACK = (1 << 0);
 	const int IN_JUMP = (1 << 1);
@@ -317,7 +317,7 @@ bool InputHud::ModifySetting(const char* element, const char* param, const char*
 	}
 	else if (std::strcmp(param, "font") == 0)
 	{
-		target->font = spt_hud.scheme->GetFont(value, false);
+		target->font = value;
 	}
 	else if (std::strcmp(param, "x") == 0)
 	{
@@ -395,6 +395,13 @@ Color InputHud::StringToColor(const char* color)
 
 void InputHud::DrawInputHud()
 {
+	vgui::HFont angleSettingsFont;
+
+	if (!spt_hud.GetFont(anglesSetting.font, angleSettingsFont))
+	{
+		return;
+	}
+
 	if (awaitingFrameDraw)
 	{
 		previousAng = currentAng;
@@ -460,8 +467,8 @@ void InputHud::DrawInputHud()
 			                        xOffset + 10 * (gridSize + padding) - padding,
 			                        yOffset + 5 * (gridSize + padding) - padding);
 
-			int th = surface->GetFontTall(anglesSetting.font);
-			surface->DrawSetTextFont(anglesSetting.font);
+			int th = surface->GetFontTall(angleSettingsFont);
+			surface->DrawSetTextFont(angleSettingsFont);
 			surface->DrawSetTextColor(anglesSetting.textcolor);
 			wchar_t* text = L"move analog";
 			surface->DrawSetTextPos(cX1 - r, cY1 - r - th);
@@ -567,10 +574,17 @@ void InputHud::DrawRectAndCenterTxt(Color buttonColor,
                                     int y0,
                                     int x1,
                                     int y1,
-                                    vgui::HFont font,
+                                    const std::string& fontName,
                                     Color textColor,
                                     const wchar_t* text)
 {
+	vgui::HFont font;
+
+	if (!spt_hud.GetFont(fontName, font))
+	{
+		return;
+	}
+
 	surface->DrawSetColor(buttonColor);
 	surface->DrawFilledRect(x0, y0, x1, y1);
 

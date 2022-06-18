@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <vector>
+#include <unordered_map>
 #include "..\feature.hpp"
 #include "vgui\VGUI.h"
 #include "vgui\IScheme.h"
@@ -12,6 +13,10 @@
 typedef void(__fastcall* _StartDrawing)(void* thisptr, int edx);
 typedef void(__fastcall* _FinishDrawing)(void* thisptr, int edx);
 typedef void(__fastcall* _VGui_Paint)(void* thisptr, int edx, int mode);
+
+extern const std::string FONT_DefaultFixedOutline;
+extern const std::string FONT_Trebuchet20;
+extern const std::string FONT_Trebuchet24;
 
 enum class RenderTime
 {
@@ -36,11 +41,11 @@ public:
 	bool AddHudCallback(HudCallback callback);
 	void DrawTopHudElement(const wchar* format, ...);
 	virtual bool ShouldLoadFeature() override;
+	bool GetFont(const std::string& fontName, vgui::HFont& fontOut);
 
 	IMatSystemSurface* surface = nullptr;
-	vgui::IScheme* scheme = nullptr;
-	vgui::HFont font = 0;
 	vrect_t* screen = nullptr;
+	std::unordered_map<std::string, vgui::HFont> fonts;
 
 protected:
 	virtual void InitHooks() override;
