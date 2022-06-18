@@ -26,7 +26,7 @@ public:
 	{
 		bool enabled;
 		std::wstring text;
-		vgui::HFont font;
+		std::string font;
 		int x;
 		int y;
 		int width;
@@ -64,7 +64,7 @@ private:
 	                          int y0,
 	                          int x1,
 	                          int y1,
-	                          vgui::HFont font,
+	                          const std::string& fontName,
 	                          Color textColor,
 	                          const wchar_t* text);
 	void DrawButton(Button button);
