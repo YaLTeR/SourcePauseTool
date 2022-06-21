@@ -77,16 +77,16 @@ namespace aim
 		jumpedLastTick = false;
 	}
 
-	float ViewState::CalculateNewYaw(float newYaw)
+	float ViewState::CalculateNewYaw(float newYaw, const Strafe::StrafeInput& strafeInput)
 	{
-		if (!set && tas_strafe.GetBool() && tas_strafe_vectorial.GetBool() && tas_strafe_version.GetInt() >= 4)
+		if (!set && strafeInput.Strafe && strafeInput.Vectorial && strafeInput.Version >= 4)
 		{
 			float targetYaw =
-			    utils::NormalizeDeg(tas_strafe_yaw.GetFloat() + tas_strafe_vectorial_offset.GetFloat());
+			    utils::NormalizeDeg(strafeInput.TargetYaw + tas_strafe_vectorial_offset.GetFloat());
 			current[YAW] = angleChange(newYaw,
 			                           current[YAW],
 			                           targetYaw,
-			                           tas_anglespeed.GetFloat(),
+			                           strafeInput.AngleSpeed,
 			                           false,
 			                           0,
 			                           true,
@@ -97,7 +97,7 @@ namespace aim
 			current[YAW] = angleChange(newYaw,
 			                           current[YAW],
 			                           target[YAW],
-			                           tas_anglespeed.GetFloat(),
+			                           strafeInput.AngleSpeed,
 			                           timedChange,
 			                           ticksLeft,
 			                           true,
@@ -111,13 +111,13 @@ namespace aim
 		return current[YAW];
 	}
 
-	float ViewState::CalculateNewPitch(float newPitch)
+	float ViewState::CalculateNewPitch(float newPitch, const Strafe::StrafeInput& strafeInput)
 	{
 		if (set)
 			current[PITCH] = angleChange(newPitch,
 			                             current[PITCH],
 			                             target[PITCH],
-			                             tas_anglespeed.GetFloat(),
+			                             strafeInput.AngleSpeed,
 			                             timedChange,
 			                             ticksLeft,
 			                             false,
@@ -127,10 +127,10 @@ namespace aim
 		return current[PITCH];
 	}
 
-	void ViewState::UpdateView(float& pitch, float& yaw)
+	void ViewState::UpdateView(float& pitch, float& yaw, const Strafe::StrafeInput& strafeInput)
 	{
-		pitch = CalculateNewPitch(pitch);
-		yaw = CalculateNewYaw(yaw);
+		pitch = CalculateNewPitch(pitch, strafeInput);
+		yaw = CalculateNewYaw(yaw, strafeInput);
 
 		if (timedChange && ticksLeft > 0)
 		{

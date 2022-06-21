@@ -12,7 +12,9 @@
 #include "signals.hpp"
 #include "..\overlay\portal_camera.hpp"
 #include "ihud.hpp"
+#include "tas.hpp"
 #include "property_getter.hpp"
+#include "..\strafe\strafestuff.hpp"
 
 #ifdef SSDK2007
 #include "mathlib\vmatrix.h"
@@ -160,8 +162,6 @@ Strafe::MovementVars PlayerIOFeature::GetMovementVars()
 	vars.Gravity = _sv_gravity->GetFloat();
 	vars.Stepsize = _sv_stepsize->GetFloat();
 	vars.Bounce = _sv_bounce->GetFloat();
-	vars.Scale = tas_strafe_scale.GetFloat();
-
 	vars.CantJump = false;
 	// This will report air on the first frame of unducking and report ground on the last one.
 	if (m_bDucking.GetValue() && GetFlagsDucking())
@@ -381,6 +381,19 @@ bool PlayerIOFeature::PlayerIOAddressesFound()
 	       && m_surfaceFriction.Found() && m_hGroundEntity.Found() && ORIG_CreateMove && ORIG_GetButtonBits
 	       && _sv_airaccelerate && _sv_accelerate && _sv_friction && _sv_maxspeed && _sv_stopspeed
 	       && interfaces::engine_server != nullptr;
+}
+
+void PlayerIOFeature::GetMoveInput(float& forwardmove, float& sidemove)
+{
+	if (pCmd)
+	{
+		forwardmove = *reinterpret_cast<float*>(pCmd + offForwardmove);
+		sidemove = *reinterpret_cast<float*>(pCmd + offSidemove);
+	}
+	else
+	{
+		forwardmove = sidemove = 0;
+	}
 }
 
 void PlayerIOFeature::SetTASInput(float* va, const Strafe::ProcessedFrame& _out)

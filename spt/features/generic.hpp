@@ -16,6 +16,7 @@ typedef void(__fastcall* _CViewRender__OnRenderStart)(void* thisptr, int edx);
 typedef const Vector&(__cdecl* _MainViewOrigin)();
 typedef void*(__cdecl* _GetClientModeNormal)();
 typedef void(__fastcall* _AdjustAngles)(void* thisptr, int edx, float frametime);
+typedef void(__fastcall* _ControllerMove)(void* thisptr, int edx, float frametime, void* cmd);
 
 // For hooks used by many features
 class GenericFeature : public FeatureWrapper<GenericFeature>
@@ -27,7 +28,8 @@ public:
 	_FinishRestore ORIG_FinishRestore = nullptr;
 	_MainViewOrigin ORIG_MainViewOrigin = nullptr;
 	_GetClientModeNormal ORIG_GetClientModeNormal = nullptr;
-	_AdjustAngles ORIG_AdjustAngles = nullptr;
+	_ControllerMove ORIG_ControllerMove = nullptr;
+
 	bool shouldPreventNextUnpause = false;
 
 	Vector GetCameraOrigin();
@@ -49,6 +51,7 @@ private:
 	static void __fastcall HOOKED_FinishRestore(void* thisptr, int edx);
 	static void __fastcall HOOKED_SetPaused(void* thisptr, int edx, bool paused);
 	static void __fastcall HOOKED_AdjustAngles(void* thisptr, int edx, float frametime);
+	static void __fastcall HOOKED_ControllerMove(void* thisptr, int edx, float frametime, void* cmd);
 };
 
 extern GenericFeature spt_generic;
