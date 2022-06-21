@@ -20,6 +20,7 @@ namespace Strafe
 
 	struct MovementVars
 	{
+		float Scale;
 		float Accelerate;
 		float Airaccelerate;
 		float EntFriction;

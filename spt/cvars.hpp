@@ -34,6 +34,7 @@ extern ConVar y_spt_vag_trace_portal;
 extern ConVar tas_strafe;
 extern ConVar tas_strafe_type;
 extern ConVar tas_strafe_dir;
+extern ConVar tas_strafe_scale;
 extern ConVar tas_strafe_yaw;
 extern ConVar tas_strafe_buttons;
 extern ConVar tas_strafe_afh;

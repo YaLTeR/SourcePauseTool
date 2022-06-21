@@ -25,6 +25,14 @@ ConVar tas_strafe_dir(
     "3",
     FCVAR_TAS_RESET,
     "TAS strafe dirs:\n\t0 - to the left,\n\t1 - to the right,\n\t3 - to the yaw given in tas_strafe_yaw.");
+ConVar tas_strafe_scale("tas_strafe_scale",
+                        "1",
+                        FCVAR_TAS_RESET,
+                        "Scales TAS input, can be used for partial inputs.\n",
+                        true,
+                        0.0f,
+                        true,
+                        1.0f);
 ConVar tas_strafe_yaw("tas_strafe_yaw", "", FCVAR_TAS_RESET, "Yaw to strafe to with tas_strafe_dir = 3.");
 ConVar tas_strafe_buttons(
     "tas_strafe_buttons",
@@ -285,6 +293,7 @@ void TASFeature::LoadFeature()
 		InitConcommandBase(tas_strafe);
 		InitConcommandBase(tas_strafe_type);
 		InitConcommandBase(tas_strafe_dir);
+		InitConcommandBase(tas_strafe_scale);
 		InitConcommandBase(tas_strafe_yaw);
 		InitConcommandBase(tas_strafe_buttons);
 		InitConcommandBase(tas_strafe_vectorial);

@@ -964,19 +964,19 @@ namespace Strafe
 	{
 		if (out.Forward)
 		{
-			out.ForwardSpeed += vars.Maxspeed;
+			out.ForwardSpeed += vars.Maxspeed * vars.Scale;
 		}
 		if (out.Back)
 		{
-			out.ForwardSpeed -= vars.Maxspeed;
+			out.ForwardSpeed -= vars.Maxspeed * vars.Scale;
 		}
 		if (out.Right)
 		{
-			out.SideSpeed += vars.Maxspeed;
+			out.SideSpeed += vars.Maxspeed * vars.Scale;
 		}
 		if (out.Left)
 		{
-			out.SideSpeed -= vars.Maxspeed;
+			out.SideSpeed -= vars.Maxspeed * vars.Scale;
 		}
 	}
 
@@ -1115,8 +1115,8 @@ namespace Strafe
 			// Set move speeds to match the current yaw to produce the acceleration in direction thetaDeg
 			double thetaDeg = dummy.Yaw;
 			double diff = (out.Yaw - thetaDeg) * M_DEG2RAD;
-			out.ForwardSpeed = static_cast<float>(std::cos(diff) * vars.Maxspeed);
-			out.SideSpeed = static_cast<float>(std::sin(diff) * vars.Maxspeed);
+			out.ForwardSpeed = static_cast<float>(std::cos(diff) * vars.Maxspeed * vars.Scale);
+			out.SideSpeed = static_cast<float>(std::sin(diff) * vars.Maxspeed * vars.Scale);
 			out.Processed = true;
 		}
 	}
