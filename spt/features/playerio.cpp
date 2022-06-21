@@ -160,6 +160,7 @@ Strafe::MovementVars PlayerIOFeature::GetMovementVars()
 	vars.Gravity = _sv_gravity->GetFloat();
 	vars.Stepsize = _sv_stepsize->GetFloat();
 	vars.Bounce = _sv_bounce->GetFloat();
+	vars.Scale = tas_strafe_scale.GetFloat();
 
 	vars.CantJump = false;
 	// This will report air on the first frame of unducking and report ground on the last one.
