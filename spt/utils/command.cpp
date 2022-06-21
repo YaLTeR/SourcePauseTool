@@ -61,11 +61,11 @@ int AutoCompletList::AutoCompletionFileFunc(const char* partial,
 		{
 			if (pch)
 			{
-				completion.push_back(path + p.path().stem().string() + "/");
+				completion.push_back(path + p.path().filename().string() + "/");
 			}
 			else
 			{
-				completion.push_back(p.path().stem().string() + "/");
+				completion.push_back(p.path().filename().string() + "/");
 			}
 		}
 		else if (p.path().extension() == ext)
