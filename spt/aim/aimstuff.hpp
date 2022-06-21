@@ -6,6 +6,8 @@
 #include "mathlib\vector.h"
 #endif
 
+#include "..\strafe\strafestuff.hpp"
+
 namespace aim
 {
 	struct ViewState
@@ -19,9 +21,9 @@ namespace aim
 		bool jumpedLastTick;
 
 		ViewState();
-		float CalculateNewYaw(float newYaw);
-		float CalculateNewPitch(float newPitch);
-		void UpdateView(float& pitch, float& yaw);
+		float CalculateNewYaw(float newYaw, const Strafe::StrafeInput& strafeInput);
+		float CalculateNewPitch(float newPitch, const Strafe::StrafeInput& strafeInput);
+		void UpdateView(float& pitch, float& yaw, const Strafe::StrafeInput& strafeInput);
 		void SetJump();
 	};
 

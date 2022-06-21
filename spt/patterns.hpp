@@ -195,22 +195,6 @@ namespace patterns
 		    "missinginfo1_4_7",
 		    "55 8B EC 83 EC 08 89 4D F8 C7 45 ?? ?? ?? ?? ?? 83 7D 08 00 0F 95 C0 50 68 ?? ?? ?? ?? 8B 0D");
 		PATTERNS(
-		    AdjustAngles,
-		    "5135",
-		    "83 EC 0C D9 44 24 10 56 51 D9 1C 24 8B F1 E8 ?? ?? ?? ?? D9 54 24 14 D9 EE DE D9 DF E0 F6 C4 01 0F 84 90 00 00 00 8B 0D",
-		    "5135-hl2",
-		    "83 EC 0C D9 44 24 10 56 51 D9 1C 24 8B F1 E8 ?? ?? ?? ?? D9 54 24 14 D9 EE DE D9 DF E0 F6 C4 01 74 5D 8B 0D",
-		    "4104",
-		    "83 EC 0C D9 44 24 10 56 51 D9 1C 24 8B F1 E8 ?? ?? ?? ?? D9 54 24 14 D9 EE DE D9 DF E0 F6 C4 01 74 58 8B 0D",
-		    "5339",
-		    "55 8B EC A1 ?? ?? ?? ?? F3 0F 10 4D 08 0F 57 D2 83 EC 0C 83 78 30 00 56 8B F1 74 1F F3 0F 10 46 1C 0F 2F D0",
-		    "2257546",
-		    "55 8B EC A1 ?? ?? ?? ?? 83 EC 0C F3 0F 10 4D 08 0F 57 D2 83 78 30 00 56 8B F1 74 1F F3 0F 10 46 1C 0F 2F D0",
-		    "5377866",
-		    "55 8B EC A1 ?? ?? ?? ?? 83 EC 0C F3 0F 10 4D 08 F3 0F 10 15 ?? ?? ?? ?? 83 78 30 00 56 8B F1 74 1F F3 0F 10 46 1C",
-		    "BMS_Retail",
-		    "55 8B EC 83 EC 0C D9 45 08 56 51 D9 1C 24 8B F1 E8 ?? ?? ?? ?? D9 55 08 D9 EE DF F1 DD D8 73 50 8B 0D ?? ?? ?? ?? 8D 55 F4");
-		PATTERNS(
 		    CreateMove,
 		    "5135",
 		    "83 EC 14 53 D9 EE 55 56 57 8B F9 8B 4C 24 28 B8 B7 60 0B B6 F7 E9 03 D1 C1 FA 06 8B C2 C1 E8 1F 03 D0 6B D2 5A 8B C1 2B C2 8B F0 6B C0 58 03 87",
@@ -326,6 +310,11 @@ namespace patterns
 		         "1910503",
 		         "55 8B EC 81 EC 9C 00 00 00 53 56 8B F1 8B 86 E8 00 00 00 8B 16 57 8D BE E8 00 00 00");
 		PATTERNS(C_BaseAnimating__SetSequence, "5135", "8B 44 24 04 56 8B F1 39 86");
+		PATTERNS(ControllerMove,
+		         "5135",
+		         "56 8B F1 80 BE ?? ?? ?? ?? 00 57 8B 7C 24 ?? 75 ??",
+		         "hls-220622",
+		         "55 8B EC 56 8B F1 57 8B 7D ?? 80 BE ?? ?? ?? ?? 00");
 	} // namespace client
 
 	namespace server

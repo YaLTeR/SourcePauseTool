@@ -2,6 +2,7 @@
 
 #include "..\feature.hpp"
 #include "..\aim\aimstuff.hpp"
+#include "..\strafe\strafestuff.hpp"
 
 typedef struct
 {
@@ -13,7 +14,7 @@ class AimFeature : public FeatureWrapper<AimFeature>
 {
 public:
 	aim::ViewState viewState;
-	void HandleAiming(float* va, bool& yawChanged);
+	void HandleAiming(float* va, bool& yawChanged, const Strafe::StrafeInput& input);
 	bool DoAngleChange(float& angle, float target);
 	void SetPitch(float pitch);
 	void SetYaw(float yaw);

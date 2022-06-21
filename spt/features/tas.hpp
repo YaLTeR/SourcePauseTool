@@ -5,7 +5,7 @@
 class TASFeature : public FeatureWrapper<TASFeature>
 {
 public:
-	void Strafe(float* va, bool yawChanged);
+	void Strafe();
 	bool tasAddressesWereFound = false;
 
 protected:

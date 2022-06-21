@@ -35,6 +35,7 @@ private:
 	static int __fastcall HOOKED_GetButtonBits(void* thisptr, int edx, int bResetState);
 
 public:
+	void GetMoveInput(float& forwardmove, float& sidemove);
 	void SetTASInput(float* va, const Strafe::ProcessedFrame& out);
 	Strafe::MovementVars GetMovementVars();
 	bool GetFlagsDucking();

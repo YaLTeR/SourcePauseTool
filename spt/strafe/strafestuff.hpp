@@ -18,9 +18,21 @@ namespace Strafe
 		int Entity;
 	};
 
+	struct StrafeInput
+	{
+		double TargetYaw;
+		float VectorialOffset;
+		float AngleSpeed;
+		float Scale;
+		bool AFH;
+		bool Vectorial;
+		bool JumpOverride;
+		bool Strafe;
+		int Version;
+	};
+
 	struct MovementVars
 	{
-		float Scale;
 		float Accelerate;
 		float Airaccelerate;
 		float EntFriction;
@@ -125,7 +137,8 @@ namespace Strafe
 	{
 		LEFT = 0,
 		RIGHT = 1,
-		YAW = 3
+		YAW = 3,
+		BUTTONS = 4
 	};
 
 	enum class PositionType
@@ -214,20 +227,20 @@ namespace Strafe
 
 	void StrafeVectorial(PlayerData& player,
 	                     const MovementVars& vars,
+	                     const StrafeInput& strafeInput,
 	                     bool jumped,
 	                     StrafeType type,
 	                     StrafeDir dir,
-	                     double target_yaw,
 	                     double vel_yaw,
 	                     ProcessedFrame& out,
 	                     bool lockCamera);
 
 	bool Strafe(PlayerData& player,
 	            const MovementVars& vars,
+	            const StrafeInput& strafeInput,
 	            bool jumped,
 	            StrafeType type,
 	            StrafeDir dir,
-	            double target_yaw,
 	            double vel_yaw,
 	            ProcessedFrame& out,
 	            const StrafeButtons& strafeButtons,
