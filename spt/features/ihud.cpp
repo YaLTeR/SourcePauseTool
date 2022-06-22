@@ -14,8 +14,8 @@ InputHud spt_ihud;
 ConVar y_spt_ihud("y_spt_ihud", "0", 0, "Draws movement inputs of client.\n");
 ConVar y_spt_ihud_grid_size("y_spt_ihud_grid_size", "60", 0, "Grid size of input HUD.\n");
 ConVar y_spt_ihud_grid_padding("y_spt_ihud_grid_padding", "2", 0, "Padding between grids of input HUD.");
-ConVar y_spt_ihud_x("y_spt_ihud_x", "2", 0, "X offset of input HUD.\n");
-ConVar y_spt_ihud_y("y_spt_ihud_y", "2", 0, "Y offset of input HUD.\n");
+ConVar y_spt_ihud_x("y_spt_ihud_x", "2", 0, "X position of input HUD.\n", true, 0.0f, true, 100.0f);
+ConVar y_spt_ihud_y("y_spt_ihud_y", "2", 0, "Y position of input HUD.\n", true, 0.0f, true, 100.0f);
 
 CON_COMMAND(
     y_spt_ihud_modify,
@@ -35,7 +35,7 @@ CON_COMMAND(
 
 	if (std::strcmp(element, "all") == 0)
 	{
-		for (const auto& kv : spt_ihud.buttonSetting)
+		for (const auto& kv : spt_ihud.buttonSettings)
 		{
 			if (!spt_ihud.ModifySetting(kv.first.c_str(), param, value))
 			{
@@ -68,124 +68,124 @@ CON_COMMAND_AUTOCOMPLETE(y_spt_ihud_preset,
 	if (std::strcmp(preset, "normal") == 0)
 	{
 		spt_ihud.tasPreset = false;
-		InputHud::Button* button = &spt_ihud.buttonSetting["forward"];
-		button->enabled = true;
-		button->x = 0;
-		button->y = 2;
-		button->width = 1;
-		button->hight = 1;
-		button = &spt_ihud.buttonSetting["use"];
-		button->enabled = true;
-		button->x = 0;
-		button->y = 3;
-		button->width = 1;
-		button->hight = 1;
-		button = &spt_ihud.buttonSetting["moveleft"];
-		button->enabled = true;
-		button->x = 1;
-		button->y = 1;
-		button->width = 1;
-		button->hight = 1;
-		button = &spt_ihud.buttonSetting["back"];
-		button->enabled = true;
-		button->x = 1;
-		button->y = 2;
-		button->width = 1;
-		button->hight = 1;
-		button = &spt_ihud.buttonSetting["moveright"];
-		button->enabled = true;
-		button->x = 1;
-		button->y = 3;
-		button->width = 1;
-		button->hight = 1;
-		button = &spt_ihud.buttonSetting["duck"];
+		InputHud::Button* button = &spt_ihud.buttonSettings["forward"];
 		button->enabled = true;
 		button->x = 2;
 		button->y = 0;
 		button->width = 1;
-		button->hight = 1;
-		button = &spt_ihud.buttonSetting["jump"];
+		button->height = 1;
+		button = &spt_ihud.buttonSettings["use"];
+		button->enabled = true;
+		button->x = 3;
+		button->y = 0;
+		button->width = 1;
+		button->height = 1;
+		button = &spt_ihud.buttonSettings["moveleft"];
+		button->enabled = true;
+		button->x = 1;
+		button->y = 1;
+		button->width = 1;
+		button->height = 1;
+		button = &spt_ihud.buttonSettings["back"];
 		button->enabled = true;
 		button->x = 2;
 		button->y = 1;
+		button->width = 1;
+		button->height = 1;
+		button = &spt_ihud.buttonSettings["moveright"];
+		button->enabled = true;
+		button->x = 3;
+		button->y = 1;
+		button->width = 1;
+		button->height = 1;
+		button = &spt_ihud.buttonSettings["duck"];
+		button->enabled = true;
+		button->x = 0;
+		button->y = 2;
+		button->width = 1;
+		button->height = 1;
+		button = &spt_ihud.buttonSettings["jump"];
+		button->enabled = true;
+		button->x = 1;
+		button->y = 2;
 		button->width = 3;
-		button->hight = 1;
-		button = &spt_ihud.buttonSetting["attack"];
+		button->height = 1;
+		button = &spt_ihud.buttonSettings["attack"];
 		button->enabled = true;
-		button->x = 2;
-		button->y = 4;
+		button->x = 4;
+		button->y = 2;
 		button->width = 1;
-		button->hight = 1;
-		button = &spt_ihud.buttonSetting["attack2"];
+		button->height = 1;
+		button = &spt_ihud.buttonSettings["attack2"];
 		button->enabled = true;
-		button->x = 2;
-		button->y = 5;
+		button->x = 5;
+		button->y = 2;
 		button->width = 1;
-		button->hight = 1;
+		button->height = 1;
 
 		spt_ihud.anglesSetting.enabled = false;
 	}
 	else if (std::strcmp(preset, "normal_mouse") == 0)
 	{
 		spt_ihud.tasPreset = false;
-		InputHud::Button* button = &spt_ihud.buttonSetting["forward"];
-		button->enabled = true;
-		button->x = 0;
-		button->y = 1;
-		button->width = 1;
-		button->hight = 1;
-		button = &spt_ihud.buttonSetting["use"];
-		button->enabled = true;
-		button->x = 0;
-		button->y = 2;
-		button->width = 1;
-		button->hight = 1;
-		button = &spt_ihud.buttonSetting["moveleft"];
+		InputHud::Button* button = &spt_ihud.buttonSettings["forward"];
 		button->enabled = true;
 		button->x = 1;
 		button->y = 0;
 		button->width = 1;
-		button->hight = 1;
-		button = &spt_ihud.buttonSetting["back"];
-		button->enabled = true;
-		button->x = 1;
-		button->y = 1;
-		button->width = 1;
-		button->hight = 1;
-		button = &spt_ihud.buttonSetting["moveright"];
-		button->enabled = true;
-		button->x = 1;
-		button->y = 2;
-		button->width = 1;
-		button->hight = 1;
-		button = &spt_ihud.buttonSetting["duck"];
+		button->height = 1;
+		button = &spt_ihud.buttonSettings["use"];
 		button->enabled = true;
 		button->x = 2;
 		button->y = 0;
 		button->width = 1;
-		button->hight = 1;
-		button = &spt_ihud.buttonSetting["jump"];
+		button->height = 1;
+		button = &spt_ihud.buttonSettings["moveleft"];
+		button->enabled = true;
+		button->x = 0;
+		button->y = 1;
+		button->width = 1;
+		button->height = 1;
+		button = &spt_ihud.buttonSettings["back"];
+		button->enabled = true;
+		button->x = 1;
+		button->y = 1;
+		button->width = 1;
+		button->height = 1;
+		button = &spt_ihud.buttonSettings["moveright"];
 		button->enabled = true;
 		button->x = 2;
 		button->y = 1;
+		button->width = 1;
+		button->height = 1;
+		button = &spt_ihud.buttonSettings["duck"];
+		button->enabled = true;
+		button->x = 0;
+		button->y = 2;
+		button->width = 1;
+		button->height = 1;
+		button = &spt_ihud.buttonSettings["jump"];
+		button->enabled = true;
+		button->x = 1;
+		button->y = 2;
 		button->width = 2;
-		button->hight = 1;
-		button = &spt_ihud.buttonSetting["attack"];
+		button->height = 1;
+		button = &spt_ihud.buttonSettings["attack"];
 		button->enabled = true;
-		button->x = 0;
-		button->y = 4;
+		button->x = 4;
+		button->y = 0;
 		button->width = 1;
-		button->hight = 1;
-		button = &spt_ihud.buttonSetting["attack2"];
+		button->height = 1;
+		button = &spt_ihud.buttonSettings["attack2"];
 		button->enabled = true;
-		button->x = 0;
-		button->y = 5;
+		button->x = 5;
+		button->y = 0;
 		button->width = 1;
-		button->hight = 1;
+		button->height = 1;
 
 		spt_ihud.anglesSetting.enabled = true;
-		spt_ihud.anglesSetting.x = 1;
-		spt_ihud.anglesSetting.y = 4;
+		spt_ihud.anglesSetting.x = 4;
+		spt_ihud.anglesSetting.y = 1;
 	}
 	else if (std::strcmp(preset, "tas") == 0)
 	{
@@ -224,6 +224,7 @@ void InputHud::LoadFeature()
 		InitConcommandBase(y_spt_ihud_x);
 		InitConcommandBase(y_spt_ihud_y);
 	}
+
 	Color background = {0, 0, 0, 233};
 	Color highlight = {255, 255, 255, 66};
 	Color textcolor = {255, 255, 255, 66};
@@ -240,24 +241,24 @@ void InputHud::LoadFeature()
 	const int IN_MOVERIGHT = (1 << 10);
 	const int IN_ATTACK2 = (1 << 11);
 
-	buttonSetting["forward"] =
-	    {true, L"W", font, 0, 2, 1, 1, background, highlight, textcolor, texthighlight, IN_FORWARD};
-	buttonSetting["use"] = {true, L"E", font, 0, 3, 1, 1, background, highlight, textcolor, texthighlight, IN_USE};
-	buttonSetting["moveleft"] =
+	buttonSettings["forward"] =
+	    {true, L"W", font, 2, 0, 1, 1, background, highlight, textcolor, texthighlight, IN_FORWARD};
+	buttonSettings["use"] = {true, L"E", font, 3, 0, 1, 1, background, highlight, textcolor, texthighlight, IN_USE};
+	buttonSettings["moveleft"] =
 	    {true, L"A", font, 1, 1, 1, 1, background, highlight, textcolor, texthighlight, IN_MOVELEFT};
-	buttonSetting["back"] =
-	    {true, L"S", font, 1, 2, 1, 1, background, highlight, textcolor, texthighlight, IN_BACK};
-	buttonSetting["moveright"] =
-	    {true, L"D", font, 1, 3, 1, 1, background, highlight, textcolor, texthighlight, IN_MOVERIGHT};
-	buttonSetting["duck"] =
-	    {true, L"Duck", font, 2, 0, 1, 1, background, highlight, textcolor, texthighlight, IN_DUCK};
-	buttonSetting["jump"] =
-	    {true, L"Jump", font, 2, 1, 3, 1, background, highlight, textcolor, texthighlight, IN_JUMP};
-	buttonSetting["attack"] =
-	    {true, L"L", font, 2, 4, 1, 1, background, highlight, textcolor, texthighlight, IN_ATTACK};
-	buttonSetting["attack2"] =
-	    {true, L"R", font, 2, 5, 1, 1, background, highlight, textcolor, texthighlight, IN_ATTACK2};
-	anglesSetting = {false, L"", font, 1, 4, 0, 0, background, highlight, textcolor, texthighlight, 0};
+	buttonSettings["back"] =
+	    {true, L"S", font, 2, 1, 1, 1, background, highlight, textcolor, texthighlight, IN_BACK};
+	buttonSettings["moveright"] =
+	    {true, L"D", font, 3, 1, 1, 1, background, highlight, textcolor, texthighlight, IN_MOVERIGHT};
+	buttonSettings["duck"] =
+	    {true, L"Duck", font, 0, 2, 1, 1, background, highlight, textcolor, texthighlight, IN_DUCK};
+	buttonSettings["jump"] =
+	    {true, L"Jump", font, 1, 2, 3, 1, background, highlight, textcolor, texthighlight, IN_JUMP};
+	buttonSettings["attack"] =
+	    {true, L"L", font, 4, 2, 1, 1, background, highlight, textcolor, texthighlight, IN_ATTACK};
+	buttonSettings["attack2"] =
+	    {true, L"R", font, 5, 2, 1, 1, background, highlight, textcolor, texthighlight, IN_ATTACK2};
+	anglesSetting = {false, L"", font, 4, 1, 0, 0, background, highlight, textcolor, texthighlight, 0};
 }
 
 void InputHud::PreHook()
@@ -290,9 +291,9 @@ bool InputHud::ModifySetting(const char* element, const char* param, const char*
 		angle = true;
 		target = &anglesSetting;
 	}
-	else if (buttonSetting.find(element) != buttonSetting.end())
+	else if (buttonSettings.find(element) != buttonSettings.end())
 	{
-		target = &buttonSetting[element];
+		target = &buttonSettings[element];
 	}
 	else
 	{
@@ -343,7 +344,7 @@ bool InputHud::ModifySetting(const char* element, const char* param, const char*
 			Msg("angles height has no effect\n");
 			return true;
 		}
-		target->hight = std::atoi(value);
+		target->height = std::atoi(value);
 	}
 	else if (std::strcmp(param, "background") == 0)
 	{
@@ -393,11 +394,45 @@ Color InputHud::StringToColor(const char* color)
 	return Color(r, g, b, a);
 }
 
+void InputHud::GetCurrentSize(int& x, int& y)
+{
+	int gridWidth = 0;
+	int gridHeight = 0;
+
+	int gridSize = y_spt_ihud_grid_size.GetInt();
+	int padding = y_spt_ihud_grid_padding.GetInt();
+
+	if (tasPreset)
+	{
+		gridWidth = 10;
+		gridHeight = 6;
+		gridSize /= 2;
+	}
+	else
+	{
+		for (const auto& kv : buttonSettings)
+		{
+			auto button = kv.second;
+			if (!button.enabled)
+				continue;
+			gridWidth = std::max(gridWidth, button.x + button.width);
+			gridHeight = std::max(gridHeight, button.y + button.height);
+		}
+		if (anglesSetting.enabled)
+		{
+			gridWidth = std::max(gridWidth, anglesSetting.x + 2);
+			gridHeight = std::max(gridHeight, anglesSetting.y + 2);
+		}
+	}
+	x = gridWidth * gridSize + std::max(0, gridWidth - 1) * padding;
+	y = gridHeight * gridSize + std::max(0, gridHeight - 1) * padding;
+}
+
 void InputHud::DrawInputHud()
 {
-	vgui::HFont angleSettingsFont;
+	vgui::HFont anglesSettingFont;
 
-	if (!spt_hud.GetFont(anglesSetting.font, angleSettingsFont))
+	if (!spt_hud.GetFont(anglesSetting.font, anglesSettingFont))
 	{
 		return;
 	}
@@ -410,10 +445,15 @@ void InputHud::DrawInputHud()
 		currentAng = Vector(va[0], va[1], va[3]);
 		awaitingFrameDraw = false;
 	}
+
 	surface = spt_hud.surface;
 
-	xOffset = y_spt_ihud_x.GetInt();
-	yOffset = y_spt_ihud_y.GetInt();
+	// get offset from percentage
+	int ihudSizeX, ihudSizeY;
+	GetCurrentSize(ihudSizeX, ihudSizeY);
+	xOffset = (spt_hud.screen->width - ihudSizeX) * y_spt_ihud_x.GetFloat() * 0.01f;
+	yOffset = (spt_hud.screen->height - ihudSizeY) * y_spt_ihud_y.GetFloat() * 0.01f;
+
 	gridSize = y_spt_ihud_grid_size.GetInt();
 	padding = y_spt_ihud_grid_padding.GetInt();
 
@@ -467,8 +507,8 @@ void InputHud::DrawInputHud()
 			                        xOffset + 10 * (gridSize + padding) - padding,
 			                        yOffset + 5 * (gridSize + padding) - padding);
 
-			int th = surface->GetFontTall(angleSettingsFont);
-			surface->DrawSetTextFont(angleSettingsFont);
+			int th = surface->GetFontTall(anglesSettingFont);
+			surface->DrawSetTextFont(anglesSettingFont);
 			surface->DrawSetTextColor(anglesSetting.textcolor);
 			wchar_t* text = L"move analog";
 			surface->DrawSetTextPos(cX1 - r, cY1 - r - th);
@@ -493,50 +533,50 @@ void InputHud::DrawInputHud()
 			surface->DrawLine(cX2, cY2 - r, cX2, cY2 + r);
 			surface->DrawLine(cX2, cY2, angX, angY);
 
-			Button button = buttonSetting["duck"];
+			Button button = buttonSettings["duck"];
 			button.enabled = true;
-			button.x = 5;
-			button.y = 0;
+			button.x = 0;
+			button.y = 5;
 			button.width = 2;
-			button.hight = 1;
+			button.height = 1;
 			button.text = L"Duck";
 			DrawButton(button);
-			button = buttonSetting["use"];
+			button = buttonSettings["use"];
 			button.enabled = true;
-			button.x = 5;
-			button.y = 2;
+			button.x = 2;
+			button.y = 5;
 			button.width = 2;
-			button.hight = 1;
+			button.height = 1;
 			button.text = L"Use";
 			DrawButton(button);
-			button = buttonSetting["jump"];
+			button = buttonSettings["jump"];
 			button.enabled = true;
-			button.x = 5;
-			button.y = 4;
+			button.x = 4;
+			button.y = 5;
 			button.width = 2;
-			button.hight = 1;
+			button.height = 1;
 			button.text = L"Jump";
 			DrawButton(button);
-			button = buttonSetting["attack"];
+			button = buttonSettings["attack"];
 			button.enabled = true;
-			button.x = 5;
-			button.y = 6;
+			button.x = 6;
+			button.y = 5;
 			button.width = 2;
-			button.hight = 1;
+			button.height = 1;
 			button.text = L"Blue";
 			DrawButton(button);
-			button = buttonSetting["attack2"];
+			button = buttonSettings["attack2"];
 			button.enabled = true;
-			button.x = 5;
-			button.y = 8;
+			button.x = 8;
+			button.y = 5;
 			button.width = 2;
-			button.hight = 1;
+			button.height = 1;
 			button.text = L"Orange";
 			DrawButton(button);
 		}
 		else
 		{
-			for (const auto& kv : buttonSetting)
+			for (const auto& kv : buttonSettings)
 			{
 				DrawButton(kv.second);
 			}
@@ -545,16 +585,16 @@ void InputHud::DrawInputHud()
 			if (anglesSetting.enabled)
 			{
 				int r = gridSize;
-				int cX = xOffset + (anglesSetting.y + 1) * (gridSize + padding) - padding / 2;
-				int cY = yOffset + (anglesSetting.x + 1) * (gridSize + padding) - padding / 2;
+				int cX = xOffset + (anglesSetting.x + 1) * (gridSize + padding) - padding / 2;
+				int cY = yOffset + (anglesSetting.y + 1) * (gridSize + padding) - padding / 2;
 				int angX = cX + r * ang.x;
 				int angY = cY + r * ang.y;
 				surface->DrawSetColor(anglesSetting.background);
-				surface->DrawFilledRect(xOffset + anglesSetting.y * (gridSize + padding),
-				                        yOffset + anglesSetting.x * (gridSize + padding),
-				                        xOffset + (anglesSetting.y + 2) * (gridSize + padding)
+				surface->DrawFilledRect(xOffset + anglesSetting.x * (gridSize + padding),
+				                        yOffset + anglesSetting.y * (gridSize + padding),
+				                        xOffset + (anglesSetting.x + 2) * (gridSize + padding)
 				                            - padding,
-				                        yOffset + (anglesSetting.x + 2) * (gridSize + padding)
+				                        yOffset + (anglesSetting.y + 2) * (gridSize + padding)
 				                            - padding);
 
 				int joyStickSize = gridSize / 10;
@@ -604,10 +644,10 @@ void InputHud::DrawButton(Button button)
 		return;
 	bool state = buttonBits & button.mask;
 	DrawRectAndCenterTxt(state ? button.highlight : button.background,
-	                     xOffset + button.y * (gridSize + padding),
-	                     yOffset + button.x * (gridSize + padding),
-	                     xOffset + (button.y + button.width) * (gridSize + padding) - padding,
-	                     yOffset + (button.x + button.hight) * (gridSize + padding) - padding,
+	                     xOffset + button.x * (gridSize + padding),
+	                     yOffset + button.y * (gridSize + padding),
+	                     xOffset + (button.x + button.width) * (gridSize + padding) - padding,
+	                     yOffset + (button.y + button.height) * (gridSize + padding) - padding,
 	                     button.font,
 	                     state ? button.texthighlight : button.textcolor,
 	                     button.text.c_str());

@@ -30,7 +30,7 @@ public:
 		int x;
 		int y;
 		int width;
-		int hight;
+		int height;
 		Color background;
 		Color highlight;
 		Color textcolor;
@@ -38,7 +38,7 @@ public:
 		int mask;
 	};
 	bool tasPreset = false;
-	std::map<std::string, Button> buttonSetting;
+	std::map<std::string, Button> buttonSettings;
 	Button anglesSetting;
 
 protected:
@@ -69,6 +69,7 @@ private:
 	                          const wchar_t* text);
 	void DrawButton(Button button);
 	Color StringToColor(const char* hex);
+	void GetCurrentSize(int& x, int& y);
 
 	IMatSystemSurface* surface;
 
