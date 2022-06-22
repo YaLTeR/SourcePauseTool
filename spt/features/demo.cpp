@@ -209,9 +209,12 @@ void __fastcall DemoStuff::HOOKED_SetSignonState(void* thisptr, int edx, int sta
 
 void __cdecl DemoStuff::HOOKED_Stop()
 {
-	spt_demostuff.isAutoRecordingDemo = false;
-	spt_demostuff.currentAutoRecordDemoNumber = 1;
-	spt_demostuff.ORIG_Stop();
+	if (spt_demostuff.ORIG_Stop)
+	{
+		spt_demostuff.isAutoRecordingDemo = false;
+		spt_demostuff.currentAutoRecordDemoNumber = 1;
+		spt_demostuff.ORIG_Stop();
+	}
 }
 
 void DemoStuff::OnTick()
