@@ -45,14 +45,17 @@ protected:
 };
 
 static ISGFeature spt_isg;
-CON_COMMAND_F(y_spt_set_isg,
-              "Sets the state of ISG in the game (1 or 0), no arguments means 1",
-              FCVAR_DONTRECORD | FCVAR_CHEAT)
+CON_COMMAND_F(y_spt_set_isg, "Sets the state of ISG in the game (1 or 0)", FCVAR_DONTRECORD | FCVAR_CHEAT)
 {
+	if (args.ArgC() < 2)
+	{
+		Warning("%s - %s\n", y_spt_set_isg_command.GetName(), y_spt_set_isg_command.GetHelpText());
+		return;
+	}
 	if (spt_isg.isgFlagPtr)
-		*spt_isg.isgFlagPtr = args.ArgC() == 1 || atoi(args[1]);
+		*spt_isg.isgFlagPtr = atoi(args[1]);
 	else
-		Warning("y_spt_set_isg has no effect\n");
+		Warning("%s has no effect\n", y_spt_set_isg_command.GetName());
 }
 
 bool IsISGActive()
