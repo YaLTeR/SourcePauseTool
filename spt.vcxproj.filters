@@ -238,6 +238,9 @@
     <ClCompile Include="spt\utils\command.cpp">
       <Filter>spt\utils</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\camera.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -515,6 +518,9 @@
     </ClInclude>
     <ClInclude Include="spt\utils\command.hpp">
       <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\camera.hpp">
+      <Filter>spt\features</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

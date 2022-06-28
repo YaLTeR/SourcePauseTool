@@ -1132,6 +1132,7 @@
     <ClCompile Include="spt\features\afterframes.cpp" />
     <ClCompile Include="spt\features\aim.cpp" />
     <ClCompile Include="spt\features\autojump.cpp" />
+    <ClCompile Include="spt\features\camera.cpp" />
     <ClCompile Include="spt\features\cvar.cpp" />
     <ClCompile Include="spt\features\demo.cpp" />
     <ClCompile Include="spt\features\dmomm.cpp" />
@@ -1345,6 +1346,7 @@
     <ClInclude Include="spt\features\afterframes.hpp" />
     <ClInclude Include="spt\features\aim.hpp" />
     <ClInclude Include="spt\features\autojump.hpp" />
+    <ClInclude Include="spt\features\camera.hpp" />
     <ClInclude Include="spt\features\demo.hpp" />
     <ClInclude Include="spt\features\ent_props.hpp" />
     <ClInclude Include="spt\features\generic.hpp" />

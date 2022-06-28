@@ -1,6 +1,8 @@
 #include "stdafx.h"
+
 #include "..\feature.hpp"
 #include "convar.hpp"
+#include "ent_utils.hpp"
 #include "dbg.h"
 
 typedef void(__cdecl* _DoImageSpaceMotionBlur)(void* view, int x, int y, int w, int h);
@@ -18,11 +20,13 @@ ConVar y_spt_disable_tone_map_reset(
     FCVAR_ARCHIVE,
     "Prevents the tone map getting reset (during each load), useful for keeping colors the same between demos.");
 
+#ifndef OE
 // Implemented as a fix for https://github.com/MattMcNam/SetSequence
 ConVar y_spt_override_tpose("y_spt_override_tpose",
                             "0",
                             FCVAR_DONTRECORD,
                             "Override Chell's t-pose animation with the given sequence, use 17 for standing in air.");
+#endif
 
 // Misc visual fixes
 class VisualFixes : public FeatureWrapper<VisualFixes>
@@ -43,13 +47,16 @@ private:
 	_CViewEffects__Fade ORIG_CViewEffects__Fade = nullptr;
 	_CViewEffects__Shake ORIG_CViewEffects__Shake = nullptr;
 	_ResetToneMapping ORIG_ResetToneMapping = nullptr;
-	_C_BaseAnimating__SetSequence ORIG_C_BaseAnimating__SetSequence = nullptr;
 
 	static void __cdecl HOOKED_DoImageSpaceMotionBlur(void* view, int x, int y, int w, int h);
 	static void __fastcall HOOKED_CViewEffects__Fade(void* thisptr, int edx, void* data);
 	static void __fastcall HOOKED_CViewEffects__Shake(void* thisptr, int edx, void* data);
 	static void __cdecl HOOKED_ResetToneMapping(float value);
+
+#ifndef OE
+	_C_BaseAnimating__SetSequence ORIG_C_BaseAnimating__SetSequence = nullptr;
 	static void __fastcall HOOKED_C_BaseAnimating__SetSequence(void* thisptr, int edx, int nSequence);
+#endif
 };
 
 static VisualFixes spt_visual_fixes;
@@ -65,7 +72,9 @@ void VisualFixes::InitHooks()
 	HOOK_FUNCTION(client, CViewEffects__Fade);
 	HOOK_FUNCTION(client, CViewEffects__Shake);
 	HOOK_FUNCTION(client, ResetToneMapping);
+#ifndef OE
 	HOOK_FUNCTION(client, C_BaseAnimating__SetSequence);
+#endif
 }
 
 void VisualFixes::LoadFeature()
@@ -114,8 +123,10 @@ void VisualFixes::LoadFeature()
 	if (ORIG_ResetToneMapping)
 		InitConcommandBase(y_spt_disable_tone_map_reset);
 
+#ifndef OE
 	if (ORIG_C_BaseAnimating__SetSequence)
 		InitConcommandBase(y_spt_override_tpose);
+#endif
 }
 
 void VisualFixes::UnloadFeature() {}
@@ -169,9 +180,11 @@ void __cdecl VisualFixes::HOOKED_ResetToneMapping(float value)
 		spt_visual_fixes.ORIG_ResetToneMapping(value);
 }
 
+#ifndef OE
 void __fastcall VisualFixes::HOOKED_C_BaseAnimating__SetSequence(void* thisptr, int edx, int nSequence)
 {
-	if (nSequence == 0) // t-pose
+	if (nSequence == 0 && thisptr == utils::GetPlayer()) // t-pose player
 		nSequence = y_spt_override_tpose.GetInt();
 	spt_visual_fixes.ORIG_C_BaseAnimating__SetSequence(thisptr, edx, nSequence);
 }
+#endif

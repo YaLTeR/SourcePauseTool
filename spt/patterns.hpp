@@ -208,10 +208,7 @@ namespace patterns
 		    "55 8B EC 83 EC 50 53 8B 5D 08 B8 ?? ?? ?? ?? F7 EB 56 03 D3 C1 FA 06 8B C2 C1 E8 1F 03 C2 8B D3",
 		    "BMS-Retail",
 		    "55 8B EC 83 EC 54 53 56 8B 75 08 B8 ?? ?? ?? ?? F7 EE 57 03 D6 8B F9 C1 FA 06 8B CE 8B C2 C1 E8 1F 03 C2 6B C0 5A");
-		PATTERNS(
-		    DecodeUserCmdFromBuffer,
-		    "5135",
-		    "83 ec 54 33 c0 d9 ee 89 44 24 40 d9 54 24 0c 89 44 24 44 d9 54 24 10 89 44 24 48 d9 54 24 14 89 44 24 50 d9 54 24 18 89 44 24 04");
+		PATTERNS(DecodeUserCmdFromBuffer, "5135", "83 EC 54 33 C0 D9 EE 89 44 24 ?? D9 54 24 ?? 89 44 24 ??");
 		PATTERNS(
 		    MiddleOfCAM_Think,
 		    "5135",
@@ -309,12 +306,47 @@ namespace patterns
 		         "55 8B EC 83 EC 34 53 8B D9 8B 83 94 00 00 00 8B 13 56 8D B3 94 00 00 00",
 		         "1910503",
 		         "55 8B EC 81 EC 9C 00 00 00 53 56 8B F1 8B 86 E8 00 00 00 8B 16 57 8D BE E8 00 00 00");
-		PATTERNS(C_BaseAnimating__SetSequence, "5135", "8B 44 24 04 56 8B F1 39 86");
 		PATTERNS(ControllerMove,
 		         "5135",
 		         "56 8B F1 80 BE ?? ?? ?? ?? 00 57 8B 7C 24 ?? 75 ??",
 		         "hls-220622",
 		         "55 8B EC 56 8B F1 57 8B 7D ?? 80 BE ?? ?? ?? ?? 00");
+		PATTERNS(C_BaseAnimating__SetSequence,
+		         "5135",
+		         "8B 44 24 04 56 8B F1 39 86",
+		         "7197370",
+		         "55 8B EC 8B 45 ?? 56 8B F1 39 86 ?? ?? ?? ?? 74 ?? 6A 08");
+		PATTERNS(ClientModeShared__OverrideView,
+		         "5135",
+		         "83 EC 58 E8 ?? ?? ?? ?? 85 C0 0F 84 ?? ?? ?? ?? 8B 10 56 8B 74 24 ?? 8B C8",
+		         "3420",
+		         "83 EC 40 E8 ?? ?? ?? ?? 85 C0 0F 84 ?? ?? ?? ?? 8B 10 56 8B 74 24 ?? 8B C8",
+		         "1910503",
+		         "55 8B EC 83 EC 58 E8 ?? ?? ?? ?? 85 C0 0F 84 ?? ?? ?? ?? 8B 10 56 8B 75 ?? 8B C8",
+		         "7197370",
+		         "55 8B EC 83 EC 58 E8 ?? ?? ?? ?? 85 C0 0F 84 ?? ?? ?? ?? 8B 10 8B C8 56");
+		PATTERNS(ClientModeShared__CreateMove,
+		         "5135",
+		         "E8 ?? ?? ?? ?? 85 C0 75 ?? B0 01 C2 08 00 8B 4C 24 ?? D9 44 24 ?? 8B 10",
+		         "1910503",
+		         "55 8B EC E8 ?? ?? ?? ?? 85 C0 75 ?? B0 01 5D C2 08 00 8B 4D ?? 8B 10",
+		         "7197370",
+		         "55 8B EC E8 ?? ?? ?? ?? 8B C8 85 C9 75 ?? B0 01 5D C2 08 00 8B 01");
+		PATTERNS(
+		    C_BasePlayer__ShouldDrawLocalPlayer,
+		    "5135",
+		    "8B 0D ?? ?? ?? ?? 8B 01 8B 50 ?? FF D2 85 C0 75 ?? E8 ?? ?? ?? ?? 84 C0 74 ?? E8 ?? ?? ?? ?? 84 C0 75 ?? 33 C0",
+		    "7197370",
+		    "8B 0D ?? ?? ?? ?? 85 C9 74 ?? 8B 01 8B 40 ?? FF D0 84 C0 74 ?? A1 ?? ?? ?? ?? A8 01");
+		PATTERNS(C_BasePlayer__ShouldDrawThisPlayer,
+		         "7197370",
+		         "E8 ?? ?? ?? ?? 84 C0 75 ?? B0 01 C3 8B 0D ?? ?? ?? ?? 85 C9 74 ?? 8B 01");
+		PATTERNS(
+		    CInput__MouseMove,
+		    "5135",
+		    "83 EC 14 56 8B F1 8B 0D ?? ?? ?? ?? 8B 01 8B 40 ?? 8D 54 24 ?? 52 FF D0 8B CE E8 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 8B 11",
+		    "7197370",
+		    "55 8B EC 83 EC 1C 8D 55 ?? 56 8B F1 8B 0D ?? ?? ?? ?? 52 8B 01 FF 50 ?? 8B CE E8 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 8B 01");
 	} // namespace client
 
 	namespace server
