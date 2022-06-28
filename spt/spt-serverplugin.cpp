@@ -30,6 +30,8 @@
 #include "vgui\iinput.h"
 #include "vgui\isystem.h"
 #include "vgui\ivgui.h"
+#include "ienginevgui.h"
+#include "inputsystem\iinputsystem.h"
 #include "SDK\hl_movedata.h"
 #include "SDK\igamemovement.h"
 #include "interfaces.hpp"
@@ -51,8 +53,11 @@ namespace interfaces
 	IVEngineServer* engine_server = nullptr;
 	IMatSystemSurface* surface = nullptr;
 	vgui::ISchemeManager* scheme = nullptr;
+	vgui::IInput* vgui_input = nullptr;
+	IEngineVGui* engine_vgui = nullptr;
 	IVDebugOverlay* debugOverlay = nullptr;
 	IMaterialSystem* materialSystem = nullptr;
+	IInputSystem* inputSystem = nullptr;
 	ICvar* g_pCVar = nullptr;
 	void* gm = nullptr;
 	IClientEntityList* entList;
@@ -72,6 +77,7 @@ ConVar* _sv_stepsize = nullptr;
 ConVar* _sv_gravity = nullptr;
 ConVar* _sv_maxvelocity = nullptr;
 ConVar* _sv_bounce = nullptr;
+ConVar* _sv_cheats = nullptr;
 
 // useful helper func
 inline bool FStrEq(const char* sz1, const char* sz2)
@@ -154,6 +160,9 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	interfaces::engine_server = (IVEngineServer*)interfaceFactory(INTERFACEVERSION_VENGINESERVER, NULL);
 	interfaces::debugOverlay = (IVDebugOverlay*)interfaceFactory(VDEBUG_OVERLAY_INTERFACE_VERSION, NULL);
 	interfaces::materialSystem = (IMaterialSystem*)interfaceFactory(MATERIAL_SYSTEM_INTERFACE_VERSION, NULL);
+	interfaces::engine_vgui = (IEngineVGui*)interfaceFactory(VENGINE_VGUI_VERSION, NULL);
+	interfaces::vgui_input = (vgui::IInput*)interfaceFactory(VGUI_INPUT_INTERFACE_VERSION, NULL);
+	interfaces::inputSystem = (IInputSystem*)interfaceFactory(INPUTSYSTEM_INTERFACE_VERSION, NULL);
 
 	auto clientFactory = Sys_GetFactory("client");
 	interfaces::entList = (IClientEntityList*)clientFactory(VCLIENTENTITYLIST_INTERFACE_VERSION, NULL);
@@ -189,6 +198,7 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 		GETCVAR(sv_gravity);
 		GETCVAR(sv_maxvelocity);
 		GETCVAR(sv_bounce);
+		GETCVAR(sv_cheats)
 		GETCMD(record);
 		GETCMD(stop);
 	}
@@ -245,6 +255,15 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 
 	if (!interfaces::materialSystem)
 		DevWarning("SPT: Failed to get the material system interface.\n");
+
+	if (!interfaces::engine_vgui)
+		DevWarning("SPT: Failed to get the engine vgui interface.\n");
+
+	if (!interfaces::vgui_input)
+		DevWarning("SPT: Failed to get the vgui input interface.\n");
+
+	if (!interfaces::inputSystem)
+		DevWarning("SPT: Failed to get the input system interface.\n");
 
 	if (!interfaces::entList)
 		DevWarning("Unable to retrieve entitylist interface.\n");

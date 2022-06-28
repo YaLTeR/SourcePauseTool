@@ -30,6 +30,8 @@ extern ConVar y_spt_vag_search_portal;
 extern ConVar y_spt_vag_trace;
 extern ConVar y_spt_vag_target;
 extern ConVar y_spt_vag_trace_portal;
+extern ConVar y_spt_cam_control;
+extern ConVar y_spt_cam_drive;
 
 extern ConVar tas_strafe;
 extern ConVar tas_strafe_type;
@@ -127,3 +129,4 @@ extern ConVar* _sv_stepsize;
 extern ConVar* _sv_gravity;
 extern ConVar* _sv_maxvelocity;
 extern ConVar* _sv_bounce;
+extern ConVar* _sv_cheats;
