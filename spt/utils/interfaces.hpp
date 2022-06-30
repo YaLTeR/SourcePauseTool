@@ -17,6 +17,7 @@ namespace interfaces
 {
 	extern std::unique_ptr<EngineClientWrapper> engine;
 	extern IVEngineServer* engine_server;
+	extern IVEngineClient* engine_client;
 	extern IMatSystemSurface* surface;
 	extern vgui::ISchemeManager* scheme;
 	extern vgui::IInput* vgui_input;

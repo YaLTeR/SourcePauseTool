@@ -2,7 +2,6 @@
 #include "camera.hpp"
 #include "playerio.hpp"
 #include "interfaces.hpp"
-#include "ent_utils.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "..\cvars.hpp"
 
@@ -16,15 +15,17 @@
 
 Camera spt_camera;
 
-ConVar y_spt_cam_control("y_spt_cam_control",
-                         "0",
-                         FCVAR_CHEAT,
-                         "Camera is separated and can be controlled by user input. (Require sv_cheats 1)\n");
+ConVar y_spt_cam_control(
+    "y_spt_cam_control",
+    "0",
+    FCVAR_CHEAT,
+    "Camera is separated and can be controlled by user input. (Requires sv_cheats 1 if not playing demo)\n");
 ConVar y_spt_cam_drive("y_spt_cam_drive", "1", FCVAR_CHEAT, "Enables or disables camera drive mode.\n");
 
 bool Camera::ShouldOverrideView() const
 {
-	return y_spt_cam_control.GetBool() && _sv_cheats->GetBool() && utils::playerEntityAvailable();
+	return y_spt_cam_control.GetBool() && interfaces::engine_client->IsInGame()
+	       && (_sv_cheats->GetBool() || interfaces::engine_client->IsPlayingDemo());
 }
 
 bool Camera::IsInDriveMode() const
@@ -52,6 +53,19 @@ void Camera::OverrideView(CViewSetup* view)
 	{
 		HandleInput(false);
 	}
+}
+
+static bool isBindDown(const char* bind)
+{
+#ifndef OE
+	const char* key = interfaces::engine_client->Key_LookupBinding(bind);
+	if (key)
+	{
+		ButtonCode_t code = interfaces::inputSystem->StringToButtonCode(key);
+		return interfaces::inputSystem->IsButtonDown(code);
+	}
+#endif
+	return false;
 }
 
 void Camera::HandleInput(bool active)
@@ -83,23 +97,19 @@ void Camera::HandleInput(bool active)
 		float frame_time = real_frame_time;
 		Vector movement(0.0f, 0.0f, 0.0f);
 
-		bool shift_down = interfaces::inputSystem->IsButtonDown(KEY_LSHIFT)
-		                  || interfaces::inputSystem->IsButtonDown(KEY_RSHIFT);
-		bool ctrl_down = interfaces::inputSystem->IsButtonDown(KEY_LCONTROL)
-		                 || interfaces::inputSystem->IsButtonDown(KEY_RCONTROL);
-		float move_speed = shift_down ? 525.0f : (ctrl_down ? 60.0 : 175.0f);
+		float move_speed = isBindDown("+speed") ? 525.0f : (isBindDown("+duck") ? 60.0 : 175.0f);
 
-		if (interfaces::inputSystem->IsButtonDown(KEY_W))
+		if (isBindDown("+forward"))
 			movement.x += 1.0f;
-		if (interfaces::inputSystem->IsButtonDown(KEY_S))
+		if (isBindDown("+back"))
 			movement.x -= 1.0f;
-		if (interfaces::inputSystem->IsButtonDown(KEY_A))
+		if (isBindDown("+moveleft"))
 			movement.y -= 1.0f;
-		if (interfaces::inputSystem->IsButtonDown(KEY_D))
+		if (isBindDown("+moveright"))
 			movement.y += 1.0f;
-		if (interfaces::inputSystem->IsButtonDown(KEY_X))
+		if (isBindDown("+moveup"))
 			movement.z += 1.0f;
-		if (interfaces::inputSystem->IsButtonDown(KEY_Z))
+		if (isBindDown("+movedown"))
 			movement.z -= 1.0f;
 
 		int mx, my;
@@ -193,8 +203,8 @@ void __fastcall Camera::HOOKED_CInput__MouseMove(void* thisptr, int edx, void* c
 
 bool Camera::ShouldLoadFeature()
 {
-	return interfaces::engine_vgui != nullptr && interfaces::vgui_input != nullptr
-	       && interfaces::inputSystem != nullptr;
+	return interfaces::engine_client != nullptr && interfaces::engine_vgui != nullptr
+	       && interfaces::vgui_input != nullptr && interfaces::inputSystem != nullptr;
 }
 
 void Camera::InitHooks()
