@@ -51,6 +51,7 @@ namespace interfaces
 {
 	std::unique_ptr<EngineClientWrapper> engine;
 	IVEngineServer* engine_server = nullptr;
+	IVEngineClient* engine_client = nullptr;
 	IMatSystemSurface* surface = nullptr;
 	vgui::ISchemeManager* scheme = nullptr;
 	vgui::IInput* vgui_input = nullptr;
@@ -158,6 +159,7 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	interfaces::gm = gameServerFactory(INTERFACENAME_GAMEMOVEMENT, NULL);
 	interfaces::g_pCVar = g_pCVar;
 	interfaces::engine_server = (IVEngineServer*)interfaceFactory(INTERFACEVERSION_VENGINESERVER, NULL);
+	interfaces::engine_client = (IVEngineClient*)interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION, NULL);
 	interfaces::debugOverlay = (IVDebugOverlay*)interfaceFactory(VDEBUG_OVERLAY_INTERFACE_VERSION, NULL);
 	interfaces::materialSystem = (IMaterialSystem*)interfaceFactory(MATERIAL_SYSTEM_INTERFACE_VERSION, NULL);
 	interfaces::engine_vgui = (IEngineVGui*)interfaceFactory(VENGINE_VGUI_VERSION, NULL);
@@ -245,6 +247,11 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	if (!interfaces::engine_server)
 	{
 		DevWarning("SPT: Failed to get the IVEngineServer interface.\n");
+	}
+
+	if (!interfaces::engine_client)
+	{
+		DevWarning("SPT: Failed to get the IVEngineClient interface.\n");
 	}
 
 	if (!interfaces::debugOverlay)
