@@ -60,7 +60,12 @@ void PlayerIOFeature::PreHook()
 		int index = GetPatternIndex((void**)&ORIG_CreateMove);
 		CreateMoveSignal.Works = true;
 
-		if (index == 0)
+		// New steampipe hl2/portal have a different offset
+		if (!utils::DoesGameLookLikeHLS() && utils::GetBuildNumber() >= 7196940)
+		{
+			offM_pCommands = 224;
+		}
+		else if (index == 0)
 		{
 			offM_pCommands = 180;
 		}

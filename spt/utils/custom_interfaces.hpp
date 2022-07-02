@@ -1,6 +1,8 @@
 #pragma once
 #include "cdll_int.h"
 
+extern const char* GetGameDirectoryOE();
+
 #ifdef OE
 class IVEngineClientDMoMM
 {
@@ -57,9 +59,8 @@ public:
 #ifdef OE
 	virtual int Cmd_Argc() = 0;
 	virtual const char* Cmd_Argv(int arg) = 0;
-#else
-	virtual const char* GetGameDirectory() = 0;
 #endif
+	virtual const char* GetGameDirectory() = 0;
 };
 
 /**
@@ -95,6 +96,11 @@ public:
 	const char* Cmd_Argv(int arg) override
 	{
 		return engine->Cmd_Argv(arg);
+	}
+
+	const char* GetGameDirectory() override
+	{
+		return GetGameDirectoryOE();
 	}
 #else
 	const char* GetGameDirectory() override

@@ -519,6 +519,9 @@
     <ClInclude Include="spt\utils\command.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
+    <ClInclude Include="thirdparty\kmp-cpp.hpp">
+      <Filter>thirdparty</Filter>
+    </ClInclude>
     <ClInclude Include="spt\features\camera.hpp">
       <Filter>spt\features</Filter>
     </ClInclude>

@@ -290,6 +290,8 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	_EngineWarning = Warning;
 	_EngineDevWarning = DevWarning;
 
+	// Start build number search for build number specific feature stuff
+	utils::StartBuildNumberSearch();
 	TickSignal.Works = true;
 	Feature::LoadFeatures();
 	Cvar_RegisterSPTCvars();
