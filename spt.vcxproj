@@ -1398,6 +1398,7 @@
     <ClInclude Include="spt\vgui\vgui_utils.hpp" />
     <ClInclude Include="thirdparty\Delegate.h" />
     <ClInclude Include="thirdparty\json.hpp" />
+    <ClInclude Include="thirdparty\kmp-cpp.hpp" />
     <ClInclude Include="thirdparty\md5.hpp" />
     <ClInclude Include="thirdparty\Signal.h" />
   </ItemGroup>

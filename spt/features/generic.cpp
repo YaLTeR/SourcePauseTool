@@ -10,6 +10,19 @@
 #include "..\cvars.hpp"
 #include "..\sptlib-wrapper.hpp"
 
+#ifdef OE
+ConVar y_spt_gamedir(
+    "y_spt_gamedir",
+    "",
+    0,
+    "Sets the game directory, that is used for loading tas scripts and tests. Use the full path for the folder e.g. C:\\Steam\\steamapps\\sourcemods\\hl2oe\\\n");
+
+const char* GetGameDirectoryOE()
+{
+	return y_spt_gamedir.GetString();
+}
+#endif
+
 GenericFeature spt_generic;
 
 Vector GenericFeature::GetCameraOrigin()
@@ -35,8 +48,18 @@ void GenericFeature::InitHooks()
 	FIND_PATTERN(client, CHudDamageIndicator__GetDamagePosition);
 }
 
+CON_COMMAND(y_spt_build, "Returns the build number of the game")
+{
+	Msg("The build is: %d\n", utils::GetBuildNumber());
+}
+
 void GenericFeature::LoadFeature()
 {
+#ifdef OE
+	InitConcommandBase(y_spt_gamedir);
+#endif
+	InitCommand(y_spt_build);
+
 	if (ORIG_CHudDamageIndicator__GetDamagePosition)
 	{
 		int ptnNumber = GetPatternIndex((void**)&ORIG_CHudDamageIndicator__GetDamagePosition);

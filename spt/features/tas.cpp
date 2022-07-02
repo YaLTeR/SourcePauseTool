@@ -140,14 +140,6 @@ ConVar tas_script_savestates("tas_script_savestates", "1", 0, "Enables/disables 
 ConVar tas_script_onsuccess("tas_script_onsuccess", "", 0, "Commands to be executed when a search concludes.\n");
 ConVar y_spt_hud_script_length("y_spt_hud_script_progress", "0", FCVAR_CHEAT, "Turns on the script progress hud.\n");
 
-#ifdef OE
-ConVar y_spt_gamedir(
-    "y_spt_gamedir",
-    "",
-    0,
-    "Sets the game directory, that is used for loading tas scripts and tests. Use the full path for the folder e.g. C:\\Steam\\steamapps\\sourcemods\\hl2oe\\\n");
-#endif
-
 TASFeature spt_tas;
 
 bool TASFeature::ShouldLoadFeature()
@@ -314,9 +306,6 @@ void TASFeature::LoadFeature()
 		InitConcommandBase(tas_script_savestates);
 		InitConcommandBase(tas_script_onsuccess);
 
-#ifdef OE
-		InitConcommandBase(y_spt_gamedir);
-#endif
 		AfterFramesSignal.Connect(&scripts::g_TASReader, &scripts::SourceTASReader::OnAfterFrames);
 #if defined(SSDK2007)
 		AddHudCallback(
