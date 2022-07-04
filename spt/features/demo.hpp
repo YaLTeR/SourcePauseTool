@@ -1,11 +1,6 @@
 #pragma once
 #include "..\feature.hpp"
 
-typedef int(__fastcall* DemoPlayer__Func)(void* thisptr);
-typedef void(__fastcall* _StopRecording)(void* thisptr, int edx);
-typedef void(__fastcall* _SetSignonState)(void* thisptr, int edx, int state);
-typedef void(__cdecl* _Stop)();
-
 // Various demo features
 class DemoStuff : public FeatureWrapper<DemoStuff>
 {
@@ -19,7 +14,7 @@ public:
 	void StartAutorecord();
 	void StopAutorecord();
 
-	_Stop ORIG_Stop = nullptr;
+	DECL_HOOK_CDECL(void, Stop);
 
 protected:
 	virtual bool ShouldLoadFeature() override;
@@ -39,13 +34,9 @@ private:
 	int m_bRecording_Offset = 0;
 	bool isAutoRecordingDemo = false;
 
-	_StopRecording ORIG_StopRecording = nullptr;
-	_SetSignonState ORIG_SetSignonState = nullptr;
+	DECL_HOOK_THISCALL(void, StopRecording);
+	DECL_HOOK_THISCALL(void, SetSignonState, int state);
 	uintptr_t ORIG_Record = 0;
-
-	static void __fastcall HOOKED_StopRecording(void* thisptr, int edx);
-	static void __fastcall HOOKED_SetSignonState(void* thisptr, int edx, int state);
-	static void __cdecl HOOKED_Stop();
 	void OnTick();
 };
 

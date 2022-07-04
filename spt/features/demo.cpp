@@ -149,7 +149,7 @@ void DemoStuff::InitHooks()
 
 void DemoStuff::UnloadFeature() {}
 
-void __fastcall DemoStuff::HOOKED_StopRecording(void* thisptr, int edx)
+HOOK_THISCALL(void, DemoStuff, StopRecording)
 { // This hook will get called twice per loaded save (in most games/versions, at least, according to SAR people), once with m_bLoadgame being false and the next one being true
 	if (!spt_demostuff.isAutoRecordingDemo)
 	{
@@ -171,7 +171,7 @@ void __fastcall DemoStuff::HOOKED_StopRecording(void* thisptr, int edx)
 	}
 }
 
-void __fastcall DemoStuff::HOOKED_SetSignonState(void* thisptr, int edx, int state)
+HOOK_THISCALL(void, DemoStuff, SetSignonState, int state)
 {
 	// This hook only makes sense if StopRecording is also properly hooked
 	if (spt_demostuff.ORIG_StopRecording && spt_demostuff.isAutoRecordingDemo)
@@ -207,7 +207,7 @@ void __fastcall DemoStuff::HOOKED_SetSignonState(void* thisptr, int edx, int sta
 	spt_demostuff.ORIG_SetSignonState(thisptr, edx, state);
 }
 
-void __cdecl DemoStuff::HOOKED_Stop()
+HOOK_CDECL(void, DemoStuff, Stop)
 {
 	if (spt_demostuff.ORIG_Stop)
 	{
