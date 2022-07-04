@@ -8,6 +8,27 @@
 #include "convar.hpp"
 #include "patterns.hpp"
 
+#define DECL_MEMBER_CDECL(type, name, ...) \
+	using _##name = type(__cdecl*)(__VA_ARGS__); \
+	_##name ORIG_##name = nullptr;
+
+#define DECL_HOOK_CDECL(type, name, ...) \
+	DECL_MEMBER_CDECL(type, name, ##__VA_ARGS__) \
+	static type __cdecl HOOKED_##name(__VA_ARGS__)
+
+#define HOOK_CDECL(type, className, name, ...) type __cdecl className::HOOKED_##name(__VA_ARGS__)
+
+#define DECL_MEMBER_THISCALL(type, name, ...) \
+	using _##name = type(__fastcall*)(void* thisptr, int edx, ##__VA_ARGS__); \
+	_##name ORIG_##name = nullptr;
+
+#define DECL_HOOK_THISCALL(type, name, ...) \
+	DECL_MEMBER_THISCALL(type, name, ##__VA_ARGS__) \
+	static type __fastcall HOOKED_##name(void* thisptr, int edx, ##__VA_ARGS__)
+
+#define HOOK_THISCALL(type, className, name, ...) \
+	type __fastcall className::HOOKED_##name(void* thisptr, int edx, ##__VA_ARGS__)
+
 #define ADD_RAW_HOOK(moduleName, name) \
 	AddRawHook(#moduleName, reinterpret_cast<void**>(&ORIG_##name##), reinterpret_cast<void*>(HOOKED_##name##));
 #define FIND_PATTERN(moduleName, name) \

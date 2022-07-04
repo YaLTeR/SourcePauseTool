@@ -71,6 +71,55 @@ FIND_PATTERN(vguimatsurface, StartDrawing);
 ```
 `FIND_PATTERN` finds a pointer to the address where the pattern is found. This pointer is placed into `ORIG_StartDrawing` in this case. This is typically used for finding a function and then the pointer can be used to call the function.
 
+## `DECL_HOOK_THISCALL`
+`HOOK_FUNCTION` assumes that you have certain functions and members declared and defined, which can be cumbersome to write manually. To help with this, feature.hpp has the macro `DECL_HOOK_THISCALL`.
+Example:
+```
+// nosleep.cpp
+class NoSleepFeature : public FeatureWrapper<NoSleepFeature>
+{
+...
+private:
+	DECL_HOOK_THISCALL(void, CInputSystem__SleepUntilInput, int nMaxSleepTimeMS);
+};
+```
+which declares the function pointer `ORIG_CInputSystem__SleepUntilInput` and the corresponding static function `HOOKED_CInputSystem__SleepUntilInput` that takes in one argument, `int nMaxSleepTimeMS`. The fully expanded macro looks as follows:
+```
+	using _CInputSystem__SleepUntilInput = void(__fastcall*)(void* thisptr, int edx, int nMaxSleepTimeMS);
+	_CInputSystem__SleepUntilInput ORIG_CInputSystem__SleepUntilInput = nullptr;
+	static void __fastcall HOOKED_CInputSystem__SleepUntilInput(void* thisptr, int edx, int nMaxSleepTimeMS);
+```
+The first line declares the type of the function pointer with the "using" statement. The second line declares the member and the last line declares the function. The first two arguments to the hooked function thisptr and edx are implicit arguments for a member function call. Thisptr is a pointer to the class instance. The edx argument seems to be unused.
+
+## `DECL_HOOK_CDECL`
+`DECL_HOOK_THISCALL` is only for hooking member functions, which are 95% of the functions you need to hook. `DECL_HOOK_CDECL` can be used to declare hooks for normal functions. The only difference between these macros is that the calling convention is different and this macro does not declare the implicit thisptr and edx arguments.
+
+## `DECL_MEMBER_CDECL` and `DECL_MEMBER_THISCALL`
+These macros are the same as the above but they do not declare the function itself. These should be used when you only intend to call the function but do not want to change how it works.
+
+## `HOOK_THISCALL`
+A function declaration needs a matching definition to do anything. To help with writing the function signature, you can use the macro `HOOK_THISCALL`. Example:
+```
+HOOK_THISCALL(void, NoSleepFeature, CInputSystem__SleepUntilInput, int nMaxSleepTimeMS)
+{
+	if (y_spt_focus_nosleep.GetBool())
+		nMaxSleepTimeMS = 0;
+	spt_nosleep.ORIG_CInputSystem__SleepUntilInput(thisptr, edx, nMaxSleepTimeMS);
+}
+```
+As you might have guessed, the macro `HOOK_CDECL` can be used to write the function signature for normal function hooks. Example:
+```
+HOOK_CDECL(void, DemoStuff, Stop)
+{
+	if (spt_demostuff.ORIG_Stop)
+	{
+		spt_demostuff.isAutoRecordingDemo = false;
+		spt_demostuff.currentAutoRecordDemoNumber = 1;
+		spt_demostuff.ORIG_Stop();
+	}
+}
+```
+
 ## What pattern found my function?
 In some cases you have multiple patterns under the same name to support multiple versions of the game. You might also want to do some pattern specific setup, to account for differences between versions. To determine the pattern used, you can use the function GetPatternIndex. Example:
 ```
