@@ -2,7 +2,6 @@
 #include "..\feature.hpp"
 #include "convar.hpp"
 
-typedef void(__fastcall* _CInputSystem__SleepUntilInput)(void* thisptr, int edx, int nMaxSleepTimeMS);
 ConVar y_spt_focus_nosleep("y_spt_focus_nosleep", "0", 0, "Improves FPS while alt-tabbed.");
 
 // Gives the option to disable sleeping to improve FPS while alt-tabbed
@@ -19,8 +18,7 @@ protected:
 	virtual void UnloadFeature() override;
 
 private:
-	_CInputSystem__SleepUntilInput ORIG_CInputSystem__SleepUntilInput = nullptr;
-	static void __fastcall HOOKED_CInputSystem__SleepUntilInput(void* thisptr, int edx, int nMaxSleepTimeMS);
+	DECL_HOOK_THISCALL(void, CInputSystem__SleepUntilInput, int nMaxSleepTimeMS);
 };
 
 static NoSleepFeature spt_nosleep;
@@ -45,7 +43,7 @@ void NoSleepFeature::LoadFeature()
 
 void NoSleepFeature::UnloadFeature() {}
 
-void __fastcall NoSleepFeature::HOOKED_CInputSystem__SleepUntilInput(void* thisptr, int edx, int nMaxSleepTimeMS)
+HOOK_THISCALL(void, NoSleepFeature, CInputSystem__SleepUntilInput, int nMaxSleepTimeMS)
 {
 	if (y_spt_focus_nosleep.GetBool())
 		nMaxSleepTimeMS = 0;
