@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "convar.hpp"
+#include "interfaces.hpp"
 
 ConVar _y_spt_overlay("_y_spt_overlay",
                       "0",
@@ -113,7 +114,7 @@ void Overlay::DrawCrosshair()
 	}
 
 	vrect_t* screen = (vrect_t*)screenRect;
-	spt_hud.surface->DrawSetColor(r, g, b, a);
+	interfaces::surface->DrawSetColor(r, g, b, a);
 	int x = screen->x + screen->width / 2;
 	int y = screen->y + screen->height / 2;
 	int width = _y_spt_overlay_crosshair_size.GetInt();
@@ -122,12 +123,12 @@ void Overlay::DrawCrosshair()
 	if (thickness > width)
 		std::swap(thickness, width);
 
-	spt_hud.surface->DrawFilledRect(x - thickness / 2, y - width / 2, x + thickness / 2 + 1, y + width / 2 + 1);
-	spt_hud.surface->DrawFilledRect(x - width / 2, y - thickness / 2, x - thickness / 2, y + thickness / 2 + 1);
-	spt_hud.surface->DrawFilledRect(x + thickness / 2 + 1,
-	                                y - thickness / 2,
-	                                x + width / 2 + 1,
-	                                y + thickness / 2 + 1);
+	interfaces::surface->DrawFilledRect(x - thickness / 2, y - width / 2, x + thickness / 2 + 1, y + width / 2 + 1);
+	interfaces::surface->DrawFilledRect(x - width / 2, y - thickness / 2, x - thickness / 2, y + thickness / 2 + 1);
+	interfaces::surface->DrawFilledRect(x + thickness / 2 + 1,
+	                                    y - thickness / 2,
+	                                    x + width / 2 + 1,
+	                                    y + thickness / 2 + 1);
 }
 
 void __fastcall Overlay::HOOKED_CViewRender__RenderView(void* thisptr,

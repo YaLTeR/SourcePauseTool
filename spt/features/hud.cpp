@@ -41,12 +41,12 @@ void HUDFeature::DrawTopHudElement(const wchar* format, ...)
 	const wchar* text = FormatTempString(format, args);
 	va_end(args);
 
-	surface->DrawSetTextFont(font);
-	surface->DrawSetTextColor(255, 255, 255, 255);
-	surface->DrawSetTexture(0);
+	interfaces::surface->DrawSetTextFont(font);
+	interfaces::surface->DrawSetTextColor(255, 255, 255, 255);
+	interfaces::surface->DrawSetTexture(0);
 
-	surface->DrawSetTextPos(topX, 2 + (topFontTall + 2) * topVertIndex);
-	surface->DrawPrintText(text, wcslen(text));
+	interfaces::surface->DrawSetTextPos(topX, 2 + (topFontTall + 2) * topVertIndex);
+	interfaces::surface->DrawPrintText(text, wcslen(text));
 	++topVertIndex;
 }
 
@@ -105,13 +105,12 @@ void HUDFeature::UnloadFeature() {}
 
 void HUDFeature::DrawHUD()
 {
-	surface = (IMatSystemSurface*)vgui::surface();
 	vgui::HFont font;
 
-	if (!surface || !GetFont(FONT_DefaultFixedOutline, font))
+	if (!interfaces::surface || !GetFont(FONT_DefaultFixedOutline, font))
 		return;
 
-	ORIG_StartDrawing(surface, 0);
+	ORIG_StartDrawing(interfaces::surface, 0);
 
 	try
 	{
@@ -125,7 +124,7 @@ void HUDFeature::DrawHUD()
 
 		// Reset top HUD stuff
 		topVertIndex = 0;
-		topFontTall = surface->GetFontTall(font);
+		topFontTall = interfaces::surface->GetFontTall(font);
 		if (y_spt_hud_left.GetBool())
 		{
 			topX = 6;
@@ -158,7 +157,7 @@ void HUDFeature::DrawHUD()
 		Msg("Error drawing HUD: %s\n", e.what());
 	}
 
-	ORIG_FinishDrawing(surface, 0);
+	ORIG_FinishDrawing(interfaces::surface, 0);
 }
 
 void __fastcall HUDFeature::HOOKED_VGui_Paint(void* thisptr, int edx, int mode)
