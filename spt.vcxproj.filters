@@ -536,9 +536,6 @@
     <Library Include="..\..\lib\public\tier1.lib">
       <Filter>SDK includes &amp; libs</Filter>
     </Library>
-    <Library Include="..\..\lib\public\vstdlib.lib">
-      <Filter>SDK includes &amp; libs</Filter>
-    </Library>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SDK includes &amp; libs">

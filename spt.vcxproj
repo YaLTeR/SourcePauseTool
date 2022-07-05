@@ -1304,7 +1304,6 @@
     <Library Include="..\..\lib\public\mathlib.lib" />
     <Library Include="..\..\lib\public\tier0.lib" />
     <Library Include="..\..\lib\public\tier1.lib" />
-    <Library Include="..\..\lib\public\vstdlib.lib" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h" />

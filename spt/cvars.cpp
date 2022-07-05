@@ -5,6 +5,7 @@
 #include "sptlib-wrapper.hpp"
 #include "tier1\tier1.h"
 #include <stdarg.h>
+#include "SPTLib\MemUtils.hpp"
 
 static std::unordered_map<ConCommandBase*, void*> cmd_to_feature;
 
@@ -76,6 +77,32 @@ void Cvar_UnregisterSPTCvars()
 	}
 
 	cmd_to_feature.clear();
+}
+
+typedef ICvar*(__cdecl* _GetCvarIF)();
+
+extern "C" ICvar* GetCVarIF()
+{
+	static ICvar* ptr = nullptr;
+
+	if (ptr != nullptr)
+	{
+		return ptr;
+	}
+	else
+	{
+		void* moduleHandle;
+		void* moduleBase;
+		std::size_t moduleSize;
+
+		if (MemUtils::GetModuleInfo(L"vstdlib.dll", &moduleHandle, &moduleBase, &moduleSize))
+		{
+			_GetCvarIF func = (_GetCvarIF)MemUtils::GetSymbolAddress(moduleHandle, "GetCVarIF");
+			ptr = func();
+		}
+
+		return ptr;
+	}
 }
 
 #else
