@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "convar.hpp"
 #include "hud.hpp"
+#include "interfaces.hpp"
 #include "math.hpp"
 #include "signals.hpp"
 #include "playerio.hpp"
@@ -447,7 +448,7 @@ void HopsHud::PrintStrafeCol(std::function<void(const ljstats::SegmentStats&, wc
 	const int BUFFER_SIZE = 256;
 	wchar_t buffer[BUFFER_SIZE];
 
-	auto surface = spt_hud.surface;
+	auto surface = interfaces::surface;
 	auto screen = spt_hud.screen;
 	auto fontTall = surface->GetFontTall(hopsFont);
 	int ticks = ljstats::lastJump.TotalTicks();
@@ -519,7 +520,7 @@ void HopsHud::DrawHopHud()
 		return;
 	}
 
-	auto surface = spt_hud.surface;
+	auto surface = interfaces::surface;
 	auto screen = spt_hud.screen;
 
 	surface->DrawSetTextFont(hopsFont);

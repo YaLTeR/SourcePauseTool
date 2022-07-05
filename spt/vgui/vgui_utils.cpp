@@ -1,9 +1,7 @@
 #include "stdafx.h"
 
 #include "..\features\generic.hpp"
-#include "tier1\tier1.h"
-#include "tier2\tier2.h"
-#include "tier3\tier3.h"
+#include "interfaces.hpp"
 #include "vgui_utils.hpp"
 
 namespace vgui
@@ -18,7 +16,7 @@ namespace vgui
 	}
 	IScheme* GetScheme()
 	{
-		return scheme()->GetIScheme(scheme()->GetDefaultScheme());
+		return interfaces::scheme->GetIScheme(interfaces::scheme->GetDefaultScheme());
 	}
 #endif
 } // namespace vgui

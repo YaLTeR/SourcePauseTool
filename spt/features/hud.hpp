@@ -43,7 +43,6 @@ public:
 	virtual bool ShouldLoadFeature() override;
 	bool GetFont(const std::string& fontName, vgui::HFont& fontOut);
 
-	IMatSystemSurface* surface = nullptr;
 	vrect_t* screen = nullptr;
 	std::unordered_map<std::string, vgui::HFont> fonts;
 

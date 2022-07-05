@@ -4,6 +4,7 @@
 
 #include "..\cvars.hpp"
 #include "command.hpp"
+#include "interfaces.hpp"
 #include "playerio.hpp"
 #include "signals.hpp"
 #include "property_getter.hpp"
@@ -446,7 +447,7 @@ void InputHud::DrawInputHud()
 		awaitingFrameDraw = false;
 	}
 
-	surface = spt_hud.surface;
+	surface = interfaces::surface;
 
 	// get offset from percentage
 	int ihudSizeX, ihudSizeY;

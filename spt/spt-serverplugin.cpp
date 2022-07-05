@@ -154,7 +154,6 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	pluginLoaded = true;
 
 	ConnectTier1Libraries(&interfaceFactory, 1);
-	ConnectTier3Libraries(&interfaceFactory, 1);
 
 	interfaces::gm = gameServerFactory(INTERFACENAME_GAMEMOVEMENT, NULL);
 	interfaces::g_pCVar = g_pCVar;
@@ -164,6 +163,9 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	interfaces::materialSystem = (IMaterialSystem*)interfaceFactory(MATERIAL_SYSTEM_INTERFACE_VERSION, NULL);
 	interfaces::engine_vgui = (IEngineVGui*)interfaceFactory(VENGINE_VGUI_VERSION, NULL);
 	interfaces::vgui_input = (vgui::IInput*)interfaceFactory(VGUI_INPUT_INTERFACE_VERSION, NULL);
+	interfaces::surface = (IMatSystemSurface*)interfaceFactory(MAT_SYSTEM_SURFACE_INTERFACE_VERSION, NULL);
+	interfaces::scheme = (vgui::ISchemeManager*)interfaceFactory(VGUI_SCHEME_INTERFACE_VERSION, NULL);
+
 	interfaces::inputSystem = (IInputSystem*)interfaceFactory(INPUTSYSTEM_INTERFACE_VERSION, NULL);
 
 	auto clientFactory = Sys_GetFactory("client");
@@ -318,7 +320,6 @@ void CSourcePauseTool::Unload(void)
 
 	Cvar_UnregisterSPTCvars();
 	DisconnectTier1Libraries();
-	DisconnectTier3Libraries();
 	Feature::UnloadFeatures();
 	Hooks::Free();
 	pluginLoaded = false;
