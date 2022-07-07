@@ -22,6 +22,47 @@ ConVar y_spt_cam_control(
     "Camera is separated and can be controlled by user input. (Requires sv_cheats 1 if not playing demo)\n");
 ConVar y_spt_cam_drive("y_spt_cam_drive", "1", FCVAR_CHEAT, "Enables or disables camera drive mode.\n");
 
+CON_COMMAND(y_spt_cam_setpos, "y_spt_cam_setpos <x> <y> <z> - Sets camera position (requires camera Drive Mode)\n")
+{
+	if (args.ArgC() != 4)
+	{
+		Msg("Usage: y_spt_cam_setpos <x> <y> <z>;\n");
+		return;
+	}
+	if (!y_spt_cam_control.GetBool())
+	{
+		Msg("Requires camera Drive Mode.\n");
+		return;
+	}
+	Vector pos = {0.0, 0.0, 0.0};
+	for (int i = 0; i < args.ArgC() - 1; i++)
+	{
+		pos[i] = atof(args.Arg(i + 1));
+	}
+	spt_camera.cam_origin = pos;
+}
+
+CON_COMMAND(y_spt_cam_setang,
+            "y_spt_cam_setang <pitch> <yaw> [roll] - Sets camera angles (requires camera Drive Mode)\n")
+{
+	if (args.ArgC() != 3 && args.ArgC() != 4)
+	{
+		Msg("Usage: y_spt_cam_setang <pitch> <yaw> [roll];\n");
+		return;
+	}
+	if (!y_spt_cam_control.GetBool())
+	{
+		Msg("Requires camera Drive Mode.\n");
+		return;
+	}
+	QAngle ang = {0.0, 0.0, 0.0};
+	for (int i = 0; i < args.ArgC() - 1; i++)
+	{
+		ang[i] = atof(args.Arg(i + 1));
+	}
+	spt_camera.cam_angles = ang;
+}
+
 bool Camera::ShouldOverrideView() const
 {
 	return y_spt_cam_control.GetBool() && interfaces::engine_client->IsInGame()
@@ -234,6 +275,8 @@ void Camera::LoadFeature()
 	{
 		InitConcommandBase(y_spt_cam_control);
 		InitConcommandBase(y_spt_cam_drive);
+		InitCommand(y_spt_cam_setpos);
+		InitCommand(y_spt_cam_setang);
 
 		sensitivity = interfaces::g_pCVar->FindVar("sensitivity");
 	}
