@@ -13,6 +13,8 @@ class Camera : public FeatureWrapper<Camera>
 public:
 	bool ShouldOverrideView() const;
 	bool IsInDriveMode() const;
+	Vector cam_origin;
+	QAngle cam_angles;
 
 protected:
 	virtual bool ShouldLoadFeature() override;
@@ -42,8 +44,6 @@ private:
 
 	bool input_active = false;
 	int old_cursor[2] = {0, 0};
-	Vector cam_origin;
-	QAngle cam_angles;
 
 	const ConVar* sensitivity;
 
