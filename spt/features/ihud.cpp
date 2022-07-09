@@ -10,6 +10,8 @@
 #include "property_getter.hpp"
 #include "..\sptlib-wrapper.hpp"
 
+#include <cctype>
+
 InputHud spt_ihud;
 
 ConVar y_spt_ihud("y_spt_ihud", "0", 0, "Draws movement inputs of client.\n");
@@ -17,6 +19,13 @@ ConVar y_spt_ihud_grid_size("y_spt_ihud_grid_size", "60", 0, "Grid size of input
 ConVar y_spt_ihud_grid_padding("y_spt_ihud_grid_padding", "2", 0, "Padding between grids of input HUD.");
 ConVar y_spt_ihud_x("y_spt_ihud_x", "2", 0, "X position of input HUD.\n", true, 0.0f, true, 100.0f);
 ConVar y_spt_ihud_y("y_spt_ihud_y", "2", 0, "Y position of input HUD.\n", true, 0.0f, true, 100.0f);
+
+// default setting
+static const Color background = {0, 0, 0, 233};
+static const Color highlight = {255, 255, 255, 66};
+static const Color textcolor = {255, 255, 255, 66};
+static const Color texthighlight = {0, 0, 0, 233};
+static const std::string font = FONT_Trebuchet20;
 
 CON_COMMAND(
     y_spt_ihud_modify,
@@ -68,6 +77,8 @@ CON_COMMAND_AUTOCOMPLETE(y_spt_ihud_preset,
 	const char* preset = args.Arg(1);
 	if (std::strcmp(preset, "normal") == 0)
 	{
+		for (auto& kv : spt_ihud.buttonSettings)
+			kv.second.enabled = false;
 		spt_ihud.tasPreset = false;
 		InputHud::Button* button = &spt_ihud.buttonSettings["forward"];
 		button->enabled = true;
@@ -128,6 +139,8 @@ CON_COMMAND_AUTOCOMPLETE(y_spt_ihud_preset,
 	}
 	else if (std::strcmp(preset, "normal_mouse") == 0)
 	{
+		for (auto& kv : spt_ihud.buttonSettings)
+			kv.second.enabled = false;
 		spt_ihud.tasPreset = false;
 		InputHud::Button* button = &spt_ihud.buttonSettings["forward"];
 		button->enabled = true;
@@ -198,6 +211,16 @@ CON_COMMAND_AUTOCOMPLETE(y_spt_ihud_preset,
 	}
 }
 
+CON_COMMAND(y_spt_ihud_add_key, "y_spt_ihud_add_key <key> - Add custom key to ihud.\n")
+{
+	if (args.ArgC() != 2)
+	{
+		Msg("Usage: y_spt_ihud_add_key <key>\n");
+		return;
+	}
+	spt_ihud.AddCustomKey(args.Arg(1));
+}
+
 bool InputHud::ShouldLoadFeature()
 {
 	return spt_hud.ShouldLoadFeature();
@@ -220,17 +243,12 @@ void InputHud::LoadFeature()
 	{
 		InitCommand(y_spt_ihud_modify);
 		InitCommand(y_spt_ihud_preset);
+		InitCommand(y_spt_ihud_add_key);
 		InitConcommandBase(y_spt_ihud_grid_size);
 		InitConcommandBase(y_spt_ihud_grid_padding);
 		InitConcommandBase(y_spt_ihud_x);
 		InitConcommandBase(y_spt_ihud_y);
 	}
-
-	Color background = {0, 0, 0, 233};
-	Color highlight = {255, 255, 255, 66};
-	Color textcolor = {255, 255, 255, 66};
-	Color texthighlight = {0, 0, 0, 233};
-	const std::string font = FONT_Trebuchet20;
 
 	const int IN_ATTACK = (1 << 0);
 	const int IN_JUMP = (1 << 1);
@@ -243,23 +261,24 @@ void InputHud::LoadFeature()
 	const int IN_ATTACK2 = (1 << 11);
 
 	buttonSettings["forward"] =
-	    {true, L"W", font, 2, 0, 1, 1, background, highlight, textcolor, texthighlight, IN_FORWARD};
-	buttonSettings["use"] = {true, L"E", font, 3, 0, 1, 1, background, highlight, textcolor, texthighlight, IN_USE};
+	    {true, true, L"W", font, 2, 0, 1, 1, background, highlight, textcolor, texthighlight, IN_FORWARD};
+	buttonSettings["use"] =
+	    {true, true, L"E", font, 3, 0, 1, 1, background, highlight, textcolor, texthighlight, IN_USE};
 	buttonSettings["moveleft"] =
-	    {true, L"A", font, 1, 1, 1, 1, background, highlight, textcolor, texthighlight, IN_MOVELEFT};
+	    {true, true, L"A", font, 1, 1, 1, 1, background, highlight, textcolor, texthighlight, IN_MOVELEFT};
 	buttonSettings["back"] =
-	    {true, L"S", font, 2, 1, 1, 1, background, highlight, textcolor, texthighlight, IN_BACK};
+	    {true, true, L"S", font, 2, 1, 1, 1, background, highlight, textcolor, texthighlight, IN_BACK};
 	buttonSettings["moveright"] =
-	    {true, L"D", font, 3, 1, 1, 1, background, highlight, textcolor, texthighlight, IN_MOVERIGHT};
+	    {true, true, L"D", font, 3, 1, 1, 1, background, highlight, textcolor, texthighlight, IN_MOVERIGHT};
 	buttonSettings["duck"] =
-	    {true, L"Duck", font, 0, 2, 1, 1, background, highlight, textcolor, texthighlight, IN_DUCK};
+	    {true, true, L"Duck", font, 0, 2, 1, 1, background, highlight, textcolor, texthighlight, IN_DUCK};
 	buttonSettings["jump"] =
-	    {true, L"Jump", font, 1, 2, 3, 1, background, highlight, textcolor, texthighlight, IN_JUMP};
+	    {true, true, L"Jump", font, 1, 2, 3, 1, background, highlight, textcolor, texthighlight, IN_JUMP};
 	buttonSettings["attack"] =
-	    {true, L"L", font, 4, 2, 1, 1, background, highlight, textcolor, texthighlight, IN_ATTACK};
+	    {true, true, L"L", font, 4, 2, 1, 1, background, highlight, textcolor, texthighlight, IN_ATTACK};
 	buttonSettings["attack2"] =
-	    {true, L"R", font, 5, 2, 1, 1, background, highlight, textcolor, texthighlight, IN_ATTACK2};
-	anglesSetting = {false, L"", font, 4, 1, 0, 0, background, highlight, textcolor, texthighlight, 0};
+	    {true, true, L"R", font, 5, 2, 1, 1, background, highlight, textcolor, texthighlight, IN_ATTACK2};
+	anglesSetting = {true, false, L"", font, 4, 1, 0, 0, background, highlight, textcolor, texthighlight, 0};
 }
 
 void InputHud::PreHook()
@@ -287,14 +306,16 @@ bool InputHud::ModifySetting(const char* element, const char* param, const char*
 {
 	InputHud::Button* target;
 	bool angle = false;
-	if (std::strcmp(element, "angles") == 0)
+	std::string key(element);
+	std::transform(key.begin(), key.end(), key.begin(), [](unsigned char c) { return std::tolower(c); });
+	if (key == "angles")
 	{
 		angle = true;
 		target = &anglesSetting;
 	}
-	else if (buttonSettings.find(element) != buttonSettings.end())
+	else if (buttonSettings.find(key) != buttonSettings.end())
 	{
-		target = &buttonSettings[element];
+		target = &buttonSettings[key];
 	}
 	else
 	{
@@ -373,6 +394,21 @@ bool InputHud::ModifySetting(const char* element, const char* param, const char*
 		return false;
 	}
 	return true;
+}
+
+void InputHud::AddCustomKey(const char* key)
+{
+	ButtonCode_t code = interfaces::inputSystem->StringToButtonCode(key);
+	if (code == -1)
+	{
+		Msg("Key <%s> does not exist.\n", key);
+		return;
+	}
+	std::string str(key);
+	std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
+	std::wstring wstr(str.begin(), str.end());
+	buttonSettings[str] =
+	    {false, true, wstr, font, 0, 0, 1, 1, background, highlight, textcolor, texthighlight, code};
 }
 
 Color InputHud::StringToColor(const char* color)
@@ -643,7 +679,11 @@ void InputHud::DrawButton(Button button)
 {
 	if (!button.enabled)
 		return;
-	bool state = buttonBits & button.mask;
+	bool state;
+	if (button.is_normal_key)
+		state = buttonBits & button.mask;
+	else
+		state = interfaces::inputSystem->IsButtonDown((ButtonCode_t)button.mask);
 	DrawRectAndCenterTxt(state ? button.highlight : button.background,
 	                     xOffset + button.x * (gridSize + padding),
 	                     yOffset + button.y * (gridSize + padding),
@@ -654,7 +694,7 @@ void InputHud::DrawButton(Button button)
 	                     button.text.c_str());
 }
 
-void __fastcall InputHud::HOOKED_DecodeUserCmdFromBuffer(void* thisptr, int edx, bf_read& buf, int sequence_number)
+HOOK_THISCALL(void, InputHud, DecodeUserCmdFromBuffer, bf_read& buf, int sequence_number)
 {
 	spt_ihud.ORIG_DecodeUserCmdFromBuffer(thisptr, edx, buf, sequence_number);
 
