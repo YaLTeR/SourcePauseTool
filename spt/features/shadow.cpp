@@ -1,53 +1,127 @@
 #include "stdafx.h"
-#include "..\feature.hpp"
-#include "..\utils\game_detection.hpp"
+
 #include "shadow.hpp"
+#include "..\utils\game_detection.hpp"
+#include "hud.hpp"
+#include "ent_utils.hpp"
+#include "ent_props.hpp"
+#include "playerio.hpp"
 
-typedef int(__fastcall* _GetShadowPosition)(void* thisptr, int edx, Vector* worldPosition, QAngle* angles);
+ConVar y_spt_hud_shadow_info("y_spt_hud_shadow_info",
+                             "0",
+                             FCVAR_CHEAT,
+                             "Displays player shadow position and angles.\n");
 
-// This feature allows access to the Havok hitbox location (aka physics shadow)
-class ShadowPosition : public FeatureWrapper<ShadowPosition>
+CON_COMMAND_F(y_spt_set_shadow_roll, "Sets the player's physics shadow roll in degrees.\n", FCVAR_CHEAT)
 {
-public:
-	static int __fastcall HOOKED_GetShadowPosition(void* thisptr, int edx, Vector* worldPosition, QAngle* angles);
-	Vector PlayerHavokPos;
-
-protected:
-	_GetShadowPosition ORIG_GetShadowPosition = nullptr;
-
-	virtual bool ShouldLoadFeature() override
+	if (args.ArgC() < 2)
 	{
-#ifdef SSDK2013
-		return !utils::DoesGameLookLikePortal();
-#else
+		Warning("Must provide a roll in degrees.\n");
+		return;
+	}
+	spt_player_shadow.SetPlayerHavokPos(spt_playerio.m_vecAbsOrigin.GetValue(), QAngle(0, 0, atof(args.Arg(1))));
+}
 
-		return true;
+ShadowPosition spt_player_shadow;
+
+int __fastcall ShadowPosition::HOOKED_GetShadowPosition(void* thisptr, int _, Vector* worldPosition, QAngle* angles)
+{
+	auto& feat = spt_player_shadow;
+	// yoink
+	int numTicksSinceUpdate = feat.ORIG_GetShadowPosition(thisptr, &feat.PlayerHavokPos, &feat.PlayerHavokAngles);
+	if (worldPosition)
+		*worldPosition = feat.PlayerHavokPos;
+	if (angles)
+		*angles = feat.PlayerHavokAngles;
+	return numTicksSinceUpdate;
+}
+
+bool ShadowPosition::ShouldLoadFeature()
+{
+	return true;
+}
+
+void ShadowPosition::InitHooks()
+{
+	HOOK_FUNCTION(vphysics, GetShadowPosition);
+	FIND_PATTERN(vphysics, beam_object_to_new_position);
+	PlayerHavokPos.Init();
+	PlayerHavokAngles.Init();
+}
+
+void ShadowPosition::LoadFeature()
+{
+	if (ORIG_GetShadowPosition)
+	{
+#ifdef SSDK2007
+		AddHudCallback(
+		    "shadow",
+		    [this]()
+		    {
+			    const Vector& pos = PlayerHavokPos;
+			    const QAngle& ang = PlayerHavokAngles;
+			    spt_hud.DrawTopHudElement(L"shadow pos (xyz): %.3f %.3f %.3f", pos.x, pos.y, pos.z);
+			    spt_hud.DrawTopHudElement(L"shadow ang (pyr): %.3f %.3f %.3f", ang.x, ang.y, ang.z);
+		    },
+		    y_spt_hud_shadow_info);
 #endif
 	}
 
-	virtual void InitHooks() override
-	{
-		HOOK_FUNCTION(vphysics, GetShadowPosition);
-		PlayerHavokPos.Init(0, 0, 0);
-	}
-
-	virtual void LoadFeature() override {}
-
-	virtual void UnloadFeature() override {}
-};
-
-static ShadowPosition spt_position;
-
-int __fastcall ShadowPosition::HOOKED_GetShadowPosition(void* thisptr, int edx, Vector* worldPosition, QAngle* angles)
-{
-	int GetShadowPos = spt_position.ORIG_GetShadowPosition(thisptr, edx, worldPosition, angles);
-	spt_position.PlayerHavokPos.x = worldPosition->x;
-	spt_position.PlayerHavokPos.y = worldPosition->y;
-	spt_position.PlayerHavokPos.z = worldPosition->z;
-	return GetShadowPos;
+	if (ORIG_beam_object_to_new_position)
+		InitCommand(y_spt_set_shadow_roll);
 }
 
-Vector GetPlayerHavokPos()
+void ShadowPosition::GetPlayerHavokPos(Vector* worldPosition, QAngle* angles)
 {
-	return spt_position.PlayerHavokPos;
+	if (worldPosition)
+		*worldPosition = spt_player_shadow.PlayerHavokPos;
+	if (angles)
+		*angles = spt_player_shadow.PlayerHavokAngles;
+}
+
+void ShadowPosition::SetPlayerHavokPos(const Vector& worldPosition, const QAngle& angles)
+{
+	if (!ORIG_beam_object_to_new_position)
+		return;
+	auto shadow = GetPlayerController();
+	if (!shadow)
+		return;
+	// actually offset 12 in CPlayerController, see the note for GetPlayerController()
+	IPhysicsObject* cPhysObject = ((IPhysicsObject**)shadow)[2];
+	if (!cPhysObject)
+		return;
+	void* pivp = ((void**)cPhysObject)[2]; // IVP_Real_Object
+	if (!pivp)
+		return;
+	uint flags = ((uint*)pivp)[30];
+	// this is about the same logic the game uses when teleporting the shadow
+	IvpPoint pos(worldPosition, true);
+	IvpQuat quat(angles);
+	if ((flags & 0x300) == 0)
+	{
+		// collision disabled, just teleport
+		ORIG_beam_object_to_new_position(pivp, &quat, &pos, true);
+	}
+	else
+	{
+		// get virtual function at offset 0x30
+		typedef void(__thiscall * _EnableCollisions)(IPhysicsObject * thisptr, bool enable);
+		_EnableCollisions EnableCollisions = ((_EnableCollisions**)cPhysObject)[0][12];
+		EnableCollisions(cPhysObject, false);
+		ORIG_beam_object_to_new_position(pivp, &quat, &pos, true);
+		EnableCollisions(cPhysObject, true);
+	}
+}
+
+IPhysicsPlayerController* ShadowPosition::GetPlayerController()
+{
+	auto player = utils::GetServerPlayer();
+	if (!player)
+		return nullptr;
+	int off = spt_entutils.GetPlayerOffset("m_oldOrigin", true);
+	if (off == utils::INVALID_DATAMAP_OFFSET)
+		return nullptr;
+	// this is the closest field that's in the datamap, go back 3 pointers
+	off -= 12;
+	return ((IPhysicsPlayerController**)player)[off / 4];
 }
