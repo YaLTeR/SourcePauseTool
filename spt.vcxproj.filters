@@ -525,6 +525,9 @@
     <ClInclude Include="spt\features\camera.hpp">
       <Filter>spt\features</Filter>
     </ClInclude>
+    <ClInclude Include="spt\utils\ivp_maths.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">
