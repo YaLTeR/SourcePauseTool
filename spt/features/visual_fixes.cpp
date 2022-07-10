@@ -3,6 +3,7 @@
 #include "..\feature.hpp"
 #include "convar.hpp"
 #include "ent_utils.hpp"
+#include "signals.hpp"
 #include "dbg.h"
 
 typedef void(__cdecl* _DoImageSpaceMotionBlur)(void* view, int x, int y, int w, int h);
@@ -10,6 +11,7 @@ typedef void(__fastcall* _CViewEffects__Fade)(void* thisptr, int edx, void* data
 typedef void(__fastcall* _CViewEffects__Shake)(void* thisptr, int edx, void* data);
 typedef void(__cdecl* _ResetToneMapping)(float value);
 typedef void(__fastcall* _C_BaseAnimating__SetSequence)(void* thisptr, int edx, int nSequence);
+typedef void(__cdecl* _CAM_ToThirdPerson)();
 
 ConVar y_spt_motion_blur_fix("y_spt_motion_blur_fix", "0", FCVAR_ARCHIVE, "Fixes motion blur for startmovie.");
 ConVar y_spt_disable_fade("y_spt_disable_fade", "0", FCVAR_ARCHIVE, "Disables all fades.");
@@ -47,6 +49,9 @@ private:
 	_CViewEffects__Fade ORIG_CViewEffects__Fade = nullptr;
 	_CViewEffects__Shake ORIG_CViewEffects__Shake = nullptr;
 	_ResetToneMapping ORIG_ResetToneMapping = nullptr;
+	_CAM_ToThirdPerson ORIG_CAM_ToThirdPerson = nullptr;
+
+	bool* thirdPersonFlag = nullptr;
 
 	static void __cdecl HOOKED_DoImageSpaceMotionBlur(void* view, int x, int y, int w, int h);
 	static void __fastcall HOOKED_CViewEffects__Fade(void* thisptr, int edx, void* data);
@@ -57,6 +62,8 @@ private:
 	_C_BaseAnimating__SetSequence ORIG_C_BaseAnimating__SetSequence = nullptr;
 	static void __fastcall HOOKED_C_BaseAnimating__SetSequence(void* thisptr, int edx, int nSequence);
 #endif
+
+	void OnFinishRestore(void* thisptr, int edx);
 };
 
 static VisualFixes spt_visual_fixes;
@@ -75,6 +82,7 @@ void VisualFixes::InitHooks()
 #ifndef OE
 	HOOK_FUNCTION(client, C_BaseAnimating__SetSequence);
 #endif
+	FIND_PATTERN(client, CAM_ToThirdPerson);
 }
 
 void VisualFixes::LoadFeature()
@@ -127,6 +135,12 @@ void VisualFixes::LoadFeature()
 	if (ORIG_C_BaseAnimating__SetSequence)
 		InitConcommandBase(y_spt_override_tpose);
 #endif
+
+	if (ORIG_CAM_ToThirdPerson && FinishRestoreSignal.Works)
+	{
+		FinishRestoreSignal.Connect(this, &VisualFixes::OnFinishRestore);
+		thirdPersonFlag = *(bool**)((uintptr_t)ORIG_CAM_ToThirdPerson + 13);
+	}
 }
 
 void VisualFixes::UnloadFeature() {}
@@ -188,3 +202,10 @@ void __fastcall VisualFixes::HOOKED_C_BaseAnimating__SetSequence(void* thisptr, 
 	spt_visual_fixes.ORIG_C_BaseAnimating__SetSequence(thisptr, edx, nSequence);
 }
 #endif
+
+void VisualFixes::OnFinishRestore(void* thisptr, int edx)
+{
+	// I have no idea what this flag is, but setting it unconditionally seems to
+	// (not entirely seamlessly) fix thirdperson not being preserved accross saveloads.
+	*thirdPersonFlag = true;
+}
