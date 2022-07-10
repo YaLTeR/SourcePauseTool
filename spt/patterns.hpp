@@ -588,6 +588,7 @@ namespace patterns
 		         "8B 49 08 81 EC 80 00 00 00 8D 04 24 50 E8 ?? ?? ?? ?? 8B 84 24 84 00 00 00 85 C0",
 		         "1910503",
 		         "55 8B EC 8B 49 08 81 EC 80 00 00 00 8D 45 80 50 E8 ?? ?? ?? ?? 8B 45 08 85 C0");
+		PATTERNS(beam_object_to_new_position, "5135", "81 EC D8 00 00 00 53 8B D9 F7 43 78 00 0C 00 00");
 	} // namespace vphysics
 
 } // namespace patterns
