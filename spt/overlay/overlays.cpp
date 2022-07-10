@@ -19,7 +19,8 @@ CameraInformation rearViewMirrorOverlay()
 CameraInformation havokViewMirrorOverlay()
 {
 	CameraInformation info;
-	Vector havokpos = GetPlayerHavokPos();
+	Vector havokpos;
+	spt_player_shadow.GetPlayerHavokPos(&havokpos, nullptr);
 
 	constexpr float duckOffset = 28;
 	constexpr float standingOffset = 64;
