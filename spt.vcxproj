@@ -1388,6 +1388,7 @@
     <ClInclude Include="spt\utils\file.hpp" />
     <ClInclude Include="spt\utils\game_detection.hpp" />
     <ClInclude Include="spt\utils\interfaces.hpp" />
+    <ClInclude Include="spt\utils\ivp_maths.hpp" />
     <ClInclude Include="spt\utils\math.hpp" />
     <ClInclude Include="spt\utils\property_getter.hpp" />
     <ClInclude Include="spt\utils\signals.hpp" />
