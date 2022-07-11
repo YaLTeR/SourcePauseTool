@@ -55,6 +55,28 @@ ConVar _y_spt_overlay_crosshair_color("_y_spt_overlay_crosshair_color",
 
 Overlay spt_overlay;
 
+namespace patterns
+{
+	namespace client
+	{
+		PATTERNS(
+		    CViewRender__RenderView,
+		    "5135",
+		    "55 8B EC 83 E4 F8 81 EC 24 01 00 00 53 56 57 8B F9 8D 8F 20 01 00 00 89 7C 24 24 E8",
+		    "3420",
+		    "55 8B EC 83 E4 F8 81 EC 24 01 00 00 53 8B 5D 08 56 57 8B F9 8D 8F 94 00 00 00 53 89 7C 24 28 89 4C 24 34 E8");
+		PATTERNS(
+		    CViewRender__Render,
+		    "5135",
+		    "81 EC 98 00 00 00 53 56 57 6A 04 6A 00 68 ?? ?? ?? ?? 6A 00 8B F1 8B ?? ?? ?? ?? ?? 68 ?? ?? ?? ?? FF ?? ?? ?? ?? ?? 8B BC 24 A8 00 00 00 8B 4F 04");
+	} // namespace client
+
+	namespace engine
+	{
+		PATTERNS(GetScreenAspect, "5135", "83 EC 0C A1 ?? ?? ?? ?? F3");
+	}
+} // namespace patterns
+
 bool Overlay::ShouldLoadFeature()
 {
 	return true;

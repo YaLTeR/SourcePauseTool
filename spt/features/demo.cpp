@@ -20,6 +20,31 @@ ConVar y_spt_pause_demo_on_tick(
     "x < 0 means pause the demo at <demo length> + x, so for example -1 will pause the demo at the last tick.\n\n"
     "Demos ending with changelevels report incorrect length; you can obtain the correct demo length using listdemo and then set this CVar to <demo length> - 1 manually.");
 
+namespace patterns::engine
+{
+	PATTERNS(StopRecording,
+	         "5135",
+	         "56 8B F1 8B 06 8B 50 ?? FF D2 84 C0 74 ?? 8B 86 ?? ?? ?? ?? 85 C0 57",
+	         "1910503",
+	         "55 8B EC 51 56 8B F1 8B 06 8B 50 ?? FF D2 84 C0 0F ?? ?? ?? ?? ?? 8B 86 ?? ?? ?? ?? 57");
+	PATTERNS(Stop,
+	         "5135",
+	         "83 3D ?? ?? ?? ?? 01 75 ?? 8B 0D ?? ?? ?? ?? 8B 01 8B ?? ?? FF D2 84 C0 75 ?? C7",
+	         "1910503",
+	         "83 3D ?? ?? ?? ?? 01 75 ?? 8B 0D ?? ?? ?? ?? 8B 01 8B ?? ?? FF D2 84 C0 75 ?? 68");
+	PATTERNS(SetSignonState,
+	         "5135",
+	         "CC 56 8B F1 8B ?? ?? ?? ?? ?? 8B 01 8B 50 ?? FF D2 84 C0 75 ?? 8B",
+	         "1910503",
+	         "CC 55 8B EC 56 8B F1 8B ?? ?? ?? ?? ?? 8B 01 8B 50 ?? FF D2 84");
+	PATTERNS(
+	    Record,
+	    "2707",
+	    "81 EC 08 01 00 00 E8 ?? ?? ?? ?? 83 F8 02 74 1E E8 ?? ?? ?? ?? 83 F8 03 74 14 68 ?? ?? ?? ?? E8 ?? ?? ?? ?? 83 C4 04 81 C4 08 01 00 00 C3 53 32 DB 88 5C 24 04 E8",
+	    "5135",
+	    "81 EC 08 01 00 00 83 ?? ?? ?? ?? ?? ?? 75 15 68 ?? ?? ?? ?? FF ?? ?? ?? ?? ?? 83 C4 04 81 C4 08 01 00 00 C3");
+} // namespace patterns::engine
+
 void DemoStuff::Demo_StopRecording()
 {
 	spt_demostuff.HOOKED_Stop();
@@ -145,6 +170,8 @@ void DemoStuff::InitHooks()
 	HOOK_FUNCTION(engine, StopRecording);
 	HOOK_FUNCTION(engine, SetSignonState);
 	HOOK_FUNCTION(engine, Stop);
+	// FIXME - y_spt_pause_demo_on_tick does not work
+	// FIND_FUNCTION(engine, Record);
 }
 
 void DemoStuff::UnloadFeature() {}

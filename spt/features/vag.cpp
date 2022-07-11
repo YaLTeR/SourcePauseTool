@@ -15,6 +15,12 @@ ConVar y_spt_prevent_vag_crash(
     FCVAR_CHEAT | FCVAR_DONTRECORD,
     "Prevents the game from crashing from too many recursive teleports (useful when searching for vertical angle glitches).\n");
 
+namespace patterns::server
+{
+	PATTERNS(MiddleOfTeleportTouchingEntity, "5135", "8B 80 24 27 00 00 8B CD 8B A9 24 27 00 00 89 44 24 3C");
+	PATTERNS(EndOfTeleportTouchingEntity, "5135", "E8 E3 CC DB FF 8D 8C 24 B8 00 00 00 E8 17 45 F5 FF");
+} // namespace patterns::server
+
 // y_spt_prevent_vag_crash
 class VAG : public FeatureWrapper<VAG>
 {

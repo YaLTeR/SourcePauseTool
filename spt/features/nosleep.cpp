@@ -4,6 +4,15 @@
 
 ConVar y_spt_focus_nosleep("y_spt_focus_nosleep", "0", 0, "Improves FPS while alt-tabbed.");
 
+namespace patterns::inputsystem
+{
+	PATTERNS(CInputSystem__SleepUntilInput,
+	         "5135",
+	         "8B 44 24 ?? 85 C0 7D ??",
+	         "5377866-BMS_Retail",
+	         "55 8B EC 8B 45 ?? 83 CA FF");
+}
+
 // Gives the option to disable sleeping to improve FPS while alt-tabbed
 class NoSleepFeature : public FeatureWrapper<NoSleepFeature>
 {

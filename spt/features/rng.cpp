@@ -11,6 +11,11 @@
 
 RNGStuff spt_rng;
 
+namespace patterns::server
+{
+	PATTERNS(SetPredictionRandomSeed, "5135", "8B 44 24 ?? 85 C0 75 ?? C7 05 ?? ?? ?? ?? FF FF FF FF");
+}
+
 int RNGStuff::GetPredictionRandomSeed(int commandOffset)
 {
 	int command_number = spt_rng.commandNumber + commandOffset;

@@ -198,6 +198,11 @@ CON_COMMAND_AUTOCOMPLETE(y_spt_ihud_preset,
 	}
 }
 
+namespace patterns::client
+{
+	PATTERNS(DecodeUserCmdFromBuffer, "5135", "83 EC 54 33 C0 D9 EE 89 44 24 ?? D9 54 24 ?? 89 44 24 ??");
+}
+
 bool InputHud::ShouldLoadFeature()
 {
 	return spt_hud.ShouldLoadFeature();

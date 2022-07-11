@@ -7,14 +7,54 @@ const matrix3x4_t matrix3x4_identity(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0);
 
 PhysVisFeature spt_physvis;
 
+namespace patterns
+{
+	namespace engine
+	{
+		PATTERNS(DebugDrawPhysCollide,
+		         "5135",
+		         "81 EC 38 02 00 00 53 55 33 DB 39 9C 24 48 02 00 00 56 57 75 24",
+		         "1910503",
+		         "55 8B EC 81 EC 3C 02 00 00 53 33 DB 56 57 39 5D 0C 75 20");
+	}
+
+	namespace client
+	{
+		PATTERNS(CRendering3dView__DrawTranslucentRenderables,
+		         "5135",
+		         "55 8B EC 83 EC 34 53 8B D9 8B 83 94 00 00 00 8B 13 56 8D B3 94 00 00 00",
+		         "1910503",
+		         "55 8B EC 81 EC 9C 00 00 00 53 56 8B F1 8B 86 E8 00 00 00 8B 16 57 8D BE E8 00 00 00");
+	}
+
+	namespace vphysics
+	{
+		PATTERNS(CPhysicsCollision__CreateDebugMesh,
+		         "5135",
+		         "83 EC 10 8B 4C 24 14 8B 01 8B 40 08 55 56 57 33 ED 8D 54 24 10 52",
+		         "1910503",
+		         "55 8B EC 83 EC 14 8B 4D 08 8B 01 8B 40 08 53 56 57 33 DB 8D 55 EC");
+		PATTERNS(CPhysicsCollision__DestroyDebugMesh,
+		         "5135",
+		         "8B 44 24 08 50 E8 ?? ?? ?? ?? 59 C2 08 00",
+		         "1910503",
+		         "55 8B EC 8B 45 0C 50 E8 ?? ?? ?? ?? 83 C4 04 5D C2 08 00");
+		PATTERNS(CPhysicsObject__GetPosition,
+		         "5135",
+		         "8B 49 08 81 EC 80 00 00 00 8D 04 24 50 E8 ?? ?? ?? ?? 8B 84 24 84 00 00 00 85 C0",
+		         "1910503",
+		         "55 8B EC 8B 49 08 81 EC 80 00 00 00 8D 45 80 50 E8 ?? ?? ?? ?? 8B 45 08 85 C0");
+	} // namespace vphysics
+} // namespace patterns
+
 bool PhysVisFeature::AddPhysVisCallback(PhysVisCallback callback)
 {
 	if (!loadingSuccessful)
 		return false;
 	callbacks.push_back(callback);
-	std::sort(callbacks.begin(), callbacks.end(), [](PhysVisCallback& lhs, PhysVisCallback& rhs) {
-		return lhs.sortKey < rhs.sortKey;
-	});
+	std::sort(callbacks.begin(),
+	          callbacks.end(),
+	          [](PhysVisCallback& lhs, PhysVisCallback& rhs) { return lhs.sortKey < rhs.sortKey; });
 	return true;
 }
 

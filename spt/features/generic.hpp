@@ -15,7 +15,6 @@ typedef void(__fastcall* _SetPaused)(void* thisptr, int edx, bool paused);
 typedef void(__fastcall* _CViewRender__OnRenderStart)(void* thisptr, int edx);
 typedef const Vector&(__cdecl* _MainViewOrigin)();
 typedef void*(__cdecl* _GetClientModeNormal)();
-typedef void(__fastcall* _AdjustAngles)(void* thisptr, int edx, float frametime);
 typedef void(__fastcall* _ControllerMove)(void* thisptr, int edx, float frametime, void* cmd);
 
 // For hooks used by many features
@@ -44,13 +43,11 @@ protected:
 
 private:
 	uintptr_t ORIG_CHudDamageIndicator__GetDamagePosition = 0;
-	uintptr_t ORIG_CHLClient__CanRecordDemo = 0;
 
 	static void __stdcall HOOKED_HudUpdate(bool bActive);
 	static bool __cdecl HOOKED_SV_ActivateServer();
 	static void __fastcall HOOKED_FinishRestore(void* thisptr, int edx);
 	static void __fastcall HOOKED_SetPaused(void* thisptr, int edx, bool paused);
-	static void __fastcall HOOKED_AdjustAngles(void* thisptr, int edx, float frametime);
 	static void __fastcall HOOKED_ControllerMove(void* thisptr, int edx, float frametime, void* cmd);
 };
 

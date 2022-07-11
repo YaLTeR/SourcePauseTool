@@ -15,6 +15,14 @@ ConVar y_spt_on_slide_pause_for("y_spt_on_slide_pause_for",
                                 0,
                                 "Whenever sliding occurs in DMoMM, pause for this many ticks.");
 
+namespace patterns::server
+{
+	PATTERNS(
+	    MiddleOfSlidingFunction,
+	    "dmomm",
+	    "8B 16 8B CE FF 92 ?? ?? ?? ?? 8B 08 89 4C 24 1C 8B 50 04 89 54 24 20 8B 40 08 8D 4C 24 10 51 8D 54 24 20");
+}
+
 // DMoMM stuff
 class DMoMM : public FeatureWrapper<DMoMM>
 {

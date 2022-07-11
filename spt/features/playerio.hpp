@@ -10,7 +10,6 @@
 #include "mathlib\vector.h"
 #endif
 
-typedef void(__fastcall* _CalcAbsoluteVelocity)(void* thisptr, int edx);
 typedef void*(__fastcall* _GetGroundEntity)(void* thisptr, int edx);
 typedef void(
     __fastcall* _CreateMove)(void* thisptr, int edx, int sequence_number, float input_sample_frametime, bool active);

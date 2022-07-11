@@ -5,8 +5,8 @@
 #include <functional>
 #include <unordered_map>
 #include "SPTLib\patterns.hpp"
+#include "SPTLib\memutils.hpp"
 #include "convar.hpp"
-#include "patterns.hpp"
 
 #define DECL_MEMBER_CDECL(type, name, ...) \
 	using _##name = type(__cdecl*)(__VA_ARGS__); \

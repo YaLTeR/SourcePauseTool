@@ -157,37 +157,41 @@ namespace utils
 #ifndef SSDK2013
 	void StartBuildNumberSearch()
 	{
-		BuildResult = std::async(std::launch::async, []() {
-			void* handle;
-			uint8_t* moduleStart;
-			uint8_t* moduleEnd;
-			size_t moduleSize;
-			int build_num = -1;
+		BuildResult = std::async(
+		    std::launch::async,
+		    []()
+		    {
+			    void* handle;
+			    uint8_t* moduleStart;
+			    uint8_t* moduleEnd;
+			    size_t moduleSize;
+			    int build_num = -1;
 
-			if (MemUtils::GetModuleInfo(L"engine.dll",
-			                            &handle,
-			                            reinterpret_cast<void**>(&moduleStart),
-			                            &moduleSize))
-			{
-				moduleEnd = moduleStart + moduleSize;
-				char* BUILD_STRING = "Exe build:";
-				uint8_t* beginNeedle = reinterpret_cast<uint8_t*>(BUILD_STRING);
-				uint8_t* endNeedle = beginNeedle + strlen(BUILD_STRING);
+			    if (MemUtils::GetModuleInfo(L"engine.dll",
+			                                &handle,
+			                                reinterpret_cast<void**>(&moduleStart),
+			                                &moduleSize))
+			    {
+				    moduleEnd = moduleStart + moduleSize;
+				    char* BUILD_STRING = "Exe build:";
+				    uint8_t* beginNeedle = reinterpret_cast<uint8_t*>(BUILD_STRING);
+				    uint8_t* endNeedle = beginNeedle + strlen(BUILD_STRING);
 
-				int match = kmp::match_first(beginNeedle, endNeedle, moduleStart, moduleEnd);
+				    int match = kmp::match_first(beginNeedle, endNeedle, moduleStart, moduleEnd);
 
-				if (match >= 0)
-				{
-					build_num = MluggConvertToBuildNumberCode(match, moduleStart);
-				}
-				else
-				{
-					Warning("Was unable to find date string! Build information not available\n");
-				}
-			}
+				    if (match >= 0)
+				    {
+					    build_num = MluggConvertToBuildNumberCode(match, moduleStart);
+				    }
+				    else
+				    {
+					    Warning(
+					        "Was unable to find date string! Build information not available\n");
+				    }
+			    }
 
-			return build_num;
-		});
+			    return build_num;
+		    });
 	}
 #else
 	struct ConCommand_guts
@@ -251,24 +255,27 @@ namespace utils
 
 	void StartBuildNumberSearch()
 	{
-		BuildResult = std::async(std::launch::async, []() {
-			void* handle;
-			uint8_t* moduleStart;
-			uint8_t* moduleEnd;
-			size_t moduleSize;
-			int build_num = -1;
+		BuildResult = std::async(std::launch::async,
+		                         []()
+		                         {
+			                         void* handle;
+			                         uint8_t* moduleStart;
+			                         uint8_t* moduleEnd;
+			                         size_t moduleSize;
+			                         int build_num = -1;
 
-			if (MemUtils::GetModuleInfo(L"engine.dll",
-			                            &handle,
-			                            reinterpret_cast<void**>(&moduleStart),
-			                            &moduleSize))
-			{
-				moduleEnd = moduleStart + moduleSize;
-				build_num = GetBuildNumberViaVersionCommand(moduleStart, moduleEnd);
-			}
+			                         if (MemUtils::GetModuleInfo(L"engine.dll",
+			                                                     &handle,
+			                                                     reinterpret_cast<void**>(&moduleStart),
+			                                                     &moduleSize))
+			                         {
+				                         moduleEnd = moduleStart + moduleSize;
+				                         build_num =
+				                             GetBuildNumberViaVersionCommand(moduleStart, moduleEnd);
+			                         }
 
-			return build_num;
-		});
+			                         return build_num;
+		                         });
 	}
 #endif
 

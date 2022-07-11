@@ -5,6 +5,16 @@
 typedef void(__cdecl* _Host_AccumulateTime)(float dt);
 ConVar tas_pause("tas_pause", "0", 0, "Does a pause where you can look around when the game is paused.\n");
 
+namespace patterns::engine
+{
+	PATTERNS(_Host_RunFrame,
+	         "5135",
+	         "55 8B EC 83 EC 1C 53 56 57 33 FF 80 3D ?? ?? ?? ?? 00 74 17 E8 ?? ?? ?? ?? 83 F8 FE 74 0D 68");
+	PATTERNS(Host_AccumulateTime,
+	         "5135",
+	         "51 F3 0F 10 ?? ?? ?? ?? ?? F3 0F ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? F3 0F 11 ?? ?? ?? ?? ?? 8B 01 8B 50");
+} // namespace patterns::engine
+
 class TASPause : public FeatureWrapper<TASPause>
 {
 public:

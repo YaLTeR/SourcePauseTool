@@ -569,10 +569,8 @@ void HopsHud::DrawHopHud()
 		x = 6;
 		y = screen->height / 3;
 
-		PrintStrafeCol([](const ljstats::SegmentStats& segment,
-		                  wchar_t* buffer,
-		                  int x,
-		                  int y) { swprintf(buffer, L"%.3f", segment.positiveAccel); },
+		PrintStrafeCol([](const ljstats::SegmentStats& segment, wchar_t* buffer, int x, int y)
+		               { swprintf(buffer, L"%.3f", segment.positiveAccel); },
 		               L"Gain",
 		               x,
 		               y,
@@ -580,10 +578,8 @@ void HopsHud::DrawHopHud()
 
 		x += COL_WIDTH;
 
-		PrintStrafeCol([](const ljstats::SegmentStats& segment,
-		                  wchar_t* buffer,
-		                  int x,
-		                  int y) { swprintf(buffer, L"%.3f", segment.negativeAccel); },
+		PrintStrafeCol([](const ljstats::SegmentStats& segment, wchar_t* buffer, int x, int y)
+		               { swprintf(buffer, L"%.3f", segment.negativeAccel); },
 		               L"Loss",
 		               x,
 		               y,
@@ -592,7 +588,8 @@ void HopsHud::DrawHopHud()
 		x += COL_WIDTH;
 
 		PrintStrafeCol(
-		    [ticks](const ljstats::SegmentStats& segment, wchar_t* buffer, int x, int y) {
+		    [ticks](const ljstats::SegmentStats& segment, wchar_t* buffer, int x, int y)
+		    {
 			    float weight = segment.ticks / (float)ticks;
 			    swprintf(buffer, L"%.3f", weight);
 		    },
@@ -603,10 +600,8 @@ void HopsHud::DrawHopHud()
 
 		x += COL_WIDTH;
 
-		PrintStrafeCol([](const ljstats::SegmentStats& segment,
-		                  wchar_t* buffer,
-		                  int x,
-		                  int y) { swprintf(buffer, L"%.3f", segment.Sync()); },
+		PrintStrafeCol([](const ljstats::SegmentStats& segment, wchar_t* buffer, int x, int y)
+		               { swprintf(buffer, L"%.3f", segment.Sync()); },
 		               L"Sync",
 		               x,
 		               y,
