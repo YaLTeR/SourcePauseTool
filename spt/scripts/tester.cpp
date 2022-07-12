@@ -24,7 +24,7 @@ namespace scripts
 	{
 		this->automatedTest = autoTest;
 		std::string folder(GetFolder(testName));
-		if (std::experimental::filesystem::is_directory(folder))
+		if (std::filesystem::is_directory(folder))
 		{
 			RunAllTests(folder, generating, autoTest);
 			return;
@@ -232,7 +232,7 @@ namespace scripts
 		this->automatedTest = automatedTest;
 		Reset();
 
-		for (auto& entry : std::experimental::filesystem::recursive_directory_iterator(folder))
+		for (auto& entry : std::filesystem::recursive_directory_iterator(folder))
 		{
 			auto& path = entry.path();
 			auto& str = path.string().substr(GetGameDir().length() + 1);

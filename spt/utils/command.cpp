@@ -3,7 +3,7 @@
 #include "command.hpp"
 #include "file.hpp"
 #include <filesystem>
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 int AutoCompletList::AutoCompletionFunc(const char* partial,
                                         char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
