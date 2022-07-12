@@ -221,14 +221,19 @@ CON_COMMAND(y_spt_ihud_add_key, "y_spt_ihud_add_key <key> - Add custom key to ih
 	spt_ihud.AddCustomKey(args.Arg(1));
 }
 
-bool InputHud::ShouldLoadFeature()
+namespace patterns
 {
-	return spt_hud.ShouldLoadFeature();
+	PATTERNS(DecodeUserCmdFromBuffer, "5135", "83 EC 54 33 C0 D9 EE 89 44 24 ?? D9 54 24 ?? 89 44 24 ??");
 }
 
 void InputHud::InitHooks()
 {
 	HOOK_FUNCTION(client, DecodeUserCmdFromBuffer);
+}
+
+bool InputHud::ShouldLoadFeature()
+{
+	return spt_hud.ShouldLoadFeature();
 }
 
 void InputHud::LoadFeature()

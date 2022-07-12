@@ -27,6 +27,16 @@ private:
 
 static FOVFeatures spt_fov;
 
+namespace patterns
+{
+	PATTERNS(
+	    CViewRender__OnRenderStart,
+	    "2707",
+	    "83 EC 38 56 8B F1 8B 0D ?? ?? ?? ?? D9 41 28 57 D8 1D ?? ?? ?? ?? DF E0 F6 C4 05 7A 35 A1 ?? ?? ?? ?? D9 40 28 8B 0D",
+	    "missinginfo1_4_7",
+	    "55 8B EC 83 EC 24 89 4D E0 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? D8 1D ?? ?? ?? ?? DF E0 F6 C4 05 7A 5A");
+}
+
 void FOVFeatures::InitHooks()
 {
 	HOOK_FUNCTION(client, CViewRender__OnRenderStart);

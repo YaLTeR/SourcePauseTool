@@ -18,6 +18,27 @@ const std::string FONT_DefaultFixedOutline = "DefaultFixedOutline";
 const std::string FONT_Trebuchet20 = "Trebuchet20";
 const std::string FONT_Trebuchet24 = "Trebuchet24";
 
+namespace patterns
+{
+	PATTERNS(VGui_Paint, "5135", "E8 ?? ?? ?? ?? 8B 10 8B 52 34 8B C8 FF E2 CC CC");
+	PATTERNS(
+	    StartDrawing,
+	    "5135",
+	    "55 8B EC 83 E4 C0 83 EC 38 80 ?? ?? ?? ?? ?? ?? 56 57 8B F9 75 57 8B ?? ?? ?? ?? ?? C6 ?? ?? ?? ?? ?? ?? FF ?? 8B 10 6A 00 8B C8 8B 42 20");
+	PATTERNS(
+	    FinishDrawing,
+	    "5135",
+	    "56 6A 00 E8 ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? 8B 01 8B ?? ?? ?? ?? ?? 83 C4 04 FF D2 8B F0 85 F6 74 09 8B 06 8B 50 08 8B CE FF D2");
+
+} // namespace patterns
+
+void HUDFeature::InitHooks()
+{
+	FIND_PATTERN(vguimatsurface, StartDrawing);
+	FIND_PATTERN(vguimatsurface, FinishDrawing);
+	HOOK_FUNCTION(engine, VGui_Paint);
+}
+
 bool HUDFeature::AddHudCallback(HudCallback callback)
 {
 	if (!this->loadingSuccessful)
@@ -79,13 +100,6 @@ bool HUDFeature::GetFont(const std::string& fontName, vgui::HFont& fontOut)
 	}
 }
 
-void HUDFeature::InitHooks()
-{
-	FIND_PATTERN(vguimatsurface, StartDrawing);
-	FIND_PATTERN(vguimatsurface, FinishDrawing);
-	HOOK_FUNCTION(engine, VGui_Paint);
-}
-
 void HUDFeature::LoadFeature()
 {
 	if (loadingSuccessful)
@@ -116,9 +130,9 @@ void HUDFeature::DrawHUD()
 	{
 		if (!callbacksSorted)
 		{
-			std::sort(hudCallbacks.begin(), hudCallbacks.end(), [](HudCallback& lhs, HudCallback& rhs) {
-				return lhs.sortKey < rhs.sortKey;
-			});
+			std::sort(hudCallbacks.begin(),
+			          hudCallbacks.end(),
+			          [](HudCallback& lhs, HudCallback& rhs) { return lhs.sortKey < rhs.sortKey; });
 			callbacksSorted = true;
 		}
 

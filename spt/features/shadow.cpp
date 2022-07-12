@@ -24,6 +24,27 @@ CON_COMMAND_F(y_spt_set_shadow_roll, "Sets the player's physics shadow roll in d
 
 ShadowPosition spt_player_shadow;
 
+namespace patterns
+{
+	PATTERNS(
+	    GetShadowPosition,
+	    "5135",
+	    "81 EC ?? ?? ?? ?? 8B 41 ?? 8B 40 ?? 8B 40",
+	    "5377866",
+	    "55 8B EC 81 EC ?? ?? ?? ?? 8B 41 08 8B 40 08 8B 50",
+	    "BMS-Retail",
+	    "55 8B EC 81 EC ?? ?? ?? ?? A1 ?? ?? ?? ?? 33 C5 89 45 FC 8B 41 ?? 56 8B 75 ?? 57 8B 40 ?? 8B 7D ?? 8B 50");
+	PATTERNS(beam_object_to_new_position, "5135", "81 EC D8 00 00 00 53 8B D9 F7 43 78 00 0C 00 00");
+} // namespace patterns
+
+void ShadowPosition::InitHooks()
+{
+	HOOK_FUNCTION(vphysics, GetShadowPosition);
+	FIND_PATTERN(vphysics, beam_object_to_new_position);
+	PlayerHavokPos.Init();
+	PlayerHavokAngles.Init();
+}
+
 int __fastcall ShadowPosition::HOOKED_GetShadowPosition(void* thisptr, int _, Vector* worldPosition, QAngle* angles)
 {
 	auto& feat = spt_player_shadow;
@@ -39,14 +60,6 @@ int __fastcall ShadowPosition::HOOKED_GetShadowPosition(void* thisptr, int _, Ve
 bool ShadowPosition::ShouldLoadFeature()
 {
 	return true;
-}
-
-void ShadowPosition::InitHooks()
-{
-	HOOK_FUNCTION(vphysics, GetShadowPosition);
-	FIND_PATTERN(vphysics, beam_object_to_new_position);
-	PlayerHavokPos.Init();
-	PlayerHavokAngles.Init();
 }
 
 void ShadowPosition::LoadFeature()

@@ -28,6 +28,15 @@ bool NoSleepFeature::ShouldLoadFeature()
 	return true;
 }
 
+namespace patterns
+{
+	PATTERNS(CInputSystem__SleepUntilInput,
+	         "5135",
+	         "8B 44 24 ?? 85 C0 7D ??",
+	         "5377866-BMS_Retail",
+	         "55 8B EC 8B 45 ?? 83 CA FF");
+}
+
 void NoSleepFeature::InitHooks()
 {
 	HOOK_FUNCTION(inputsystem, CInputSystem__SleepUntilInput);

@@ -23,20 +23,89 @@ const char* GetGameDirectoryOE()
 }
 #endif
 
+CON_COMMAND(y_spt_build, "Returns the build number of the game")
+{
+	Msg("The build is: %d\n", utils::GetBuildNumber());
+}
+
 GenericFeature spt_generic;
 
-Vector GenericFeature::GetCameraOrigin()
+namespace patterns
 {
-	if (ORIG_MainViewOrigin)
-		return ORIG_MainViewOrigin();
-	else
-		return Vector(0, 0, 0);
-}
+	PATTERNS(
+	    SV_ActivateServer,
+	    "5135",
+	    "83 EC 08 57 8B 3D ?? ?? ?? ?? 68 ?? ?? ?? ?? FF D7 83 C4 04 E8 ?? ?? ?? ?? 8B 10",
+	    "5339",
+	    "55 8B EC 83 EC 0C 57 8B 3D ?? ?? ?? ?? 68 ?? ?? ?? ?? FF D7 83 C4 04 E8 ?? ?? ?? ?? 8B 10",
+	    "2257546",
+	    "55 8B EC 83 EC 0C 53 8B 1D ?? ?? ?? ?? 57 68 ?? ?? ?? ?? FF D3 83 C4 04 E8 ?? ?? ?? ?? 6A 0B",
+	    "2707",
+	    "6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 64 89 25 00 00 00 00 51 68 ?? ?? ?? ?? E8 ?? ?? ?? ?? 83 C4 04 E8 ?? ?? ?? ?? 8B 10 6A 0B 8B C8 FF 92",
+	    "6879",
+	    "55 8B EC 83 EC 08 56 57 8B 3D ?? ?? ?? ?? 68 ?? ?? ?? ?? FF D7 83 C4 04 E8 ?? ?? ?? ?? 8B 10 8B C8");
+	PATTERNS(FinishRestore,
+	         "5135",
+	         "81 EC A4 06 00 00 33 C0 55 8B E9 8D 8C 24 20 01 00 00 89 84 24 08 01 00 00",
+	         "5339",
+	         "55 8B EC 81 EC A4 06 00 00 33 C0 53 8B D9 8D 8D 74 F9 FF FF 89 85 5C F9 FF FF",
+	         "2257546",
+	         "55 8B EC 81 EC A4 06 00 00 33 C0 53 8B D9 89 85 5C F9 FF FF 8D 8D 74 F9 FF FF",
+	         "2707",
+	         "55 8B EC 83 E4 F8 81 EC 8C 06 00 00 55 56 57 8B E9 80 BD ?? ?? ?? ?? 00 0F 84 C0 00 00 00",
+	         "BMS-Retail",
+	         "55 8B EC 81 EC A8 06 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 FC 33 C0 53 8B D9 89 85 58 F9 FF FF",
+	         "4044",
+	         "55 8B EC 83 E4 F8 81 EC 8C 06 00 00 55 56 57 8B E9 80 BD ?? 01 00 00 00 0F 84 BE 00 00 00 33 C0",
+	         "6879",
+	         "55 8B EC 81 EC ?? ?? ?? ?? 53 8B D9 8D 8D ?? ?? ?? ?? E8 ?? ?? ?? ?? 80 BB ?? ?? ?? ?? ?? 75 1B");
+	PATTERNS(
+	    SetPaused,
+	    "5135",
+	    "83 EC 14 56 8B F1 8B 06 8B 50 ?? FF D2 84 C0 74 ?? 8B 06 8B 50 ?? 8B CE FF D2 84 C0 74 ?? 8A 44 24 1C 8B 16 8B 92 80 00 00 00",
+	    "5339",
+	    "55 8B EC 83 EC 14 56 8B F1 8B 06 8B 50 ?? FF D2 84 C0 74 ?? 8B 06 8B 50 ?? 8B CE FF D2 84 C0 74 ?? 8A 45 08 8B 16 8B 92 80 00 00 00",
+	    "4104",
+	    "83 EC 14 56 8B F1 8B 06 8B 50 ?? FF D2 84 C0 74 ?? 8B 06 8B 50 ?? 8B CE FF D2 84 C0 74 ?? 8A 44 24 1C 8B 16 8B 52 7C 33 C9 84 C0",
+	    "2257546",
+	    "55 8B EC 83 EC 14 56 8B F1 8B 06 8B 40 ?? FF D0 84 C0 74 ?? 8B 06 8B CE 8B 40 ?? FF D0 84 C0 74 ?? 8A 4D 08 33 C0 84 C9 88 4D FC 6A 00",
+	    "2707",
+	    "64 A1 00 00 00 00 6A FF 68 ?? ?? ?? ?? 50 64 89 25 00 00 00 00 83 EC 14 56 8B F1 8B 06 FF 50 ?? 84 C0 74 59 8B 16 8B CE FF 52",
+	    "6879",
+	    "55 8B EC 83 EC 14 56 8B F1 83 7E 04 03 74 0B 8B 06 8B 50 68 FF D2 84 C0 74 46 8B 06 8B 50 54 8B CE");
+	PATTERNS(
+	    HudUpdate,
+	    "5135",
+	    "51 A1 ?? ?? ?? ?? D9 40 10 56 83 EC 08 D9 54 24 0C DD 1C 24 E8 ?? ?? ?? ?? 8B C8 E8 ?? ?? ?? ?? 8B 4C 24 0C 51 B9",
+	    "5339",
+	    "55 8B EC 51 A1 ?? ?? ?? ?? D9 40 10 56 83 EC 08 D9 55 FC DD 1C 24 E8 ?? ?? ?? ?? 8B C8 E8 ?? ?? ?? ?? 8B 4D 08 51 B9",
+	    "2257546",
+	    "55 8B EC 51 A1 ?? ?? ?? ?? 56 83 EC 08 D9 40 10 D9 55 FC DD 1C 24 E8 ?? ?? ?? ?? 8B C8 E8 ?? ?? ?? ?? FF 75 08 B9",
+	    "bms",
+	    "55 8B EC 51 A1 ?? ?? ?? ?? F3 0F 10 40 10 56 F3 0F 11 45 FC 83 EC 08 0F 5A C0 F2 0F 11 04 24 E8 ?? ?? ?? ?? 8B C8",
+	    "2707",
+	    "51 A1 ?? ?? ?? ?? 8B 48 10 89 4C 24 00 E8 ?? ?? ?? ?? D9 44 24 00 83 EC 08 DD 1C 24 E8 ?? ?? ?? ?? 8B C8 E8",
+	    "dmomm",
+	    "51 A1 ?? ?? ?? ?? 8B 48 10 89 0C 24 D9 04 24 83 EC 08 DD 1C 24 E8 ?? ?? ?? ?? 8B C8 E8",
+	    "6879",
+	    "55 8B EC 83 EC 24 A1 ?? ?? ?? ?? F3 0F 10 40 ?? 53 56 F3 0F 11 45 ?? 83 EC 08 0F 5A C0 F2 0F 11 04 24",
+	    "missinginfo1_4_7",
+	    "55 8B EC 83 EC 08 89 4D F8 A1 ?? ?? ?? ?? 8B 48 10 89 4D FC E8 ?? ?? ?? ?? D9 45 FC 83 EC 08 DD 1C 24",
+	    "hl1movement",
+	    "55 8B EC 51 A1 ?? ?? ?? ?? 56 83 EC 08 F3 0F 10 40 10 F3 0F 11 45 FC 0F 5A C0 F2 0F 11 04 24 E8 ?? ?? ?? ?? 8B C8");
+	PATTERNS(ControllerMove,
+	         "5135",
+	         "56 8B F1 80 BE ?? ?? ?? ?? 00 57 8B 7C 24 ?? 75 ??",
+	         "hls-220622",
+	         "55 8B EC 56 8B F1 57 8B 7D ?? 80 BE ?? ?? ?? ?? 00");
+	PATTERNS(
+	    CHudDamageIndicator__GetDamagePosition,
+	    "5135",
+	    "83 EC 18 E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 08 89 4C 24 0C 8B 50 04 6A 00 89 54 24 14 8B 40 08 6A 00 8D 4C 24 08 51 8D 54 24 18 52 89 44 24 24",
+	    "1910503",
+	    "55 8B EC 83 EC 18 56 8B F1 E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? F3 0F 7E 00 6A 00 6A 00 8D 4D F4 66 0F D6 45 E8");
 
-bool GenericFeature::ShouldLoadFeature()
-{
-	return true;
-}
+} // namespace patterns
 
 void GenericFeature::InitHooks()
 {
@@ -48,9 +117,17 @@ void GenericFeature::InitHooks()
 	FIND_PATTERN(client, CHudDamageIndicator__GetDamagePosition);
 }
 
-CON_COMMAND(y_spt_build, "Returns the build number of the game")
+bool GenericFeature::ShouldLoadFeature()
 {
-	Msg("The build is: %d\n", utils::GetBuildNumber());
+	return true;
+}
+
+Vector GenericFeature::GetCameraOrigin()
+{
+	if (ORIG_MainViewOrigin)
+		return ORIG_MainViewOrigin();
+	else
+		return Vector(0, 0, 0);
 }
 
 void GenericFeature::LoadFeature()
@@ -77,13 +154,6 @@ void GenericFeature::LoadFeature()
 			break;
 		}
 		DevMsg("[client.dll] Found MainViewOrigin at %p\n", ORIG_MainViewOrigin);
-	}
-
-	if (ORIG_CHLClient__CanRecordDemo)
-	{
-		int offset = *reinterpret_cast<int*>(ORIG_CHLClient__CanRecordDemo + 1);
-		ORIG_GetClientModeNormal = (_GetClientModeNormal)(offset + ORIG_CHLClient__CanRecordDemo + 5);
-		DevMsg("[client.dll] Found GetClientModeNormal at %p\n", ORIG_GetClientModeNormal);
 	}
 }
 

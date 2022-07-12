@@ -39,16 +39,60 @@ ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement
 ConVar y_spt_hud_velocity("y_spt_hud_velocity", "0", FCVAR_CHEAT, "Turns on the velocity hud.\n");
 ConVar y_spt_hud_velocity_angles("y_spt_hud_velocity_angles", "0", FCVAR_CHEAT, "Display velocity Euler angles.");
 
-bool PlayerIOFeature::ShouldLoadFeature()
+namespace patterns
 {
-	return interfaces::engine != nullptr && spt_entutils.ShouldLoadFeature();
-}
+	PATTERNS(
+	    GetButtonBits,
+	    "5135",
+	    "55 56 8B E9 B1 03 33 F6 84 0D ?? ?? ?? ?? 57 74 05 BE 00 00 02 00 8B 15 ?? ?? ?? ?? F7 C2 00 00 02 00 B8 FD FF FF",
+	    "5339",
+	    "55 8B EC 56 33 F6 F6 05 ?? ?? ?? ?? 03 74 05 BE 00 00 02 00 8B 15 ?? ?? ?? ?? B8 FD FF FF FF F7 C2 00 00 02 00 74",
+	    "2257546",
+	    "55 8B EC 51 8B 15 ?? ?? ?? ?? B8 00 00 02 00 53 56 33 F6 8B D9 F6 C2 03 B9 FD FF FF FF 57 0F 45 F0 BF FC FF FF FF",
+	    "2707",
+	    "51 A0 ?? ?? ?? ?? B2 03 84 C2 C7 44 24 00 00 00 00 00 74 08 C7 44 24 00 00 00 02 00 8B 0D ?? ?? ?? ?? F7 C1 00 00 02 00",
+	    "4044-episodic",
+	    "56 B0 03 33 F6 84 05 ?? ?? ?? ?? 74 05 BE ?? ?? ?? ?? 8B 15 ?? ?? ?? ?? F7 C2 ?? ?? ?? ?? B9",
+	    "6879",
+	    "55 8B EC 83 EC 0C 56 8B F1 8B 0D ?? ?? ?? ?? 8B 01 8B 90 ?? ?? ?? ?? 57 89 75 F8 FF D2 8B F8 C7 45",
+	    "missinginfo1_4_7",
+	    "55 8B EC 83 EC 08 89 4D F8 C7 45 ?? ?? ?? ?? ?? 83 7D 08 00 0F 95 C0 50 68 ?? ?? ?? ?? 8B 0D");
+	PATTERNS(
+	    CreateMove,
+	    "5135",
+	    "83 EC 14 53 D9 EE 55 56 57 8B F9 8B 4C 24 28 B8 B7 60 0B B6 F7 E9 03 D1 C1 FA 06 8B C2 C1 E8 1F 03 D0 6B D2 5A 8B C1 2B C2 8B F0 6B C0 58 03 87",
+	    "4104",
+	    "83 EC 14 53 D9 EE 55 56 57 8B F9 8B 4C 24 28 B8 B7 60 0B B6 F7 E9 03 D1 C1 FA 06 8B C2 C1 E8 1F 03 C2 6B C0 5A 8B F1 2B F0 6B F6 54 03 B7 C4 00",
+	    "1910503",
+	    "55 8B EC 83 EC 50 53 8B D9 8B 4D 08 B8 ?? ?? ?? ?? F7 E9 03 D1 C1 FA 06 8B C2 C1 E8 1F 03 D0 0F 57 C0",
+	    "2257546",
+	    "55 8B EC 83 EC 54 53 56 8B 75 08 B8 ?? ?? ?? ?? F7 EE 57 03 D6 8B F9 C1 FA 06 8B CE 8B C2 C1 E8 1F",
+	    "2257546-hl1",
+	    "55 8B EC 83 EC 50 53 8B 5D 08 B8 ?? ?? ?? ?? F7 EB 56 03 D3 C1 FA 06 8B C2 C1 E8 1F 03 C2 8B D3",
+	    "BMS-Retail",
+	    "55 8B EC 83 EC 54 53 56 8B 75 08 B8 ?? ?? ?? ?? F7 EE 57 03 D6 8B F9 C1 FA 06 8B CE 8B C2 C1 E8 1F 03 C2 6B C0 5A");
+	PATTERNS(
+	    GetGroundEntity,
+	    "5135",
+	    "8B 81 EC 01 00 00 83 F8 FF 74 20 8B 15 ?? ?? ?? ?? 8B C8 81 E1 FF 0F 00 00 C1 E1 04 8D 4C",
+	    "4104",
+	    "8B 81 E8 01 00 00 83 F8 FF 74 20 8B 15 ?? ?? ?? ?? 8B C8 81 E1 FF 0F 00 00 C1 E1 04 8D 4C 11 04",
+	    "1910503",
+	    "8B 81 50 02 00 00 83 F8 FF 74 1F 8B 15 ?? ?? ?? ?? 8B C8 81 E1 ?? ?? ?? ?? 03 C9 8D 4C CA 04 C1 E8 0C",
+	    "2257546",
+	    "8B 91 50 02 00 00 83 FA FF 74 1D A1 ?? ?? ?? ?? 8B CA 81 E1 ?? ?? ?? ?? C1 EA 0C 03 C9 39 54 C8 08");
+} // namespace patterns
 
 void PlayerIOFeature::InitHooks()
 {
 	HOOK_FUNCTION(client, CreateMove);
 	HOOK_FUNCTION(client, GetButtonBits);
 	FIND_PATTERN(client, GetGroundEntity);
+}
+
+bool PlayerIOFeature::ShouldLoadFeature()
+{
+	return interfaces::engine != nullptr && spt_entutils.ShouldLoadFeature();
 }
 
 void PlayerIOFeature::UnloadFeature() {}
@@ -790,7 +834,8 @@ void PlayerIOFeature::LoadFeature()
 #if defined(SSDK2007)
 		AddHudCallback(
 		    "accelerate",
-		    [this]() {
+		    [this]()
+		    {
 			    auto vars = GetMovementVars();
 			    spt_hud.DrawTopHudElement(L"accelerate: %.3f", vars.Accelerate);
 			    spt_hud.DrawTopHudElement(L"airaccelerate: %.3f", vars.Airaccelerate);
@@ -816,7 +861,8 @@ void PlayerIOFeature::LoadFeature()
 
 			AddHudCallback(
 			    "accel(xyz)",
-			    [this]() {
+			    [this]()
+			    {
 				    Vector accel = currentVelocity - previousVelocity;
 				    spt_hud.DrawTopHudElement(L"accel(xyz): %.3f %.3f %.3f", accel.x, accel.y, accel.z);
 				    spt_hud.DrawTopHudElement(L"accel(xy): %.3f", accel.Length2D());
@@ -826,7 +872,8 @@ void PlayerIOFeature::LoadFeature()
 
 		AddHudCallback(
 		    "vel(xyz)",
-		    [this]() {
+		    [this]()
+		    {
 			    Vector currentVel = GetPlayerVelocity();
 			    spt_hud.DrawTopHudElement(L"vel(xyz): %.3f %.3f %.3f",
 			                              currentVel.x,
@@ -838,7 +885,8 @@ void PlayerIOFeature::LoadFeature()
 
 		AddHudCallback(
 		    "vel(p/y/r)",
-		    [this]() {
+		    [this]()
+		    {
 			    Vector currentVel = GetPlayerVelocity();
 			    QAngle angles;
 			    VectorAngles(currentVel, Vector(0, 0, 1), angles);
@@ -850,10 +898,10 @@ void PlayerIOFeature::LoadFeature()
 		{
 			AddHudCallback(
 			    "ag sg",
-			    [this]() {
+			    [this]()
+			    {
 				    Vector v = spt_playerio.GetPlayerEyePos();
 				    QAngle q;
-
 				    std::wstring result = calculateWillAGSG(v, q);
 				    spt_hud.DrawTopHudElement(L"ag sg: %s", result.c_str());
 			    },
@@ -886,7 +934,8 @@ void PlayerIOFeature::LoadFeature()
 	{
 		AddHudCallback(
 		    "fl_",
-		    [this]() {
+		    [this]()
+		    {
 			    int flags = spt_playerio.m_fFlags.GetValue();
 			    DrawFlagsHud(false, NULL, FLAGS, ARRAYSIZE(FLAGS), flags);
 		    },
@@ -897,7 +946,8 @@ void PlayerIOFeature::LoadFeature()
 	{
 		AddHudCallback(
 		    "moveflags",
-		    [this]() {
+		    [this]()
+		    {
 			    int flags = spt_playerio.m_MoveType.GetValue();
 			    DrawFlagsHud(true, L"Move type", MOVETYPE_FLAGS, ARRAYSIZE(MOVETYPE_FLAGS), flags);
 		    },
@@ -908,7 +958,8 @@ void PlayerIOFeature::LoadFeature()
 	{
 		AddHudCallback(
 		    "collisionflags",
-		    [this]() {
+		    [this]()
+		    {
 			    int flags = spt_playerio.m_CollisionGroup.GetValue();
 			    DrawFlagsHud(true,
 			                 L"Collision group",
@@ -923,7 +974,8 @@ void PlayerIOFeature::LoadFeature()
 	{
 		AddHudCallback(
 		    "movecollide",
-		    [this]() {
+		    [this]()
+		    {
 			    int flags = spt_playerio.m_MoveCollide.GetValue();
 			    DrawFlagsHud(true, L"Move collide", MOVECOLLIDE_FLAGS, ARRAYSIZE(MOVECOLLIDE_FLAGS), flags);
 		    },

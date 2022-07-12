@@ -11,6 +11,16 @@
 
 RNGStuff spt_rng;
 
+namespace patterns
+{
+	PATTERNS(SetPredictionRandomSeed, "5135", "8B 44 24 ?? 85 C0 75 ?? C7 05 ?? ?? ?? ?? FF FF FF FF");
+}
+
+void RNGStuff::InitHooks()
+{
+	HOOK_FUNCTION(server, SetPredictionRandomSeed);
+}
+
 int RNGStuff::GetPredictionRandomSeed(int commandOffset)
 {
 	int command_number = spt_rng.commandNumber + commandOffset;
@@ -20,11 +30,6 @@ int RNGStuff::GetPredictionRandomSeed(int commandOffset)
 bool RNGStuff::ShouldLoadFeature()
 {
 	return true;
-}
-
-void RNGStuff::InitHooks()
-{
-	HOOK_FUNCTION(server, SetPredictionRandomSeed);
 }
 
 void RNGStuff::LoadFeature() {}

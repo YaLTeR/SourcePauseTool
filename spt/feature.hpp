@@ -5,8 +5,8 @@
 #include <functional>
 #include <unordered_map>
 #include "SPTLib\patterns.hpp"
+#include "SPTLib\memutils.hpp"
 #include "convar.hpp"
-#include "patterns.hpp"
 
 #define DECL_MEMBER_CDECL(type, name, ...) \
 	using _##name = type(__cdecl*)(__VA_ARGS__); \
@@ -32,13 +32,9 @@
 #define ADD_RAW_HOOK(moduleName, name) \
 	AddRawHook(#moduleName, reinterpret_cast<void**>(&ORIG_##name##), reinterpret_cast<void*>(HOOKED_##name##));
 #define FIND_PATTERN(moduleName, name) \
-	AddPatternHook(patterns::##moduleName## ::##name##, \
-	               #moduleName, \
-	               #name, \
-	               reinterpret_cast<void**>(&ORIG_##name##), \
-	               nullptr);
+	AddPatternHook(patterns::##name##, #moduleName, #name, reinterpret_cast<void**>(&ORIG_##name##), nullptr);
 #define HOOK_FUNCTION(moduleName, name) \
-	AddPatternHook(patterns::##moduleName## ::##name##, \
+	AddPatternHook(patterns::##name##, \
 	               #moduleName, \
 	               #name, \
 	               reinterpret_cast<void**>(&ORIG_##name##), \

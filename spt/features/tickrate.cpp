@@ -6,6 +6,26 @@
 
 TickrateMod spt_tickrate;
 
+bool TickrateMod::ShouldLoadFeature()
+{
+	return true;
+}
+
+namespace patterns
+{
+	PATTERNS(
+	    MiddleOfSV_InitGameDLL,
+	    "4104",
+	    "8B 0D ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? FF ?? D9 15 ?? ?? ?? ?? DD 05 ?? ?? ?? ?? DB F1 DD 05 ?? ?? ?? ?? 77 08 D9 CA DB F2 76 1F D9 CA",
+	    "4044",
+	    "8B 0D ?? ?? ?? ?? 8B 01 83 C4 14 FF 50 24 D9 15 ?? ?? ?? ?? DC 1D ?? ?? ?? ?? DF E0 F6 C4 05 7B 13");
+}
+
+void TickrateMod::InitHooks()
+{
+	FIND_PATTERN(engine, MiddleOfSV_InitGameDLL);
+}
+
 float TickrateMod::GetTickrate()
 {
 	if (pIntervalPerTick)
@@ -18,16 +38,6 @@ void TickrateMod::SetTickrate(float tickrate)
 {
 	if (pIntervalPerTick)
 		*pIntervalPerTick = tickrate;
-}
-
-bool TickrateMod::ShouldLoadFeature()
-{
-	return true;
-}
-
-void TickrateMod::InitHooks()
-{
-	FIND_PATTERN(engine, MiddleOfSV_InitGameDLL);
 }
 
 void TickrateMod::UnloadFeature() {}
