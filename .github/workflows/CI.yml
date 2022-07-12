@@ -45,12 +45,3 @@ jobs:
           name: ${{ matrix.Configuration }}${{ matrix.config.Configuration_2 }} - ${{ steps.get_spt_filename.outputs.spt_filename }}
           path: ${{ matrix.Configuration }}${{ matrix.config.Configuration_2 }}\${{ steps.get_spt_filename.outputs.spt_filename }}.dll
           if-no-files-found: error
-
-  Format:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
-      - name: Format
-        run: |
-          chmod +x run-clang-format.py
-          ./run-clang-format.py --clang-format-executable clang-format-11 --recursive spt
