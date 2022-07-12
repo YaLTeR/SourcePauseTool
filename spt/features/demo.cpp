@@ -20,58 +20,38 @@ ConVar y_spt_pause_demo_on_tick(
     "x < 0 means pause the demo at <demo length> + x, so for example -1 will pause the demo at the last tick.\n\n"
     "Demos ending with changelevels report incorrect length; you can obtain the correct demo length using listdemo and then set this CVar to <demo length> - 1 manually.");
 
-void DemoStuff::Demo_StopRecording()
+namespace patterns
 {
-	spt_demostuff.HOOKED_Stop();
-}
+	PATTERNS(StopRecording,
+	         "5135",
+	         "56 8B F1 8B 06 8B 50 ?? FF D2 84 C0 74 ?? 8B 86 ?? ?? ?? ?? 85 C0 57",
+	         "1910503",
+	         "55 8B EC 51 56 8B F1 8B 06 8B 50 ?? FF D2 84 C0 0F ?? ?? ?? ?? ?? 8B 86 ?? ?? ?? ?? 57");
+	PATTERNS(Stop,
+	         "5135",
+	         "83 3D ?? ?? ?? ?? 01 75 ?? 8B 0D ?? ?? ?? ?? 8B 01 8B ?? ?? FF D2 84 C0 75 ?? C7",
+	         "1910503",
+	         "83 3D ?? ?? ?? ?? 01 75 ?? 8B 0D ?? ?? ?? ?? 8B 01 8B ?? ?? FF D2 84 C0 75 ?? 68");
+	PATTERNS(SetSignonState,
+	         "5135",
+	         "CC 56 8B F1 8B ?? ?? ?? ?? ?? 8B 01 8B 50 ?? FF D2 84 C0 75 ?? 8B",
+	         "1910503",
+	         "CC 55 8B EC 56 8B F1 8B ?? ?? ?? ?? ?? 8B 01 8B 50 ?? FF D2 84");
+	PATTERNS(
+	    Record,
+	    "2707",
+	    "81 EC 08 01 00 00 E8 ?? ?? ?? ?? 83 F8 02 74 1E E8 ?? ?? ?? ?? 83 F8 03 74 14 68 ?? ?? ?? ?? E8 ?? ?? ?? ?? 83 C4 04 81 C4 08 01 00 00 C3 53 32 DB 88 5C 24 04 E8",
+	    "5135",
+	    "81 EC 08 01 00 00 83 ?? ?? ?? ?? ?? ?? 75 15 68 ?? ?? ?? ?? FF ?? ?? ?? ?? ?? 83 C4 04 81 C4 08 01 00 00 C3");
+} // namespace patterns
 
-int DemoStuff::Demo_GetPlaybackTick() const
+void DemoStuff::InitHooks()
 {
-	if (!pDemoplayer)
-		return 0;
-	auto demoplayer = *pDemoplayer;
-	return (*reinterpret_cast<int(__fastcall***)(void*)>(demoplayer))[GetPlaybackTick_Offset](demoplayer);
-}
-
-int DemoStuff::Demo_GetTotalTicks() const
-{
-	if (!pDemoplayer)
-		return 0;
-	auto demoplayer = *pDemoplayer;
-	return (*reinterpret_cast<int(__fastcall***)(void*)>(demoplayer))[GetTotalTicks_Offset](demoplayer);
-}
-
-bool DemoStuff::Demo_IsPlayingBack() const
-{
-	if (!pDemoplayer)
-		return false;
-	auto demoplayer = *pDemoplayer;
-	return (*reinterpret_cast<bool(__fastcall***)(void*)>(demoplayer))[IsPlayingBack_Offset](demoplayer);
-}
-
-bool DemoStuff::Demo_IsPlaybackPaused() const
-{
-	if (!pDemoplayer)
-		return false;
-	auto demoplayer = *pDemoplayer;
-	return (*reinterpret_cast<bool(__fastcall***)(void*)>(demoplayer))[IsPlaybackPaused_Offset](demoplayer);
-}
-
-bool DemoStuff::Demo_IsAutoRecordingAvailable() const
-{
-	return (ORIG_StopRecording && ORIG_SetSignonState);
-}
-
-void DemoStuff::StartAutorecord()
-{
-	spt_demostuff.isAutoRecordingDemo = true;
-	spt_demostuff.currentAutoRecordDemoNumber = 0;
-}
-
-void DemoStuff::StopAutorecord()
-{
-	spt_demostuff.isAutoRecordingDemo = false;
-	spt_demostuff.currentAutoRecordDemoNumber = 1;
+	HOOK_FUNCTION(engine, StopRecording);
+	HOOK_FUNCTION(engine, SetSignonState);
+	HOOK_FUNCTION(engine, Stop);
+	// FIXME - y_spt_pause_demo_on_tick does not work
+	// FIND_FUNCTION(engine, Record);
 }
 
 bool DemoStuff::ShouldLoadFeature()
@@ -140,14 +120,61 @@ void DemoStuff::PreHook()
 	}
 }
 
-void DemoStuff::InitHooks()
+void DemoStuff::UnloadFeature() {}
+
+void DemoStuff::Demo_StopRecording()
 {
-	HOOK_FUNCTION(engine, StopRecording);
-	HOOK_FUNCTION(engine, SetSignonState);
-	HOOK_FUNCTION(engine, Stop);
+	spt_demostuff.HOOKED_Stop();
 }
 
-void DemoStuff::UnloadFeature() {}
+int DemoStuff::Demo_GetPlaybackTick() const
+{
+	if (!pDemoplayer)
+		return 0;
+	auto demoplayer = *pDemoplayer;
+	return (*reinterpret_cast<int(__fastcall***)(void*)>(demoplayer))[GetPlaybackTick_Offset](demoplayer);
+}
+
+int DemoStuff::Demo_GetTotalTicks() const
+{
+	if (!pDemoplayer)
+		return 0;
+	auto demoplayer = *pDemoplayer;
+	return (*reinterpret_cast<int(__fastcall***)(void*)>(demoplayer))[GetTotalTicks_Offset](demoplayer);
+}
+
+bool DemoStuff::Demo_IsPlayingBack() const
+{
+	if (!pDemoplayer)
+		return false;
+	auto demoplayer = *pDemoplayer;
+	return (*reinterpret_cast<bool(__fastcall***)(void*)>(demoplayer))[IsPlayingBack_Offset](demoplayer);
+}
+
+bool DemoStuff::Demo_IsPlaybackPaused() const
+{
+	if (!pDemoplayer)
+		return false;
+	auto demoplayer = *pDemoplayer;
+	return (*reinterpret_cast<bool(__fastcall***)(void*)>(demoplayer))[IsPlaybackPaused_Offset](demoplayer);
+}
+
+bool DemoStuff::Demo_IsAutoRecordingAvailable() const
+{
+	return (ORIG_StopRecording && ORIG_SetSignonState);
+}
+
+void DemoStuff::StartAutorecord()
+{
+	spt_demostuff.isAutoRecordingDemo = true;
+	spt_demostuff.currentAutoRecordDemoNumber = 0;
+}
+
+void DemoStuff::StopAutorecord()
+{
+	spt_demostuff.isAutoRecordingDemo = false;
+	spt_demostuff.currentAutoRecordDemoNumber = 1;
+}
 
 HOOK_THISCALL(void, DemoStuff, StopRecording)
 { // This hook will get called twice per loaded save (in most games/versions, at least, according to SAR people), once with m_bLoadgame being false and the next one being true

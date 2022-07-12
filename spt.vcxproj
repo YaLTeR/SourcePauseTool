@@ -1240,6 +1240,7 @@
     <ClCompile Include="spt\overlay\overlay-renderer.cpp" />
     <ClCompile Include="spt\overlay\overlays.cpp" />
     <ClCompile Include="spt\overlay\portal_camera.cpp" />
+    <ClCompile Include="spt\patterns_archive.cpp" />
     <ClCompile Include="spt\scripts\condition.cpp" />
     <ClCompile Include="spt\scripts\framebulk_handler.cpp" />
     <ClCompile Include="spt\scripts\parsed_script.cpp" />
@@ -1363,7 +1364,6 @@
     <ClInclude Include="spt\overlay\overlay-renderer.hpp" />
     <ClInclude Include="spt\overlay\overlays.hpp" />
     <ClInclude Include="spt\overlay\portal_camera.hpp" />
-    <ClInclude Include="spt\patterns.hpp" />
     <ClInclude Include="spt\scripts\condition.hpp" />
     <ClInclude Include="spt\scripts\framebulk_handler.hpp" />
     <ClInclude Include="spt\scripts\parsed_script.hpp" />

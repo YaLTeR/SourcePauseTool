@@ -63,6 +63,53 @@ CON_COMMAND(y_spt_cam_setang,
 	spt_camera.cam_angles = ang;
 }
 
+namespace patterns
+{
+	PATTERNS(ClientModeShared__OverrideView,
+	         "5135",
+	         "83 EC 58 E8 ?? ?? ?? ?? 85 C0 0F 84 ?? ?? ?? ?? 8B 10 56 8B 74 24 ?? 8B C8",
+	         "3420",
+	         "83 EC 40 E8 ?? ?? ?? ?? 85 C0 0F 84 ?? ?? ?? ?? 8B 10 56 8B 74 24 ?? 8B C8",
+	         "1910503",
+	         "55 8B EC 83 EC 58 E8 ?? ?? ?? ?? 85 C0 0F 84 ?? ?? ?? ?? 8B 10 56 8B 75 ?? 8B C8",
+	         "7197370",
+	         "55 8B EC 83 EC 58 E8 ?? ?? ?? ?? 85 C0 0F 84 ?? ?? ?? ?? 8B 10 8B C8 56");
+	PATTERNS(ClientModeShared__CreateMove,
+	         "5135",
+	         "E8 ?? ?? ?? ?? 85 C0 75 ?? B0 01 C2 08 00 8B 4C 24 ?? D9 44 24 ?? 8B 10",
+	         "1910503",
+	         "55 8B EC E8 ?? ?? ?? ?? 85 C0 75 ?? B0 01 5D C2 08 00 8B 4D ?? 8B 10",
+	         "7197370",
+	         "55 8B EC E8 ?? ?? ?? ?? 8B C8 85 C9 75 ?? B0 01 5D C2 08 00 8B 01");
+	PATTERNS(
+	    C_BasePlayer__ShouldDrawLocalPlayer,
+	    "5135",
+	    "8B 0D ?? ?? ?? ?? 8B 01 8B 50 ?? FF D2 85 C0 75 ?? E8 ?? ?? ?? ?? 84 C0 74 ?? E8 ?? ?? ?? ?? 84 C0 75 ?? 33 C0",
+	    "7197370",
+	    "8B 0D ?? ?? ?? ?? 85 C9 74 ?? 8B 01 8B 40 ?? FF D0 84 C0 74 ?? A1 ?? ?? ?? ?? A8 01");
+	PATTERNS(
+	    CInput__MouseMove,
+	    "5135",
+	    "83 EC 14 56 8B F1 8B 0D ?? ?? ?? ?? 8B 01 8B 40 ?? 8D 54 24 ?? 52 FF D0 8B CE E8 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 8B 11",
+	    "7197370",
+	    "55 8B EC 83 EC 1C 8D 55 ?? 56 8B F1 8B 0D ?? ?? ?? ?? 52 8B 01 FF 50 ?? 8B CE E8 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 8B 01");
+	PATTERNS(C_BasePlayer__ShouldDrawThisPlayer,
+	         "7197370",
+	         "E8 ?? ?? ?? ?? 84 C0 75 ?? B0 01 C3 8B 0D ?? ?? ?? ?? 85 C9 74 ?? 8B 01");
+
+} // namespace patterns
+
+void Camera::InitHooks()
+{
+	HOOK_FUNCTION(client, ClientModeShared__OverrideView);
+	HOOK_FUNCTION(client, ClientModeShared__CreateMove);
+	HOOK_FUNCTION(client, CInput__MouseMove);
+	HOOK_FUNCTION(client, C_BasePlayer__ShouldDrawLocalPlayer);
+#ifdef SSDK2013
+	HOOK_FUNCTION(client, C_BasePlayer__ShouldDrawThisPlayer);
+#endif
+}
+
 bool Camera::ShouldOverrideView() const
 {
 	return y_spt_cam_control.GetBool() && interfaces::engine_client->IsInGame()
@@ -246,18 +293,6 @@ bool Camera::ShouldLoadFeature()
 {
 	return interfaces::engine_client != nullptr && interfaces::engine_vgui != nullptr
 	       && interfaces::vgui_input != nullptr && interfaces::inputSystem != nullptr;
-}
-
-void Camera::InitHooks()
-{
-	HOOK_FUNCTION(client, ClientModeShared__OverrideView);
-	HOOK_FUNCTION(client, ClientModeShared__CreateMove);
-	HOOK_FUNCTION(client, CInput__MouseMove);
-	HOOK_FUNCTION(client, C_BasePlayer__ShouldDrawLocalPlayer);
-#if defined(SSDK2013)
-	// This function only exist in steampipe
-	HOOK_FUNCTION(client, C_BasePlayer__ShouldDrawThisPlayer);
-#endif
 }
 
 void Camera::PreHook()

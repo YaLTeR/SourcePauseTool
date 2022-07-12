@@ -241,6 +241,9 @@
     <ClCompile Include="spt\features\camera.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
+    <ClCompile Include="spt\patterns_archive.cpp">
+      <Filter>spt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -427,9 +430,6 @@
       <Filter>spt\utils</Filter>
     </ClInclude>
     <ClInclude Include="spt\cvars.hpp">
-      <Filter>spt</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\patterns.hpp">
       <Filter>spt</Filter>
     </ClInclude>
     <ClInclude Include="spt\spt-serverplugin.hpp">

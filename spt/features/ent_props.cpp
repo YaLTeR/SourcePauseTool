@@ -26,6 +26,8 @@ static wchar INFO_ARRAY[MAX_ENTRIES * INFO_BUFFER_SIZE];
 static const char ENT_SEPARATOR = ';';
 static const char PROP_SEPARATOR = ',';
 
+EntUtils spt_entutils;
+
 namespace patterns
 {
 	PATTERNS(Datamap,
@@ -36,8 +38,6 @@ namespace patterns
 	         "pattern3",
 	         "C7 05 ?? ?? ?? ?? ?? ?? ?? ?? B8 ?? ?? ?? ?? C7 05");
 }
-
-EntUtils spt_entutils;
 
 void EntUtils::InitHooks()
 {
@@ -440,7 +440,8 @@ void EntUtils::LoadFeature()
 	{
 		AddHudCallback(
 		    "portal bubble",
-		    [this]() {
+		    [this]()
+		    {
 			    int in_bubble = GetEnvironmentPortal() != NULL;
 			    spt_hud.DrawTopHudElement(L"portal bubble: %d", in_bubble);
 		    },
@@ -448,7 +449,8 @@ void EntUtils::LoadFeature()
 
 		bool result = spt_hud.AddHudCallback(HudCallback(
 		    "z",
-		    []() {
+		    []()
+		    {
 			    std::string info(y_spt_hud_ent_info.GetString());
 			    if (!whiteSpacesOnly(info))
 			    {
