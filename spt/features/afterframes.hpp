@@ -34,8 +34,8 @@ protected:
 private:
 	void OnFrame();
 	void SV_ActivateServer(bool result);
-	void FinishRestore(void* thisptr, int edx);
-	void SetPaused(void* thisptr, int edx, bool paused);
+	void FinishRestore(void* thisptr);
+	void SetPaused(void* thisptr, bool paused);
 };
 
 extern AfterframesFeature spt_afterframes;
