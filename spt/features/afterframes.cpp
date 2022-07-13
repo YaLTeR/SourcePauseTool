@@ -92,13 +92,13 @@ void AfterframesFeature::SV_ActivateServer(bool result)
 		ResetAfterframesQueue();
 }
 
-void AfterframesFeature::FinishRestore(void* thisptr, int edx)
+void AfterframesFeature::FinishRestore(void* thisptr)
 {
 	if (_y_spt_afterframes_await_legacy.GetBool())
 		ResumeAfterframesQueue();
 }
 
-void AfterframesFeature::SetPaused(void* thisptr, int edx, bool paused)
+void AfterframesFeature::SetPaused(void* thisptr, bool paused)
 {
 	if (!paused && !_y_spt_afterframes_await_legacy.GetBool())
 		ResumeAfterframesQueue();

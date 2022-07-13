@@ -127,12 +127,12 @@ bool __cdecl GenericFeature::HOOKED_SV_ActivateServer()
 void __fastcall GenericFeature::HOOKED_FinishRestore(void* thisptr, int edx)
 {
 	spt_generic.ORIG_FinishRestore(thisptr, edx);
-	FinishRestoreSignal(thisptr, edx);
+	FinishRestoreSignal(thisptr);
 }
 
 void __fastcall GenericFeature::HOOKED_SetPaused(void* thisptr, int edx, bool paused)
 {
-	SetPausedSignal(thisptr, edx, paused);
+	SetPausedSignal(thisptr, paused);
 
 	if (paused == false)
 	{

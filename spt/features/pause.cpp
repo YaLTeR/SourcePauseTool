@@ -24,8 +24,8 @@ private:
 	void* pGameServer = nullptr;
 
 	void SV_ActivateServer(bool result);
-	void FinishRestore(void* thisptr, int edx);
-	void SetPaused(void* thisptr, int edx, bool paused);
+	void FinishRestore(void* thisptr);
+	void SetPaused(void* thisptr, bool paused);
 };
 
 static PauseFeature spt_pause;
@@ -152,7 +152,7 @@ void PauseFeature::SV_ActivateServer(bool result)
 	}
 }
 
-void PauseFeature::FinishRestore(void* thisptr, int edx)
+void PauseFeature::FinishRestore(void* thisptr)
 {
 	DevMsg("Engine call: FinishRestore();\n");
 
@@ -165,7 +165,7 @@ void PauseFeature::FinishRestore(void* thisptr, int edx)
 	}
 }
 
-void PauseFeature::SetPaused(void* thisptr, int edx, bool paused)
+void PauseFeature::SetPaused(void* thisptr, bool paused)
 {
 	if (pM_bLoadgame)
 	{
