@@ -42,8 +42,8 @@ typedef void(__fastcall* _CRendering3dView__DrawTranslucentRenderables)(void* th
 * NOTE: the matrix will be applied to the verts in ORIG_DebugDrawPhysCollide AFTER this function is called, it
 * should not be used for transforming the verts. A null matrix means that the identity mat will be used. The
 * vertex array will be allocated by the game's allocator, so if you're creating a new one make sure to free the
-* old one and allocate the new one yourself using g_pMemAlloc; the one used will be freed by the game after the
-* mesh is rendered.
+* old one and allocate the new one yourself using g_pMemAlloc (regular new/delete should default to this); the
+* one used will be freed by the game after the mesh is rendered.
 */
 typedef int (*_EditMeshFunc)(Vector*& verts, int numVerts, const matrix3x4_t* mat);
 
