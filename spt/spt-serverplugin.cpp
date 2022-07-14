@@ -335,3 +335,35 @@ void CSourcePauseTool::GameFrame(bool simulating)
 	if (simulating)
 		TickSignal();
 }
+
+// override new/delete operators to use the game's allocator
+
+void* __cdecl operator new(unsigned int nSize)
+{
+	return g_pMemAlloc->Alloc(nSize);
+}
+
+void* __cdecl operator new[](unsigned int nSize)
+{
+	return g_pMemAlloc->Alloc(nSize);
+}
+
+void* __cdecl operator new(unsigned int nSize, int nBlockUse, const char* pFileName, int nLine)
+{
+	return g_pMemAlloc->Alloc(nSize, pFileName, nLine);
+}
+
+void* __cdecl operator new[](unsigned int nSize, int nBlockUse, const char* pFileName, int nLine)
+{
+	return g_pMemAlloc->Alloc(nSize, pFileName, nLine);
+}
+
+void __cdecl operator delete(void* pMem)
+{
+	g_pMemAlloc->Free(pMem);
+}
+
+void __cdecl operator delete[](void* pMem)
+{
+	g_pMemAlloc->Free(pMem);
+}
