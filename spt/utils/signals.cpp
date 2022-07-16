@@ -12,3 +12,4 @@ Gallant::Signal2<void*, bool> SetPausedSignal;
 Gallant::Signal1<bool> SV_ActivateServerSignal;
 Gallant::Signal1<uintptr_t> CreateMoveSignal;
 Gallant::Signal0<void> VagCrashSignal;
+Gallant::Signal0<void> DemoStartPlaybackSignal;
