@@ -1,20 +1,44 @@
 #include "..\feature.hpp"
 #include "view_shared.h"
+#include "demo.hpp"
 
-typedef void(__fastcall* _ClientModeShared__OverrideView)(void* thisptr, int edx, CViewSetup* view);
-typedef bool(__fastcall* _ClientModeShared__CreateMove)(void* thisptr, int edx, float flInputSampleTime, void* cmd);
-typedef bool(__fastcall* _C_BasePlayer__ShouldDrawLocalPlayer)(void* thisptr, int edx);
-typedef bool(__fastcall* _C_BasePlayer__ShouldDrawThisPlayer)(void* thisptr, int edx);
-typedef void(__fastcall* _CInput__MouseMove)(void* thisptr, int edx, void* cmd);
+#include <sstream>
+#include <map>
 
 // Camera stuff
 class Camera : public FeatureWrapper<Camera>
 {
 public:
-	bool ShouldOverrideView() const;
-	bool IsInDriveMode() const;
-	Vector cam_origin;
-	QAngle cam_angles;
+	enum CameraInfoParameter
+	{
+		ORIGIN_X,
+		ORIGIN_Y,
+		ORIGIN_Z,
+		ANGLES_X,
+		ANGLES_Y,
+		ANGLES_Z,
+		FOV
+	};
+	struct CameraInfo
+	{
+		Vector origin = Vector();
+		QAngle angles = QAngle();
+		float fov = 75.0f;
+		operator std::string() const
+		{
+			std::ostringstream s;
+			s << "pos: " << origin.x << " " << origin.y << " " << origin.z << '\n';
+			s << "ang: " << angles.x << " " << angles.y << " " << angles.z << '\n';
+			s << "fov: " << fov;
+			return s.str();
+		}
+	};
+	CameraInfo current_cam;
+	std::map<int, CameraInfo> keyframes;
+
+	bool CanOverrideView() const;
+	bool CanInput() const;
+	void RecomputeInterpPath();
 
 protected:
 	virtual bool ShouldLoadFeature() override;
@@ -24,33 +48,31 @@ protected:
 	virtual void UnloadFeature() override;
 
 private:
-	static void __fastcall HOOKED_ClientModeShared__OverrideView(void* thisptr, int edx, CViewSetup* view);
-	static bool __fastcall HOOKED_ClientModeShared__CreateMove(void* thisptr,
-	                                                           int edx,
-	                                                           float flInputSampleTime,
-	                                                           void* cmd);
-	static bool __fastcall HOOKED_C_BasePlayer__ShouldDrawLocalPlayer(void* thisptr, int edx);
-	static void __fastcall HOOKED_CInput__MouseMove(void* thisptr, int edx, void* cmd);
-	void OverrideView(CViewSetup* view);
-	void HandleInput(bool active);
-	void GetCurrentView();
+	DECL_HOOK_THISCALL(void, ClientModeShared__OverrideView, CViewSetup* view);
+	DECL_HOOK_THISCALL(bool, ClientModeShared__CreateMove, float flInputSampleTime, void* cmd);
+	DECL_HOOK_THISCALL(bool, C_BasePlayer__ShouldDrawLocalPlayer);
+	DECL_HOOK_THISCALL(void, CInput__MouseMove, void* cmd);
+#if defined(SSDK2013)
+	DECL_HOOK_THISCALL(bool, C_BasePlayer__ShouldDrawThisPlayer);
+#endif
 
-	_ClientModeShared__OverrideView ORIG_ClientModeShared__OverrideView = nullptr;
-	_ClientModeShared__CreateMove ORIG_ClientModeShared__CreateMove = nullptr;
-	_C_BasePlayer__ShouldDrawLocalPlayer ORIG_C_BasePlayer__ShouldDrawLocalPlayer = nullptr;
-	_CInput__MouseMove ORIG_CInput__MouseMove = nullptr;
+	void OverrideView(CViewSetup* view);
+	void HandleDriveMode(bool active);
+	void HandleInput(bool active);
+	void HandleCinematicMode(bool active);
+	static std::vector<Vector> CameraInfoToPoints(float* x, CameraInfo* y, CameraInfoParameter param);
+	CameraInfo InterpPath(float time);
+	void GetCurrentView();
+	void RefreshTimeOffset();
+	void DrawPath();
 
 	bool loadingSuccessful = false;
 
-	bool input_active = false;
 	int old_cursor[2] = {0, 0};
+	float time_offset = 0.0f;
+	std::vector<CameraInfo> interp_path_cache;
 
 	const ConVar* sensitivity;
-
-#if defined(SSDK2013)
-	static bool __fastcall HOOKED_C_BasePlayer__ShouldDrawThisPlayer(void* thisptr, int edx);
-	_C_BasePlayer__ShouldDrawThisPlayer ORIG_C_BasePlayer__ShouldDrawThisPlayer = nullptr;
-#endif
 };
 
 extern Camera spt_camera;
