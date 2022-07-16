@@ -11,6 +11,7 @@ public:
 	bool Demo_IsPlayingBack() const;
 	bool Demo_IsPlaybackPaused() const;
 	bool Demo_IsAutoRecordingAvailable() const;
+	bool Demo_IsDemoPlayerAvailable() const;
 	void StartAutorecord();
 	void StopAutorecord();
 
@@ -36,8 +37,9 @@ private:
 
 	DECL_HOOK_THISCALL(void, StopRecording);
 	DECL_HOOK_THISCALL(void, SetSignonState, int state);
+	DECL_HOOK_THISCALL(bool, CDemoPlayer__StartPlayback, const char* filename, bool as_time_demo);
 	uintptr_t ORIG_Record = 0;
-	void OnTick();
+	void OnFrame();
 };
 
 extern DemoStuff spt_demostuff;

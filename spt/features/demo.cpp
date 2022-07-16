@@ -6,6 +6,7 @@
 #include "..\feature.hpp"
 #include "..\scripts\srctas_reader.hpp"
 #include "..\sptlib-wrapper.hpp"
+#include "..\utils\game_detection.hpp"
 #include "dbg.h"
 
 DemoStuff spt_demostuff;
@@ -42,16 +43,24 @@ namespace patterns
 	    "2707",
 	    "81 EC 08 01 00 00 E8 ?? ?? ?? ?? 83 F8 02 74 1E E8 ?? ?? ?? ?? 83 F8 03 74 14 68 ?? ?? ?? ?? E8 ?? ?? ?? ?? 83 C4 04 81 C4 08 01 00 00 C3 53 32 DB 88 5C 24 04 E8",
 	    "5135",
-	    "81 EC 08 01 00 00 83 ?? ?? ?? ?? ?? ?? 75 15 68 ?? ?? ?? ?? FF ?? ?? ?? ?? ?? 83 C4 04 81 C4 08 01 00 00 C3");
+	    "81 EC 08 01 00 00 83 ?? ?? ?? ?? ?? ?? 75 15 68 ?? ?? ?? ?? FF ?? ?? ?? ?? ?? 83 C4 04 81 C4 08 01 00 00 C3",
+	    "7197370",
+	    "55 8B EC 81 EC 08 01 00 00 83 3D ?? ?? ?? ?? 00 75 ?? 68 ?? ?? ?? ?? FF 15 ?? ?? ?? ?? 83 C4 04 8B E5 5D C3 56 8B 75 ?? 8B 06");
+	PATTERNS(
+	    CDemoPlayer__StartPlayback,
+	    "5135",
+	    "83 EC 08 56 8B F1 8B 86 ?? ?? ?? ?? 8B 90 ?? ?? ?? ?? 8D 8E ?? ?? ?? ?? 57 FF D2",
+	    "7197370",
+	    "55 8B EC 53 56 57 8B F9 C6 87 ?? ?? ?? ?? 01 E8 ?? ?? ?? ?? 8B 35 ?? ?? ?? ?? 68 ?? ?? ?? ?? 6A 00 C7 05 ?? ?? ?? ?? FF FF FF FF");
 } // namespace patterns
 
 void DemoStuff::InitHooks()
 {
 	HOOK_FUNCTION(engine, StopRecording);
 	HOOK_FUNCTION(engine, SetSignonState);
+	HOOK_FUNCTION(engine, CDemoPlayer__StartPlayback);
 	HOOK_FUNCTION(engine, Stop);
-	// FIXME - y_spt_pause_demo_on_tick does not work
-	// FIND_FUNCTION(engine, Record);
+	FIND_PATTERN(engine, Record);
 }
 
 bool DemoStuff::ShouldLoadFeature()
@@ -105,18 +114,51 @@ void DemoStuff::PreHook()
 		else if (index == 1)
 		{
 			pDemoplayer = *reinterpret_cast<void***>(ORIG_Record + 0xA2);
-
+			// vftable offsets
+			if (utils::GetBuildNumber() <= 3420)
+			{
+				// 3420 offsets
+				GetPlaybackTick_Offset = 2;
+				GetTotalTicks_Offset = 3;
+				IsPlayingBack_Offset = 5;
+				IsPlaybackPaused_Offset = 6;
+			}
+			else
+			{
+				// 5135 offsets
+				GetPlaybackTick_Offset = 3;
+				GetTotalTicks_Offset = 4;
+				IsPlayingBack_Offset = 6;
+				IsPlaybackPaused_Offset = 7;
+			}
+		}
+		else if (index == 2)
+		{
+			// new steampipe hl2
+			if (utils::GetBuildNumber() >= 7196940)
+			{
+				// 7197370 offset
+				pDemoplayer = *reinterpret_cast<void***>(ORIG_Record + 0x9C);
+			}
+			else
+			{
+				// 1910503 offset
+				pDemoplayer = *reinterpret_cast<void***>(ORIG_Record + 0x96);
+			}
 			// vftable offsets
 			GetPlaybackTick_Offset = 3;
 			GetTotalTicks_Offset = 4;
-			IsPlaybackPaused_Offset = 6;
-			IsPlayingBack_Offset = 7;
+			IsPlayingBack_Offset = 6;
+			IsPlaybackPaused_Offset = 7;
 		}
 		else
 			Warning(
 			    "Record pattern had no matching clause for catching the demoplayer. y_spt_pause_demo_on_tick unavailable.\n");
 
 		DevMsg("Found demoplayer at %p, record is at %p.\n", pDemoplayer, ORIG_Record);
+
+		if (ORIG_CDemoPlayer__StartPlayback)
+			DemoStartPlaybackSignal.Works = true;
 	}
 }
 
@@ -162,6 +204,11 @@ bool DemoStuff::Demo_IsPlaybackPaused() const
 bool DemoStuff::Demo_IsAutoRecordingAvailable() const
 {
 	return (ORIG_StopRecording && ORIG_SetSignonState);
+}
+
+bool DemoStuff::Demo_IsDemoPlayerAvailable() const
+{
+	return !!pDemoplayer;
 }
 
 void DemoStuff::StartAutorecord()
@@ -234,6 +281,12 @@ HOOK_THISCALL(void, DemoStuff, SetSignonState, int state)
 	spt_demostuff.ORIG_SetSignonState(thisptr, edx, state);
 }
 
+HOOK_THISCALL(bool, DemoStuff, CDemoPlayer__StartPlayback, const char* filename, bool as_time_demo)
+{
+	DemoStartPlaybackSignal();
+	return spt_demostuff.ORIG_CDemoPlayer__StartPlayback(thisptr, edx, filename, as_time_demo);
+}
+
 HOOK_CDECL(void, DemoStuff, Stop)
 {
 	if (spt_demostuff.ORIG_Stop)
@@ -244,7 +297,7 @@ HOOK_CDECL(void, DemoStuff, Stop)
 	}
 }
 
-void DemoStuff::OnTick()
+void DemoStuff::OnFrame()
 {
 	if (Demo_IsPlayingBack() && !Demo_IsPlaybackPaused())
 	{
@@ -289,10 +342,10 @@ CON_COMMAND(y_spt_record_stop, "Stops recording a demo.")
 
 void DemoStuff::LoadFeature()
 {
-	if (ORIG_Record && pDemoplayer)
+	if (ORIG_Record && pDemoplayer && FrameSignal.Works)
 	{
 		InitConcommandBase(y_spt_pause_demo_on_tick);
-		TickSignal.Connect(this, &DemoStuff::OnTick);
+		FrameSignal.Connect(this, &DemoStuff::OnFrame);
 	}
 
 	if (ORIG_StopRecording && ORIG_SetSignonState)
