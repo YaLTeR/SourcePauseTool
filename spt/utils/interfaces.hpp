@@ -8,6 +8,7 @@
 #include "vgui\IScheme.h"
 #include "vgui\IInput.h"
 #include "ienginevgui.h"
+#include "toolframework\ienginetool.h"
 #include "inputsystem\iinputsystem.h"
 #include "cdll_int.h"
 #include "icliententitylist.h"
@@ -22,6 +23,7 @@ namespace interfaces
 	extern vgui::ISchemeManager* scheme;
 	extern vgui::IInput* vgui_input;
 	extern IEngineVGui* engine_vgui;
+	extern IEngineTool* engine_tool;
 	extern IVDebugOverlay* debugOverlay;
 	extern IMaterialSystem* materialSystem;
 	extern IInputSystem* inputSystem;

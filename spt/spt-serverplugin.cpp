@@ -31,6 +31,7 @@
 #include "vgui\isystem.h"
 #include "vgui\ivgui.h"
 #include "ienginevgui.h"
+#include "toolframework\ienginetool.h"
 #include "inputsystem\iinputsystem.h"
 #include "SDK\hl_movedata.h"
 #include "SDK\igamemovement.h"
@@ -56,6 +57,7 @@ namespace interfaces
 	vgui::ISchemeManager* scheme = nullptr;
 	vgui::IInput* vgui_input = nullptr;
 	IEngineVGui* engine_vgui = nullptr;
+	IEngineTool* engine_tool = nullptr;
 	IVDebugOverlay* debugOverlay = nullptr;
 	IMaterialSystem* materialSystem = nullptr;
 	IInputSystem* inputSystem = nullptr;
@@ -162,6 +164,7 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	interfaces::debugOverlay = (IVDebugOverlay*)interfaceFactory(VDEBUG_OVERLAY_INTERFACE_VERSION, NULL);
 	interfaces::materialSystem = (IMaterialSystem*)interfaceFactory(MATERIAL_SYSTEM_INTERFACE_VERSION, NULL);
 	interfaces::engine_vgui = (IEngineVGui*)interfaceFactory(VENGINE_VGUI_VERSION, NULL);
+	interfaces::engine_tool = (IEngineTool*)interfaceFactory(VENGINETOOL_INTERFACE_VERSION, NULL);
 	interfaces::vgui_input = (vgui::IInput*)interfaceFactory(VGUI_INPUT_INTERFACE_VERSION, NULL);
 	interfaces::surface = (IMatSystemSurface*)interfaceFactory(MAT_SYSTEM_SURFACE_INTERFACE_VERSION, NULL);
 	interfaces::scheme = (vgui::ISchemeManager*)interfaceFactory(VGUI_SCHEME_INTERFACE_VERSION, NULL);
@@ -267,6 +270,9 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 
 	if (!interfaces::engine_vgui)
 		DevWarning("SPT: Failed to get the engine vgui interface.\n");
+
+	if (!interfaces::engine_tool)
+		DevWarning("SPT: Failed to get the engine tool interface.\n");
 
 	if (!interfaces::vgui_input)
 		DevWarning("SPT: Failed to get the vgui input interface.\n");
