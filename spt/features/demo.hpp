@@ -38,6 +38,7 @@ private:
 	DECL_HOOK_THISCALL(void, StopRecording);
 	DECL_HOOK_THISCALL(void, SetSignonState, int state);
 	DECL_HOOK_THISCALL(bool, CDemoPlayer__StartPlayback, const char* filename, bool as_time_demo);
+	DECL_HOOK_THISCALL(const char*, CDemoFile__ReadConsoleCommand);
 	uintptr_t ORIG_Record = 0;
 	void OnFrame();
 };
