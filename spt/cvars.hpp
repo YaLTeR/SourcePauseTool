@@ -17,6 +17,7 @@ extern ConVar y_spt_focus_nosleep;
 extern ConVar y_spt_stucksave;
 extern ConVar y_spt_piwsave;
 extern ConVar y_spt_pause_demo_on_tick;
+extern ConVar y_spt_block_demo_cmd;
 extern ConVar y_spt_on_slide_pause_for;
 extern ConVar y_spt_prevent_vag_crash;
 extern ConVar y_spt_disable_tone_map_reset;
@@ -33,6 +34,7 @@ extern ConVar y_spt_vag_trace_portal;
 extern ConVar y_spt_cam_control;
 extern ConVar y_spt_cam_drive;
 extern ConVar y_spt_cam_path_draw;
+extern ConVar y_spt_cam_fov;
 
 extern ConVar tas_strafe;
 extern ConVar tas_strafe_type;

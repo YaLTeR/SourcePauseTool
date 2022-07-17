@@ -20,6 +20,7 @@ ConVar y_spt_pause_demo_on_tick(
     "x > 0 means pause the demo at tick number x.\n"
     "x < 0 means pause the demo at <demo length> + x, so for example -1 will pause the demo at the last tick.\n\n"
     "Demos ending with changelevels report incorrect length; you can obtain the correct demo length using listdemo and then set this CVar to <demo length> - 1 manually.");
+ConVar y_spt_demo_block_cmd("y_spt_demo_block_cmd", "0", 0, "Stop all commands from being run by demo playback.");
 
 namespace patterns
 {
@@ -52,6 +53,7 @@ namespace patterns
 	    "83 EC 08 56 8B F1 8B 86 ?? ?? ?? ?? 8B 90 ?? ?? ?? ?? 8D 8E ?? ?? ?? ?? 57 FF D2",
 	    "7197370",
 	    "55 8B EC 53 56 57 8B F9 C6 87 ?? ?? ?? ?? 01 E8 ?? ?? ?? ?? 8B 35 ?? ?? ?? ?? 68 ?? ?? ?? ?? 6A 00 C7 05 ?? ?? ?? ?? FF FF FF FF");
+	PATTERNS(CDemoFile__ReadConsoleCommand, "5135", "68 00 04 00 00 68 ?? ?? ?? ?? E8 ?? ?? ?? ?? B8 ?? ?? ?? ??");
 } // namespace patterns
 
 void DemoStuff::InitHooks()
@@ -60,6 +62,7 @@ void DemoStuff::InitHooks()
 	HOOK_FUNCTION(engine, SetSignonState);
 	HOOK_FUNCTION(engine, CDemoPlayer__StartPlayback);
 	HOOK_FUNCTION(engine, Stop);
+	HOOK_FUNCTION(engine, CDemoFile__ReadConsoleCommand);
 	FIND_PATTERN(engine, Record);
 }
 
@@ -287,6 +290,14 @@ HOOK_THISCALL(bool, DemoStuff, CDemoPlayer__StartPlayback, const char* filename,
 	return spt_demostuff.ORIG_CDemoPlayer__StartPlayback(thisptr, edx, filename, as_time_demo);
 }
 
+HOOK_THISCALL(const char*, DemoStuff, CDemoFile__ReadConsoleCommand)
+{
+	const char* cmd = spt_demostuff.ORIG_CDemoFile__ReadConsoleCommand(thisptr, edx);
+	if (y_spt_demo_block_cmd.GetBool())
+		return "";
+	return cmd;
+}
+
 HOOK_CDECL(void, DemoStuff, Stop)
 {
 	if (spt_demostuff.ORIG_Stop)
@@ -352,5 +363,10 @@ void DemoStuff::LoadFeature()
 	{
 		InitCommand(y_spt_record);
 		InitCommand(y_spt_record_stop);
+	}
+
+	if (ORIG_CDemoFile__ReadConsoleCommand)
+	{
+		InitConcommandBase(y_spt_demo_block_cmd);
 	}
 }
