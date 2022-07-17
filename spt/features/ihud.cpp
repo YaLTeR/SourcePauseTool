@@ -14,11 +14,11 @@
 
 InputHud spt_ihud;
 
-ConVar y_spt_ihud("y_spt_ihud", "0", 0, "Draws movement inputs of client.\n");
-ConVar y_spt_ihud_grid_size("y_spt_ihud_grid_size", "60", 0, "Grid size of input HUD.\n");
+ConVar y_spt_ihud("y_spt_ihud", "0", 0, "Draws movement inputs of client.");
+ConVar y_spt_ihud_grid_size("y_spt_ihud_grid_size", "60", 0, "Grid size of input HUD.");
 ConVar y_spt_ihud_grid_padding("y_spt_ihud_grid_padding", "2", 0, "Padding between grids of input HUD.");
-ConVar y_spt_ihud_x("y_spt_ihud_x", "2", 0, "X position of input HUD.\n", true, 0.0f, true, 100.0f);
-ConVar y_spt_ihud_y("y_spt_ihud_y", "2", 0, "Y position of input HUD.\n", true, 0.0f, true, 100.0f);
+ConVar y_spt_ihud_x("y_spt_ihud_x", "2", 0, "X position of input HUD.", true, 0.0f, true, 100.0f);
+ConVar y_spt_ihud_y("y_spt_ihud_y", "2", 0, "Y position of input HUD.", true, 0.0f, true, 100.0f);
 
 // default setting
 static const Color background = {0, 0, 0, 233};
@@ -29,7 +29,7 @@ static const std::string font = FONT_Trebuchet20;
 
 CON_COMMAND(
     y_spt_ihud_modify,
-    "y_spt_ihud_modify <element|all> <param> <value> - Modifies parameters in given element.\nParams: enabled, text, font, x, y, width, height, background, highlight, textcolor, texthighlight.\n")
+    "y_spt_ihud_modify <element|all> <param> <value> - Modifies parameters in given element.\nParams: enabled, text, font, x, y, width, height, background, highlight, textcolor, texthighlight.")
 {
 	if (args.ArgC() != 4)
 	{
@@ -66,7 +66,7 @@ CON_COMMAND(
 }
 
 CON_COMMAND_AUTOCOMPLETE(y_spt_ihud_preset,
-                         "Load ihud preset.\nValid options: normal, normal_mouse, tas.\n",
+                         "Load ihud preset.\nValid options: normal, normal_mouse, tas.",
                          0,
                          ({"normal", "normal_mouse", "tas"}))
 {
@@ -211,7 +211,7 @@ CON_COMMAND_AUTOCOMPLETE(y_spt_ihud_preset,
 	}
 }
 
-CON_COMMAND(y_spt_ihud_add_key, "y_spt_ihud_add_key <key> - Add custom key to ihud.\n")
+CON_COMMAND(y_spt_ihud_add_key, "y_spt_ihud_add_key <key> - Add custom key to ihud.")
 {
 	if (args.ArgC() != 2)
 	{
@@ -499,7 +499,7 @@ void InputHud::DrawInputHud()
 	gridSize = y_spt_ihud_grid_size.GetInt();
 	padding = y_spt_ihud_grid_padding.GetInt();
 
-	if (y_spt_ihud.GetBool())
+	if (y_spt_ihud.GetBool() && !interfaces::engine_vgui->IsGameUIVisible())
 	{
 		Vector ang;
 		if (tasPreset || anglesSetting.enabled)
