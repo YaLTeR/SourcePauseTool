@@ -7,7 +7,6 @@
 #include "dbg.h"
 #include "signals.hpp"
 #include "..\cvars.hpp"
-#include "ent_props.hpp"
 #include "game_detection.hpp"
 
 #ifdef OE
@@ -15,16 +14,17 @@
 #endif
 
 AutojumpFeature spt_autojump;
-ConVar y_spt_autojump("y_spt_autojump", "0", FCVAR_ARCHIVE);
+ConVar y_spt_autojump("y_spt_autojump", "0", FCVAR_ARCHIVE | FCVAR_DEMO);
 ConVar _y_spt_autojump_ensure_legit("_y_spt_autojump_ensure_legit", "1", FCVAR_CHEAT);
 ConVar y_spt_additional_jumpboost("y_spt_additional_jumpboost",
                                   "0",
-                                  0,
+                                  FCVAR_CHEAT,
                                   "Enables special game movement mechanic.\n"
                                   "0 = Default.\n"
                                   "1 = ABH movement mechanic.\n"
                                   "2 = OE movement mechanic.\n"
                                   "3 = HL2DM movement mechanic.");
+ConVar y_spt_aircontrol("y_spt_aircontrol", "0", FCVAR_CHEAT, "Enables HL2 air control.");
 
 namespace patterns
 {
@@ -114,6 +114,22 @@ namespace patterns
 	    "55 8B EC 83 EC 3C 56 89 4D D8 8B 45 D8 8B 48 08 81 C1 ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B6 C8 85 C9",
 	    "missinginfo1_6",
 	    "55 8B EC 83 EC 18 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5");
+	PATTERNS(
+	    CPortalGameMovement__AirMove,
+	    "5135",
+	    "83 EC 38 56 8B F1 8D 44 24 ?? 50 8B 46 ?? 8D 4C 24 ?? 51 8D 54 24 ?? 52 83 C0 0C 50 E8 ?? ?? ?? ?? 8B 46 ?? D9 40 ?? 83 C4 10 D9 5C 24 ?? 8D 4C 24 ?? D9 40 ?? D9 5C 24 ?? D9 EE D9 54 24 ?? D9 5C 24 ?? FF 15 ?? ?? ?? ?? DD D8 8D 4C 24 ?? FF 15 ?? ?? ?? ?? DD D8 D9 44 24 ?? 8B 46 ??",
+	    "1910593",
+	    "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ?? 89 6C 24 ?? 8B EC 83 EC 78 56 57 8B F1",
+	    "7197370",
+	    "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ?? 89 6C 24 ?? 8B EC 83 EC 68 56 57 8D 45 ?? 8B F1");
+	PATTERNS(
+	    CGameMovement__AirMove,
+	    "5135",
+	    "83 EC 38 56 8B F1 8D 44 24 ?? 50 8B 46 ?? 8D 4C 24 ?? 51 8D 54 24 ?? 52 83 C0 0C 50 E8 ?? ?? ?? ?? 8B 46 ?? D9 40 ?? 83 C4 10 D9 5C 24 ?? 8D 4C 24 ?? D9 40 ?? D9 5C 24 ?? D9 EE D9 54 24 ?? D9 5C 24 ?? FF 15 ?? ?? ?? ?? DD D8 8D 4C 24 ?? FF 15 ?? ?? ?? ?? DD D8 D9 44 24 ?? 8D 4C 24 ??",
+	    "1910593",
+	    "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ?? 89 6C 24 ?? 8B EC 83 EC 5C 56 8B F1 8D 45 ??",
+	    "7197370",
+	    "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ?? 89 6C 24 ?? 8B EC 83 EC 6C 56 8D 45 ??");
 } // namespace patterns
 
 void AutojumpFeature::InitHooks()
@@ -121,6 +137,11 @@ void AutojumpFeature::InitHooks()
 	HOOK_FUNCTION(server, CheckJumpButton);
 	HOOK_FUNCTION(client, CheckJumpButton_client);
 	HOOK_FUNCTION(server, FinishGravity);
+	if (utils::DoesGameLookLikePortal())
+	{
+		HOOK_FUNCTION(server, CPortalGameMovement__AirMove);
+		FIND_PATTERN(server, CGameMovement__AirMove);
+	}
 }
 
 bool AutojumpFeature::ShouldLoadFeature()
@@ -140,98 +161,79 @@ void AutojumpFeature::LoadFeature()
 		switch (ptnNumber)
 		{
 		case 0:
-			off1M_nOldButtons = 2;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 2;
 			break;
 
 		case 1:
-			off1M_nOldButtons = 1;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 1;
 			break;
 
 		case 2:
-			off1M_nOldButtons = 2;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 2;
 			break;
 
 		case 3:
-			off1M_nOldButtons = 2;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 2;
 			break;
 
 		case 4:
-			off1M_nOldButtons = 2;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 2;
 			break;
 
 		case 5:
-			off1M_nOldButtons = 2;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 2;
 			break;
 
 		case 6:
-			off1M_nOldButtons = 2;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 2;
 			break;
 
 		case 7:
-			off1M_nOldButtons = 1;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 1;
 			break;
 
 		case 8:
-			off1M_nOldButtons = 1;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 1;
 			break;
 
 		case 9:
-			off1M_nOldButtons = 2;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 2;
 			break;
 
 		case 10:
-			off1M_nOldButtons = 2;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 2;
 			break;
 
 		case 11:
-			off1M_nOldButtons = 1;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 1;
 			break;
 
 		case 12:
-			off1M_nOldButtons = 3;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 3;
 			break;
 
 		case 13:
-			off1M_nOldButtons = 1;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 1;
 			break;
 
 		case 14:
-			off1M_nOldButtons = 2;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 2;
 			break;
 
 		case 15:
-			off1M_nOldButtons = 1;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 1;
 			break;
 
 		case 16:
-			off1M_nOldButtons = 2;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 2;
 			break;
 
 		case 17:
-			off1M_nOldButtons = 2;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 2;
 			break;
 
 		case 18:
-			off1M_nOldButtons = 2;
-			off2M_nOldButtons = 40;
+			off_mv_ptr = 2;
 			break;
 		}
 	}
@@ -243,6 +245,12 @@ void AutojumpFeature::LoadFeature()
 	if (ORIG_FinishGravity)
 	{
 		InitConcommandBase(y_spt_additional_jumpboost);
+		m_bDucked = spt_entutils.GetPlayerField<bool>("m_Local.m_bDucked");
+	}
+
+	if (utils::DoesGameLookLikePortal() && ORIG_CGameMovement__AirMove && ORIG_CPortalGameMovement__AirMove)
+	{
+		InitConcommandBase(y_spt_aircontrol);
 	}
 }
 
@@ -257,7 +265,7 @@ HOOK_THISCALL(bool, AutojumpFeature, CheckJumpButton)
 	int* pM_nOldButtons = NULL;
 	int origM_nOldButtons = 0;
 
-	CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t*)thisptr + spt_autojump.off1M_nOldButtons));
+	CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t*)thisptr + spt_autojump.off_mv_ptr));
 	if (tas_log.GetBool())
 		DevMsg("[CheckJumpButton PRE ] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
 		       mv->GetAbsOrigin().x,
@@ -269,8 +277,7 @@ HOOK_THISCALL(bool, AutojumpFeature, CheckJumpButton)
 
 	if (y_spt_autojump.GetBool())
 	{
-		pM_nOldButtons =
-		    (int*)(*((uintptr_t*)thisptr + spt_autojump.off1M_nOldButtons) + spt_autojump.off2M_nOldButtons);
+		pM_nOldButtons = &mv->m_nOldButtons;
 		origM_nOldButtons = *pM_nOldButtons;
 
 		if (!spt_autojump.cantJumpNextTime) // Do not do anything if we jumped on the previous tick.
@@ -327,10 +334,10 @@ HOOK_THISCALL(bool, AutojumpFeature, CheckJumpButton_client)
 	int* pM_nOldButtons = NULL;
 	int origM_nOldButtons = 0;
 
+	CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t*)thisptr + spt_autojump.off_mv_ptr));
 	if (y_spt_autojump.GetBool())
 	{
-		pM_nOldButtons =
-		    (int*)(*((uintptr_t*)thisptr + spt_autojump.off1M_nOldButtons) + spt_autojump.off2M_nOldButtons);
+		pM_nOldButtons = &mv->m_nOldButtons;
 		origM_nOldButtons = *pM_nOldButtons;
 
 		if (!spt_autojump.client_cantJumpNextTime) // Do not do anything if we jumped on the previous tick.
@@ -371,8 +378,8 @@ HOOK_THISCALL(void, AutojumpFeature, FinishGravity)
 {
 	if (spt_autojump.insideCheckJumpButton && y_spt_additional_jumpboost.GetBool())
 	{
-		CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t*)thisptr + spt_autojump.off1M_nOldButtons));
-		bool ducked = spt_entutils.GetPlayerField<bool>("m_Local.m_bDucked").GetValue();
+		CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t*)thisptr + spt_autojump.off_mv_ptr));
+		bool ducked = spt_autojump.m_bDucked.GetValue();
 
 		// Reset
 		mv->m_vecVelocity.x = old_vel.x;
@@ -416,4 +423,13 @@ HOOK_THISCALL(void, AutojumpFeature, FinishGravity)
 	}
 
 	return spt_autojump.ORIG_FinishGravity(thisptr, edx);
+}
+
+HOOK_THISCALL(void, AutojumpFeature, CPortalGameMovement__AirMove)
+{
+	if (y_spt_aircontrol.GetBool())
+	{
+		return spt_autojump.ORIG_CGameMovement__AirMove(thisptr, edx);
+	}
+	return spt_autojump.ORIG_CPortalGameMovement__AirMove(thisptr, edx);
 }
