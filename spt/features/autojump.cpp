@@ -5,8 +5,10 @@
 #include "SDK\hl_movedata.h"
 #include "convar.hpp"
 #include "dbg.h"
-#include "..\cvars.hpp"
 #include "signals.hpp"
+#include "..\cvars.hpp"
+#include "ent_props.hpp"
+#include "game_detection.hpp"
 
 #ifdef OE
 #include "mathlib.h"
@@ -18,7 +20,11 @@ ConVar _y_spt_autojump_ensure_legit("_y_spt_autojump_ensure_legit", "1", FCVAR_C
 ConVar y_spt_additional_jumpboost("y_spt_additional_jumpboost",
                                   "0",
                                   0,
-                                  "1 = Add in ABH movement mechanic, 2 = Add in OE movement mechanic.\n");
+                                  "Enables special game movement mechanic.\n"
+                                  "0 = Default.\n"
+                                  "1 = ABH movement mechanic.\n"
+                                  "2 = OE movement mechanic.\n"
+                                  "3 = HL2DM movement mechanic.");
 
 namespace patterns
 {
@@ -69,9 +75,9 @@ namespace patterns
 	    "bms",
 	    "8B 51 04 F3 0F 10 82 7C 0D 00 00 0F 57 C9 0F 2E C1 9F F6 C4 44 7A 51 F3 0F 10 82 28 02 00 00 0F 2E C1 9F F6 C4 44",
 	    "2707",
-	    "8B 51 08 D9 82 ?? ?? ?? ?? D8 1D ?? ?? ?? ?? DF E0 F6 C4 44 7A 4D D9 82 ?? ?? ?? ?? D8 1D",
-	    "4044",
 	    "8B 51 08 D9 05 ?? ?? ?? ?? D9 82 ?? ?? ?? ?? DA E9 DF E0 F6 C4 44 7A 4F D9 05 ?? ?? ?? ?? D9 82",
+	    "4044",
+	    "8B 51 08 D9 82 ?? ?? ?? ?? D8 1D ?? ?? ?? ?? DF E0 F6 C4 44 7A 4D D9 82 ?? ?? ?? ?? D8 1D",
 	    "4104",
 	    "D9 EE 8B 51 08 D8 92 ?? ?? ?? ?? DF E0 F6 C4 44 7A 3F D8 9A ?? ?? ?? ?? DF E0 F6 C4 44 7B 08 D9 82",
 	    "5135",
@@ -108,7 +114,6 @@ namespace patterns
 	    "55 8B EC 83 EC 3C 56 89 4D D8 8B 45 D8 8B 48 08 81 C1 ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B6 C8 85 C9",
 	    "missinginfo1_6",
 	    "55 8B EC 83 EC 18 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5");
-
 } // namespace patterns
 
 void AutojumpFeature::InitHooks()
@@ -120,7 +125,7 @@ void AutojumpFeature::InitHooks()
 
 bool AutojumpFeature::ShouldLoadFeature()
 {
-	return true;
+	return spt_entutils.ShouldLoadFeature();
 }
 
 void AutojumpFeature::LoadFeature()
@@ -238,66 +243,14 @@ void AutojumpFeature::LoadFeature()
 	if (ORIG_FinishGravity)
 	{
 		InitConcommandBase(y_spt_additional_jumpboost);
-		int ptnNumber = GetPatternIndex((void**)&ORIG_FinishGravity);
-		switch (ptnNumber)
-		{
-		case 0:
-			off1M_bDucked = 1;
-			off2M_bDucked = 2128;
-			break;
-
-		case 1:
-			off1M_bDucked = 2;
-			off2M_bDucked = 3120;
-			break;
-
-		case 2:
-			off1M_bDucked = 2;
-			off2M_bDucked = 3184;
-			break;
-
-		case 3:
-			off1M_bDucked = 2;
-			off2M_bDucked = 3376;
-			break;
-
-		case 4:
-			off1M_bDucked = 1;
-			off2M_bDucked = 3440;
-			break;
-
-		case 5:
-			off1M_bDucked = 1;
-			off2M_bDucked = 3500;
-			break;
-
-		case 6:
-			off1M_bDucked = 1;
-			off2M_bDucked = 3724;
-			break;
-
-		case 7:
-			off1M_bDucked = 2;
-			off2M_bDucked = 3112;
-			break;
-
-		case 8:
-			off1M_bDucked = 1;
-			off2M_bDucked = 3416;
-			break;
-		}
-	}
-	else
-	{
-		Warning("y_spt_additional_jumpboost has no effect.\n");
-		off1M_bDucked = 0;
-		off2M_bDucked = 0;
 	}
 }
 
 void AutojumpFeature::UnloadFeature() {}
 
-bool __fastcall AutojumpFeature::HOOKED_CheckJumpButton(void* thisptr, int edx)
+static Vector old_vel(0.0f, 0.0f, 0.0f);
+
+HOOK_THISCALL(bool, AutojumpFeature, CheckJumpButton)
 {
 	const int IN_JUMP = (1 << 1);
 
@@ -329,6 +282,7 @@ bool __fastcall AutojumpFeature::HOOKED_CheckJumpButton(void* thisptr, int edx)
 	spt_autojump.cantJumpNextTime = false;
 
 	spt_autojump.insideCheckJumpButton = true;
+	old_vel = mv->m_vecVelocity;
 	bool rv = spt_autojump.ORIG_CheckJumpButton(thisptr, edx); // This function can only change the jump bit.
 	spt_autojump.insideCheckJumpButton = false;
 
@@ -362,7 +316,7 @@ bool __fastcall AutojumpFeature::HOOKED_CheckJumpButton(void* thisptr, int edx)
 	return rv;
 }
 
-bool __fastcall AutojumpFeature::HOOKED_CheckJumpButton_client(void* thisptr, int edx)
+HOOK_THISCALL(bool, AutojumpFeature, CheckJumpButton_client)
 {
 	/*
 	Not sure if this gets called at all from the client dll, but
@@ -413,13 +367,16 @@ bool __fastcall AutojumpFeature::HOOKED_CheckJumpButton_client(void* thisptr, in
 	return rv;
 }
 
-void __fastcall AutojumpFeature::HOOKED_FinishGravity(void* thisptr, int edx)
+HOOK_THISCALL(void, AutojumpFeature, FinishGravity)
 {
 	if (spt_autojump.insideCheckJumpButton && y_spt_additional_jumpboost.GetBool())
 	{
 		CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t*)thisptr + spt_autojump.off1M_nOldButtons));
-		bool ducked =
-		    *(bool*)(*((uintptr_t*)thisptr + spt_autojump.off1M_bDucked) + spt_autojump.off2M_bDucked);
+		bool ducked = spt_entutils.GetPlayerField<bool>("m_Local.m_bDucked").GetValue();
+
+		// Reset
+		mv->m_vecVelocity.x = old_vel.x;
+		mv->m_vecVelocity.y = old_vel.y;
 
 		// <stolen from gamemovement.cpp>
 		{
@@ -436,8 +393,9 @@ void __fastcall AutojumpFeature::HOOKED_FinishGravity(void* thisptr, int edx)
 			float flNewSpeed = (flSpeedAddition + mv->m_vecVelocity.Length2D());
 
 			// If we're over the maximum, we want to only boost as much as will get us to the goal speed
-			if (y_spt_additional_jumpboost.GetInt() == 1)
+			switch (y_spt_additional_jumpboost.GetInt())
 			{
+			case 1:
 				if (flNewSpeed > flMaxSpeed)
 				{
 					flSpeedAddition -= flNewSpeed - flMaxSpeed;
@@ -445,10 +403,14 @@ void __fastcall AutojumpFeature::HOOKED_FinishGravity(void* thisptr, int edx)
 
 				if (mv->m_flForwardMove < 0.0f)
 					flSpeedAddition *= -1.0f;
+				vecForward *= flSpeedAddition;
+				break;
+			case 2:
+				vecForward *= mv->m_flForwardMove * flSpeedBoostPerc;
+				break;
 			}
-
 			// Add it on
-			VectorAdd((vecForward * flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity);
+			VectorAdd(vecForward, mv->m_vecVelocity, mv->m_vecVelocity);
 		}
 		// </stolen from gamemovement.cpp>
 	}
