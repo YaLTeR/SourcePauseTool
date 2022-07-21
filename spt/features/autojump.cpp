@@ -16,14 +16,14 @@
 AutojumpFeature spt_autojump;
 ConVar y_spt_autojump("y_spt_autojump", "0", FCVAR_ARCHIVE | FCVAR_DEMO);
 ConVar _y_spt_autojump_ensure_legit("_y_spt_autojump_ensure_legit", "1", FCVAR_CHEAT);
-ConVar y_spt_additional_jumpboost("y_spt_additional_jumpboost",
-                                  "0",
-                                  FCVAR_CHEAT,
-                                  "Enables special game movement mechanic.\n"
-                                  "0 = Default.\n"
-                                  "1 = ABH movement mechanic.\n"
-                                  "2 = OE movement mechanic.\n"
-                                  "3 = HL2DM movement mechanic.");
+ConVar y_spt_jumpboost("y_spt_jumpboost",
+                       "0",
+                       FCVAR_CHEAT,
+                       "Enables special game movement mechanic.\n"
+                       "0 = Default.\n"
+                       "1 = ABH movement mechanic.\n"
+                       "2 = OE movement mechanic.\n"
+                       "3 = No jumpboost. (multiplayer mode movement)");
 ConVar y_spt_aircontrol("y_spt_aircontrol", "0", FCVAR_CHEAT, "Enables HL2 air control.");
 
 namespace patterns
@@ -244,7 +244,7 @@ void AutojumpFeature::LoadFeature()
 
 	if (ORIG_FinishGravity)
 	{
-		InitConcommandBase(y_spt_additional_jumpboost);
+		InitConcommandBase(y_spt_jumpboost);
 		m_bDucked = spt_entutils.GetPlayerField<bool>("m_Local.m_bDucked");
 	}
 
@@ -376,7 +376,7 @@ HOOK_THISCALL(bool, AutojumpFeature, CheckJumpButton_client)
 
 HOOK_THISCALL(void, AutojumpFeature, FinishGravity)
 {
-	if (spt_autojump.insideCheckJumpButton && y_spt_additional_jumpboost.GetBool())
+	if (spt_autojump.insideCheckJumpButton && y_spt_jumpboost.GetBool())
 	{
 		CHLMoveData* mv = (CHLMoveData*)(*((uintptr_t*)thisptr + spt_autojump.off_mv_ptr));
 		bool ducked = spt_autojump.m_bDucked.GetValue();
@@ -400,7 +400,7 @@ HOOK_THISCALL(void, AutojumpFeature, FinishGravity)
 			float flNewSpeed = (flSpeedAddition + mv->m_vecVelocity.Length2D());
 
 			// If we're over the maximum, we want to only boost as much as will get us to the goal speed
-			switch (y_spt_additional_jumpboost.GetInt())
+			switch (y_spt_jumpboost.GetInt())
 			{
 			case 1:
 				if (flNewSpeed > flMaxSpeed)
