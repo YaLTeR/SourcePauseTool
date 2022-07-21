@@ -12,7 +12,7 @@ void FormatConCmd(const char* fmt, ...);
 extern ConVar y_spt_pause;
 extern ConVar y_spt_motion_blur_fix;
 extern ConVar y_spt_autojump;
-extern ConVar y_spt_additional_jumpboost;
+extern ConVar y_spt_jumpboost;
 extern ConVar y_spt_aircontrol;
 extern ConVar y_spt_focus_nosleep;
 extern ConVar y_spt_stucksave;
