@@ -89,7 +89,11 @@ namespace patterns
 	    "missinginfo1_4_7",
 	    "55 8B EC 83 EC 0C 89 4D F8 8B 45 F8 8B 48 08 D9 05 ?? ?? ?? ?? D9 81 ?? ?? ?? ?? DA E9 DF E0 F6 C4 44",
 	    "missinginfo1_6",
-	    "8B 51 04 D9 82 ?? ?? ?? ?? D9 EE D9 C0 DD EA DF E0 DD D9 F6 C4 44 7A 3F D9 82 ?? ?? ?? ?? DA E9");
+	    "8B 51 04 D9 82 ?? ?? ?? ?? D9 EE D9 C0 DD EA DF E0 DD D9 F6 C4 44 7A 3F D9 82 ?? ?? ?? ?? DA E9",
+	    "1910503",
+	    "55 8B EC 51 0F 57 C9 57 8B F9 8B 4F ?? F3 0F 10 81 ?? ?? ?? ?? 0F 2E C1 9F",
+	    "7197370",
+	    "55 8B EC 51 F3 0F 10 0D ?? ?? ?? ?? 57 8B F9 8B 57 ?? F3 0F 10 82 ?? ?? ?? ?? 0F 2E C1 9F");
 	PATTERNS(
 	    CheckJumpButton_client,
 	    "5135",
@@ -236,6 +240,13 @@ void AutojumpFeature::LoadFeature()
 			off_mv_ptr = 2;
 			break;
 		}
+		if (off_mv_ptr == 1)
+			off_player_ptr = 2;
+		else if (off_mv_ptr == 2)
+			off_player_ptr = 1;
+		else
+			// not sure about dmomm
+			off_player_ptr = 0;
 	}
 	else
 	{

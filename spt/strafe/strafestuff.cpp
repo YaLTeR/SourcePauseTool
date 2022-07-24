@@ -20,6 +20,7 @@
 #include "property_getter.hpp"
 #include "..\features\playerio.hpp"
 #include "..\features\tracing.hpp"
+#include "..\features\autojump.hpp"
 #include "SDK\hl_movedata.h"
 #include "interfaces.hpp"
 
@@ -63,8 +64,8 @@ namespace Strafe
 	void SetMoveData()
 	{
 		data.m_nPlayerHandle = utils::GetServerPlayer()->GetRefEHandle();
-		void** player = reinterpret_cast<void**>((char*)interfaces::gm + 0x4);
-		CMoveData** mv = reinterpret_cast<CMoveData**>((char*)interfaces::gm + 0x8);
+		void** player = reinterpret_cast<void**>((uintptr_t*)interfaces::gm + spt_autojump.off_player_ptr);
+		CMoveData** mv = reinterpret_cast<CMoveData**>((uintptr_t*)interfaces::gm + spt_autojump.off_mv_ptr);
 		oldmv = *mv;
 		oldPlayer = *player;
 		*mv = &data;
@@ -73,8 +74,8 @@ namespace Strafe
 
 	void UnsetMoveData()
 	{
-		void** player = reinterpret_cast<void**>((char*)interfaces::gm + 0x4);
-		CMoveData** mv = reinterpret_cast<CMoveData**>((char*)interfaces::gm + 0x8);
+		void** player = reinterpret_cast<void**>((uintptr_t*)interfaces::gm + spt_autojump.off_player_ptr);
+		CMoveData** mv = reinterpret_cast<CMoveData**>((uintptr_t*)interfaces::gm + spt_autojump.off_mv_ptr);
 		*player = oldPlayer;
 		*mv = oldmv;
 	}
