@@ -14,6 +14,7 @@ class AutojumpFeature : public FeatureWrapper<AutojumpFeature>
 {
 public:
 	ptrdiff_t off_mv_ptr = 0;
+	ptrdiff_t off_player_ptr = 0;
 	bool cantJumpNextTime = false;
 	bool insideCheckJumpButton = false;
 

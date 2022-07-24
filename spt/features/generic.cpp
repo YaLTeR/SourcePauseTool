@@ -97,7 +97,9 @@ namespace patterns
 	         "5135",
 	         "56 8B F1 80 BE ?? ?? ?? ?? 00 57 8B 7C 24 ?? 75 ??",
 	         "hls-220622",
-	         "55 8B EC 56 8B F1 57 8B 7D ?? 80 BE ?? ?? ?? ?? 00");
+	         "55 8B EC 56 8B F1 57 8B 7D ?? 80 BE ?? ?? ?? ?? 00",
+	         "3420",
+	         "81 EC 54 05 00 00 53 55 8B E9 80 7D ?? 00 BB 01 00 00 00");
 	PATTERNS(
 	    CHudDamageIndicator__GetDamagePosition,
 	    "5135",
