@@ -2,19 +2,33 @@
 #include "..\feature.hpp"
 #include "convar.hpp"
 #include "..\utils\math.hpp"
+#include "..\utils\command.hpp"
 #include "interfaces.hpp"
 #include <string>
 
 class CvarStuff : public FeatureWrapper<CvarStuff>
 {
 public:
+	void UpdateCommandList();
+	std::vector<std::string> dev_cvars;
+
 protected:
 	virtual void LoadFeature() override;
 };
 
 static CvarStuff spt_cvarstuff;
 
+#ifdef SSDK2013
 CON_COMMAND(y_spt_cvar, "CVar manipulation.")
+#else
+static int y_spt_cvar_CompletionFunc(const char* partial,
+                                     char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+	AutoCompletList y_spt_cvar_Complete("y_spt_cvar", spt_cvarstuff.dev_cvars);
+	return y_spt_cvar_Complete.AutoCompletionFunc(partial, commands);
+}
+CON_COMMAND_F_COMPLETION(y_spt_cvar, "CVar manipulation.", 0, y_spt_cvar_CompletionFunc)
+#endif
 {
 	if (!g_pCVar)
 		return;
@@ -85,7 +99,21 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 }
 
 #if !defined(OE)
+
+#ifdef SSDK2013
 CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of the argument string.")
+#else
+static int y_spt_cvar2_CompletionFunc(const char* partial,
+                                      char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+	AutoCompletList y_spt_cvar2_Complete("y_spt_cvar2", spt_cvarstuff.dev_cvars);
+	return y_spt_cvar2_Complete.AutoCompletionFunc(partial, commands);
+}
+CON_COMMAND_F_COMPLETION(y_spt_cvar2,
+                         "CVar manipulation, sets the CVar value to the rest of the argument string.",
+                         0,
+                         y_spt_cvar2_CompletionFunc)
+#endif
 {
 	if (!g_pCVar)
 		return;
@@ -130,6 +158,15 @@ CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of 
 	cvar->SetValue(value);
 }
 
+CON_COMMAND(y_spt_dev_cvars, "Prints all developer/hidden CVars.")
+{
+	spt_cvarstuff.UpdateCommandList();
+	for (const auto& name : spt_cvarstuff.dev_cvars)
+	{
+		Msg("%s\n", name.c_str());
+	}
+}
+
 #endif
 
 void CvarStuff::LoadFeature()
@@ -143,9 +180,26 @@ void CvarStuff::LoadFeature()
 #else
 	if (interfaces::g_pCVar)
 	{
+		UpdateCommandList();
 		InitCommand(y_spt_cvar);
 		InitCommand(y_spt_cvar_random);
+		InitCommand(y_spt_dev_cvars);
 		InitCommand(y_spt_cvar2);
 	}
 #endif
 }
+
+#ifndef OE
+void CvarStuff::UpdateCommandList()
+{
+	dev_cvars.clear();
+	const ConCommandBase* cmd = g_pCVar->GetCommands();
+	for (; cmd; cmd = cmd->GetNext())
+	{
+		if (!cmd->IsCommand() && cmd->IsFlagSet(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN))
+		{
+			dev_cvars.push_back(cmd->GetName());
+		}
+	}
+}
+#endif
