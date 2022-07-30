@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#ifndef SSDK2013
+
 #include "command.hpp"
 #include "file.hpp"
 #include <filesystem>
@@ -82,3 +84,5 @@ int AutoCompletList::AutoCompletionFileFunc(const char* partial,
 	}
 	return AutoCompletionFunc(partial, commands);
 }
+
+#endif

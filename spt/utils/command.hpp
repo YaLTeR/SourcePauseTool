@@ -1,5 +1,14 @@
 #pragma once
 
+#ifdef SSDK2013
+// autocomplete crashes on stemapipe :((
+#define CON_COMMAND_AUTOCOMPLETEFILE(name, description, flags, subdirectory, extension) \
+	CON_COMMAND_F(name, description, flags)
+
+#define CON_COMMAND_AUTOCOMPLETE(name, description, flags, completion) CON_COMMAND_F(name, description, flags)
+
+#else
+
 #include "convar.h"
 
 class AutoCompletList
@@ -55,15 +64,9 @@ private:
 		return command##Complete.AutoCompletionFileFunc(partial, commands); \
 	}
 
-#ifdef SSDK2013
-// autocomplete crashes on stemapipe :((
-#define CON_COMMAND_AUTOCOMPLETEFILE(name, description, flags, subdirectory, extension) \
-	CON_COMMAND_F(name, description, flags)
-#else
 #define CON_COMMAND_AUTOCOMPLETEFILE(name, description, flags, subdirectory, extension) \
 	DECLARE_AUTOCOMPLETIONFILE_FUNCTION(name, subdirectory, extension) \
 	CON_COMMAND_F_COMPLETION(name, description, flags, AUTOCOMPLETION_FUNCTION(name))
-#endif
 
 #define DECLARE_AUTOCOMPLETION_FUNCTION(command, completion) \
 	AutoCompletList command##Complete(#command, std::vector<std::string> completion); \
@@ -76,3 +79,5 @@ private:
 #define CON_COMMAND_AUTOCOMPLETE(name, description, flags, completion) \
 	DECLARE_AUTOCOMPLETION_FUNCTION(name, completion) \
 	CON_COMMAND_F_COMPLETION(name, description, flags, AUTOCOMPLETION_FUNCTION(name))
+
+#endif
