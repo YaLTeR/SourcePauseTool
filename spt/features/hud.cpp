@@ -121,7 +121,7 @@ void HUDFeature::DrawHUD()
 {
 	vgui::HFont font;
 
-	if (!interfaces::surface || !GetFont(FONT_DefaultFixedOutline, font))
+	if (!screen || !interfaces::surface || !GetFont(FONT_DefaultFixedOutline, font))
 		return;
 
 	ORIG_StartDrawing(interfaces::surface, 0);
