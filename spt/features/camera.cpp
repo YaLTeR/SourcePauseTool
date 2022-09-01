@@ -33,7 +33,7 @@ ConVar y_spt_cam_control(
     "    See commands y_spt_cam_path_");
 ConVar y_spt_cam_drive("y_spt_cam_drive", "1", FCVAR_CHEAT, "Enables or disables camera drive mode in-game.");
 ConVar y_spt_cam_path_draw("y_spt_cam_path_draw", "0", FCVAR_CHEAT, "Draws the current camera path.");
-ConVar y_spt_cam_fov("y_spt_cam_fov", "0", 0, "Sets the camera drive mode FOV.");
+ConVar y_spt_cam_fov("y_spt_cam_fov", "0", 0, "Override camera FOV (won't record in demos).");
 
 CON_COMMAND(y_spt_cam_setpos, "y_spt_cam_setpos <x> <y> <z> - Sets the camera position. (requires camera drive mode)")
 {
@@ -293,8 +293,8 @@ void Camera::OverrideView(CViewSetup* view)
 	{
 		view->origin = current_cam.origin;
 		view->angles = current_cam.angles;
-		view->fov = current_cam.fov;
 	}
+	view->fov = current_cam.fov;
 }
 
 void Camera::HandleDriveMode(bool active)
