@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#ifndef OE
 #include "camera.hpp"
 #include "playerio.hpp"
 #include "interfaces.hpp"
@@ -7,11 +8,7 @@
 #include "..\sptlib-wrapper.hpp"
 #include "..\cvars.hpp"
 
-#ifdef OE
-#include "..\game_shared\usercmd.h"
-#else
 #include "usercmd.h"
-#endif
 
 #include <chrono>
 
@@ -33,7 +30,8 @@ ConVar y_spt_cam_control(
     "    See commands y_spt_cam_path_");
 ConVar y_spt_cam_drive("y_spt_cam_drive", "1", FCVAR_CHEAT, "Enables or disables camera drive mode in-game.");
 ConVar y_spt_cam_path_draw("y_spt_cam_path_draw", "0", FCVAR_CHEAT, "Draws the current camera path.");
-ConVar y_spt_cam_fov("y_spt_cam_fov", "0", 0, "Override camera FOV (won't record in demos).");
+
+ConVar _y_spt_force_fov("_y_spt_force_fov", "0", 0, "Force FOV to some value.");
 
 CON_COMMAND(y_spt_cam_setpos, "y_spt_cam_setpos <x> <y> <z> - Sets the camera position. (requires camera drive mode)")
 {
@@ -283,8 +281,8 @@ void Camera::RefreshTimeOffset()
 void Camera::OverrideView(CViewSetup* view)
 {
 	int control_type = CanOverrideView() ? y_spt_cam_control.GetInt() : 0;
-	if (y_spt_cam_fov.GetBool())
-		current_cam.fov = y_spt_cam_fov.GetFloat();
+	if (_y_spt_force_fov.GetBool())
+		current_cam.fov = _y_spt_force_fov.GetFloat();
 	else
 		current_cam.fov = view->fov;
 	HandleDriveMode(control_type == 1);
@@ -319,14 +317,12 @@ void Camera::HandleDriveMode(bool active)
 
 static bool isBindDown(const char* bind)
 {
-#ifndef OE
 	const char* key = interfaces::engine_client->Key_LookupBinding(bind);
 	if (key)
 	{
 		ButtonCode_t code = interfaces::inputSystem->StringToButtonCode(key);
 		return interfaces::inputSystem->IsButtonDown(code);
 	}
-#endif
 	return false;
 }
 
@@ -726,7 +722,7 @@ void Camera::LoadFeature()
 	{
 		InitConcommandBase(y_spt_cam_control);
 		InitConcommandBase(y_spt_cam_drive);
-		InitConcommandBase(y_spt_cam_fov);
+		InitConcommandBase(_y_spt_force_fov);
 		InitCommand(y_spt_cam_setpos);
 		InitCommand(y_spt_cam_setang);
 
@@ -751,3 +747,5 @@ void Camera::LoadFeature()
 }
 
 void Camera::UnloadFeature() {}
+
+#endif
