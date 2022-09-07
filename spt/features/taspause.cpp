@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "..\feature.hpp"
 #include "convar.hpp"
+#include "..\utils\game_detection.hpp"
 
 typedef void(__cdecl* _Host_AccumulateTime)(float dt);
 ConVar tas_pause("tas_pause", "0", 0, "Does a pause where you can look around when the game is paused.\n");
@@ -53,7 +54,8 @@ void TASPause::LoadFeature()
 {
 	if (ORIG__Host_RunFrame)
 	{
-		pHost_Frametime = *reinterpret_cast<float**>((uintptr_t)ORIG__Host_RunFrame + 227);
+		ptrdiff_t off_pHost_Frametime = (utils::GetBuildNumber() <= 3420) ? 309 : 227;
+		pHost_Frametime = *reinterpret_cast<float**>((uintptr_t)ORIG__Host_RunFrame + off_pHost_Frametime);
 	}
 	else
 	{

@@ -1,3 +1,4 @@
+#pragma once
 #include "..\feature.hpp"
 #include "view_shared.h"
 #include "demo.hpp"

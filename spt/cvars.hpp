@@ -35,7 +35,6 @@ extern ConVar y_spt_vag_trace_portal;
 extern ConVar y_spt_cam_control;
 extern ConVar y_spt_cam_drive;
 extern ConVar y_spt_cam_path_draw;
-extern ConVar y_spt_cam_fov;
 
 extern ConVar tas_strafe;
 extern ConVar tas_strafe_type;
