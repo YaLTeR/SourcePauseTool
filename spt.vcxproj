@@ -1152,12 +1152,11 @@
     <ClCompile Include="spt\features\overlays\renderer\mesh_construction.cpp" />
     <ClCompile Include="spt\features\overlays\renderer\overlay_renderer.cpp" />
     <ClCompile Include="spt\features\overlays\renderer\overlay_test.cpp" />
+    <ClCompile Include="spt\features\overlays\sg-collide-vis.cpp" />
     <ClCompile Include="spt\features\pause.cpp" />
-    <ClCompile Include="spt\features\physvis.cpp" />
     <ClCompile Include="spt\features\playerio.cpp" />
     <ClCompile Include="spt\features\restart.cpp" />
     <ClCompile Include="spt\features\rng.cpp" />
-    <ClCompile Include="spt\features\sg-collide-vis.cpp" />
     <ClCompile Include="spt\features\shadow.cpp" />
     <ClCompile Include="spt\features\stucksave.cpp" />
     <ClCompile Include="spt\features\tas.cpp" />
@@ -1369,7 +1368,6 @@
     <ClInclude Include="spt\features\overlay.hpp" />
     <ClInclude Include="spt\features\overlays\renderer\mesh_builder.hpp" />
     <ClInclude Include="spt\features\overlays\renderer\overlay_renderer.hpp" />
-    <ClInclude Include="spt\features\physvis.hpp" />
     <ClInclude Include="spt\features\playerio.hpp" />
     <ClInclude Include="spt\features\restart.hpp" />
     <ClInclude Include="spt\features\rng.hpp" />
