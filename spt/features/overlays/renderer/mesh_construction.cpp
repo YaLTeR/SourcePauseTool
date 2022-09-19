@@ -6,7 +6,93 @@
 
 #include <memory>
 
+#include "spt\feature.hpp"
+#include "spt\features\ent_props.hpp"
 #include "spt\utils\math.hpp"
+
+/**************************************** COLLIDE TO MESH ****************************************/
+
+namespace patterns
+{
+	PATTERNS(CPhysicsCollision__CreateDebugMesh,
+	         "5135",
+	         "83 EC 10 8B 4C 24 14 8B 01 8B 40 08 55 56 57 33 ED 8D 54 24 10 52",
+	         "1910503",
+	         "55 8B EC 83 EC 14 8B 4D 08 8B 01 8B 40 08 53 56 57 33 DB 8D 55 EC");
+	PATTERNS(CPhysicsObject__GetPosition,
+	         "5135",
+	         "8B 49 08 81 EC 80 00 00 00 8D 04 24 50 E8 ?? ?? ?? ?? 8B 84 24 84 00 00 00 85 C0",
+	         "1910503",
+	         "55 8B EC 8B 49 08 81 EC 80 00 00 00 8D 45 80 50 E8 ?? ?? ?? ?? 8B 45 08 85 C0");
+} // namespace patterns
+
+class MbCollideFeature : public FeatureWrapper<MbCollideFeature>
+{
+public:
+	DECL_MEMBER_THISCALL(int, CPhysicsCollision__CreateDebugMesh, const CPhysCollide* pCollide, Vector** outVerts);
+	DECL_MEMBER_THISCALL(void, CPhysicsObject__GetPosition, Vector* worldPosition, QAngle* angles);
+
+protected:
+	void InitHooks() override
+	{
+		FIND_PATTERN(vphysics, CPhysicsCollision__CreateDebugMesh);
+		FIND_PATTERN(vphysics, CPhysicsObject__GetPosition);
+	}
+};
+
+static MbCollideFeature collideFeature;
+
+bool MeshBuilderPro::CreateCollideWorks()
+{
+	return collideFeature.ORIG_CPhysicsCollision__CreateDebugMesh
+	       && collideFeature.ORIG_CPhysicsObject__GetPosition;
+}
+
+std::unique_ptr<Vector> MeshBuilderPro::CreateCollideMesh(const CPhysCollide* pCollide, int& outNumFaces)
+{
+	if (!pCollide || !collideFeature.ORIG_CPhysicsCollision__CreateDebugMesh)
+	{
+		outNumFaces = 0;
+		return nullptr;
+	}
+	Vector* outVerts;
+	outNumFaces = collideFeature.ORIG_CPhysicsCollision__CreateDebugMesh(nullptr, 0, pCollide, &outVerts) / 3;
+	return std::unique_ptr<Vector>(outVerts);
+}
+
+std::unique_ptr<Vector> MeshBuilderPro::CreateCPhysObjMesh(const CPhysicsObject* pPhysObj,
+                                                           int& outNumFaces,
+                                                           matrix3x4_t& outMat)
+{
+	if (!pPhysObj || !CreateCollideWorks())
+	{
+		outNumFaces = 0;
+		SetIdentityMatrix(outMat);
+		return nullptr;
+	}
+	Vector pos;
+	QAngle ang;
+	collideFeature.ORIG_CPhysicsObject__GetPosition((void*)pPhysObj, 0, &pos, &ang);
+	AngleMatrix(ang, pos, outMat);
+	return CreateCollideMesh(*((CPhysCollide**)pPhysObj + 3), outNumFaces);
+}
+
+std::unique_ptr<Vector> MeshBuilderPro::CreateCBaseEntMesh(const CBaseEntity* pEnt,
+                                                           int& outNumFaces,
+                                                           matrix3x4_t& outMat)
+{
+	int off = spt_entutils.GetFieldOffset("CBaseEntity", "m_CollisionGroup", true);
+	if (!pEnt || !CreateCollideWorks() || off == utils::INVALID_DATAMAP_OFFSET)
+	{
+		outNumFaces = 0;
+		SetIdentityMatrix(outMat);
+		return nullptr;
+	}
+	off = (off + 4) / 4;
+	return CreateCPhysObjMesh(*((CPhysicsObject**)pEnt + off), outNumFaces, outMat);
+}
+
+/**************************************** MESH CONSTRUCTION ****************************************/
 
 // https://stackoverflow.com/a/365068 to keep growth geometric but still use reserve
 size_t MinBiggerPow2(size_t n)

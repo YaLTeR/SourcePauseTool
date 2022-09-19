@@ -12,6 +12,8 @@
 #include "materialsystem\imaterial.h"
 #include "materialsystem\imesh.h"
 
+typedef void CPhysicsObject;
+
 /*
 * The renderer needs some position metric for meshes to figure out which order to render translucent meshes in.
 * For simplicity, we only keep track of the each meshes' AABB and assume each mesh is a cubical cow. This position
@@ -198,6 +200,21 @@ public:
 	                float tipRadius,
 	                int numCirclePoints,
 	                const MeshColor& c);
+
+	// collide stuff - returned mesh is an array of tris, consider caching and/or using static meshes
+
+	static std::unique_ptr<Vector> CreateCollideMesh(const CPhysCollide* pCollide, int& outNumFaces);
+
+	static std::unique_ptr<Vector> CreateCPhysObjMesh(const CPhysicsObject* pPhysObj,
+	                                                  int& outNumFaces,
+	                                                  matrix3x4_t& outMat);
+
+	static std::unique_ptr<Vector> CreateCBaseEntMesh(const CBaseEntity* pEnt,
+	                                                  int& outNumFaces,
+	                                                  matrix3x4_t& outMat);
+
+	// can be used (after InitHooks()) to check if the above functions do anything
+	static bool CreateCollideWorks();
 
 private:
 	// internal construction helper methods

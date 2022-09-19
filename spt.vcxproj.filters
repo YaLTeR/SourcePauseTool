@@ -223,12 +223,6 @@
     <ClCompile Include="spt\features\restart.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
-    <ClCompile Include="spt\features\physvis.cpp">
-      <Filter>spt\features</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\sg-collide-vis.cpp">
-      <Filter>spt\features</Filter>
-    </ClCompile>
     <ClCompile Include="spt\features\vag_searcher.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
@@ -288,6 +282,9 @@
     </ClCompile>
     <ClCompile Include="spt\features\overlays\renderer\overlay_test.cpp">
       <Filter>spt\features\overlays\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\overlays\sg-collide-vis.cpp">
+      <Filter>spt\features\overlays</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -553,9 +550,6 @@
       <Filter>spt\utils</Filter>
     </ClInclude>
     <ClInclude Include="spt\features\ent_props.hpp">
-      <Filter>spt\features</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\features\physvis.hpp">
       <Filter>spt\features</Filter>
     </ClInclude>
     <ClInclude Include="spt\features\vag_searcher.hpp">
