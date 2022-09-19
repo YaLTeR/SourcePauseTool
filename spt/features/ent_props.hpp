@@ -17,11 +17,11 @@ struct _InternalPlayerField
 	int serverOffset = utils::INVALID_DATAMAP_OFFSET;
 	int clientOffset = utils::INVALID_DATAMAP_OFFSET;
 
-	void** GetServerPtr();
-	void** GetClientPtr();
+	void** GetServerPtr() const;
+	void** GetClientPtr() const;
 
-	bool ClientOffsetFound();
-	bool ServerOffsetFound();
+	bool ClientOffsetFound() const;
+	bool ServerOffsetFound() const;
 };
 
 template<typename T>
@@ -30,8 +30,8 @@ struct PlayerField
 	_InternalPlayerField field;
 	PropMode mode = PropMode::PreferServer;
 
-	T GetValue();
-	T* GetPtr();
+	T GetValue() const;
+	T* GetPtr() const;
 	bool ClientOffsetFound()
 	{
 		return field.clientOffset != utils::INVALID_DATAMAP_OFFSET;
@@ -97,7 +97,7 @@ inline PlayerField<T> EntUtils::GetPlayerField(const std::string& key, PropMode 
 }
 
 template<typename T>
-inline T PlayerField<T>::GetValue()
+inline T PlayerField<T>::GetValue() const
 {
 	T* ptr = GetPtr();
 
@@ -108,7 +108,7 @@ inline T PlayerField<T>::GetValue()
 }
 
 template<typename T>
-inline T* PlayerField<T>::GetPtr()
+inline T* PlayerField<T>::GetPtr() const
 {
 	auto resolved = spt_entutils.ResolveMode(mode);
 	if (resolved == PropMode::Server)

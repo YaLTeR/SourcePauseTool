@@ -477,7 +477,7 @@ void EntUtils::LoadFeature()
 #endif
 }
 
-void** _InternalPlayerField::GetServerPtr()
+void** _InternalPlayerField::GetServerPtr() const
 {
 	auto serverplayer = reinterpret_cast<uintptr_t>(spt_entutils.GetPlayer(true));
 	if (serverplayer && serverOffset != utils::INVALID_DATAMAP_OFFSET)
@@ -486,7 +486,7 @@ void** _InternalPlayerField::GetServerPtr()
 		return nullptr;
 }
 
-void** _InternalPlayerField::GetClientPtr()
+void** _InternalPlayerField::GetClientPtr() const
 {
 	auto clientPlayer = reinterpret_cast<uintptr_t>(spt_entutils.GetPlayer(false));
 	if (clientPlayer && clientOffset != utils::INVALID_DATAMAP_OFFSET)
@@ -495,12 +495,12 @@ void** _InternalPlayerField::GetClientPtr()
 		return nullptr;
 }
 
-bool _InternalPlayerField::ClientOffsetFound()
+bool _InternalPlayerField::ClientOffsetFound() const
 {
 	return clientOffset != utils::INVALID_DATAMAP_OFFSET;
 }
 
-bool _InternalPlayerField::ServerOffsetFound()
+bool _InternalPlayerField::ServerOffsetFound() const
 {
 	return serverOffset != utils::INVALID_DATAMAP_OFFSET;
 }
