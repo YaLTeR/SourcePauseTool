@@ -22,7 +22,6 @@ extern ConVar y_spt_block_demo_cmd;
 extern ConVar y_spt_on_slide_pause_for;
 extern ConVar y_spt_prevent_vag_crash;
 extern ConVar y_spt_disable_tone_map_reset;
-extern ConVar y_spt_draw_seams;
 extern ConVar y_spt_vag_search_portal;
 extern ConVar y_spt_vag_trace;
 extern ConVar y_spt_vag_target;

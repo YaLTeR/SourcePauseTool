@@ -1140,7 +1140,6 @@
     <ClCompile Include="spt\features\ent_props.cpp" />
     <ClCompile Include="spt\features\fov.cpp" />
     <ClCompile Include="spt\features\generic.cpp" />
-    <ClCompile Include="spt\features\graphics.cpp" />
     <ClCompile Include="spt\features\hops_hud.cpp" />
     <ClCompile Include="spt\features\hud.cpp" />
     <ClCompile Include="spt\features\ihud.cpp" />
@@ -1148,6 +1147,7 @@
     <ClCompile Include="spt\features\isg.cpp" />
     <ClCompile Include="spt\features\nosleep.cpp" />
     <ClCompile Include="spt\features\overlay.cpp" />
+    <ClCompile Include="spt\features\overlays\draw_seams.cpp" />
     <ClCompile Include="spt\features\overlays\renderer\mesh_builder.cpp" />
     <ClCompile Include="spt\features\overlays\renderer\mesh_construction.cpp" />
     <ClCompile Include="spt\features\overlays\renderer\overlay_renderer.cpp" />
@@ -1311,7 +1311,6 @@
     <ClCompile Include="spt\utils\property_getter.cpp" />
     <ClCompile Include="spt\utils\signals.cpp" />
     <ClCompile Include="spt\utils\string_utils.cpp" />
-    <ClCompile Include="spt\vgui\lines.cpp" />
     <ClCompile Include="spt\vgui\vgui_utils.cpp" />
     <ClCompile Include="thirdparty\md5.cpp" />
   </ItemGroup>
@@ -1418,7 +1417,6 @@
     <ClInclude Include="spt\utils\property_getter.hpp" />
     <ClInclude Include="spt\utils\signals.hpp" />
     <ClInclude Include="spt\utils\string_utils.hpp" />
-    <ClInclude Include="spt\vgui\lines.hpp" />
     <ClInclude Include="spt\vgui\vgui_utils.hpp" />
     <ClInclude Include="thirdparty\Delegate.h" />
     <ClInclude Include="thirdparty\json.hpp" />

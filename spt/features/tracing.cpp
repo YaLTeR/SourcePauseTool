@@ -58,12 +58,13 @@ void Tracing::InitHooks()
 	HOOK_FUNCTION(server, CGameMovement__GetPlayerMaxs);
 	HOOK_FUNCTION(server, CGameMovement__GetPlayerMins);
 #ifdef SSDK2007
-	if (utils::DoesGameLookLikePortal())
+	if (utils::DoesGameLookLikePortal() && utils::GetBuildNumber() == 5135)
 	{
+		// TODO botched and BAD!! fix for other versions!
 		AddOffsetHook("server", 0xCCE90, "GetActiveWeapon", reinterpret_cast<void**>(&ORIG_GetActiveWeapon));
 		AddOffsetHook("server", 0x441730, "TraceFirePortal", reinterpret_cast<void**>(&ORIG_TraceFirePortal));
-		FIND_PATTERN(engine, CEngineTrace__PointOutsideWorld);
 	}
+	FIND_PATTERN(engine, CEngineTrace__PointOutsideWorld);
 #endif
 }
 

@@ -154,9 +154,6 @@
     <ClCompile Include="spt\overlay\portal_camera.cpp">
       <Filter>spt\overlay</Filter>
     </ClCompile>
-    <ClCompile Include="spt\vgui\lines.cpp">
-      <Filter>spt\vgui</Filter>
-    </ClCompile>
     <ClCompile Include="spt\scripts\condition.cpp">
       <Filter>spt\scripts</Filter>
     </ClCompile>
@@ -191,9 +188,6 @@
       <Filter>spt\utils</Filter>
     </ClCompile>
     <ClCompile Include="spt\features\test.cpp">
-      <Filter>spt\features</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\graphics.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
     <ClCompile Include="spt\features\ipc-spt.cpp">
@@ -284,6 +278,9 @@
       <Filter>spt\features\overlays\renderer</Filter>
     </ClCompile>
     <ClCompile Include="spt\features\overlays\sg-collide-vis.cpp">
+      <Filter>spt\features\overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\overlays\draw_seams.cpp">
       <Filter>spt\features\overlays</Filter>
     </ClCompile>
   </ItemGroup>
@@ -485,9 +482,6 @@
     </ClInclude>
     <ClInclude Include="spt\overlay\portal_camera.hpp">
       <Filter>spt\overlay</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\vgui\lines.hpp">
-      <Filter>spt\vgui</Filter>
     </ClInclude>
     <ClInclude Include="spt\scripts\condition.hpp">
       <Filter>spt\scripts</Filter>
