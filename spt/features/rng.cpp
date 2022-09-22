@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "game_detection.hpp"
 #include "rng.hpp"
 #include "tier1/checksum_md5.h"
 #include "cmodel.h"
@@ -35,8 +36,11 @@ namespace patterns
 void RNGStuff::InitHooks()
 {
 	HOOK_FUNCTION(server, SetPredictionRandomSeed);
-	HOOK_FUNCTION(server, CBasePlayer__InitVCollision);
-	FIND_PATTERN(vphysics, ivp_srand);
+	if (!utils::DoesGameLookLikeBMSMod())
+	{
+		HOOK_FUNCTION(server, CBasePlayer__InitVCollision);
+		FIND_PATTERN(vphysics, ivp_srand);	
+	}
 }
 
 int RNGStuff::GetPredictionRandomSeed(int commandOffset)

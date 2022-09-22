@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "hud.hpp"
 #include "convar.hpp"
+#include "game_detection.hpp"
 #include "interfaces.hpp"
 #include "tier0\basetypes.h"
 #include "overlay.hpp"
@@ -73,11 +74,16 @@ void HUDFeature::DrawTopHudElement(const wchar* format, ...)
 
 bool HUDFeature::ShouldLoadFeature()
 {
-	return true;
+	return !utils::DoesGameLookLikeBMSMod();
 }
 
 bool HUDFeature::GetFont(const std::string& fontName, vgui::HFont& fontOut)
 {
+	if (!loadingSuccessful)
+	{
+		return false;
+	}
+
 	if (fonts.find(fontName) != fonts.end())
 	{
 		fontOut = fonts[fontName];
