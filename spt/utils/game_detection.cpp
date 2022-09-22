@@ -66,6 +66,22 @@ namespace utils
 		return false;
 	}
 
+	bool DoesGameLookLikeBMSMod()
+	{
+		if (DoesGameLookLikeBMS())
+		{
+			return false;
+		}
+
+		if (g_pCVar)
+		{
+			if (g_pCVar->FindVar("bm_eds_crash"))
+				return true;
+		}
+
+		return false;
+	}
+
 	static std::future<int> BuildResult;
 
 	int GetBuildNumber()
