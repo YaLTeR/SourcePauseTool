@@ -106,6 +106,9 @@ namespace patterns
 	    "83 EC 18 E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 08 89 4C 24 0C 8B 50 04 6A 00 89 54 24 14 8B 40 08 6A 00 8D 4C 24 08 51 8D 54 24 18 52 89 44 24 24",
 	    "1910503",
 	    "55 8B EC 83 EC 18 56 8B F1 E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? F3 0F 7E 00 6A 00 6A 00 8D 4D F4 66 0F D6 45 E8");
+	PATTERNS(SV_Frame,
+	         "5135",
+	         "8B 0D ?? ?? ?? ?? 83 EC 08 85 C9 74 10 8B 44 24 0C 84 C0 74 08 8B 11 50 8B 42 78 FF D0 83 3D");
 
 } // namespace patterns
 
@@ -115,6 +118,7 @@ void GenericFeature::InitHooks()
 	HOOK_FUNCTION(engine, FinishRestore);
 	HOOK_FUNCTION(engine, SetPaused);
 	HOOK_FUNCTION(engine, SV_ActivateServer);
+	HOOK_FUNCTION(engine, SV_Frame);
 	HOOK_FUNCTION(client, ControllerMove);
 	FIND_PATTERN(client, CHudDamageIndicator__GetDamagePosition);
 }
@@ -174,6 +178,9 @@ void GenericFeature::PreHook()
 
 	if (ORIG_FinishRestore)
 		FinishRestoreSignal.Works = true;
+
+	if (ORIG_SV_Frame)
+		SV_FrameSignal.Works = true;
 
 	if (ORIG_ControllerMove)
 	{
@@ -236,4 +243,10 @@ void __fastcall GenericFeature::HOOKED_ControllerMove(void* thisptr, int edx, fl
 		OngroundSignal(spt_playerio.IsGroundEntitySet());
 		AdjustAngles();
 	}
+}
+
+HOOK_CDECL(void, GenericFeature, SV_Frame, bool finalTick)
+{
+	SV_FrameSignal(finalTick);
+	spt_generic.ORIG_SV_Frame(finalTick);
 }

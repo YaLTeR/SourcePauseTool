@@ -18,6 +18,7 @@ HUDFeature spt_hud;
 const std::string FONT_DefaultFixedOutline = "DefaultFixedOutline";
 const std::string FONT_Trebuchet20 = "Trebuchet20";
 const std::string FONT_Trebuchet24 = "Trebuchet24";
+const std::string FONT_HudNumbers = "HudNumbers";
 
 namespace patterns
 {

@@ -49,6 +49,7 @@ private:
 	static void __fastcall HOOKED_FinishRestore(void* thisptr, int edx);
 	static void __fastcall HOOKED_SetPaused(void* thisptr, int edx, bool paused);
 	static void __fastcall HOOKED_ControllerMove(void* thisptr, int edx, float frametime, void* cmd);
+	DECL_HOOK_CDECL(void, SV_Frame, bool finalTick);
 };
 
 extern GenericFeature spt_generic;

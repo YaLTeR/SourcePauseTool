@@ -244,6 +244,9 @@
     <ClCompile Include="spt\patterns_archive.cpp">
       <Filter>spt</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\boog.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
