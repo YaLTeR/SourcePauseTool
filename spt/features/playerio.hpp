@@ -34,6 +34,7 @@ private:
 	static int __fastcall HOOKED_GetButtonBits(void* thisptr, int edx, int bResetState);
 
 public:
+	virtual bool ShouldLoadFeature() override;
 	void GetMoveInput(float& forwardmove, float& sidemove);
 	void SetTASInput(float* va, const Strafe::ProcessedFrame& out);
 	Strafe::MovementVars GetMovementVars();
@@ -94,7 +95,6 @@ public:
 	}
 
 protected:
-	virtual bool ShouldLoadFeature() override;
 
 	virtual void InitHooks() override;
 

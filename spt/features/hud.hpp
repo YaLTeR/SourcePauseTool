@@ -17,6 +17,7 @@ typedef void(__fastcall* _VGui_Paint)(void* thisptr, int edx, int mode);
 extern const std::string FONT_DefaultFixedOutline;
 extern const std::string FONT_Trebuchet20;
 extern const std::string FONT_Trebuchet24;
+extern const std::string FONT_HudNumbers;
 
 enum class RenderTime
 {

@@ -13,3 +13,4 @@ Gallant::Signal1<bool> SV_ActivateServerSignal;
 Gallant::Signal1<uintptr_t> CreateMoveSignal;
 Gallant::Signal0<void> VagCrashSignal;
 Gallant::Signal0<void> DemoStartPlaybackSignal;
+Gallant::Signal1<bool> SV_FrameSignal;
