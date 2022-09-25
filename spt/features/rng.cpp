@@ -20,7 +20,11 @@ RNGStuff spt_rng;
 
 namespace patterns
 {
-	PATTERNS(SetPredictionRandomSeed, "5135", "8B 44 24 ?? 85 C0 75 ?? C7 05 ?? ?? ?? ?? FF FF FF FF");
+	PATTERNS(SetPredictionRandomSeed,
+	         "5135",
+	         "8B 44 24 ?? 85 C0 75 ?? C7 05 ?? ?? ?? ?? FF FF FF FF",
+	         "hl1movement",
+	         "55 8B EC 8B 45 ?? 85 C0 75 ?? C7 05 ?? ?? ?? ?? FF FF FF FF");
 	PATTERNS(ivp_srand,
 	         "5135",
 	         "8B 44 24 04 85 C0 75 05 B8 01 00 00 00 A3 ?? ?? ?? ?? C3",
@@ -39,7 +43,7 @@ void RNGStuff::InitHooks()
 	if (!utils::DoesGameLookLikeBMSMod())
 	{
 		HOOK_FUNCTION(server, CBasePlayer__InitVCollision);
-		FIND_PATTERN(vphysics, ivp_srand);	
+		FIND_PATTERN(vphysics, ivp_srand);
 	}
 }
 

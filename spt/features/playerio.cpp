@@ -70,7 +70,9 @@ namespace patterns
 	    "2257546-hl1",
 	    "55 8B EC 83 EC 50 53 8B 5D 08 B8 ?? ?? ?? ?? F7 EB 56 03 D3 C1 FA 06 8B C2 C1 E8 1F 03 C2 8B D3",
 	    "BMS-Retail",
-	    "55 8B EC 83 EC 54 53 56 8B 75 08 B8 ?? ?? ?? ?? F7 EE 57 03 D6 8B F9 C1 FA 06 8B CE 8B C2 C1 E8 1F 03 C2 6B C0 5A");
+	    "55 8B EC 83 EC 54 53 56 8B 75 08 B8 ?? ?? ?? ?? F7 EE 57 03 D6 8B F9 C1 FA 06 8B CE 8B C2 C1 E8 1F 03 C2 6B C0 5A",
+	    "hl1movement",
+	    "55 8B EC 83 EC 18 53 56 57 8B 7D ?? B8 ?? ?? ?? ?? F7 EF 8B F1 8B CF 03 D7 C1 FA 06 8B C2 C1 E8 1F 03 C2 6B C0 5A");
 	PATTERNS(
 	    GetGroundEntity,
 	    "5135",
@@ -80,7 +82,9 @@ namespace patterns
 	    "1910503",
 	    "8B 81 50 02 00 00 83 F8 FF 74 1F 8B 15 ?? ?? ?? ?? 8B C8 81 E1 ?? ?? ?? ?? 03 C9 8D 4C CA 04 C1 E8 0C",
 	    "2257546",
-	    "8B 91 50 02 00 00 83 FA FF 74 1D A1 ?? ?? ?? ?? 8B CA 81 E1 ?? ?? ?? ?? C1 EA 0C 03 C9 39 54 C8 08");
+	    "8B 91 50 02 00 00 83 FA FF 74 1D A1 ?? ?? ?? ?? 8B CA 81 E1 ?? ?? ?? ?? C1 EA 0C 03 C9 39 54 C8 08",
+	    "hl1movement",
+	    "8B 91 EC 01 00 00 83 FA FF 74 1D A1 ?? ?? ?? ?? 8B CA 81 E1 ?? ?? ?? ?? C1 EA 0C 03 C9 39 54 C8 08");
 } // namespace patterns
 
 void PlayerIOFeature::InitHooks()
