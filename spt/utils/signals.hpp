@@ -15,3 +15,5 @@ extern Gallant::Signal1<uintptr_t> CreateMoveSignal;
 extern Gallant::Signal0<void> VagCrashSignal;
 extern Gallant::Signal0<void> DemoStartPlaybackSignal;
 extern Gallant::Signal1<bool> SV_FrameSignal;
+extern Gallant::Signal2<void*, void*> ProcessMovementPost_Signal;
+extern Gallant::Signal2<void*, void*> ProcessMovementPre_Signal;

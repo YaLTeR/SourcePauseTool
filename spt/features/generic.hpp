@@ -50,6 +50,7 @@ private:
 	static void __fastcall HOOKED_SetPaused(void* thisptr, int edx, bool paused);
 	static void __fastcall HOOKED_ControllerMove(void* thisptr, int edx, float frametime, void* cmd);
 	DECL_HOOK_CDECL(void, SV_Frame, bool finalTick);
+	DECL_HOOK_THISCALL(void, ProcessMovement, void* pPlayer, void* pMove);
 };
 
 extern GenericFeature spt_generic;
