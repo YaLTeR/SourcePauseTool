@@ -5,6 +5,7 @@
 #include "playerio.hpp"
 #include "ent_utils.hpp"
 #include "game_detection.hpp"
+#include "interfaces.hpp"
 #include "tas.hpp"
 #include "signals.hpp"
 #include "..\cvars.hpp"
@@ -123,6 +124,16 @@ void GenericFeature::InitHooks()
 	HOOK_FUNCTION(engine, SV_Frame);
 	HOOK_FUNCTION(client, ControllerMove);
 	FIND_PATTERN(client, CHudDamageIndicator__GetDamagePosition);
+
+	if (interfaces::gm)
+	{
+		auto vftable = *reinterpret_cast<void***>(interfaces::gm);
+		AddVFTableHook(VFTableHook(vftable, 1, (void*)HOOKED_ProcessMovement, (void**)&ORIG_ProcessMovement),
+		               "server");
+
+		ProcessMovementPre_Signal.Works = true;
+		ProcessMovementPost_Signal.Works = true;
+	}
 }
 
 bool GenericFeature::ShouldLoadFeature()
@@ -251,4 +262,11 @@ HOOK_CDECL(void, GenericFeature, SV_Frame, bool finalTick)
 {
 	SV_FrameSignal(finalTick);
 	spt_generic.ORIG_SV_Frame(finalTick);
+}
+
+HOOK_THISCALL(void, GenericFeature, ProcessMovement, void* pPlayer, void* pMove)
+{
+	ProcessMovementPre_Signal(pPlayer, pMove);
+	spt_generic.ORIG_ProcessMovement(thisptr, edx, pPlayer, pMove);
+	ProcessMovementPost_Signal(pPlayer, pMove);
 }

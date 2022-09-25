@@ -4,8 +4,7 @@
 #include "SDK\hl_movedata.h"
 #include "convar.hpp"
 #include "interfaces.hpp"
-
-typedef void(__fastcall* _ProcessMovement)(void* thisptr, int edx, void* pPlayer, void* pMove);
+#include "signals.hpp"
 
 ConVar tas_log("tas_log", "0", 0, "If enabled, dumps a whole bunch of different stuff into the console.");
 
@@ -15,13 +14,11 @@ class TASLogging : public FeatureWrapper<TASLogging>
 public:
 protected:
 	virtual bool ShouldLoadFeature() override;
-
-	virtual void InitHooks() override;
+	virtual void LoadFeature() override;
 
 private:
-	_ProcessMovement ORIG_ProcessMovement = nullptr;
-
-	static void __fastcall HOOKED_ProcessMovement(void* thisptr, int edx, void* pPlayer, void* pMove);
+	static void ProcessMovementPre(void* pPlayer, void* pMove);
+	static void ProcessMovementPost(void* pPlayer, void* pMove);
 };
 
 static TASLogging spt_taslogging;
@@ -31,18 +28,17 @@ bool TASLogging::ShouldLoadFeature()
 	return true;
 }
 
-void TASLogging::InitHooks()
+void TASLogging::LoadFeature() 
 {
-	if (interfaces::gm)
+	if (ProcessMovementPre_Signal.Works && ProcessMovementPost_Signal.Works)
 	{
-		auto vftable = *reinterpret_cast<void***>(interfaces::gm);
-		AddVFTableHook(VFTableHook(vftable, 1, (void*)HOOKED_ProcessMovement, (void**)&ORIG_ProcessMovement),
-		               "server");
+		ProcessMovementPre_Signal.Connect(ProcessMovementPre);
+		ProcessMovementPost_Signal.Connect(ProcessMovementPre);
 		InitConcommandBase(tas_log);
 	}
 }
 
-void __fastcall TASLogging::HOOKED_ProcessMovement(void* thisptr, int edx, void* pPlayer, void* pMove)
+void TASLogging::ProcessMovementPre(void* pPlayer, void* pMove)
 {
 	CHLMoveData* mv = reinterpret_cast<CHLMoveData*>(pMove);
 	if (tas_log.GetBool())
@@ -53,9 +49,11 @@ void __fastcall TASLogging::HOOKED_ProcessMovement(void* thisptr, int edx, void*
 		       mv->m_vecVelocity.x,
 		       mv->m_vecVelocity.y,
 		       mv->m_vecVelocity.z);
+}
 
-	spt_taslogging.ORIG_ProcessMovement(thisptr, edx, pPlayer, pMove);
-
+void TASLogging::ProcessMovementPost(void* pPlayer, void* pMove)
+{
+	CHLMoveData* mv = reinterpret_cast<CHLMoveData*>(pMove);
 	if (tas_log.GetBool())
 		DevMsg("[ProcessMovement POST] origin: %.8f %.8f %.8f; velocity: %.8f %.8f %.8f\n",
 		       mv->GetAbsOrigin().x,
