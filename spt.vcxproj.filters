@@ -247,6 +247,30 @@
     <ClCompile Include="spt\features\boog.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
+    <ClCompile Include="spt\scripts2\condition2.cpp">
+      <Filter>spt\scripts2</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\scripts2\framebulk_handler2.cpp">
+      <Filter>spt\scripts2</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\scripts2\parsed_script2.cpp">
+      <Filter>spt\scripts2</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\scripts2\srctas_reader2.cpp">
+      <Filter>spt\scripts2</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\scripts2\test_item2.cpp">
+      <Filter>spt\scripts2</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\scripts2\tester2.cpp">
+      <Filter>spt\scripts2</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\scripts2\tracker2.cpp">
+      <Filter>spt\scripts2</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\scripts2\variable_container2.cpp">
+      <Filter>spt\scripts2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -531,6 +555,33 @@
     <ClInclude Include="spt\utils\ivp_maths.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
+    <ClInclude Include="spt\scripts2\condition2.hpp">
+      <Filter>spt\scripts2</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\scripts2\framebulk_handler2.hpp">
+      <Filter>spt\scripts2</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\scripts2\parsed_script2.hpp">
+      <Filter>spt\scripts2</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\scripts2\range_variable2.hpp">
+      <Filter>spt\scripts2</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\scripts2\srctas_reader2.hpp">
+      <Filter>spt\scripts2</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\scripts2\test_item2.hpp">
+      <Filter>spt\scripts2</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\scripts2\tester2.hpp">
+      <Filter>spt\scripts2</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\scripts2\tracker2.hpp">
+      <Filter>spt\scripts2</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\scripts2\variable_container2.hpp">
+      <Filter>spt\scripts2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">
@@ -585,6 +636,9 @@
     </Filter>
     <Filter Include="spt\aim">
       <UniqueIdentifier>{dddef7ec-c95f-4baa-9f56-d47554ea2e86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\scripts2">
+      <UniqueIdentifier>{d03c7a27-824d-4f39-8c99-c22fbd2158e2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
