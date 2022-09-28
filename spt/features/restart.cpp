@@ -1,19 +1,9 @@
 #include "stdafx.h"
 #include <Windows.h>
-#include "..\feature.hpp"
+#include "restart.hpp"
 #include "..\spt-serverplugin.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "SPTLib\Hooks.hpp"
-
-// Does game restarts
-class RestartFeature : public FeatureWrapper<RestartFeature>
-{
-public:
-protected:
-	virtual bool ShouldLoadFeature() override;
-
-	virtual void LoadFeature() override;
-};
 
 static RestartFeature spt_restart;
 static HMODULE spt_module = 0;
@@ -29,7 +19,7 @@ CON_COMMAND(tas_restart_game, "Restarts the game")
 
 bool RestartFeature::ShouldLoadFeature()
 {
-#if defined(OE) || defined(SSDK2013)
+#ifdef SPT_TAS_RESTART_ENABLED
 	return true;
 #else
 	return false;
