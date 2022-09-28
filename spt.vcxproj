@@ -1160,6 +1160,7 @@
     <ClCompile Include="spt\features\taslogging.cpp" />
     <ClCompile Include="spt\features\taspause.cpp" />
     <ClCompile Include="spt\features\tas_new.cpp" />
+    <ClCompile Include="spt\features\tas_new_record.cpp" />
     <ClCompile Include="spt\features\test.cpp" />
     <ClCompile Include="spt\features\tickrate.cpp" />
     <ClCompile Include="spt\features\timer.cpp" />
