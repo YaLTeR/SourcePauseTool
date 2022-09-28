@@ -154,7 +154,7 @@ static int y_spt_cam_path_rmkf_CompletionFunc(
 	{
 		completion.push_back(std::to_string(kv.first));
 	}
-	AutoCompletList y_spt_cam_path_rmkf_Complete("y_spt_cam_path_rmkf", completion);
+	AutoCompleteList y_spt_cam_path_rmkf_Complete("y_spt_cam_path_rmkf", completion);
 	return y_spt_cam_path_rmkf_Complete.AutoCompletionFunc(partial, commands);
 }
 

@@ -9,35 +9,37 @@
 
 #else
 
+#include <vector>
+#include <string>
 #include "convar.h"
 
-class AutoCompletList
+class AutoCompleteList
 {
 public:
-	AutoCompletList(const char* command, const char* subdirectory, const char* extension)
-	{
-		this->command = command;
-		this->subdirectory = subdirectory;
-		this->extension = extension;
-	}
+	AutoCompleteList(const char* command);
+	AutoCompleteList(const char* command, std::vector<std::string> completions);
+	virtual int AutoCompletionFunc(const char* partial,
+	                               char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 
-	AutoCompletList(const char* command, std::vector<std::string> completion)
-	{
-		this->command = command;
-		this->completion = completion;
-	}
+protected:
+	int AutoCompleteSuggest(const char* partial,
+	                        char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
+	std::pair<std::string, std::string> SplitPartial(const char* partial, bool& hasDoubleQuote);
+	bool shouldCompleteDoubleQuote = true;
+	const char* command;
+	std::vector<std::string> completions;
+};
 
+class FileAutoCompleteList : public AutoCompleteList
+{
+public:
+	FileAutoCompleteList(const char* command, const char* subDirectory, const char* extension);
 	int AutoCompletionFunc(const char* partial,
 	                       char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 
-	int AutoCompletionFileFunc(const char* partial,
-	                           char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
-
 private:
-	const char* command;
-	const char* subdirectory;
+	const char* subDirectory;
 	const char* extension;
-	std::vector<std::string> completion;
 };
 
 #ifdef OE
@@ -57,11 +59,11 @@ private:
 #define AUTOCOMPLETION_FUNCTION(command) command##_CompletionFunc
 
 #define DECLARE_AUTOCOMPLETIONFILE_FUNCTION(command, subdirectory, extension) \
-	AutoCompletList command##Complete(#command, subdirectory, extension); \
+	FileAutoCompleteList command##Complete(#command, subdirectory, extension); \
 	int command##_CompletionFunc(const char* partial, \
 	                             char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]) \
 	{ \
-		return command##Complete.AutoCompletionFileFunc(partial, commands); \
+		return command##Complete.AutoCompletionFunc(partial, commands); \
 	}
 
 #define CON_COMMAND_AUTOCOMPLETEFILE(name, description, flags, subdirectory, extension) \
@@ -69,7 +71,7 @@ private:
 	CON_COMMAND_F_COMPLETION(name, description, flags, AUTOCOMPLETION_FUNCTION(name))
 
 #define DECLARE_AUTOCOMPLETION_FUNCTION(command, completion) \
-	AutoCompletList command##Complete(#command, std::vector<std::string> completion); \
+	AutoCompleteList command##Complete(#command, std::vector<std::string> completion); \
 	int command##_CompletionFunc(const char* partial, \
 	                             char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]) \
 	{ \
