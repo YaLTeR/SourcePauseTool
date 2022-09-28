@@ -24,7 +24,7 @@ CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 static int y_spt_cvar_CompletionFunc(const char* partial,
                                      char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
-	AutoCompletList y_spt_cvar_Complete("y_spt_cvar", spt_cvarstuff.dev_cvars);
+	AutoCompleteList y_spt_cvar_Complete("y_spt_cvar", spt_cvarstuff.dev_cvars);
 	return y_spt_cvar_Complete.AutoCompletionFunc(partial, commands);
 }
 CON_COMMAND_F_COMPLETION(y_spt_cvar, "CVar manipulation.", 0, y_spt_cvar_CompletionFunc)
@@ -106,7 +106,7 @@ CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of 
 static int y_spt_cvar2_CompletionFunc(const char* partial,
                                       char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
-	AutoCompletList y_spt_cvar2_Complete("y_spt_cvar2", spt_cvarstuff.dev_cvars);
+	AutoCompleteList y_spt_cvar2_Complete("y_spt_cvar2", spt_cvarstuff.dev_cvars);
 	return y_spt_cvar2_Complete.AutoCompletionFunc(partial, commands);
 }
 CON_COMMAND_F_COMPLETION(y_spt_cvar2,
