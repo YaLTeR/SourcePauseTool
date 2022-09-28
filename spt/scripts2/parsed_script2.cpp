@@ -28,9 +28,6 @@ namespace scripts2
 			AddAfterFramesEntry(afterFramesTick, output.initialCommand);
 			AddAfterFramesEntry(afterFramesTick, output.repeatingCommand);
 
-			for (int i = 1; i < output.ticks; ++i)
-				AddAfterFramesEntry(afterFramesTick + i, output.repeatingCommand);
-
 			afterFramesTick += output.ticks;
 		}
 		else if (output.ticks == NO_AFTERFRAMES_BULK)
