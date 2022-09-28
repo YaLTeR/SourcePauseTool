@@ -220,9 +220,6 @@
     <ClCompile Include="spt\features\vag_searcher.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
-    <ClCompile Include="spt\features\vag_trace.cpp">
-      <Filter>spt\features</Filter>
-    </ClCompile>
     <ClCompile Include="spt\utils\command.cpp">
       <Filter>spt\utils</Filter>
     </ClCompile>
@@ -281,6 +278,9 @@
       <Filter>spt\features\overlays</Filter>
     </ClCompile>
     <ClCompile Include="spt\features\overlays\draw_seams.cpp">
+      <Filter>spt\features\overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\overlays\vag_trace.cpp">
       <Filter>spt\features\overlays</Filter>
     </ClCompile>
   </ItemGroup>
