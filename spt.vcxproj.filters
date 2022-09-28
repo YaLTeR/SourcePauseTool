@@ -271,6 +271,9 @@
     <ClCompile Include="spt\scripts2\variable_container2.cpp">
       <Filter>spt\scripts2</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\tas_new.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">

@@ -87,6 +87,7 @@ namespace scripts
 	{
 		try
 		{
+			DevMsg("Attempting to parse a version 1 TAS script...\n");
 			Reset();
 #if OE
 			const char* dir = y_spt_gamedir.GetString();

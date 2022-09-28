@@ -12,13 +12,14 @@
 namespace scripts2
 {
 	extern const std::string SCRIPT_EXT;
+	enum class LoadResult { V1Script, Success, Error };
 
 	class SourceTASReader
 	{
 	public:
 		SourceTASReader();
-		void ExecuteScript(const std::string& script);
-		void ExecuteScriptWithResume(const std::string& script, int resumeTicks);
+		LoadResult ExecuteScript(const std::string& script);
+		LoadResult ExecuteScriptWithResume(const std::string& script, int resumeTicks);
 		void StartSearch(const std::string& script);
 		void SearchResult(scripts2::SearchResult result);
 		void OnAfterFrames();
@@ -45,7 +46,7 @@ namespace scripts2
 		std::map<std::string, void (SourceTASReader::*)(const std::string&)> propertyHandlers;
 		std::vector<std::unique_ptr<Condition>> conditions;
 
-		void CommonExecuteScript(bool search);
+		LoadResult CommonExecuteScript(bool search);
 		void Reset();
 		void ResetIterationState();
 		void Execute();
@@ -57,7 +58,7 @@ namespace scripts2
 		void ResetConvars();
 
 		void InitPropertyHandlers();
-		void ParseProps();
+		LoadResult ParseProps();
 		void ParseProp();
 		void HandleSettings(const std::string& value);
 		void HandleSave(const std::string& value);
@@ -121,6 +122,7 @@ namespace scripts2
 		bool isLineEmpty();
 		bool IsFramesLine();
 		bool IsVarsLine();
+		bool IsVersionLine();
 	};
 
 	std::string GetVarIdentifier(std::string name);
