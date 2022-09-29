@@ -277,6 +277,18 @@
     <ClCompile Include="spt\features\tas_new_record.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\overlays\renderer\mesh_builder.cpp">
+      <Filter>spt\features\overlays\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\overlays\renderer\mesh_construction.cpp">
+      <Filter>spt\features\overlays\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\overlays\renderer\overlay_renderer.cpp">
+      <Filter>spt\features\overlays\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\overlays\renderer\overlay_test.cpp">
+      <Filter>spt\features\overlays\renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -588,6 +600,12 @@
     <ClInclude Include="spt\scripts2\variable_container2.hpp">
       <Filter>spt\scripts2</Filter>
     </ClInclude>
+    <ClInclude Include="spt\features\overlays\renderer\mesh_builder.hpp">
+      <Filter>spt\features\overlays\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\overlays\renderer\overlay_renderer.hpp">
+      <Filter>spt\features\overlays\renderer</Filter>
+    </ClInclude>
     <ClInclude Include="spt\features\restart.hpp">
       <Filter>spt\features</Filter>
     </ClInclude>
@@ -648,6 +666,12 @@
     </Filter>
     <Filter Include="spt\scripts2">
       <UniqueIdentifier>{d03c7a27-824d-4f39-8c99-c22fbd2158e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\features\overlays">
+      <UniqueIdentifier>{63e917ab-7a25-4085-9adf-669afceb2680}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\features\overlays\renderer">
+      <UniqueIdentifier>{592beefd-a6b8-40f9-9962-794008d1f545}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

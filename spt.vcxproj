@@ -1148,6 +1148,10 @@
     <ClCompile Include="spt\features\isg.cpp" />
     <ClCompile Include="spt\features\nosleep.cpp" />
     <ClCompile Include="spt\features\overlay.cpp" />
+    <ClCompile Include="spt\features\overlays\renderer\mesh_builder.cpp" />
+    <ClCompile Include="spt\features\overlays\renderer\mesh_construction.cpp" />
+    <ClCompile Include="spt\features\overlays\renderer\overlay_renderer.cpp" />
+    <ClCompile Include="spt\features\overlays\renderer\overlay_test.cpp" />
     <ClCompile Include="spt\features\pause.cpp" />
     <ClCompile Include="spt\features\physvis.cpp" />
     <ClCompile Include="spt\features\playerio.cpp" />
@@ -1363,6 +1367,8 @@
     <ClInclude Include="spt\features\hud.hpp" />
     <ClInclude Include="spt\features\ihud.hpp" />
     <ClInclude Include="spt\features\overlay.hpp" />
+    <ClInclude Include="spt\features\overlays\renderer\mesh_builder.hpp" />
+    <ClInclude Include="spt\features\overlays\renderer\overlay_renderer.hpp" />
     <ClInclude Include="spt\features\physvis.hpp" />
     <ClInclude Include="spt\features\playerio.hpp" />
     <ClInclude Include="spt\features\restart.hpp" />
