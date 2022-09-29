@@ -51,4 +51,13 @@ namespace utils
 			a += 2 * M_PI;
 		return a;
 	}
+
+#ifndef OE
+	void VectorTransform(const matrix3x4_t& mat, Vector& v)
+	{
+		Vector tmp = v;
+		VectorTransform(tmp, mat, v);
+	}
+#endif
+
 } // namespace utils

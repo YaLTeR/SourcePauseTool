@@ -1,0 +1,555 @@
+﻿#include "stdafx.h"
+
+#include "overlay_renderer.hpp"
+
+#ifdef SPT_OVERLAY_RENDERER_ENABLED
+
+#include "interfaces.hpp"
+#include "signals.hpp"
+#include "spt\features\overlay.hpp"
+
+#define VPROF_LEVEL 1
+#ifndef SSDK2007
+#define RAD_TELEMETRY_DISABLED
+#endif
+#include "vprof.h"
+
+#define VPROF_BUDGETGROUP_OVERLAY _T("Overlay_Rendering")
+
+ConVar y_spt_draw_overlay_debug("y_spt_draw_overlay_debug",
+                                "0",
+                                FCVAR_CHEAT | FCVAR_DONTRECORD,
+                                "Draws the distance metric and AABBs of all overlay meshes.");
+
+/*
+* We take advantage of two passes the game does: DrawOpaques and DrawTranslucents. Both are called for each view,
+* and you may get a different view for each portal, saveglitch overlay, etc. We abstract this away from the user -
+* when the user calls DrawMesh() we defer the drawing until those two passes. When rendering opaques, we can
+* render the meshes in any order, but the same is not true for translucents. In that case we must figure out our
+* own render order. Nothing we do will be perfect - but a good enough solution for many cases is to approximate
+* the distance to each mesh from the camera as a single value and sort based on that.
+* 
+* TODO - try combining opaques & translucents into one mesh before rendering
+* 
+* This system would not exist without the absurd of times mlugg has helped me while making it; send him lots of
+* love, gifts, and fruit baskets.
+*/
+
+/**************************************** OVERLAY FEATURE ****************************************/
+
+struct CPortalRender
+{
+	byte _pad[0x57c];
+	int m_iViewRecursionLevel;
+};
+
+namespace patterns
+{
+	PATTERNS(CRendering3dView__DrawOpaqueRenderables, "5135", "55 8D 6C 24 8C 81 EC 94 00 00 00");
+	PATTERNS(CRendering3dView__DrawTranslucentRenderables,
+	         "5135",
+	         "55 8B EC 83 EC 34 53 8B D9 8B 83 94 00 00 00 8B 13 56 8D B3 94 00 00 00",
+	         "1910503",
+	         "55 8B EC 81 EC 9C 00 00 00 53 56 8B F1 8B 86 E8 00 00 00 8B 16 57 8D BE E8 00 00 00");
+	PATTERNS(OnRenderStart, "5135", "56 8B 35 ?? ?? ?? ?? 8B 06 8B 50 64 8B CE FF D2 8B 0D ?? ?? ?? ??");
+} // namespace patterns
+
+class OvrFeature : public FeatureWrapper<OvrFeature>
+{
+public:
+	static OvrFeature ovrFeature;
+
+	CPortalRender** g_pPortalRender = nullptr;
+
+private:
+	DECL_MEMBER_CDECL(void, OnRenderStart);
+
+	virtual bool ShouldLoadFeature() override
+	{
+		if (!interfaces::materialSystem)
+		{
+			DevWarning("Overlay rendering not available!\n");
+			return false;
+		}
+		return true;
+	}
+
+	virtual void InitHooks() override
+	{
+		HOOK_FUNCTION(client, CRendering3dView__DrawOpaqueRenderables);
+		HOOK_FUNCTION(client, CRendering3dView__DrawTranslucentRenderables);
+		FIND_PATTERN(client, OnRenderStart);
+	}
+
+	virtual void PreHook() override
+	{
+		/*
+		* 1) InitHooks: spt_overlay finds the render function.
+		* 2) PreHook: spt_overlay may connect the render signal. To not depend on feature load order
+		*    we cannot check if the signal exists, but we can check if the render function was found.
+		* 3) LoadFeature: Anything that uses the overlay system can check to see if the signal exists.
+		*/
+		if (ORIG_CRendering3dView__DrawOpaqueRenderables && ORIG_CRendering3dView__DrawTranslucentRenderables
+		    && spt_overlay.ORIG_CViewRender__Render)
+		{
+			OverlaySignal.Works = true;
+		}
+		else
+		{
+			return;
+		}
+		if (ORIG_OnRenderStart)
+			g_pPortalRender = *(CPortalRender***)((uintptr_t)ORIG_OnRenderStart + 18);
+
+		// init mesh builder material(s), do before load feature; do here instead of in mesh builder because
+		// we rely on the mesh builder and would have to duplicate checks otherwise
+
+		auto& mb = MeshBuilderPro::singleton;
+		KeyValues* kv;
+
+		kv = new KeyValues("unlitgeneric");
+		kv->SetInt("$vertexcolor", 1);
+		mb.matOpaque = interfaces::materialSystem->CreateMaterial("_spt_UnlitOpaque", kv);
+
+		kv = new KeyValues("unlitgeneric");
+		kv->SetInt("$vertexcolor", 1);
+		kv->SetInt("$vertexalpha", 1);
+		mb.matAlpha = interfaces::materialSystem->CreateMaterial("_spt_UnlitTranslucent", kv);
+
+		kv = new KeyValues("unlitgeneric");
+		kv->SetInt("$vertexcolor", 1);
+		kv->SetInt("$vertexalpha", 1);
+		kv->SetInt("$ignorez", 1);
+		mb.matAlphaNoZ = interfaces::materialSystem->CreateMaterial("_spt_UnlitTranslucentNoZ", kv);
+
+		mb.materialsInitialized = true;
+	}
+
+	virtual void LoadFeature() override
+	{
+		// if the overlay signal works, we've set it in PreHook() and the RenderSignal will definitely work
+		if (OverlaySignal.Works)
+		{
+			Assert(RenderSignal.Works);
+			InitConcommandBase(y_spt_draw_overlay_debug);
+			RenderSignal.Connect(&OverlayRenderer::singleton, &OverlayRenderer::OnRenderSignal);
+		}
+	}
+
+	virtual void UnloadFeature() override
+	{
+		// unload mesh builder material(s)
+		auto& mb = MeshBuilderPro::singleton;
+		mb.materialsInitialized = false;
+		mb.matOpaque->DecrementReferenceCount();
+		mb.matAlpha->DecrementReferenceCount();
+		mb.matAlphaNoZ->DecrementReferenceCount();
+		mb.matOpaque = mb.matAlpha = mb.matAlphaNoZ = nullptr;
+	}
+
+	DECL_HOOK_THISCALL(void, CRendering3dView__DrawOpaqueRenderables, bool bShadowDepth)
+	{
+		// render order shouldn't matter here
+		ovrFeature.ORIG_CRendering3dView__DrawOpaqueRenderables(thisptr, 0, bShadowDepth);
+		OverlayRenderer::singleton.OnDrawOpaques(thisptr);
+	}
+
+	DECL_HOOK_THISCALL(void, CRendering3dView__DrawTranslucentRenderables, bool bInSkybox, bool bShadowDepth)
+	{
+		// render order matters here, render our overlays on top of other translucents
+		ovrFeature.ORIG_CRendering3dView__DrawTranslucentRenderables(thisptr, 0, bInSkybox, bShadowDepth);
+		OverlayRenderer::singleton.OnDrawTranslucents(thisptr);
+	}
+};
+
+OvrFeature OvrFeature::ovrFeature;
+
+/**************************************** INTERNAL OVERLAY MESH ****************************************/
+
+struct OverlayMeshInternal
+{
+	// keep statics alive as long as we render
+	const std::shared_ptr<OverlayMesh> _staticMeshPtr;
+	const DynamicOverlayMesh _dynamicInfo;
+	const RenderCallback callback;
+
+	CallbackInfoOut cbInfoOut;
+	MeshPositionInfo newPosInfo;
+	Vector camDistSqrTo;
+	float camDistSqr; // translucent sorting metric
+
+	static bool cachedCamMatValid;
+	static VMatrix cachedCamMat;
+
+	OverlayMeshInternal(const DynamicOverlayMesh& dynamicInfo, const RenderCallback& callback)
+	    : _staticMeshPtr(nullptr), _dynamicInfo(dynamicInfo), callback(callback)
+	{
+	}
+
+	OverlayMeshInternal(const std::shared_ptr<OverlayMesh>& staticMeshPtr, const RenderCallback& callback)
+	    : _staticMeshPtr(staticMeshPtr), _dynamicInfo{}, callback(callback)
+	{
+	}
+
+	OverlayMesh& GetOverlayMesh() const
+	{
+		return _staticMeshPtr ? *_staticMeshPtr : MeshBuilderPro::singleton.GetOvrMesh(_dynamicInfo);
+	}
+
+	void ApplyCallbackAndCalcCamDist(const CViewSetup& cvs, bool inDrawOpaques)
+	{
+		OverlayMesh& ovrMesh = GetOverlayMesh();
+
+		if (callback)
+		{
+			CallbackInfoIn cbInfoIn = {cvs, ovrMesh.posInfo, std::nullopt};
+			auto pRender = OvrFeature::ovrFeature.g_pPortalRender;
+			if (pRender && *pRender)
+				cbInfoIn.currentPortalRenderDepth = (**pRender).m_iViewRecursionLevel;
+			callback(cbInfoIn, cbInfoOut = CallbackInfoOut{});
+		}
+
+		const MeshPositionInfo& origPos = ovrMesh.posInfo;
+		if (callback)
+			TransformAABB(cbInfoOut.mat, origPos.mins, origPos.maxs, newPosInfo.mins, newPosInfo.maxs);
+
+		const MeshPositionInfo& actualPosInfo = callback ? newPosInfo : ovrMesh.posInfo;
+
+		Vector center = (actualPosInfo.mins + actualPosInfo.maxs) / 2.f;
+		switch (ovrMesh.params.sortType)
+		{
+		case TranslucentSortType::PointLike:
+			camDistSqrTo = center;
+			break;
+		case TranslucentSortType::BoxLike:
+			CalcClosestPointOnAABB(actualPosInfo.mins, actualPosInfo.maxs, cvs.origin, camDistSqrTo);
+			if (cvs.origin == camDistSqrTo)
+				camDistSqrTo = center; // if inside cube, use center idfk
+			break;
+		}
+		camDistSqr = cvs.origin.DistToSqr(camDistSqrTo);
+	}
+
+	void RenderDebugMesh()
+	{
+		static StaticOverlayMesh debugBoxMesh, debugPointMesh;
+
+		if (!debugBoxMesh || !debugPointMesh)
+		{
+			// opaque and only use lines - other places assume this!
+
+			debugBoxMesh = MB_STATIC(
+			    {
+				    const Vector v0 = vec3_origin;
+				    mb.AddBox(v0, v0, Vector(1), vec3_angle, MeshColor::Wire({0, 255, 100, 255}));
+			    },
+			    ZTEST_NONE);
+
+			debugPointMesh = MB_STATIC({
+				for (int x = 0; x < 2; x++)
+				{
+					for (int y = 0; y < 2; y++)
+					{
+						Vector off(2 * x - 1, 2 * y - 1, 1);
+						mb.AddLine(off, -off, {255, 50, 0, 255});
+					}
+				}
+			});
+		}
+
+		CMatRenderContextPtr context(interfaces::materialSystem);
+
+		// figure out box mesh dims
+		OverlayMesh& myOvrMesh = GetOverlayMesh();
+		Assert(!myOvrMesh.faceComponent.Empty() || !myOvrMesh.lineComponent.Empty());
+		auto& myPosInfo = callback ? newPosInfo : myOvrMesh.posInfo;
+		const Vector nudge(0.05);
+		Vector size = (myPosInfo.maxs + nudge) - (myPosInfo.mins - nudge);
+		matrix3x4_t mat({size.x, 0, 0}, {0, size.y, 0}, {0, 0, size.z}, myPosInfo.mins - nudge);
+
+		IMaterial* materialBox = MeshBuilderPro::singleton.GetMaterial(debugBoxMesh->lineComponent.opaque,
+		                                                               debugBoxMesh->lineComponent.zTest,
+		                                                               {255, 255, 255, 255});
+		Assert(materialBox);
+
+		context->MatrixMode(MATERIAL_MODEL);
+		context->PushMatrix();
+		context->LoadMatrix(mat);
+		context->Bind(materialBox);
+		IMesh* iMesh = debugBoxMesh->lineComponent.GetIMesh(*debugBoxMesh, materialBox);
+		if (iMesh)
+			iMesh->Draw();
+
+		const float smallest = 1, biggest = 15, falloff = 100;
+		float maxBoxDim = VectorMaximum(size);
+		// scale point mesh by the AABB size, plot this bad boy in desmos as a function of maxBoxDim
+		float pointSize = -falloff * (biggest - smallest) / (maxBoxDim + falloff) + biggest;
+		mat.Init({pointSize, 0, 0}, {0, pointSize, 0}, {0, 0, pointSize}, camDistSqrTo);
+
+		IMaterial* materialPoint = MeshBuilderPro::singleton.GetMaterial(debugPointMesh->lineComponent.opaque,
+		                                                                 debugPointMesh->lineComponent.zTest,
+		                                                                 {255, 255, 255, 255});
+		Assert(materialPoint);
+
+		context->LoadMatrix(mat);
+		context->Bind(materialPoint);
+		iMesh = debugPointMesh->lineComponent.GetIMesh(*debugPointMesh, materialPoint);
+		if (iMesh)
+			iMesh->Draw();
+		context->PopMatrix();
+	}
+
+	void Render(bool faces)
+	{
+		VPROF_BUDGET("OverlayMeshInternal::Render", VPROF_BUDGETGROUP_OVERLAY);
+
+		OverlayMesh& ovrMesh = GetOverlayMesh();
+		auto& component = faces ? ovrMesh.faceComponent : ovrMesh.lineComponent;
+		Assert(!component.Empty());
+
+		CMatRenderContextPtr context(interfaces::materialSystem);
+
+		// UNDONE: projecting to the screen loses information - we should really compare against the frustom planes
+
+		/*
+		* Check if we can skip creating the IMesh*. Project all AABB corners on the screen and see
+		* if the whole thing is off screen. Technically sort of creates a AABB around the projected
+		* mesh AABB corners, so misses cases where the mesh AABB has a corner in front and a corner
+		* behind the camera plane. Gives like 10 extra fps :p
+		*/
+		/*if (component.dynamic)
+		{
+			if (!cachedCamMatValid)
+			{
+				VMatrix view, projection;
+				context->GetMatrix(MATERIAL_VIEW, &view);
+				context->GetMatrix(MATERIAL_PROJECTION, &projection);
+				cachedCamMat = projection * view;
+				cachedCamMatValid = true;
+			}
+
+			auto& posInfo = callback ? newPosInfo : ovrMesh.posInfo;
+			const Vector& mins = posInfo.mins;
+			const Vector& maxs = posInfo.maxs;
+
+			float min_x = INFINITY, max_x = -INFINITY;
+			float min_y = INFINITY, max_y = -INFINITY;
+			float min_z = INFINITY, max_z = -INFINITY;
+			for (int i = 0; i < 8; i++)
+			{
+				Vector4D point{
+				    (i & 1) ? maxs.x : mins.x,
+				    (i & 2) ? maxs.y : mins.y,
+				    (i & 4) ? maxs.z : mins.z,
+				    1.0,
+				};
+				Vector4D result;
+				cachedCamMat.V4Mul(point, result);
+				result /= result.w;
+				min_x = MIN(min_x, result.x);
+				max_x = MAX(max_x, result.x);
+				min_y = MIN(min_y, result.y);
+				max_y = MAX(max_y, result.y);
+				min_z = MIN(min_z, result.z);
+				max_z = MAX(max_z, result.z);
+			}
+			if (min_x > 1.0 || max_x < -1.0 || min_y > 1.0 || max_y < -1.0 || min_z > 1.0 || max_z < 0.0)
+				return;
+		}*/
+
+		color32 cMod = {255, 255, 255, 255};
+		if (callback)
+		{
+			auto& cbData = faces ? cbInfoOut.faces : cbInfoOut.lines;
+			cMod = cbData.colorModulate;
+		}
+		IMaterial* material = MeshBuilderPro::singleton.GetMaterial(component.opaque, component.zTest, cMod);
+		if (!material)
+			return;
+
+		IMesh* iMesh = component.GetIMesh(ovrMesh, material);
+		if (!iMesh)
+			return;
+
+		if (callback)
+		{
+			context->MatrixMode(MATERIAL_MODEL);
+			context->PushMatrix();
+			context->LoadMatrix(cbInfoOut.mat);
+		}
+		context->Bind(material);
+		iMesh->Draw();
+		if (component.dynamic)
+			context->Flush();
+		if (callback)
+			context->PopMatrix();
+	}
+};
+
+bool OverlayMeshInternal::cachedCamMatValid = false;
+VMatrix OverlayMeshInternal::cachedCamMat;
+
+/**************************************** OVERLAY RENDERER ****************************************/
+
+OverlayRenderer OverlayRenderer::singleton;
+
+void OverlayRenderer::DrawMesh(const DynamicOverlayMesh& dynamicMesh, const RenderCallback& callback)
+{
+	if (!inOverlaySignal)
+	{
+		AssertMsg(0, "spt: Meshes can only be drawn in OverlaySignal!");
+		return;
+	}
+	if (dynamicMesh.createdFrame != MeshBuilderPro::singleton.curFrameNum)
+	{
+		AssertMsg(0, "spt: Attempted to reuse dynamic mesh between frames");
+		Warning("spt: Can only draw dynamic meshes on the frame they were created!\n");
+		return;
+	}
+	OverlayMesh& ovrMesh = MeshBuilderPro::singleton.GetOvrMesh(dynamicMesh);
+	if (!ovrMesh.faceComponent.Empty() || !ovrMesh.lineComponent.Empty())
+		internalMeshes.emplace_back(dynamicMesh, callback);
+}
+
+void OverlayRenderer::DrawMesh(const StaticOverlayMesh& staticMesh, const RenderCallback& callback)
+{
+	if (!inOverlaySignal)
+	{
+		AssertMsg(0, "spt: Meshes can only be drawn in OverlaySignal!");
+		return;
+	}
+	if (!staticMesh)
+	{
+		AssertMsg(0, "spt: This static mesh has been destroyed!");
+		Warning("spt: Attempting to draw an invalid static mesh!\n");
+		return;
+	}
+	if (!staticMesh->faceComponent.Empty() || !staticMesh->lineComponent.Empty())
+		internalMeshes.emplace_back(staticMesh, callback);
+}
+
+void OverlayRenderer::OnRenderSignal(void* thisptr, vrect_t*)
+{
+	VPROF_BUDGET("OverlayRenderer::OnRenderSignal", VPROF_BUDGETGROUP_OVERLAY);
+	internalMeshes.clear();
+	MeshBuilderPro::singleton.ClearOldBuffers();
+	MeshBuilderPro::singleton.curFrameNum++;
+	MeshBuilderPro::singleton.inOverlaySignal = true;
+	inOverlaySignal = true;
+	OverlaySignal(*this);
+	inOverlaySignal = false;
+	MeshBuilderPro::singleton.inOverlaySignal = false;
+}
+
+void OverlayRenderer::OnDrawOpaques(void* renderingView)
+{
+	VPROF_BUDGET("OverlayRenderer::OnDrawOpaques", VPROF_BUDGETGROUP_OVERLAY);
+	CViewSetup& cvs = *(CViewSetup*)((uintptr_t)renderingView + 8);
+	CMatRenderContextPtr context(interfaces::materialSystem);
+	OverlayMeshInternal::cachedCamMatValid = false;
+
+	// TODO m_iViewRecursionLevel
+
+	for (auto& meshInternal : internalMeshes)
+	{
+		meshInternal.ApplyCallbackAndCalcCamDist(cvs, true);
+		OverlayMesh& ovrMesh = meshInternal.GetOverlayMesh();
+		/*
+		* Check both components (faces & lines), skip rendering if:
+		* - the component is empty
+		* - the component is translucent
+		* - there was a callback w/ alpha modulation (forcing the mesh to be translucent)
+		* - there was a callback & and the user disabled rendering for the current view
+		*/
+		for (int i = 0; i < 2; i++)
+		{
+			auto& component = i == 0 ? ovrMesh.faceComponent : ovrMesh.lineComponent;
+			if (component.Empty() || !component.opaque)
+				continue;
+			if (meshInternal.callback)
+			{
+				auto& cbInfo = meshInternal.cbInfoOut;
+				auto& cbComponentData = i == 0 ? cbInfo.faces : cbInfo.lines;
+				if (cbComponentData.skipRenderForCurrentView || cbComponentData.colorModulate.a < 1)
+					continue;
+			}
+			meshInternal.Render(i == 0);
+		}
+	}
+}
+
+void OverlayRenderer::OnDrawTranslucents(void* renderingView)
+{
+	VPROF_BUDGET("OverlayRenderer::OnDrawTranslucents", VPROF_BUDGETGROUP_OVERLAY);
+	CViewSetup& cvs = *(CViewSetup*)((uintptr_t)renderingView + 8);
+
+	static std::vector<OverlayMeshInternal*> showDebugMeshFor;
+	static std::vector<std::pair<OverlayMeshInternal*, bool>> sortedTranslucents; // <mesh_ptr, is_face_component>
+	sortedTranslucents.clear();
+	showDebugMeshFor.clear();
+	OverlayMeshInternal::cachedCamMatValid = false;
+
+	for (auto& meshInternal : internalMeshes)
+	{
+		meshInternal.ApplyCallbackAndCalcCamDist(cvs, false);
+		OverlayMesh& ovrMesh = meshInternal.GetOverlayMesh();
+		/*
+		* Check both components (faces & lines), skip rendering if:
+		* - the component is empty
+		* - there was no callback & the component is opaque
+		* - there was a callback, the component is opaque, and the alpha was kept at 1
+		* - there was a callback & and the user disabled rendering for the current view
+		* If the component is not empty and rendering is not disabled for both faces/lines then we draw the debug mesh.
+		*/
+		bool drawDebugMesh = false;
+		for (int i = 0; i < 2; i++)
+		{
+			auto& component = i == 0 ? ovrMesh.faceComponent : ovrMesh.lineComponent;
+			if (component.Empty())
+				continue;
+			if (meshInternal.callback)
+			{
+				auto& cbInfo = meshInternal.cbInfoOut;
+				auto& cbComponentData = i == 0 ? cbInfo.faces : cbInfo.lines;
+				if (cbComponentData.skipRenderForCurrentView)
+					continue;
+				drawDebugMesh = true;
+				if (component.opaque && cbComponentData.colorModulate.a == 1)
+					continue;
+			}
+			else if (component.opaque)
+			{
+				drawDebugMesh = true;
+				continue;
+			}
+			drawDebugMesh = true;
+			sortedTranslucents.emplace_back(&meshInternal, i == 0);
+		}
+		if (drawDebugMesh)
+			showDebugMeshFor.push_back(&meshInternal);
+	}
+
+	std::sort(sortedTranslucents.begin(),
+	          sortedTranslucents.end(),
+	          [](const std::pair<OverlayMeshInternal*, bool>& a, const std::pair<OverlayMeshInternal*, bool>& b)
+	          {
+		          bool zTestA = a.second ? a.first->GetOverlayMesh().faceComponent.zTest
+		                                 : a.first->GetOverlayMesh().lineComponent.zTest;
+		          bool zTestB = b.second ? b.first->GetOverlayMesh().faceComponent.zTest
+		                                 : b.first->GetOverlayMesh().lineComponent.zTest;
+		          // $ignorez stuff needs to be rendered last on top of everything - materials with it
+		          // don't change the z buffer so anything rendered after can still overwrite them
+		          if (zTestA != zTestB)
+			          return zTestA;
+		          return a.first->camDistSqr > b.first->camDistSqr;
+	          });
+
+	for (auto& translucentInfo : sortedTranslucents)
+		translucentInfo.first->Render(translucentInfo.second);
+
+	if (y_spt_draw_overlay_debug.GetBool())
+		for (auto meshInternal : showDebugMeshFor)
+			meshInternal->RenderDebugMesh();
+}
+
+#endif

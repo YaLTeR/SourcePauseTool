@@ -15,10 +15,14 @@ public:
 
 	float GetScreenAspectRatio();
 
+	_CViewRender__Render ORIG_CViewRender__Render = nullptr;
+
 protected:
 	virtual bool ShouldLoadFeature() override;
 
 	virtual void InitHooks() override;
+
+	virtual void PreHook() override;
 
 	virtual void LoadFeature() override;
 
@@ -27,7 +31,6 @@ protected:
 private:
 	void DrawCrosshair();
 	_CViewRender__RenderView ORIG_CViewRender__RenderView = nullptr;
-	_CViewRender__Render ORIG_CViewRender__Render = nullptr;
 	_GetScreenAspect ORIG_GetScreenAspect = nullptr;
 
 	static void __fastcall HOOKED_CViewRender__RenderView(void* thisptr,
@@ -35,7 +38,7 @@ private:
 	                                                      void* cameraView,
 	                                                      int nClearFlags,
 	                                                      int whatToDraw);
-	static void __fastcall HOOKED_CViewRender__Render(void* thisptr, int edx, void* rect);
+	static void __fastcall HOOKED_CViewRender__Render(void* thisptr, int edx, vrect_t* rect);
 };
 
 extern Overlay spt_overlay;

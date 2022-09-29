@@ -2,6 +2,7 @@
 
 #include "convar.hpp"
 #include "interfaces.hpp"
+#include "spt\utils\signals.hpp"
 
 ConVar _y_spt_overlay("_y_spt_overlay",
                       "0",
@@ -82,6 +83,12 @@ void Overlay::InitHooks()
 	FIND_PATTERN(engine, GetScreenAspect);
 }
 
+void Overlay::PreHook()
+{
+	if (ORIG_CViewRender__Render)
+		RenderSignal.Works = true;
+}
+
 void Overlay::LoadFeature()
 {
 	if (ORIG_CViewRender__RenderView != nullptr && ORIG_CViewRender__Render != nullptr)
@@ -152,7 +159,7 @@ void __fastcall Overlay::HOOKED_CViewRender__RenderView(void* thisptr,
                                                         int nClearFlags,
                                                         int whatToDraw)
 {
-	if (spt_overlay.ORIG_CViewRender__RenderView == nullptr || spt_overlay.ORIG_CViewRender__Render == nullptr)
+	if (spt_overlay.ORIG_CViewRender__Render == nullptr)
 	{
 		spt_overlay.ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
 	}
@@ -176,9 +183,10 @@ void __fastcall Overlay::HOOKED_CViewRender__RenderView(void* thisptr,
 	}
 }
 
-void __fastcall Overlay::HOOKED_CViewRender__Render(void* thisptr, int edx, void* rect)
+void __fastcall Overlay::HOOKED_CViewRender__Render(void* thisptr, int edx, vrect_t* rect)
 {
-	if (spt_overlay.ORIG_CViewRender__RenderView == nullptr || spt_overlay.ORIG_CViewRender__Render == nullptr)
+	RenderSignal(thisptr, rect);
+	if (spt_overlay.ORIG_CViewRender__RenderView == nullptr)
 	{
 		spt_overlay.ORIG_CViewRender__Render(thisptr, edx, rect);
 	}

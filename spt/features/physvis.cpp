@@ -14,11 +14,11 @@ namespace patterns
 	         "81 EC 38 02 00 00 53 55 33 DB 39 9C 24 48 02 00 00 56 57 75 24",
 	         "1910503",
 	         "55 8B EC 81 EC 3C 02 00 00 53 33 DB 56 57 39 5D 0C 75 20");
-	PATTERNS(CRendering3dView__DrawTranslucentRenderables,
+	/*PATTERNS(CRendering3dView__DrawTranslucentRenderables,
 	         "5135",
 	         "55 8B EC 83 EC 34 53 8B D9 8B 83 94 00 00 00 8B 13 56 8D B3 94 00 00 00",
 	         "1910503",
-	         "55 8B EC 81 EC 9C 00 00 00 53 56 8B F1 8B 86 E8 00 00 00 8B 16 57 8D BE E8 00 00 00");
+	         "55 8B EC 81 EC 9C 00 00 00 53 56 8B F1 8B 86 E8 00 00 00 8B 16 57 8D BE E8 00 00 00");*/
 	PATTERNS(CPhysicsCollision__CreateDebugMesh,
 	         "5135",
 	         "83 EC 10 8B 4C 24 14 8B 01 8B 40 08 55 56 57 33 ED 8D 54 24 10 52",
@@ -42,7 +42,7 @@ void PhysVisFeature::InitHooks()
 	FIND_PATTERN(engine, DebugDrawPhysCollide);
 	HOOK_FUNCTION(vphysics, CPhysicsCollision__CreateDebugMesh);
 	HOOK_FUNCTION(vphysics, CPhysicsCollision__DestroyDebugMesh);
-	HOOK_FUNCTION(client, CRendering3dView__DrawTranslucentRenderables);
+	// HOOK_FUNCTION(client, CRendering3dView__DrawTranslucentRenderables);
 }
 
 bool PhysVisFeature::AddPhysVisCallback(PhysVisCallback callback)

@@ -2,6 +2,7 @@
 
 #ifndef OE
 #include "mathlib\vector.h"
+#include "mathlib\mathlib.h"
 #else
 #include "vector.h"
 #endif
@@ -19,4 +20,7 @@ namespace utils
 	float RandomFloat(float min, float max);
 	void NormalizeQAngle(QAngle& angle);
 	void GetMiddlePoint(const QAngle& angle1, const QAngle& angle2, QAngle& out);
+#ifndef OE
+	void VectorTransform(const matrix3x4_t& mat, Vector& v); // applies mat directly to v
+#endif
 }; // namespace utils

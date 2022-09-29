@@ -16,3 +16,5 @@ Gallant::Signal0<void> DemoStartPlaybackSignal;
 Gallant::Signal1<bool> SV_FrameSignal;
 Gallant::Signal2<void*, void*> ProcessMovementPost_Signal;
 Gallant::Signal2<void*, void*> ProcessMovementPre_Signal;
+Gallant::Signal2<void*, struct vrect_t*> RenderSignal;
+Gallant::Signal1<class OverlayRenderer&> OverlaySignal;
