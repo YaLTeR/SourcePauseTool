@@ -8,6 +8,10 @@
 #include <thread>
 #include <future>
 
+#ifdef SSDK2013
+#include "command.hpp"
+#endif
+
 namespace utils
 {
 	bool DoesGameLookLikePortal()
@@ -210,37 +214,6 @@ namespace utils
 		    });
 	}
 #else
-	struct ConCommand_guts
-	{
-		void* vfptr;
-		ConCommandBase* m_pNext;
-		bool m_bRegistered;
-
-		// Static data
-		const char* m_pszName;
-		const char* m_pszHelpString;
-
-		// ConVar flags
-		int m_nFlags;
-
-		union
-		{
-			FnCommandCallbackVoid_t m_fnCommandCallbackV1;
-			FnCommandCallback_t m_fnCommandCallback;
-			ICommandCallback* m_pCommandCallback;
-		};
-
-		union
-		{
-			FnCommandCompletionCallback m_fnCompletionCallback;
-			ICommandCompletionCallback* m_pCommandCompletionCallback;
-		};
-
-		bool m_bHasCompletionCallback : 1;
-		bool m_bUsingNewCommandCallback : 1;
-		bool m_bUsingCommandCallbackInterface : 1;
-	};
-
 	int GetBuildNumberViaVersionCommand(uint8_t* moduleStart, uint8_t* moduleEnd)
 	{
 		ConCommand_guts* versionCommand = reinterpret_cast<ConCommand_guts*>(g_pCVar->FindCommand("version"));

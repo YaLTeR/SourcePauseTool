@@ -1,17 +1,8 @@
 #pragma once
-
-#ifdef SSDK2013
-// autocomplete crashes on stemapipe :((
-#define CON_COMMAND_AUTOCOMPLETEFILE(name, description, flags, subdirectory, extension) \
-	CON_COMMAND_F(name, description, flags)
-
-#define CON_COMMAND_AUTOCOMPLETE(name, description, flags, completion) CON_COMMAND_F(name, description, flags)
-
-#else
-
+#include "convar.h"
+#include <filesystem>
 #include <vector>
 #include <string>
-#include "convar.h"
 
 class AutoCompleteList
 {
@@ -40,6 +31,8 @@ public:
 private:
 	const char* subDirectory;
 	const char* extension;
+	std::filesystem::path prevPath;
+	bool prevHasDoubleQuote = false;
 };
 
 #ifdef OE
@@ -59,20 +52,23 @@ private:
 #define AUTOCOMPLETION_FUNCTION(command) command##_CompletionFunc
 
 #define DECLARE_AUTOCOMPLETIONFILE_FUNCTION(command, subdirectory, extension) \
-	FileAutoCompleteList command##Complete(#command, subdirectory, extension); \
-	int command##_CompletionFunc(const char* partial, \
+	static FileAutoCompleteList command##Complete(#command, subdirectory, extension); \
+	static int \
+	    command##_CompletionFunc(const char* partial, \
 	                             char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]) \
 	{ \
 		return command##Complete.AutoCompletionFunc(partial, commands); \
 	}
 
+#ifndef SSDK2013 // autocomplete crashes on stemapipe :((
 #define CON_COMMAND_AUTOCOMPLETEFILE(name, description, flags, subdirectory, extension) \
 	DECLARE_AUTOCOMPLETIONFILE_FUNCTION(name, subdirectory, extension) \
 	CON_COMMAND_F_COMPLETION(name, description, flags, AUTOCOMPLETION_FUNCTION(name))
 
 #define DECLARE_AUTOCOMPLETION_FUNCTION(command, completion) \
-	AutoCompleteList command##Complete(#command, std::vector<std::string> completion); \
-	int command##_CompletionFunc(const char* partial, \
+	static AutoCompleteList command##Complete(#command, std::vector<std::string> completion); \
+	static int \
+	    command##_CompletionFunc(const char* partial, \
 	                             char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]) \
 	{ \
 		return command##Complete.AutoCompletionFunc(partial, commands); \
@@ -82,4 +78,54 @@ private:
 	DECLARE_AUTOCOMPLETION_FUNCTION(name, completion) \
 	CON_COMMAND_F_COMPLETION(name, description, flags, AUTOCOMPLETION_FUNCTION(name))
 
+#else
+#define CON_COMMAND_AUTOCOMPLETEFILE(name, description, flags, subdirectory, extension) \
+	CON_COMMAND_F(name, description, flags)
+
+#define CON_COMMAND_AUTOCOMPLETE(name, description, flags, completion) CON_COMMAND_F(name, description, flags)
+
+#endif
+
+#ifndef SSDK2007
+typedef void (*FnCommandCallbackV1_t)(void);
+#endif
+
+struct ConCommand_guts
+{
+	void* vfptr;
+	ConCommandBase* m_pNext;
+	bool m_bRegistered;
+
+	// Static data
+	const char* m_pszName;
+	const char* m_pszHelpString;
+
+	// ConVar flags
+	int m_nFlags;
+#ifndef OE
+	union
+	{
+		FnCommandCallbackV1_t m_fnCommandCallbackV1;
+		FnCommandCallback_t m_fnCommandCallback;
+		ICommandCallback* m_pCommandCallback;
+	};
+
+	union
+	{
+		FnCommandCompletionCallback m_fnCompletionCallback;
+		ICommandCompletionCallback* m_pCommandCompletionCallback;
+	};
+
+	bool m_bHasCompletionCallback : 1;
+	bool m_bUsingNewCommandCallback : 1;
+	bool m_bUsingCommandCallbackInterface : 1;
+#else
+	FnCommandCallbackV1_t m_fnCommandCallbackV1;
+	FnCommandCompletionCallback m_fnCompletionCallback;
+	bool m_bHasCompletionCallback;
+#endif
+};
+
+#ifdef OE
+ConCommand* FindCommand(const char* name);
 #endif
