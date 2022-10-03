@@ -1,10 +1,11 @@
 #include "stdafx.h"
-
-#ifndef SSDK2013
-
 #include "command.hpp"
 #include "file.hpp"
-#include <filesystem>
+
+#ifdef OE
+#include "interfaces.hpp"
+#endif
+
 namespace fs = std::filesystem;
 
 AutoCompleteList::AutoCompleteList(const char* command) : command(command) {}
@@ -64,7 +65,7 @@ int FileAutoCompleteList::AutoCompletionFunc(const char* partial,
 	bool hasDoubleQuote;
 	auto subStrings = SplitPartial(partial, hasDoubleQuote);
 
-	// hack: accessing root dir like this will crash
+	// hack: prevent accessing root dir
 	if (subStrings.second[0] == '/' || subStrings.second[0] == '\\')
 		return 0;
 
@@ -80,28 +81,58 @@ int FileAutoCompleteList::AutoCompletionFunc(const char* partial,
 	if (!fs::is_directory(dir, ec))
 		return 0;
 
-	completions.clear();
+	bool shouldUpdate = (dir != prevPath || subStrings.second == "");
+	prevPath = dir;
+	bool doubleQuoteChanged = prevHasDoubleQuote != hasDoubleQuote;
+	prevHasDoubleQuote = hasDoubleQuote;
 
-	std::string completionPath = currentDir.string();
-	if (completionPath.length() > 0)
-		completionPath += "/";
-
-	for (auto& p : fs::directory_iterator(dir, ec))
+	if (shouldUpdate)
 	{
-		if (fs::is_directory(p.status()))
+		completions.clear();
+		std::string completionPath = currentDir.string();
+		if (completionPath.length() > 0)
+			completionPath += "/";
+
+		for (auto& p : fs::directory_iterator(dir, ec))
 		{
-			completions.push_back(completionPath + p.path().filename().string() + "/");
-		}
-		else if (p.path().extension() == extension)
-		{
-			std::string completion(completionPath + p.path().stem().string());
-			if (hasDoubleQuote)
-				completion += '"';
-			completions.push_back(completion);
+			if (fs::is_directory(p.status()))
+				completions.push_back(completionPath + p.path().filename().string() + '/');
+			else if (p.path().extension() == extension)
+			{
+				std::string completion(completionPath + p.path().stem().string());
+				completions.push_back(completion);
+			}
 		}
 	}
-
+	if (shouldUpdate || doubleQuoteChanged)
+	{
+		for (auto& item : completions)
+		{
+			char end = item.back();
+			if (hasDoubleQuote && end != '"' && end != '/')
+				item += '"';
+			else if (end == '"')
+				item.pop_back();
+		}
+	}
 	return AutoCompleteSuggest(partial, commands);
+}
+
+#ifdef OE
+ConCommand* FindCommand(const char* name)
+{
+	if (!interfaces::g_pCVar)
+		return NULL;
+	const ConCommandBase* cmd = interfaces::g_pCVar->GetCommands();
+	for (; cmd; cmd = cmd->GetNext())
+	{
+		if (!Q_stricmp(name, cmd->GetName()))
+			break;
+	}
+	if (!cmd || !cmd->IsCommand())
+		return NULL;
+
+	return const_cast<ConCommand*>(static_cast<const ConCommand*>(cmd));
 }
 
 #endif
