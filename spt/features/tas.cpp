@@ -269,7 +269,11 @@ CON_COMMAND_AUTOCOMPLETEFILE(
 		Msg("Loads and executes an .srctas script. Usage: tas_load_script <script> [ticks]\n");
 }
 
-CON_COMMAND(tas_script_search, "Starts a variable search for an .srctas script. Usage: tas_load_search [script]")
+CON_COMMAND_AUTOCOMPLETEFILE(tas_script_search,
+                             "Starts a variable search for an .srctas script. Usage: tas_load_search [script]",
+                             0,
+                             "",
+                             ".srctas")
 {
 	if (args.ArgC() > 1)
 		scripts::g_TASReader.StartSearch(args.Arg(1));
