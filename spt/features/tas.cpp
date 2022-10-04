@@ -254,7 +254,7 @@ void TASFeature::Strafe()
 
 CON_COMMAND_AUTOCOMPLETEFILE(
     tas_script_load,
-    "Loads and executes an .srctas script. If an extra ticks argument is given, the script is played back at maximal FPS and without rendering until that many ticks before the end of the script. Usage: tas_load_script [script] [ticks]",
+    "Loads and executes an .srctas script. If an extra ticks argument is given, the script is played back at maximal FPS and without rendering until that many ticks before the end of the script. Usage: tas_load_script <script> [ticks]",
     0,
     "",
     ".srctas")
@@ -266,7 +266,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(
 		scripts::g_TASReader.ExecuteScriptWithResume(args.Arg(1), std::stoi(args.Arg(2)));
 	}
 	else
-		Msg("Loads and executes an .srctas script. Usage: tas_load_script [script]\n");
+		Msg("Loads and executes an .srctas script. Usage: tas_load_script <script> [ticks]\n");
 }
 
 CON_COMMAND(tas_script_search, "Starts a variable search for an .srctas script. Usage: tas_load_search [script]")
