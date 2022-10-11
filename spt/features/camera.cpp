@@ -653,8 +653,8 @@ void Camera::DrawPath()
 
 HOOK_THISCALL(void, Camera, ClientModeShared__OverrideView, CViewSetup* view)
 {
-	spt_camera.OverrideView(view);
 	spt_camera.ORIG_ClientModeShared__OverrideView(thisptr, edx, view);
+	spt_camera.OverrideView(view);
 }
 
 HOOK_THISCALL(bool, Camera, ClientModeShared__CreateMove, float flInputSampleTime, void* cmd)
