@@ -8,7 +8,7 @@
 
 #include "convar.hpp"
 
-#if defined(SSDK2007) || defined(SSDK2013)
+#if defined(SSDK2007) || defined(SSDK2013) || defined(OE)
 
 ConVar y_spt_hud_isg("y_spt_hud_isg", "0", FCVAR_CHEAT, "Is the ISG flag set?\n");
 
@@ -18,7 +18,9 @@ namespace patterns
 	         "5135",
 	         "C6 05 ?? ?? ?? ?? 01 83 EE 01 3B 74 24 28 7D D3 8B 4C 24 38",
 	         "1910503",
-	         "C6 05 ?? ?? ?? ?? 01 4E 3B 75 ?? 7D ??");
+	         "C6 05 ?? ?? ?? ?? 01 4E 3B 75 ?? 7D ??",
+	         "DMoMM",
+	         "C6 05 ?? ?? ?? ?? 01 83 EE 01 3B 74 24 30 7D D5");
 }
 
 // This feature enables the ISG setting and HUD features
@@ -32,7 +34,7 @@ protected:
 
 	virtual bool ShouldLoadFeature() override
 	{
-		return utils::DoesGameLookLikePortal();
+		return true;
 	}
 
 	virtual void InitHooks() override
@@ -62,7 +64,7 @@ CON_COMMAND_F(y_spt_set_isg, "Sets the state of ISG in the game (1 or 0)", FCVAR
 		return;
 	}
 	if (spt_isg.isgFlagPtr)
-		*spt_isg.isgFlagPtr = atoi(args[1]);
+		*spt_isg.isgFlagPtr = atoi(args.Arg(1));
 	else
 		Warning("%s has no effect\n", y_spt_set_isg_command.GetName());
 }
