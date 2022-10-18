@@ -69,7 +69,9 @@ namespace patterns
 	    "BMS-Retail-3",
 	    "55 8B EC 83 EC 0C 56 8B F1 8B 46 04 80 B8 9C 0A 00 00 00 74 0E 8B 46 08 83 48 28 02 32 C0",
 	    "missinginfo1_6",
-	    "55 8B EC 83 EC 1C 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5");
+	    "55 8B EC 83 EC 1C 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5",
+	    "entropyzero",
+	    "55 8B EC 83 EC 18 56 8B F1 8B 4E 04 80 B9 ?? ?? 00 00 00 74 0E 8B 46 08 83 48 28 02 32 C0 5E 8B E5 5D C3 F3 0F 10");
 	PATTERNS(
 	    FinishGravity,
 	    "bms",
@@ -237,6 +239,12 @@ void AutojumpFeature::LoadFeature()
 			break;
 
 		case 18:
+			off_mv_ptr = 2;
+			break;
+		case 20:
+			off_mv_ptr = 2;
+			break;
+		case 21:
 			off_mv_ptr = 2;
 			break;
 		}
