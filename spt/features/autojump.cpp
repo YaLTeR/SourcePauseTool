@@ -244,9 +244,6 @@ void AutojumpFeature::LoadFeature()
 		case 20:
 			off_mv_ptr = 2;
 			break;
-		case 21:
-			off_mv_ptr = 2;
-			break;
 		}
 		if (off_mv_ptr == 1)
 			off_player_ptr = 2;
