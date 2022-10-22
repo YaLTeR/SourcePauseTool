@@ -538,7 +538,7 @@ CON_COMMAND(y_spt_find_portals, "Prints info for all portals")
 			bool activated = utils::GetProperty<bool>(i, "m_bActivated");
 			bool closed = (remoteIdx & INDEX_MASK) == INDEX_MASK;
 			auto openStr = closed ? (activated ? "a closed" : "an invisible") : "an open";
-			auto& origin = utils::GetPortalPosition(ent);
+			const auto& origin = utils::GetPortalPosition(ent);
 
 			Msg("SPT: There's %s %s portal with index %d at %.8f %.8f %.8f.\n",
 			    openStr,

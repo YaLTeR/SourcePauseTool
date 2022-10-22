@@ -200,6 +200,7 @@ namespace scripts2
 		return value;
 	}
 
+	template<>
 	inline float RangeVariable<float>::Normalize(float value)
 	{
 		if (isAngle)

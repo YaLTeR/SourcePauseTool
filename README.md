@@ -31,11 +31,10 @@ A plugin for all your pausing needs.
     * *Loading SourcePauseTool more than once will crash the game!*
 
 ### Building
-0. You will need [Visual Studio 2019](https://visualstudio.microsoft.com/vs/older-downloads/) and [git](https://git-scm.com).
+0. You will need [Visual Studio 2019](https://visualstudio.microsoft.com/free-developer-offers/) (or later) and [git](https://git-scm.com).
 1. Open Visual Studio 2019. Click on Tools → Get Tools and Features... from the top bar of the window.
 <br>This should open the Visual Studio Installer in another window. From the Workload tab, install `Desktop development with C++`. From the Individual Components tab, install:
-    * MSVC v141 - VS 2017 C++ x64/x86 build tools
-    * C++ Windows XP Support for VS 2017 (v141) tools
+    * MSVC v142 - VS 2019 C++ x64/x86 build tools
 2. Run the following in cmd:
     ```
     git clone --recurse-submodules https://github.com/YaLTeR/SourcePauseTool.git

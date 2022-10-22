@@ -552,7 +552,7 @@ void InputHud::DrawInputHud()
 			int th = surface->GetFontTall(anglesSettingFont);
 			surface->DrawSetTextFont(anglesSettingFont);
 			surface->DrawSetTextColor(anglesSetting.textcolor);
-			wchar_t* text = L"move analog";
+			const wchar_t* text = L"move analog";
 			surface->DrawSetTextPos(cX1 - r, cY1 - r - th);
 			surface->DrawPrintText(text, wcslen(text));
 			text = L"view analog";

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include "cdll_int.h"
 #include "client_class.h"
 #include "engine\ivmodelinfo.h"

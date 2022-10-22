@@ -180,8 +180,9 @@ void DrawSeamsFeature::OnOverlaySignal(OverlayRenderer& ovr)
 	Vector test1Target = edgeTr.endpos + tr.plane.normal * distanceToSeam;
 	Vector test2Target = edgeTr.endpos + edgeTr.plane.normal * distanceToSeam;
 
-	bool test1 = TestSeamshot(test1Start, test1Target, tr.plane, edgeTr.plane, QAngle());
-	bool test2 = TestSeamshot(test2Start, test2Target, tr.plane, edgeTr.plane, QAngle());
+	QAngle t1Angle, t2Angle;
+	bool test1 = TestSeamshot(test1Start, test1Target, tr.plane, edgeTr.plane, t1Angle);
+	bool test2 = TestSeamshot(test2Start, test2Target, tr.plane, edgeTr.plane, t2Angle);
 	bool seamshot = test1 || test2;
 
 	const int uiScale = 10;

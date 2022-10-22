@@ -344,7 +344,7 @@ namespace utils
 			else // error occurred
 			{
 				i = argSize;
-				arr = L"error occurred in parsing";
+				arr = (wchar_t*)L"error occurred in parsing";
 				entries = 1;
 				break;
 			}
