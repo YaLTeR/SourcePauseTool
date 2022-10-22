@@ -34,7 +34,11 @@ namespace patterns
 	    "55 8B EC 81 EC ?? ?? ?? ?? 8B 41 08 8B 40 08 8B 50",
 	    "BMS-Retail",
 	    "55 8B EC 81 EC ?? ?? ?? ?? A1 ?? ?? ?? ?? 33 C5 89 45 FC 8B 41 ?? 56 8B 75 ?? 57 8B 40 ?? 8B 7D ?? 8B 50");
-	PATTERNS(beam_object_to_new_position, "5135", "81 EC D8 00 00 00 53 8B D9 F7 43 78 00 0C 00 00");
+	PATTERNS(beam_object_to_new_position,
+	         "5135",
+	         "81 EC D8 00 00 00 53 8B D9 F7 43 78 00 0C 00 00",
+	         "BMS-Retail",
+	         "55 8B EC 81 EC E4 00 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 ?? 8B 55 ??");
 } // namespace patterns
 
 void ShadowPosition::InitHooks()
