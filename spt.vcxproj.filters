@@ -600,6 +600,9 @@
     <ClInclude Include="spt\features\restart.hpp">
       <Filter>spt\features</Filter>
     </ClInclude>
+    <ClInclude Include="spt\utils\typeinfo.h">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">

@@ -4,10 +4,11 @@
 #include "..\aim\aimstuff.hpp"
 #include "..\strafe\strafestuff.hpp"
 
-typedef struct
+typedef struct _angset_command
 {
-	float angle = 0.0f;
-	bool set = false;
+	float angle;
+	bool set;
+	_angset_command() : angle(0.0f), set(false) {}
 } angset_command_t;
 
 class AimFeature : public FeatureWrapper<AimFeature>

@@ -235,7 +235,7 @@ namespace scripts2
 		for (auto& entry : std::filesystem::recursive_directory_iterator(folder))
 		{
 			auto& path = entry.path();
-			auto& str = path.string().substr(GetGameDir().length() + 1);
+			auto str = path.string().substr(GetGameDir().length() + 1);
 			int extPos = str.find(SCRIPT_EXT);
 
 			if (extPos != -1)

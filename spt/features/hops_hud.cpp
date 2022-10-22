@@ -402,7 +402,7 @@ public:
 	void DrawHopHud();
 	bool ShouldDraw();
 	void PrintStrafeCol(std::function<void(const ljstats::SegmentStats&, wchar_t* buffer, int x, int y)>,
-	                    wchar_t* fieldName,
+	                    const wchar_t* fieldName,
 	                    int x,
 	                    int y,
 	                    int MARGIN);
@@ -440,7 +440,7 @@ bool HopsHud::ShouldDraw()
 }
 
 void HopsHud::PrintStrafeCol(std::function<void(const ljstats::SegmentStats&, wchar_t*, int, int)> func,
-                             wchar_t* fieldName,
+                             const wchar_t* fieldName,
                              int x,
                              int y,
                              int MARGIN)

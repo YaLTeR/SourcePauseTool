@@ -226,8 +226,8 @@ CON_COMMAND(
 		return;
 	}
 
-	Vector a_normal;
-	const auto distance = std::max(trace_fire_portal(a, a_normal), trace_fire_portal(b, Vector()));
+	Vector a_normal, b_normal;
+	const auto distance = std::max(trace_fire_portal(a, a_normal), trace_fire_portal(b,b_normal));
 
 	// If our trace had a distance greater than the a or b distance by this amount, treat it as a seam shot.
 	constexpr double GOOD_DISTANCE_DIFFERENCE = 50.0 * 50.0;

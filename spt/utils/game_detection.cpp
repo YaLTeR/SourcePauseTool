@@ -108,7 +108,7 @@ namespace utils
 		DevMsg("Found date string: %s\n", wholeString);
 		const char* date_str = wholeString + 20;
 
-		char* months[] = {
+		const char* months[] = {
 		    "Jan",
 		    "Feb",
 		    "Mar",
@@ -193,9 +193,9 @@ namespace utils
 			                                &moduleSize))
 			    {
 				    moduleEnd = moduleStart + moduleSize;
-				    char* BUILD_STRING = "Exe build:";
-				    uint8_t* beginNeedle = reinterpret_cast<uint8_t*>(BUILD_STRING);
-				    uint8_t* endNeedle = beginNeedle + strlen(BUILD_STRING);
+				    const char* BUILD_STRING = "Exe build:";
+				    const uint8_t* beginNeedle = reinterpret_cast<const uint8_t*>(BUILD_STRING);
+				    const uint8_t* endNeedle = beginNeedle + strlen(BUILD_STRING);
 
 				    int match = kmp::match_first(beginNeedle, endNeedle, moduleStart, moduleEnd);
 

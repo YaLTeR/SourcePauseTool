@@ -74,11 +74,8 @@ bool getPortal(IClientEntity** portal_edict, Vector& new_player_origin, QAngle& 
 
 	if (!portal)
 	{
-		auto& player_origin = utils::GetPlayerEyePosition();
-		auto& player_angles = utils::GetPlayerEyeAngles();
-
-		new_player_origin = player_origin;
-		new_player_angles = player_angles;
+		new_player_origin = utils::GetPlayerEyePosition();
+		new_player_angles = utils::GetPlayerEyeAngles();
 
 		return false;
 	}
@@ -111,8 +108,8 @@ void calculateSGPosition(Vector& new_player_origin, QAngle& new_player_angles)
 
 bool isInfrontOfPortal(IClientEntity* saveglitch_portal, const Vector& player_origin)
 {
-	auto& portal_origin = utils::GetPortalPosition(saveglitch_portal);
-	auto& portal_angles = utils::GetPortalAngles(saveglitch_portal);
+	const auto& portal_origin = utils::GetPortalPosition(saveglitch_portal);
+	const auto& portal_angles = utils::GetPortalAngles(saveglitch_portal);
 
 	Vector delta = player_origin - portal_origin;
 	Vector normal;
@@ -129,7 +126,7 @@ std::wstring calculateWillAGSG(Vector& new_player_origin, QAngle& new_player_ang
 		return L"no portal selected";
 
 	Vector enter_origin = utils::GetPortalPosition(enter_portal);
-	auto& enter_angles = utils::GetPortalAngles(enter_portal);
+	const auto& enter_angles = utils::GetPortalAngles(enter_portal);
 	Vector enterForward;
 	AngleVectors(enter_angles, &enterForward);
 
@@ -137,7 +134,8 @@ std::wstring calculateWillAGSG(Vector& new_player_origin, QAngle& new_player_ang
 		return L"no, bad entry portal";
 
 	Vector pos;
-	calculateAGPosition(pos, QAngle());
+	QAngle qa;
+	calculateAGPosition(pos, qa);
 
 	if (enterForward.Dot(pos - enter_origin) >= 0)
 		return L"no, tp position in front";
@@ -150,10 +148,10 @@ void calculateAGOffsetPortal(IClientEntity* enter_portal,
                              Vector& new_player_origin,
                              QAngle& new_player_angles)
 {
-	auto& enter_origin = utils::GetPortalPosition(enter_portal);
-	auto& enter_angles = utils::GetPortalAngles(enter_portal);
-	auto& exit_origin = utils::GetPortalPosition(exit_portal);
-	auto& exit_angles = utils::GetPortalAngles(exit_portal);
+	const auto& enter_origin = utils::GetPortalPosition(enter_portal);
+	const auto& enter_angles = utils::GetPortalAngles(enter_portal);
+	const auto& exit_origin = utils::GetPortalPosition(exit_portal);
+	const auto& exit_angles = utils::GetPortalAngles(exit_portal);
 
 	Vector exitForward, exitRight, exitUp;
 	Vector enterForward, enterRight, enterUp;
@@ -179,8 +177,8 @@ void calculateAGOffsetPortal(IClientEntity* enter_portal,
 
 void calculateOffsetPlayer(IClientEntity* saveglitch_portal, Vector& new_player_origin, QAngle& new_player_angles)
 {
-	auto& player_origin = utils::GetPlayerEyePosition();
-	auto& player_angles = utils::GetPlayerEyeAngles();
+	const auto& player_origin = utils::GetPlayerEyePosition();
+	const auto& player_angles = utils::GetPlayerEyeAngles();
 	VMatrix matrix;
 	matrix.Identity();
 
@@ -264,7 +262,7 @@ IClientEntity* getPortal(const char* arg, bool verbose)
 			for (auto i : indices)
 			{
 				auto ent = utils::GetClientEntity(i);
-				auto& origin = utils::GetPortalPosition(ent);
+				const auto& origin = utils::GetPortalPosition(ent);
 
 				if (verbose)
 					Msg("%d located at %.8f %.8f %.8f\n", i, origin.x, origin.y, origin.z);
