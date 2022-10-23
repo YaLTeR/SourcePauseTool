@@ -86,6 +86,19 @@ namespace utils
 		return false;
 	}
 
+	bool DoesGameLookLikeEstranged()
+	{
+#ifndef OE
+		if (interfaces::engine)
+		{
+			auto game_dir = interfaces::engine->GetGameDirectory();
+			return (GetFileName(Convert(game_dir)) == L"estrangedact1");
+		}
+#endif
+
+		return false;
+	}
+
 	static std::future<int> BuildResult;
 
 	int GetBuildNumber()

@@ -40,7 +40,7 @@ namespace patterns
 void RNGStuff::InitHooks()
 {
 	HOOK_FUNCTION(server, SetPredictionRandomSeed);
-	if (!utils::DoesGameLookLikeBMSMod())
+	if (!utils::DoesGameLookLikeBMSMod() && !utils::DoesGameLookLikeEstranged())
 	{
 		HOOK_FUNCTION(server, CBasePlayer__InitVCollision);
 		FIND_PATTERN(vphysics, ivp_srand);
