@@ -45,7 +45,7 @@ namespace patterns
 	    "81 EC 08 01 00 00 E8 ?? ?? ?? ?? 83 F8 02 74 1E E8 ?? ?? ?? ?? 83 F8 03 74 14 68 ?? ?? ?? ?? E8 ?? ?? ?? ?? 83 C4 04 81 C4 08 01 00 00 C3 53 32 DB 88 5C 24 04 E8",
 	    "5135",
 	    "81 EC 08 01 00 00 83 ?? ?? ?? ?? ?? ?? 75 15 68 ?? ?? ?? ?? FF ?? ?? ?? ?? ?? 83 C4 04 81 C4 08 01 00 00 C3",
-	    "7197370",
+	    "2229355",
 	    "55 8B EC 81 EC 08 01 00 00 83 3D ?? ?? ?? ?? 00 75 ?? 68 ?? ?? ?? ?? FF 15 ?? ?? ?? ?? 83 C4 04 8B E5 5D C3 56 8B 75 ?? 8B 06");
 	PATTERNS(
 	    CDemoPlayer__StartPlayback,
@@ -104,7 +104,7 @@ void DemoStuff::PreHook()
 	if (ORIG_Record)
 	{
 		int index = GetPatternIndex((void**)&ORIG_Record);
-		if (index == 0)
+		if (index == 0) // 2707
 		{
 			pDemoplayer = *reinterpret_cast<void***>(ORIG_Record + 132);
 
@@ -114,7 +114,7 @@ void DemoStuff::PreHook()
 			IsPlaybackPaused_Offset = 5;
 			IsPlayingBack_Offset = 6;
 		}
-		else if (index == 1)
+		else if (index == 1) // 5135
 		{
 			pDemoplayer = *reinterpret_cast<void***>(ORIG_Record + 0xA2);
 			// vftable offsets
@@ -135,12 +135,12 @@ void DemoStuff::PreHook()
 				IsPlaybackPaused_Offset = 7;
 			}
 		}
-		else if (index == 2)
+		else if (index == 2) // 2229355
 		{
 			// new steampipe hl2
 			if (utils::GetBuildNumber() >= 2229355 || utils::GetBuildNumber() == 0)
 			{
-				// 7197370 offset
+				// 2229355 offset
 				pDemoplayer = *reinterpret_cast<void***>(ORIG_Record + 0x9C);
 			}
 			else

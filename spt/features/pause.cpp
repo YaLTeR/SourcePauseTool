@@ -100,7 +100,7 @@ void PauseFeature::LoadFeature()
 		int ptnNumber = GetPatternIndex((void**)&spt_generic.ORIG_SV_ActivateServer);
 		switch (ptnNumber)
 		{
-		case 3:
+		case 3: // 2707
 			pGameServer = (*(void**)((int)spt_generic.ORIG_SV_ActivateServer + 223));
 			break;
 		}
