@@ -113,7 +113,7 @@ void PlayerIOFeature::PreHook()
 		{
 			offM_pCommands = 224;
 		}
-		else if (index == 0)
+		else if (index == 0) // 5135
 		{
 			offM_pCommands = 180;
 		}

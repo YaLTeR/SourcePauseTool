@@ -81,12 +81,12 @@ void DemoStuff::PreHook()
 	if (ORIG_StopRecording)
 	{
 		int index = GetPatternIndex((void**)&ORIG_StopRecording);
-		if (index == 0)
+		if (index == 0) // 5135
 		{
 			m_bRecording_Offset = *(int*)((uint32_t)ORIG_StopRecording + 65);
 			m_nDemoNumber_Offset = *(int*)((uint32_t)ORIG_StopRecording + 72);
 		}
-		else if (index == 1)
+		else if (index == 1) // 1910503
 		{
 			m_bRecording_Offset = *(int*)((uint32_t)ORIG_StopRecording + 70);
 			m_nDemoNumber_Offset = *(int*)((uint32_t)ORIG_StopRecording + 77);
