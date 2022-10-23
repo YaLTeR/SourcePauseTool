@@ -166,82 +166,64 @@ void AutojumpFeature::LoadFeature()
 		int ptnNumber = GetPatternIndex((void**)&ORIG_CheckJumpButton);
 		switch (ptnNumber)
 		{
-		case 0:
+		case 0: // 5135
 			off_mv_ptr = 2;
 			break;
-
-		case 1:
+		case 1: // 4104
 			off_mv_ptr = 1;
 			break;
-
-		case 2:
+		case 2: // 5339
 			off_mv_ptr = 2;
 			break;
-
-		case 3:
+		case 3: // 2257546
 			off_mv_ptr = 2;
 			break;
-
-		case 4:
+		case 4: // 2257546-hl1
 			off_mv_ptr = 2;
 			break;
-
-		case 5:
+		case 5: // 1910503
 			off_mv_ptr = 2;
 			break;
-
-		case 6:
+		case 6: // bms
 			off_mv_ptr = 2;
 			break;
-
-		case 7:
+		case 7: // estranged
 			off_mv_ptr = 1;
 			break;
-
-		case 8:
+		case 8: // 2707
 			off_mv_ptr = 1;
 			break;
-
-		case 9:
+		case 9: // BMS-Retail
 			off_mv_ptr = 2;
 			break;
-
-		case 10:
+		case 10: // BMS-Retail-2
 			off_mv_ptr = 2;
 			break;
-
-		case 11:
+		case 11: // 2949
 			off_mv_ptr = 1;
 			break;
-
-		case 12:
+		case 12: // dmomm
 			off_mv_ptr = 3;
 			break;
-
-		case 13:
+		case 13: // 4044-episodic
 			off_mv_ptr = 1;
 			break;
-
-		case 14:
+		case 14: // 6879
 			off_mv_ptr = 2;
 			break;
-
-		case 15:
+		case 15: // missinginfo1_4_7
 			off_mv_ptr = 1;
 			break;
-
-		case 16:
+		case 16: // te120
 			off_mv_ptr = 2;
 			break;
-
-		case 17:
+		case 17: // icemod2013
 			off_mv_ptr = 2;
 			break;
-
-		case 18:
+		case 18: // BMS-Retail-3
 			off_mv_ptr = 2;
 			break;
-		case 20:
+		case 20: // entropyzero
 			off_mv_ptr = 2;
 			break;
 		}

@@ -67,36 +67,21 @@ void PauseFeature::LoadFeature()
 
 		switch (ptnNumber)
 		{
-		case 0:
+		case 0: // 5135
+		case 2: // 4104 is the same as 5135 here
 			pM_bLoadgame = (*(bool**)(ORIG_SpawnPlayer + 5));
 			pGameServer = (*(void**)(ORIG_SpawnPlayer + 18));
 			break;
-
-		case 1:
+		case 1: // 5339
+		case 3: // 2257546 is the same as 5339 here
+		case 5: // 6879 is the same as 5339 here
 			pM_bLoadgame = (*(bool**)(ORIG_SpawnPlayer + 8));
 			pGameServer = (*(void**)(ORIG_SpawnPlayer + 21));
 			break;
-
-		case 2: // 4104 is the same as 5135 here.
-			pM_bLoadgame = (*(bool**)(ORIG_SpawnPlayer + 5));
-			pGameServer = (*(void**)(ORIG_SpawnPlayer + 18));
-			break;
-
-		case 3: // 2257546 is the same as 5339 here.
-			pM_bLoadgame = (*(bool**)(ORIG_SpawnPlayer + 8));
-			pGameServer = (*(void**)(ORIG_SpawnPlayer + 21));
-			break;
-
-		case 4:
+		case 4: // 2707
 			pM_bLoadgame = (*(bool**)(ORIG_SpawnPlayer + 26));
 			//pGameServer = (*(void **)(pSpawnPlayer + 21)); - We get this one from SV_ActivateServer in OE.
 			break;
-
-		case 5: // 6879 is the same as 5339 here.
-			pM_bLoadgame = (*(bool**)(ORIG_SpawnPlayer + 8));
-			pGameServer = (*(void**)(ORIG_SpawnPlayer + 21));
-			break;
-
 		default:
 			Warning("Spawnplayer did not have a matching switch-case statement!\n");
 			break;

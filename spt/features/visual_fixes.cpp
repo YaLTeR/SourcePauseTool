@@ -145,27 +145,22 @@ void VisualFixes::LoadFeature()
 
 		switch (ptnNumber)
 		{
-		case 0:
+		case 0: // 5135
 			pgpGlobals = *(uintptr_t**)((uintptr_t)ORIG_DoImageSpaceMotionBlur + 132);
 			break;
-
-		case 1:
+		case 1: // 5339
 			pgpGlobals = *(uintptr_t**)((uintptr_t)ORIG_DoImageSpaceMotionBlur + 153);
 			break;
-
-		case 2:
+		case 2: // 4104
 			pgpGlobals = *(uintptr_t**)((uintptr_t)ORIG_DoImageSpaceMotionBlur + 129);
 			break;
-
-		case 3:
+		case 3: // 2257546
 			pgpGlobals = *(uintptr_t**)((uintptr_t)ORIG_DoImageSpaceMotionBlur + 171);
 			break;
-
-		case 4:
+		case 4: // 1910503
 			pgpGlobals = *(uintptr_t**)((uintptr_t)ORIG_DoImageSpaceMotionBlur + 177);
 			break;
-
-		case 5:
+		case 5: // missinginfo1_6
 			pgpGlobals = *(uintptr_t**)((uintptr_t)ORIG_DoImageSpaceMotionBlur + 128);
 			break;
 		}

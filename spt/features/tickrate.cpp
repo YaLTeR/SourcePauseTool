@@ -68,11 +68,10 @@ void TickrateMod::LoadFeature()
 
 		switch (ptnNumber)
 		{
-		case 0:
+		case 0: // 4104
 			pIntervalPerTick = *reinterpret_cast<float**>(ORIG_MiddleOfSV_InitGameDLL + 18);
 			break;
-
-		case 1:
+		case 1: // 4044
 			pIntervalPerTick = *reinterpret_cast<float**>(ORIG_MiddleOfSV_InitGameDLL + 16);
 			break;
 		default:
