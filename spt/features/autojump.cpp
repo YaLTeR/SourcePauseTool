@@ -34,24 +34,12 @@ namespace patterns
 	    "83 EC 1C 56 8B F1 8B 4E 04 80 B9 04 0A 00 00 00 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 83 C4 1C C3 D9 EE D8 91 70 0D 00 00",
 	    "4104",
 	    "83 EC 1C 56 8B F1 8B 4E 08 80 B9 C4 09 00 00 00 74 0E 8B 76 04 83 4E 28 02 32 C0 5E 83 C4 1C C3 D9 EE D8 91 30 0D 00 00",
-	    "5339",
-	    "55 8B EC 83 EC 20 56 8B F1 8B 4E 04 80 B9 40 0A 00 00 00 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5 5D C3 F3 0F 10 89 AC 0D 00 00",
-	    "2257546",
-	    "55 8B EC 83 EC 18 56 8B F1 8B 4E 04 80 B9 40 0A 00 00 00 74 0E 8B 46 08 83 48 28 02 32 C0 5E 8B E5 5D C3 F3 0F 10 89 ?? 0D 00 00",
+	    "hl2-steampipe",
+	    "55 8B EC 83 EC ?? 56 8B F1 8B ?? 04 80 ?? ?? 0A 00 00 00 74 0E 8B ?? 08 83 ?? 28 02 32 C0 5E 8B E5 5D C3",
 	    "2257546-hl1",
 	    "55 8B EC 51 56 8B F1 57 8B 7E 04 85 FF 74 10 8B 07 8B CF 8B 80 ?? ?? ?? ?? FF D0 84 C0 75 02 33 FF",
-	    "1910503",
-	    "55 8B EC 83 EC 18 56 8B F1 8B 4E 04 80 B9 40 0A 00 00 00 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B",
-	    "bms",
-	    "55 8B EC 83 EC 0C 56 8B F1 8B 46 04 80 B8 10 0A 00 00 00 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5 5D C3 E8 08 F9 FF FF 84 C0 75 F0",
-	    "estranged",
-	    "55 8B EC 83 EC ?? 56 8B F1 8B 4E 04 80 B9 44 0A 00 00 00 74 0E 8B ?? 08 83 ?? 28 02 32 C0 5E 8B E5 5D C3 F3 0F 10 89 B0 0D 00 00 0F 57 C0 0F 2E",
 	    "2707",
 	    "83 EC 10 53 56 8B F1 8B 4E 08 8A 81 ?? ?? ?? ?? 84 C0 74 0F 8B 76 04 83 4E ?? 02 5E 32 C0 5B 83 C4 10 C3 D9 81 30 0C 00 00 D8 1D",
-	    "BMS-Retail",
-	    "55 8B EC 83 EC 0C 56 8B F1 8B 46 04 80 B8 78 0A 00 00 00 74 0E 8B 46 08 83 48 28 02 32 C0 5E 8B E5 5D C3 8B 06 8B 80 44 01 00 00 FF D0 84 C0 75",
-	    "BMS-Retail-2",
-	    "55 8B EC 83 EC 0C 56 8B F1 8B 46 04 80 B8 84 0A 00 00 00 74 0E 8B 46 08 83 48 28 02 32 C0 5E 8B",
 	    "2949",
 	    "83 EC 14 56 8B F1 8B 4E 08 80 B9 30 09 00 00 00 0F 85 E1 00 00 00 D9 05 ?? ?? ?? ?? D9 81 70 0C 00 00",
 	    "dmomm",
@@ -62,16 +50,8 @@ namespace patterns
 	    "55 8B EC 83 EC 0C 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 07 32 C0 5E 8B E5 5D C3 53 BB",
 	    "missinginfo1_4_7",
 	    "55 8B EC 83 EC 44 56 89 4D D0 8B 45 D0 8B 48 08 81 C1 ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B6 C8 85 C9",
-	    "te120",
-	    "55 8B EC 83 EC 20 56 8B F1 8B 4E 04 80 B9 48 0A 00 00 00 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5 5D C3 F3 0F 10 89 B4 0D 00 00",
-	    "icemod2013",
-	    "55 8B EC 83 EC 18 56 8B F1 8B 4E 04 80 B9 50 0A 00 00 00 74 0E 8B 46 08 83 48 28 02 32 C0 5E 8B E5 5D C3 F3 0F 10 89 D8 0D 00 00",
-	    "BMS-Retail-3",
-	    "55 8B EC 83 EC 0C 56 8B F1 8B 46 04 80 B8 9C 0A 00 00 00 74 0E 8B 46 08 83 48 28 02 32 C0",
 	    "missinginfo1_6",
-	    "55 8B EC 83 EC 1C 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5",
-	    "entropyzero",
-	    "55 8B EC 83 EC 18 56 8B F1 8B 4E 04 80 B9 ?? ?? 00 00 00 74 0E 8B 46 08 83 48 28 02 32 C0 5E 8B E5 5D C3 F3 0F 10");
+	    "55 8B EC 83 EC 1C 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5");
 	PATTERNS(
 	    FinishGravity,
 	    "bms",
@@ -172,59 +152,29 @@ void AutojumpFeature::LoadFeature()
 		case 1: // 4104
 			off_mv_ptr = 1;
 			break;
-		case 2: // 5339
+		case 2: // hl2-steampipe
 			off_mv_ptr = 2;
 			break;
-		case 3: // 2257546
+		case 3: // 2257546-hl1
 			off_mv_ptr = 2;
 			break;
-		case 4: // 2257546-hl1
-			off_mv_ptr = 2;
-			break;
-		case 5: // 1910503
-			off_mv_ptr = 2;
-			break;
-		case 6: // bms
-			off_mv_ptr = 2;
-			break;
-		case 7: // estranged
+		case 4: // 2707
 			off_mv_ptr = 1;
 			break;
-		case 8: // 2707
+		case 5: // 2949
 			off_mv_ptr = 1;
 			break;
-		case 9: // BMS-Retail
-			off_mv_ptr = 2;
-			break;
-		case 10: // BMS-Retail-2
-			off_mv_ptr = 2;
-			break;
-		case 11: // 2949
-			off_mv_ptr = 1;
-			break;
-		case 12: // dmomm
+		case 6: // dmomm
 			off_mv_ptr = 3;
 			break;
-		case 13: // 4044-episodic
+		case 7: // 4044-episodic
 			off_mv_ptr = 1;
 			break;
-		case 14: // 6879
+		case 8: // 6879
 			off_mv_ptr = 2;
 			break;
-		case 15: // missinginfo1_4_7
+		case 9: // missinginfo1_4_7
 			off_mv_ptr = 1;
-			break;
-		case 16: // te120
-			off_mv_ptr = 2;
-			break;
-		case 17: // icemod2013
-			off_mv_ptr = 2;
-			break;
-		case 18: // BMS-Retail-3
-			off_mv_ptr = 2;
-			break;
-		case 20: // entropyzero
-			off_mv_ptr = 2;
 			break;
 		}
 		if (off_mv_ptr == 1)
