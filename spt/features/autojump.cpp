@@ -34,8 +34,10 @@ namespace patterns
 	    "83 EC 1C 56 8B F1 8B 4E 04 80 B9 04 0A 00 00 00 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 83 C4 1C C3 D9 EE D8 91 70 0D 00 00",
 	    "4104",
 	    "83 EC 1C 56 8B F1 8B 4E 08 80 B9 C4 09 00 00 00 74 0E 8B 76 04 83 4E 28 02 32 C0 5E 83 C4 1C C3 D9 EE D8 91 30 0D 00 00",
-	    "hl2-steampipe",
-	    "55 8B EC 83 EC ?? 56 8B F1 8B ?? 04 80 ?? ?? 0A 00 00 00 74 0E 8B ?? 08 83 ?? 28 02 32 C0 5E 8B E5 5D C3",
+	    "5339",
+	    "55 8B EC 83 EC 20 56 8B F1 8B ?? 04 80 ?? 40 ?? 00 00 00 74 0E 8B ?? 08 83 ?? 28 02 32 C0 5E 8B E5 5D C3",
+	    "2257546",
+	    "55 8B EC 83 EC 18 56 8B F1 8B ?? 04 80 ?? ?? ?? 00 00 00 74 0E 8B ?? 08 83 ?? 28 02 32 C0 5E 8B E5 5D C3",
 	    "2257546-hl1",
 	    "55 8B EC 51 56 8B F1 57 8B 7E 04 85 FF 74 10 8B 07 8B CF 8B 80 ?? ?? ?? ?? FF D0 84 C0 75 02 33 FF",
 	    "2707",
@@ -50,6 +52,10 @@ namespace patterns
 	    "55 8B EC 83 EC 0C 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 07 32 C0 5E 8B E5 5D C3 53 BB",
 	    "missinginfo1_4_7",
 	    "55 8B EC 83 EC 44 56 89 4D D0 8B 45 D0 8B 48 08 81 C1 ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B6 C8 85 C9",
+	    "te120",
+	    "55 8B EC 83 EC 20 56 8B F1 8B ?? 04 80 ?? 48 ?? 00 00 00 74 0E 8B ?? 08 83 ?? 28 02 32 C0 5E 8B E5 5D C3",
+	    "BMS-Retail-3",
+	    "55 8B EC 83 EC 0C 56 8B F1 8B ?? 04 80 ?? ?? ?? 00 00 00 74 0E 8B ?? 08 83 ?? 28 02 32 C0 5E 8B E5 5D C3",
 	    "missinginfo1_6",
 	    "55 8B EC 83 EC 1C 56 8B F1 8B 4E 04 80 B9 ?? ?? ?? ?? ?? 74 0E 8B 76 08 83 4E 28 02 32 C0 5E 8B E5");
 	PATTERNS(
@@ -147,34 +153,25 @@ void AutojumpFeature::LoadFeature()
 		switch (ptnNumber)
 		{
 		case 0: // 5135
+		case 2: // 5339
+		case 3: // 2257546
+		case 4: // 2257546-hl1
+		case 9: // 6879
+		case 11: // te120
+		case 12: // BMS-Retail-3
 			off_mv_ptr = 2;
 			break;
+
 		case 1: // 4104
+		case 5: // 2707
+		case 6: // 2949
+		case 8: // 4044-episodic
+		case 10: // missinginfo1_4_7
 			off_mv_ptr = 1;
 			break;
-		case 2: // hl2-steampipe
-			off_mv_ptr = 2;
-			break;
-		case 3: // 2257546-hl1
-			off_mv_ptr = 2;
-			break;
-		case 4: // 2707
-			off_mv_ptr = 1;
-			break;
-		case 5: // 2949
-			off_mv_ptr = 1;
-			break;
-		case 6: // dmomm
+
+		case 7: // dmomm
 			off_mv_ptr = 3;
-			break;
-		case 7: // 4044-episodic
-			off_mv_ptr = 1;
-			break;
-		case 8: // 6879
-			off_mv_ptr = 2;
-			break;
-		case 9: // missinginfo1_4_7
-			off_mv_ptr = 1;
 			break;
 		}
 		if (off_mv_ptr == 1)
