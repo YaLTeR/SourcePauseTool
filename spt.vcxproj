@@ -1135,6 +1135,7 @@
     <ClCompile Include="spt\features\autojump.cpp" />
     <ClCompile Include="spt\features\boog.cpp" />
     <ClCompile Include="spt\features\camera.cpp" />
+    <ClCompile Include="spt\features\collision_group.cpp" />
     <ClCompile Include="spt\features\cvar.cpp" />
     <ClCompile Include="spt\features\demo.cpp" />
     <ClCompile Include="spt\features\dmomm.cpp" />
