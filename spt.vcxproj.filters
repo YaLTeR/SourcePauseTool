@@ -121,6 +121,9 @@
     <ClCompile Include="spt\features\ent_props.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\collision_group.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
     <ClCompile Include="spt\features\cvar.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
