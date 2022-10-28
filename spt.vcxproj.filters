@@ -265,27 +265,6 @@
     <ClCompile Include="spt\features\tas_new_record.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
-    <ClCompile Include="spt\features\overlays\renderer\mesh_builder.cpp">
-      <Filter>spt\features\overlays\renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\overlays\renderer\mesh_construction.cpp">
-      <Filter>spt\features\overlays\renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\overlays\renderer\overlay_renderer.cpp">
-      <Filter>spt\features\overlays\renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\overlays\renderer\overlay_test.cpp">
-      <Filter>spt\features\overlays\renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\overlays\sg-collide-vis.cpp">
-      <Filter>spt\features\overlays</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\overlays\draw_seams.cpp">
-      <Filter>spt\features\overlays</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\overlays\vag_trace.cpp">
-      <Filter>spt\features\overlays</Filter>
-    </ClCompile>
     <ClCompile Include="spt\features\autocomplete.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
@@ -294,6 +273,27 @@
     </ClCompile>
     <ClCompile Include="spt\features\multi_instance.cpp">
       <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\draw_seams.cpp">
+      <Filter>spt\features\visualizations</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\mesh_test.cpp">
+      <Filter>spt\features\visualizations</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\sg-collide-vis.cpp">
+      <Filter>spt\features\visualizations</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\vag_trace.cpp">
+      <Filter>spt\features\visualizations</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\renderer\mesh_builder.cpp">
+      <Filter>spt\features\visualizations\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\renderer\mesh_construction.cpp">
+      <Filter>spt\features\visualizations\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\renderer\mesh_renderer.cpp">
+      <Filter>spt\features\visualizations\renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -600,14 +600,20 @@
     <ClInclude Include="spt\scripts2\variable_container2.hpp">
       <Filter>spt\scripts2</Filter>
     </ClInclude>
-    <ClInclude Include="spt\features\overlays\renderer\mesh_builder.hpp">
-      <Filter>spt\features\overlays\renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\features\overlays\renderer\overlay_renderer.hpp">
-      <Filter>spt\features\overlays\renderer</Filter>
-    </ClInclude>
     <ClInclude Include="spt\features\restart.hpp">
       <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\renderer\mesh_builder.hpp">
+      <Filter>spt\features\visualizations\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\renderer\mesh_renderer.hpp">
+      <Filter>spt\features\visualizations\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\renderer\mesh_defs_private.hpp">
+      <Filter>spt\features\visualizations\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\renderer\mesh_defs_public.hpp">
+      <Filter>spt\features\visualizations\renderer</Filter>
     </ClInclude>
     <ClInclude Include="spt\utils\typeinfo.h">
       <Filter>spt\utils</Filter>
@@ -670,11 +676,11 @@
     <Filter Include="spt\scripts2">
       <UniqueIdentifier>{d03c7a27-824d-4f39-8c99-c22fbd2158e2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="spt\features\overlays">
-      <UniqueIdentifier>{63e917ab-7a25-4085-9adf-669afceb2680}</UniqueIdentifier>
+    <Filter Include="spt\features\visualizations">
+      <UniqueIdentifier>{b29fe4cd-5c99-40ad-819a-ad01853c0e0e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="spt\features\overlays\renderer">
-      <UniqueIdentifier>{592beefd-a6b8-40f9-9962-794008d1f545}</UniqueIdentifier>
+    <Filter Include="spt\features\visualizations\renderer">
+      <UniqueIdentifier>{84fb8368-d0e8-4d2a-9327-96b181523bfe}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

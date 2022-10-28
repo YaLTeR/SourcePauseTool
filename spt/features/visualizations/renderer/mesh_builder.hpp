@@ -1,0 +1,164 @@
+#pragma once
+
+#include "mesh_defs_public.hpp"
+
+#ifdef SPT_MESH_RENDERING_ENABLED
+
+#include <vector>
+#include <variant>
+
+#include "spt\feature.hpp"
+
+typedef std::function<void(class MeshBuilderPro& mb)> MeshCreateFunc;
+
+#define MB_DYNAMIC(mbFunc, ...) MeshBuilderPro::CreateDynamicMesh([&](MeshBuilderPro& mb) { mbFunc }, {__VA_ARGS__})
+#define MB_STATIC(mbFunc, ...) MeshBuilderPro::CreateStaticMesh([&](MeshBuilderPro& mb) { mbFunc }, {__VA_ARGS__})
+
+/*
+* The game uses a CMeshBuilder to create meshes, but we can't use it directly because parts of its implementation
+* are private and/or not in the SDK. Not to worry - Introducing The MeshBuilderPro™! The MeshBuilderPro™ can be
+* used to create meshes made of both faces and lines as well as different colors. The MeshBuilderPro™ also reuses
+* internal mesh & vertex buffers for speed™ and efficiency™.
+* 
+* You can create two kinds of meshes: static and dynamic. Both kinds are made with a MeshCreateFunc which gives
+* you a mesh builder instance that you can use to create your mesh (trying to create a mesh outside of a
+* MeshCreateFunc func is undefined behavior).
+* 
+* For stuff that changes a lot or used in e.g. animations, you'll probably want to use dynamic meshes. These must
+* be created in the MeshRenderSignal (doing so anywhere else is undefined behavior), and they'll automatically get
+* deleted before the next MeshRenderSignal.
+* 
+* Static meshes are for stuff that rarely changes and/or stuff that's expensive to recreate every frame. These
+* guys are more efficient and can be created at any time (in LoadFeature() or after). To render them you simply
+* give your static mesh to the meshrenderer on whatever frames you want it to be drawn. Static meshes are shared
+* pointers, so deletion is handled automatically once you've destroyed your last reference. Just like for dynamics
+* there is no way to 'edit' meshes after creation (aside from using the MeshRenderCallback).
+* 
+* Creating few big meshes is MUCH more efficient than many small ones, and this is great for opaque meshes. If
+* your mesh has ANY translucent vertex however, the whole thing is considered translucent, and it's possible you
+* may get meshes getting rendered in the wrong order relative to each other. For translucent meshes the best way
+* to solve this is to break your mesh apart into small pieces, but this sucks for fps :(.
+* 
+* The mesh create func is executed immediately, so you can capture stuff by reference in a lambda.
+*/
+class MeshBuilderPro
+{
+public:
+	static DynamicMesh CreateDynamicMesh(const MeshCreateFunc& createFunc, const CreateMeshParams& params = {});
+
+	static StaticMesh CreateStaticMesh(const MeshCreateFunc& createFunc, const CreateMeshParams& params = {});
+
+	// a single line segment
+	void AddLine(const Vector& v1, const Vector& v2, const color32& c);
+
+	// points is a pair-wise array of separate line segments
+	void AddLines(const Vector* points, int numSegments, const color32& c);
+
+	// points is an array of points connected by lines
+	void AddLineStrip(const Vector* points, int numPoints, bool loop, const color32& c);
+
+	// a single triangle oriented clockwise
+	void AddTri(const Vector& v1, const Vector& v2, const Vector& v3, const MeshColor& c);
+
+	// verts is a 3-pair-wise clockwise oriented array of points
+	void AddTris(const Vector* verts, int numFaces, const MeshColor& c);
+
+	// a single quad oriented clockwise
+	void AddQuad(const Vector& v1, const Vector& v2, const Vector& v3, const Vector v4, const MeshColor& c);
+
+	// verts is a 4-pair-wise clockwise oriented array of points
+	void AddQuads(const Vector* verts, int numFaces, const MeshColor& c);
+
+	// verts is a clockwise oriented array of points, polygon is assumed to be simple convex
+	void AddPolygon(const Vector* verts, int numVerts, const MeshColor& c);
+
+	// 'pos' is the circle center, an 'ang' of <0,0,0> means the circle normal points towards x+
+	void AddCircle(const Vector& pos, const QAngle& ang, float radius, int numPoints, const MeshColor& c);
+
+	void AddBox(const Vector& pos, const Vector& mins, const Vector& maxs, const QAngle& ang, const MeshColor& c);
+
+	// numSubdivisions >= 0, 0 subdivsions is just a cube :)
+	void AddSphere(const Vector& pos, float radius, int numSubdivisions, const MeshColor& c);
+
+	void AddSweptBox(const Vector& start,
+	                 const Vector& end,
+	                 const Vector& mins,
+	                 const Vector& maxs,
+	                 const MeshColor& cStart,
+	                 const MeshColor& cEnd,
+	                 const MeshColor& cSweep);
+
+	// 'pos' is at the center of the cone base, an 'ang' of <0,0,0> means the cone tip will point towards x+
+	void AddCone(const Vector& pos,
+	             const QAngle& ang,
+	             float height,
+	             float radius,
+	             int numCirclePoints,
+	             bool drawBase,
+	             const MeshColor& c);
+
+	// 'pos' is at the center of the base, an ang of <0,0,0> means the normals are facing x+/x- for top/base
+	void AddCylinder(const Vector& pos,
+	                 const QAngle& ang,
+	                 float height,
+	                 float radius,
+	                 int numCirclePoints,
+	                 bool drawCap1,
+	                 bool drawCap2,
+	                 const MeshColor& c);
+
+	// a 3D arrow with its tail base at 'pos' pointing towards 'target'
+	void AddArrow3D(const Vector& pos,
+	                const Vector& target,
+	                float tailLength,
+	                float tailRadius,
+	                float tipHeight,
+	                float tipRadius,
+	                int numCirclePoints,
+	                const MeshColor& c);
+
+	// TODO add polyhedron, triangle strips, & cross
+
+private:
+	// internal construction helper methods
+
+	void _AddFaceTriangleStripIndices(size_t vIdx1, size_t vIdx2, size_t numVerts, bool loop, bool mirror = false);
+	void _AddFacePolygonIndices(size_t vertsIdx, int numVerts, bool reverse);
+	void _AddLineStripIndices(size_t vertsIdx, int numVerts, bool loop);
+	void _AddSubdivCube(int numSubdivisions, const MeshColor& c);
+	Vector* _CreateCircleVerts(const Vector& pos, const QAngle& ang, float radius, int numPoints);
+
+	MeshBuilderPro() = default;
+	MeshBuilderPro(MeshBuilderPro&) = delete;
+};
+
+typedef void CPhysicsObject;
+class CPhysCollide;
+class CBaseEntity;
+
+// collide stuff - returned mesh is an array of tris, consider caching and/or using static meshes
+class CreateCollideFeature : public FeatureWrapper<CreateCollideFeature>
+{
+public:
+	std::unique_ptr<Vector> CreateCollideMesh(const CPhysCollide* pCollide, int& outNumTris);
+
+	std::unique_ptr<Vector> CreateCPhysObjMesh(const CPhysicsObject* pPhysObj,
+	                                           int& outNumTris,
+	                                           matrix3x4_t& outMat);
+
+	// this doesn't seem to work for stuff with bones (e.g. players or cube droppers) :/
+	std::unique_ptr<Vector> CreateEntMesh(const CBaseEntity* pEnt, int& outNumTris, matrix3x4_t& outMat);
+
+	// can be used (after InitHooks()) to check if the above functions do anything
+	bool Works();
+
+protected:
+	void InitHooks() override;
+
+	DECL_MEMBER_THISCALL(int, CPhysicsCollision__CreateDebugMesh, const CPhysCollide* pCollide, Vector** outVerts);
+	DECL_MEMBER_THISCALL(void, CPhysicsObject__GetPosition, Vector* worldPosition, QAngle* angles);
+};
+
+inline CreateCollideFeature spt_collideToMesh;
+
+#endif

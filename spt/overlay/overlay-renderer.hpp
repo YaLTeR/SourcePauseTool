@@ -13,10 +13,10 @@ typedef CameraInformation (*_CameraCallback)();
 
 class ITexture;
 
-class OverlayRenderer
+class OverlayRendererInternal
 {
 public:
-	OverlayRenderer() {}
+	OverlayRendererInternal() {}
 	bool shouldRenderOverlay();
 	bool shouldFlipScreens();
 	void modifyBigScreenFlags(int& clearFlags, int& drawFlags);
@@ -28,5 +28,5 @@ private:
 	float getFOV();
 };
 
-extern OverlayRenderer g_OverlayRenderer;
+extern OverlayRendererInternal g_OverlayRenderer;
 #endif

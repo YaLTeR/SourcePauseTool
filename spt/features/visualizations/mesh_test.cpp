@@ -1,46 +1,48 @@
 #include "stdafx.h"
 
-#include "overlay_renderer.hpp"
+#include "renderer\mesh_renderer.hpp"
 
-#ifdef SPT_OVERLAY_RENDERER_ENABLED
+#ifdef SPT_MESH_RENDERING_ENABLED
 
 #include "spt\utils\math.hpp"
 #include "spt\feature.hpp"
 #include "spt\utils\signals.hpp"
 #include "spt\utils\interfaces.hpp"
 
-ConVar y_spt_draw_overlay_examples("y_spt_draw_overlay_examples",
-                                   "0",
-                                   FCVAR_CHEAT | FCVAR_DONTRECORD,
-                                   "Draw a bunch of example overlays near the origin.");
+// purpose: serves as way to visually test the mesh builder as well as show how to use some of its features
 
-static std::vector<class BaseOverlayTest*> tests;
+ConVar y_spt_draw_mesh_examples("y_spt_draw_mesh_examples",
+                                "0",
+                                FCVAR_CHEAT | FCVAR_DONTRECORD,
+                                "Draw a bunch of example meshes near the origin.");
 
-class BaseOverlayTest
+static std::vector<class BaseMeshRenderTest*> tests;
+
+class BaseMeshRenderTest
 {
 protected:
-	BaseOverlayTest()
+	BaseMeshRenderTest()
 	{
 		tests.push_back(this);
 	}
 
 public:
-	virtual void TestFunc(OverlayRenderer& ovr) = 0;
+	virtual void TestFunc(MeshRenderer& mr) = 0;
 };
 
-class OverlayTestFeature : public FeatureWrapper<OverlayTestFeature>
+class MeshTestFeature : public FeatureWrapper<MeshTestFeature>
 {
 protected:
 	virtual void LoadFeature()
 	{
-		if (OverlaySignal.Works)
+		if (MeshRenderSignal.Works)
 		{
-			OverlaySignal.Connect(this, &OverlayTestFeature::OnOverlaySignal);
-			InitConcommandBase(y_spt_draw_overlay_examples);
+			MeshRenderSignal.Connect(this, &MeshTestFeature::OnMeshRenderSignal);
+			InitConcommandBase(y_spt_draw_mesh_examples);
 		}
 	};
 
-	void OnOverlaySignal(OverlayRenderer& ovr)
+	void OnMeshRenderSignal(MeshRenderer& mr)
 	{
 		float lastTime = time;
 		time = interfaces::engine_tool->HostTime();
@@ -49,10 +51,10 @@ protected:
 		else
 			timeSinceLast = time - lastTime;
 
-		if (!y_spt_draw_overlay_examples.GetBool())
+		if (!y_spt_draw_mesh_examples.GetBool())
 			return;
 		for (auto testCase : tests)
-			testCase->TestFunc(ovr);
+			testCase->TestFunc(mr);
 	}
 
 public:
@@ -60,7 +62,7 @@ public:
 	float timeSinceLast = -666;
 };
 
-OverlayTestFeature testFeature;
+MeshTestFeature testFeature;
 
 #define VEC_WRAP(x, y, z) Vector(x, y, z)
 
@@ -68,13 +70,13 @@ OverlayTestFeature testFeature;
 #define BEGIN_TEST_CASE(desc, position) \
 	namespace CONCATENATE(_Test, __COUNTER__) \
 	{ \
-		class _Test : BaseOverlayTest \
+		class _Test : BaseMeshRenderTest \
 		{ \
 			const Vector testPos = position; \
-			virtual void TestFunc(OverlayRenderer& ovr) override; \
+			virtual void TestFunc(MeshRenderer& mr) override; \
 		}; \
 		static _Test _inst; \
-		void _Test::TestFunc(OverlayRenderer& ovr) \
+		void _Test::TestFunc(MeshRenderer& mr) \
 		{ \
 			if (interfaces::debugOverlay) \
 				interfaces::debugOverlay->AddTextOverlay(testPos + Vector{0, 0, 150}, 0, desc);
@@ -84,7 +86,7 @@ OverlayTestFeature testFeature;
 	}
 
 BEGIN_TEST_CASE("AddLine()", VEC_WRAP(0, 0, 0))
-OVR_DYNAMIC(ovr, mb.AddLine(testPos + Vector(-70, -70, -80), testPos + Vector(70, 70, 80), {255, 0, 255, 100}););
+RENDER_DYNAMIC(mr, mb.AddLine(testPos + Vector(-70, -70, -80), testPos + Vector(70, 70, 80), {255, 0, 255, 100}););
 END_TEST_CASE()
 
 const Vector lineTestVerts[] = {{0, 0, 80}, {-70, 70, 80}, {-70, 70, -80}, {0, 0, -80}, {70, 70, -80}, {70, 70, 80}};
@@ -95,7 +97,7 @@ BEGIN_TEST_CASE("AddLines()", VEC_WRAP(200, 0, 0))
 	Vector v[numLineTestVerts];
 	for (int i = 0; i < numLineTestVerts; i++)
 		v[i] = lineTestVerts[i] + testPos;
-	OVR_DYNAMIC(ovr, mb.AddLines(v, numLineTestVerts / 2, {255, 120, 120, 255}););
+	RENDER_DYNAMIC(mr, mb.AddLines(v, numLineTestVerts / 2, {255, 120, 120, 255}););
 }
 END_TEST_CASE()
 
@@ -104,7 +106,7 @@ BEGIN_TEST_CASE("AddLineStrip(loop=false)", VEC_WRAP(400, 0, 0))
 	Vector v[numLineTestVerts];
 	for (int i = 0; i < numLineTestVerts; i++)
 		v[i] = lineTestVerts[i] + testPos;
-	OVR_DYNAMIC(ovr, mb.AddLineStrip(v, numLineTestVerts, false, {120, 255, 120, 255}););
+	RENDER_DYNAMIC(mr, mb.AddLineStrip(v, numLineTestVerts, false, {120, 255, 120, 255}););
 }
 END_TEST_CASE()
 
@@ -113,23 +115,23 @@ BEGIN_TEST_CASE("AddLineStrip(loop=true)", VEC_WRAP(600, 0, 0))
 	Vector v[numLineTestVerts];
 	for (int i = 0; i < numLineTestVerts; i++)
 		v[i] = lineTestVerts[i] + testPos;
-	OVR_DYNAMIC(ovr, mb.AddLineStrip(v, numLineTestVerts, true, {120, 120, 255, 255}););
+	RENDER_DYNAMIC(mr, mb.AddLineStrip(v, numLineTestVerts, true, {120, 120, 255, 255}););
 }
 END_TEST_CASE()
 
 BEGIN_TEST_CASE("AddPolygon()", VEC_WRAP(800, 0, 0))
 {
 	// clang-format off
-	Vector vp1[] = {testPos + Vector{-70, -70, 80}, testPos + Vector{0, 70, 80}, testPos + Vector{70, -70, 80}};
-	Vector vp2[] = {testPos + Vector{-70, -70, 30}, testPos + Vector{0, 70, 30}, testPos + Vector{80, 30, 30}, testPos + Vector{70, -70, 30}};
-	Vector vp3[] = {testPos + Vector{-70, -70, -30}, testPos + Vector{-70, 30, -30}, testPos + Vector{0, 70, -30}, testPos + Vector{80, 30, -30}, testPos + Vector{70, -70, -30}};
+	Vector v1[] = {testPos + Vector{-70, -70, 80}, testPos + Vector{0, 70, 80}, testPos + Vector{70, -70, 80}};
+	Vector v2[] = {testPos + Vector{-70, -70, 30}, testPos + Vector{0, 70, 30}, testPos + Vector{80, 30, 30}, testPos + Vector{70, -70, 30}};
+	Vector v3[] = {testPos + Vector{-70, -70, -30}, testPos + Vector{-70, 30, -30}, testPos + Vector{0, 70, -30}, testPos + Vector{80, 30, -30}, testPos + Vector{70, -70, -30}};
 	// clang-format on
 
 	// Add top to bottom and check if they get sorted properly:
 	// looking through the top you should see mostly green (not yellow) and not be able to see the bottom wireframe
-	OVR_DYNAMIC(ovr, mb.AddPolygon(vp1, sizeof(vp1) / sizeof(Vector), {{50, 255, 50, 220}, {255, 50, 255, 255}}););
-	OVR_DYNAMIC(ovr, mb.AddPolygon(vp2, sizeof(vp2) / sizeof(Vector), MeshColor::Outline({255, 50, 50, 100})););
-	OVR_DYNAMIC(ovr, mb.AddPolygon(vp3, sizeof(vp3) / sizeof(Vector), {{150, 150, 150, 255}, {0, 0, 255, 250}}););
+	RENDER_DYNAMIC(mr, mb.AddPolygon(v1, sizeof(v1) / sizeof(Vector), {{50, 255, 50, 220}, {255, 50, 255, 255}}););
+	RENDER_DYNAMIC(mr, mb.AddPolygon(v2, sizeof(v2) / sizeof(Vector), MeshColor::Outline({255, 50, 50, 100})););
+	RENDER_DYNAMIC(mr, mb.AddPolygon(v3, sizeof(v3) / sizeof(Vector), {{150, 150, 150, 255}, {0, 0, 255, 250}}););
 }
 END_TEST_CASE()
 
@@ -140,8 +142,8 @@ BEGIN_TEST_CASE("AddCircle()", VEC_WRAP(1000, 0, 0))
 	VectorAngles(dir, ang);
 	for (int i = 10; i >= 0; i--) // draw backwards and check for sorting
 	{
-		OVR_DYNAMIC(
-		    ovr,
+		RENDER_DYNAMIC(
+		    mr,
 		    {
 			    mb.AddCircle(testPos + Vector(-20, 0, -30) + dir * i,
 			                 ang,
@@ -151,10 +153,10 @@ BEGIN_TEST_CASE("AddCircle()", VEC_WRAP(1000, 0, 0))
 		    },
 		    ZTEST_FACES | ZTEST_LINES,
 		    CullType::Default,
-		    TranslucentSortType::PointLike); // test that this works with y_spt_draw_overlay_debug
+		    TranslucentSortType::AABB_Center); // test that this works with y_spt_draw_mesh_debug
 	}
 	// jwst tribute
-	OVR_DYNAMIC(ovr, {
+	RENDER_DYNAMIC(mr, {
 		Vector center = testPos + Vector(0, 200, 100);
 		for (int i = 0; i < 6; i++)
 		{
@@ -189,8 +191,8 @@ BEGIN_TEST_CASE("AddTris()", VEC_WRAP(1200, 0, 0))
 	Vector vNew[numVerts];
 	for (int i = 0; i < numVerts; i++)
 		vNew[i] = v[i] + testPos;
-	OVR_DYNAMIC(ovr, mb.AddTris(vNew, numVerts / 3, MeshColor::Outline({50, 150, 200, 30}));
-	            , ZTEST_FACES | ZTEST_LINES, CullType::Reverse);
+	RENDER_DYNAMIC(mr, mb.AddTris(vNew, numVerts / 3, MeshColor::Outline({50, 150, 200, 30}));
+	               , ZTEST_FACES | ZTEST_LINES, CullType::Reverse);
 }
 END_TEST_CASE()
 
@@ -247,7 +249,7 @@ BEGIN_TEST_CASE("AddQuad()", VEC_WRAP(1400, 0, 0))
 		if (numUpdated < 10) // naive check to speed up simulation
 			minigameTick += 2;
 	}
-	ovr.DrawMesh(MeshBuilderPro::CreateDynamicMesh(
+	mr.DrawMesh(MeshBuilderPro::CreateDynamicMesh(
 	    [&](MeshBuilderPro& mb)
 	    {
 		    const color32 c1 = {50, 50, 200, 255};
@@ -291,7 +293,7 @@ BEGIN_TEST_CASE("AddBox()", VEC_WRAP(1600, 0, 0))
 	const Vector maxs(16, 16, 72);
 	const Vector minsInner = mins * 0.7;
 	const Vector maxsInner = {16 * .7, 16 * .7, 72};
-	OVR_DYNAMIC(ovr, {
+	RENDER_DYNAMIC(mr, {
 		mb.AddBox(testPos, minsInner, maxsInner, vec3_angle, MeshColor::Outline({255, 0, 0, 100}));
 		mb.AddBox(testPos, mins, maxs, vec3_angle, MeshColor::Wire({255, 100, 0, 255}));
 		mb.AddBox(testPos, mins, maxs, {0, 0, 20}, MeshColor::Outline({255, 255, 0, 16}));
@@ -301,9 +303,9 @@ END_TEST_CASE()
 
 BEGIN_TEST_CASE("AddSphere()", VEC_WRAP(1800, 0, 0))
 {
-	OVR_DYNAMIC(ovr, mb.AddSphere(testPos + Vector(0, 100, 20), 50, 8, MeshColor::Face({150, 100, 255, 50})););
-	OVR_DYNAMIC(ovr, mb.AddSphere(testPos + Vector(60, 0, 20), 50, 4, MeshColor::Outline({0, 200, 200, 50})););
-	OVR_DYNAMIC(ovr, mb.AddSphere(testPos + Vector(-60, 0, 20), 50, 12, {{20, 50, 80, 255}, {180, 100, 30, 255}}););
+	RENDER_DYNAMIC(mr, mb.AddSphere(testPos + Vector(0, 100, 20), 50, 8, MeshColor::Face({150, 100, 255, 50})););
+	RENDER_DYNAMIC(mr, mb.AddSphere(testPos + Vector(60, 0, 20), 50, 4, MeshColor::Outline({0, 200, 200, 50})););
+	RENDER_DYNAMIC(mr, mb.AddSphere(testPos + Vector(-60, 0, 20), 50, 9, {{20, 50, 80, 255}, {180, 99, 30, 255}}););
 }
 END_TEST_CASE()
 
@@ -318,7 +320,7 @@ BEGIN_TEST_CASE("AddSweptBox()", VEC_WRAP(2000, 0, 0))
 	* Since there's just so many swept boxes, I'll actually make them all static cuz mah poor fps :(
 	*/
 
-	static std::vector<StaticOverlayMesh> boxes;
+	static std::vector<StaticMesh> boxes;
 
 	if (boxes.size() == 0)
 	{
@@ -403,7 +405,7 @@ BEGIN_TEST_CASE("AddSweptBox()", VEC_WRAP(2000, 0, 0))
 	for (auto& staticMesh : boxes)
 	{
 		Assert(staticMesh.get());
-		ovr.DrawMesh(staticMesh);
+		mr.DrawMesh(staticMesh);
 	}
 }
 END_TEST_CASE()
@@ -411,35 +413,35 @@ END_TEST_CASE()
 BEGIN_TEST_CASE("AddCone()", VEC_WRAP(2200, 0, 0))
 {
 	{
-		const Vector org = testPos + Vector(-50, 0, 0);
+		const Vector p = testPos + Vector(-50, 0, 0);
 		const Vector tipOff(30, 50, 70);
 		QAngle ang;
 		VectorAngles(tipOff, ang);
 		float height = tipOff.Length();
-		OVR_DYNAMIC(ovr, mb.AddCone(org, ang, height, 20, 20, false, MeshColor::Outline({255, 255, 50, 20})););
+		RENDER_DYNAMIC(mr, mb.AddCone(p, ang, height, 20, 20, false, MeshColor::Outline({255, 255, 50, 20})););
 	}
 	{
-		const Vector org = testPos + Vector(50, 0, 0);
+		const Vector p = testPos + Vector(50, 0, 0);
 		const Vector tipOff(-30, -50, -70);
 		QAngle ang;
 		VectorAngles(tipOff, ang);
 		float height = tipOff.Length();
-		OVR_DYNAMIC(ovr, mb.AddCone(org, ang, height, 20, 5, true, MeshColor::Outline({255, 50, 50, 20})););
+		RENDER_DYNAMIC(mr, mb.AddCone(p, ang, height, 20, 5, true, MeshColor::Outline({255, 50, 50, 20})););
 	}
 }
 END_TEST_CASE()
 
 BEGIN_TEST_CASE("AddCylinder()", VEC_WRAP(2400, 0, 0))
 {
-	OVR_DYNAMIC(ovr, {
+	RENDER_DYNAMIC(mr, {
 		mb.AddCylinder(testPos, vec3_angle, 20, 10, 5, true, true, MeshColor::Outline({255, 150, 0, 40}));
 	});
 	Vector org = testPos + Vector(0, 100, 0);
-	OVR_DYNAMIC(ovr, {
+	RENDER_DYNAMIC(mr, {
 		mb.AddCylinder(org, {0, 180, 0}, 20, 10, 10, false, true, MeshColor::Outline({255, 100, 0, 30}));
 	});
 	org += Vector(0, 100, 0);
-	OVR_DYNAMIC(ovr, {
+	RENDER_DYNAMIC(mr, {
 		mb.AddCylinder(org, {-80, 90, 0}, 20, 10, 15, true, false, MeshColor::Outline({255, 50, 0, 20}));
 	});
 }
@@ -449,7 +451,7 @@ BEGIN_TEST_CASE("AddArrow3D()", VEC_WRAP(2600, 0, 0))
 {
 	const Vector target = testPos + Vector(0, 100, 50);
 	// draw the target
-	OVR_DYNAMIC(ovr, {
+	RENDER_DYNAMIC(mr, {
 		float targetSize = 10;
 		for (int x = 0; x < 2; x++)
 		{
@@ -467,7 +469,7 @@ BEGIN_TEST_CASE("AddArrow3D()", VEC_WRAP(2600, 0, 0))
 			Vector org = testPos + Vector((i - 1.5) * 25, k * 75, k * 30);
 			unsigned char g = (unsigned char)(1.f / (1 + org.DistToSqr(target) / 2000) * 255);
 			unsigned char b = (unsigned char)(1.f / (1 + org.DistToSqr(target) / 3000) * 255);
-			OVR_DYNAMIC(ovr, {
+			RENDER_DYNAMIC(mr, {
 				mb.AddArrow3D(org, target, 15, 1.5, 7, 3, 7, MeshColor::Outline({100, g, b, 20}));
 			});
 		}
@@ -477,7 +479,7 @@ END_TEST_CASE()
 
 BEGIN_TEST_CASE("Timmy", VEC_WRAP(0, -300, 0))
 {
-	static StaticOverlayMesh timmyMesh;
+	static StaticMesh timmyMesh;
 	if (!timmyMesh)
 	{
 		const Vector mins = {-20, -20, -20};
@@ -491,31 +493,30 @@ BEGIN_TEST_CASE("Timmy", VEC_WRAP(0, -300, 0))
 	ang[1] = fmod(ang[1] + 199 * testFeature.timeSinceLast, 360);
 	ang[2] = fmod(ang[2] + 317 * testFeature.timeSinceLast, 360);
 
-	ovr.DrawMesh(timmyMesh,
-	             [this](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
-	             {
-		             float scale = sin(testFeature.time) / 4 + 1;
-		             matrix3x4_t tmpMat;
-		             SetScaleMatrix(scale, infoOut.mat);
-		             AngleMatrix(ang, testPos, tmpMat);
-		             MatrixMultiply(tmpMat, infoOut.mat, infoOut.mat);
-		             infoOut.faces.colorModulate.a = (sin(testFeature.time) + 1) / 2.f * 255;
-		             // timmy will be more red through portals
-		             if (infoIn.currentPortalRenderDepth.value_or(0) >= 1)
-			             infoOut.faces.colorModulate.b = infoOut.faces.colorModulate.g = 0;
-	             });
+	mr.DrawMesh(timmyMesh,
+	            [this](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+	            {
+		            float scale = sin(testFeature.time) / 4 + 1;
+		            matrix3x4_t tmpMat;
+		            SetScaleMatrix(scale, infoOut.mat);
+		            AngleMatrix(ang, testPos, tmpMat);
+		            MatrixMultiply(tmpMat, infoOut.mat, infoOut.mat);
+		            infoOut.faces.colorModulate.a = (sin(testFeature.time) + 1) / 2.f * 255;
+		            // timmy will be more red through portals
+		            if (infoIn.portalRenderDepth.value_or(0) >= 1)
+			            infoOut.faces.colorModulate.b = infoOut.faces.colorModulate.g = 0;
+	            });
 }
 END_TEST_CASE()
 
 BEGIN_TEST_CASE("Lorenz Attractor", VEC_WRAP(200, -300, 0))
 {
-	// Intellisense doesn't do shit when you're in a macro, so I'm not gonna use OVR_DYNAMIC_CALLBACK for something so big.
-	// Also, clang-format does literally the most stupid thing possible sometimes and using these macros makes it better.
+	// RENDER_DYNAMIC breaks intellisense & expanding everything makes clang-format do funny things, compromise
 
 #define MB_CREATE_BEGIN MeshBuilderPro::CreateDynamicMesh([&](MeshBuilderPro & mb)
 #define MB_CREATE_END )
 
-	ovr.DrawMesh(
+	mr.DrawMesh(
 	    MB_CREATE_BEGIN {
 		    // keep the last 2500 positions and draw them every frame
 		    static std::vector<Vector> verts = {{1, 1, 1}};
@@ -594,12 +595,12 @@ BEGIN_TEST_CASE("Reusing static/dynamic meshes", VEC_WRAP(400, -300, 0))
 	};
 
 	// create once
-	static StaticOverlayMesh staticMesh;
+	static StaticMesh staticMesh;
 	if (!staticMesh)
 		staticMesh = MeshBuilderPro::CreateStaticMesh(coloredCreateFunc(MeshColor::Outline({0, 0, 255, 20})));
 
 	// recreate every frame
-	DynamicOverlayMesh dynamicMesh =
+	DynamicMesh dynamicMesh =
 	    MeshBuilderPro::CreateDynamicMesh(coloredCreateFunc(MeshColor::Outline({255, 0, 0, 20})));
 
 	for (int i = 0; i < 20; i++)
@@ -612,9 +613,9 @@ BEGIN_TEST_CASE("Reusing static/dynamic meshes", VEC_WRAP(400, -300, 0))
 			MatrixSetColumn(testPos + Vector(0, -i * 25, 0), 3, infoOut.mat);
 		};
 		if (i % 2)
-			ovr.DrawMesh(staticMesh, callbackFunc);
+			mr.DrawMesh(staticMesh, callbackFunc);
 		else
-			ovr.DrawMesh(dynamicMesh, callbackFunc);
+			mr.DrawMesh(dynamicMesh, callbackFunc);
 	}
 }
 END_TEST_CASE()

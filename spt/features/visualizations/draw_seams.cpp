@@ -1,8 +1,8 @@
 #include "stdafx.h"
 
-#include "renderer\overlay_renderer.hpp"
+#include "renderer\mesh_renderer.hpp"
 
-#ifdef SPT_OVERLAY_RENDERER_ENABLED
+#ifdef SPT_MESH_RENDERING_ENABLED
 
 #include "spt\feature.hpp"
 #include "spt\utils\signals.hpp"
@@ -19,14 +19,14 @@ class DrawSeamsFeature : public FeatureWrapper<DrawSeamsFeature>
 protected:
 	void LoadFeature() override
 	{
-		if (OverlaySignal.Works && spt_tracing.ORIG_TraceFirePortal && spt_tracing.ORIG_GetActiveWeapon)
+		if (MeshRenderSignal.Works && spt_tracing.ORIG_TraceFirePortal && spt_tracing.ORIG_GetActiveWeapon)
 		{
 			InitConcommandBase(y_spt_draw_seams);
-			OverlaySignal.Connect(this, &DrawSeamsFeature::OnOverlaySignal);
+			MeshRenderSignal.Connect(this, &DrawSeamsFeature::OnMeshRenderSignal);
 		}
 	}
 
-	void OnOverlaySignal(OverlayRenderer& ovr);
+	void OnMeshRenderSignal(MeshRenderer& mr);
 };
 
 static DrawSeamsFeature drawSeamsFeature;
@@ -142,7 +142,7 @@ void FindClosestPlane(const trace_t& tr, trace_t& out, float maxDistSqr)
 	}
 }
 
-void DrawSeamsFeature::OnOverlaySignal(OverlayRenderer& ovr)
+void DrawSeamsFeature::OnMeshRenderSignal(MeshRenderer& mr)
 {
 	if (!y_spt_draw_seams.GetBool())
 		return;
@@ -191,7 +191,7 @@ void DrawSeamsFeature::OnOverlaySignal(OverlayRenderer& ovr)
 	Vector edge = edgeTr.plane.normal.Cross(tr.plane.normal);
 	VectorNormalize(edge);
 
-	ovr.DrawMesh(MeshBuilderPro::CreateDynamicMesh(
+	mr.DrawMesh(MeshBuilderPro::CreateDynamicMesh(
 	    [&](MeshBuilderPro& mb)
 	    {
 		    const color32 red{255, 0, 0, 255};
