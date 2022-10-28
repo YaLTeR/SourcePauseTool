@@ -1,8 +1,8 @@
 #include "stdafx.h"
 
-#include "renderer\overlay_renderer.hpp"
+#include "renderer\mesh_renderer.hpp"
 
-#ifdef SPT_OVERLAY_RENDERER_ENABLED
+#ifdef SPT_MESH_RENDERING_ENABLED
 
 #include "spt\utils\game_detection.hpp"
 #include "spt\utils\signals.hpp"
@@ -127,17 +127,6 @@ public:
 
 	void LoadFeature() override;
 
-	static void CalcCircleFromPoints(const Vector& center,
-	                                 const Vector& v1,
-	                                 const Vector& v2,
-	                                 QAngle& outAng,
-	                                 float& outRadius)
-	{
-		Vector dir = CrossProduct(v1 - center, v2 - center);
-		VectorAngles(dir, outAng);
-		outRadius = center.DistTo(v1);
-	}
-
 	/*
 	* The first implementation of this was by evanlin - it was very cool.
 	* The second implementation added more features, but all the code was in one function which was :(.
@@ -151,15 +140,15 @@ public:
 		NoValidPortals
 	};
 
-	void OnOverlaySignal(OverlayRenderer& ovr);
+	void OnMeshRenderSignal(MeshRenderer& mr);
 
 	CacheCheckResult CheckCache();
 	void RecomputeCache();
 	bool CalcFreeEntryPortalPos(const matrix3x4_t& entryRotMat, Vector& entryPosOut);
 	void CalcFreeExitPortalPos(const matrix3x4_t& exitRotMat, Vector& exitPosOut);
 
-	void DrawTrace(OverlayRenderer& ovr);
-	void DrawTargetTrace(OverlayRenderer& ovr);
+	void DrawTrace(MeshRenderer& mr);
+	void DrawTargetTrace(MeshRenderer& mr);
 };
 
 static VagTrace spt_vag_trace;
@@ -172,9 +161,9 @@ CON_COMMAND(y_spt_draw_vag_target_set, "Set VAG target\n")
 
 void VagTrace::LoadFeature()
 {
-	if (!OverlaySignal.Works)
+	if (!MeshRenderSignal.Works)
 		return;
-	OverlaySignal.Connect(this, &VagTrace::OnOverlaySignal);
+	MeshRenderSignal.Connect(this, &VagTrace::OnMeshRenderSignal);
 	InitCommand(y_spt_draw_vag_target_set);
 	InitConcommandBase(y_spt_draw_vag_trace);
 	InitConcommandBase(y_spt_draw_vag_target_trace);
@@ -182,7 +171,7 @@ void VagTrace::LoadFeature()
 	InitConcommandBase(y_spt_draw_vag_lock_entry);
 }
 
-void VagTrace::OnOverlaySignal(OverlayRenderer& ovr)
+void VagTrace::OnMeshRenderSignal(MeshRenderer& mr)
 {
 	if (!y_spt_draw_vag_trace.GetBool() && !y_spt_draw_vag_target_trace.GetBool())
 		return;
@@ -190,7 +179,7 @@ void VagTrace::OnOverlaySignal(OverlayRenderer& ovr)
 	if (y_spt_draw_vag_target_trace.GetBool())
 	{
 		// draw the target even if we don't have valid portals
-		static StaticOverlayMesh targetMesh;
+		static StaticMesh targetMesh;
 		if (!targetMesh)
 		{
 			targetMesh = MB_STATIC(
@@ -201,9 +190,9 @@ void VagTrace::OnOverlaySignal(OverlayRenderer& ovr)
 			    ZTEST_LINES,
 			    CullType::ShowBoth);
 		}
-		ovr.DrawMesh(targetMesh,
-		             [this](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
-		             { MatrixSetColumn(target, 3, infoOut.mat); });
+		mr.DrawMesh(targetMesh,
+		            [this](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+		            { MatrixSetColumn(target, 3, infoOut.mat); });
 	}
 
 	switch (CheckCache())
@@ -218,9 +207,9 @@ void VagTrace::OnOverlaySignal(OverlayRenderer& ovr)
 	}
 
 	if (y_spt_draw_vag_trace.GetBool())
-		DrawTrace(ovr);
+		DrawTrace(mr);
 	if (y_spt_draw_vag_target_trace.GetBool())
-		DrawTargetTrace(ovr);
+		DrawTargetTrace(mr);
 }
 
 VagTrace::CacheCheckResult VagTrace::CheckCache()
@@ -527,27 +516,27 @@ void VagTrace::CalcFreeExitPortalPos(const matrix3x4_t& exitRotMat, Vector& exit
 	exitPosOut = cache.entryPortal.pos - rhsWithRotation;
 }
 
-void VagTrace::DrawTrace(OverlayRenderer& ovr)
+void VagTrace::DrawTrace(MeshRenderer& mr)
 {
 	// draw lines between portals and to VAG destination
-	ovr.DrawMesh(MeshBuilderPro::CreateDynamicMesh(
-	                 [&](MeshBuilderPro& mb)
-	                 {
-		                 mb.AddLine(cache.exitPortal.pos, cache.entryPortal.pos, {255, 0, 255, 255});
-		                 mb.AddLine(cache.entryPortal.pos, cache.vagDestination, {175, 0, 175, 255});
-		                 mb.AddSphere(cache.vagDestination, 1, 1, MeshColor::Face({255, 255, 255, 255}));
-	                 },
-	                 {ZTEST_NONE}),
-	             [](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
-	             {
-		             if (infoIn.currentPortalRenderDepth.value_or(0) > 0)
-		             {
-			             infoOut.faces.skipRenderForCurrentView = true;
-			             infoOut.lines.skipRenderForCurrentView = true;
-		             }
-	             });
+	mr.DrawMesh(MeshBuilderPro::CreateDynamicMesh(
+	                [&](MeshBuilderPro& mb)
+	                {
+		                mb.AddLine(cache.exitPortal.pos, cache.entryPortal.pos, {255, 0, 255, 255});
+		                mb.AddLine(cache.entryPortal.pos, cache.vagDestination, {175, 0, 175, 255});
+		                mb.AddSphere(cache.vagDestination, 1, 1, MeshColor::Face({255, 255, 255, 255}));
+	                },
+	                {ZTEST_NONE}),
+	            [](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+	            {
+		            if (infoIn.portalRenderDepth.value_or(0) > 0)
+		            {
+			            infoOut.faces.skipRender = true;
+			            infoOut.lines.skipRender = true;
+		            }
+	            });
 
-	static StaticOverlayMesh arrowMesh, circleMesh;
+	static StaticMesh arrowMesh, circleMesh;
 	if (!arrowMesh || !circleMesh)
 	{
 		arrowMesh = MB_STATIC({
@@ -561,15 +550,15 @@ void VagTrace::DrawTrace(OverlayRenderer& ovr)
 	auto drawNudgeArrows = [&](const color32 colors[3], int ax, bool freeEntry)
 	{
 		// draw local portal axes
-		ovr.DrawMesh(
+		mr.DrawMesh(
 		    arrowMesh,
 		    [=](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
 		    {
 			    // don't show through portals
-			    if (infoIn.currentPortalRenderDepth.value_or(0) > 0)
+			    if (infoIn.portalRenderDepth.value_or(0) > 0)
 			    {
-				    infoOut.faces.skipRenderForCurrentView = true;
-				    infoOut.lines.skipRenderForCurrentView = true;
+				    infoOut.faces.skipRender = true;
+				    infoOut.lines.skipRender = true;
 				    return;
 			    }
 			    infoOut.faces.colorModulate = infoOut.lines.colorModulate = colors[ax];
@@ -586,20 +575,20 @@ void VagTrace::DrawTrace(OverlayRenderer& ovr)
 			    MatrixSetColumn(portalPos + portalNorm * 3.5, 3, infoOut.mat);
 		    });
 		// draw respective nudge at vag destination
-		ovr.DrawMesh(arrowMesh,
-		             [=](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
-		             {
-			             // don't show through portals
-			             if (infoIn.currentPortalRenderDepth.value_or(0) > 0)
-			             {
-				             infoOut.faces.skipRenderForCurrentView = true;
-				             infoOut.lines.skipRenderForCurrentView = true;
-				             return;
-			             }
-			             infoOut.faces.colorModulate = infoOut.lines.colorModulate = colors[ax];
-			             infoOut.mat =
-			                 freeEntry ? cache.entryNudgeTransforms[ax] : cache.exitNudgeTransforms[ax];
-		             });
+		mr.DrawMesh(arrowMesh,
+		            [=](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+		            {
+			            // don't show through portals
+			            if (infoIn.portalRenderDepth.value_or(0) > 0)
+			            {
+				            infoOut.faces.skipRender = true;
+				            infoOut.lines.skipRender = true;
+				            return;
+			            }
+			            infoOut.faces.colorModulate = infoOut.lines.colorModulate = colors[ax];
+			            infoOut.mat =
+			                freeEntry ? cache.entryNudgeTransforms[ax] : cache.exitNudgeTransforms[ax];
+		            });
 	};
 
 	for (int ax = 0; ax < 3; ax++)
@@ -621,15 +610,15 @@ void VagTrace::DrawTrace(OverlayRenderer& ovr)
 	bool floorOrCeilingExit = abs(abs(cache.exitPortal.ang.x) - 90) < 0.04;
 	if ((floorOrCeilingEntry && ShouldDrawForFreeEntry()) || (floorOrCeilingExit && ShouldDrawForFreeExit()))
 	{
-		ovr.DrawMesh(circleMesh,
-		             [this](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
-		             { infoOut.mat = cache.cDestinationSetMat; });
+		mr.DrawMesh(circleMesh,
+		            [this](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+		            { infoOut.mat = cache.cDestinationSetMat; });
 	}
 }
 
-void VagTrace::DrawTargetTrace(OverlayRenderer& ovr)
+void VagTrace::DrawTargetTrace(MeshRenderer& mr)
 {
-	static StaticOverlayMesh portalMeshDetailed, portalMeshSimple, circleMesh;
+	static StaticMesh portalMeshDetailed, portalMeshSimple, circleMesh;
 	if (!portalMeshDetailed || !portalMeshSimple || !circleMesh)
 	{
 		// box representing a portal w/ arrow towards local forward
@@ -659,29 +648,29 @@ void VagTrace::DrawTargetTrace(OverlayRenderer& ovr)
 
 	// draw detailed & simple portals
 
-	auto drawPortals = [&ovr](const std::vector<matrix3x4_t>& detailedMats,
-	                          const std::vector<matrix3x4_t>& simpleMats,
-	                          color32 modColor)
+	auto drawPortals = [&mr](const std::vector<matrix3x4_t>& detailedMats,
+	                         const std::vector<matrix3x4_t>& simpleMats,
+	                         color32 modColor)
 	{
 		const std::vector<matrix3x4_t>* possibleEntryMatLists[] = {&detailedMats, &simpleMats};
-		StaticOverlayMesh* meshes[] = {&portalMeshDetailed, &portalMeshSimple};
+		StaticMesh* meshes[] = {&portalMeshDetailed, &portalMeshSimple};
 		for (int i = 0; i < 2; i++)
 		{
 			for (auto& entryMat : *possibleEntryMatLists[i])
 			{
-				ovr.DrawMesh(*meshes[i],
-				             [=](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
-				             {
-					             infoOut.mat = entryMat;
-					             infoOut.faces.colorModulate = modColor;
-					             infoOut.lines.colorModulate = modColor;
-					             // don't show detailed portals through real portals
-					             if (i == 0 && infoIn.currentPortalRenderDepth.value_or(0) > 0)
-					             {
-						             infoOut.faces.skipRenderForCurrentView = true;
-						             infoOut.lines.skipRenderForCurrentView = true;
-					             }
-				             });
+				mr.DrawMesh(*meshes[i],
+				            [=](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+				            {
+					            infoOut.mat = entryMat;
+					            infoOut.faces.colorModulate = modColor;
+					            infoOut.lines.colorModulate = modColor;
+					            // don't show detailed portals through real portals
+					            if (i == 0 && infoIn.portalRenderDepth.value_or(0) > 0)
+					            {
+						            infoOut.faces.skipRender = true;
+						            infoOut.lines.skipRender = true;
+					            }
+				            });
 			}
 		}
 	};
@@ -692,7 +681,7 @@ void VagTrace::DrawTargetTrace(OverlayRenderer& ovr)
 
 		auto drawSetLines = [&](const Vector v[2])
 		{
-			OVR_DYNAMIC(ovr, {
+			RENDER_DYNAMIC(mr, {
 				Vector center = (v[0] + v[1]) / 2.f;
 				// shoot the end points into the void
 				Vector v0 = center + (v[0] - center) * 100;
@@ -714,13 +703,13 @@ void VagTrace::DrawTargetTrace(OverlayRenderer& ovr)
 		matrix3x4_t* circleMats[] = {&cache.cExitCeilingSetForTargetMat, &cache.cExitFloorSetForTargetMat};
 		for (int i = 0; i < 2; i++)
 		{
-			ovr.DrawMesh(circleMesh,
-			             [=](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
-			             {
-				             infoOut.mat = *circleMats[i];
-				             infoOut.faces.colorModulate = exitColor;
-				             infoOut.lines.colorModulate = exitColor;
-			             });
+			mr.DrawMesh(circleMesh,
+			            [=](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+			            {
+				            infoOut.mat = *circleMats[i];
+				            infoOut.faces.colorModulate = exitColor;
+				            infoOut.lines.colorModulate = exitColor;
+			            });
 		}
 	}
 }

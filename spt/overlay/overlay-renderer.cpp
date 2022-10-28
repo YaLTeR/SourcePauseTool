@@ -8,21 +8,21 @@
 #include "overlay-renderer.hpp"
 #include "overlays.hpp"
 
-OverlayRenderer g_OverlayRenderer;
+OverlayRendererInternal g_OverlayRenderer;
 const int VIEW_CLEAR = 1;
 const int VIEWMODEL_MASK = ~RENDERVIEW_DRAWVIEWMODEL;
 
-bool OverlayRenderer::shouldRenderOverlay()
+bool OverlayRendererInternal::shouldRenderOverlay()
 {
 	return _y_spt_overlay.GetBool();
 }
 
-bool OverlayRenderer::shouldFlipScreens()
+bool OverlayRendererInternal::shouldFlipScreens()
 {
 	return _y_spt_overlay_swap.GetBool();
 }
 
-void OverlayRenderer::modifyBigScreenFlags(int& clearFlags, int& drawFlags)
+void OverlayRendererInternal::modifyBigScreenFlags(int& clearFlags, int& drawFlags)
 {
 	if (shouldFlipScreens())
 	{
@@ -30,13 +30,13 @@ void OverlayRenderer::modifyBigScreenFlags(int& clearFlags, int& drawFlags)
 	}
 }
 
-void OverlayRenderer::modifySmallScreenFlags(int& clearFlags, int& drawFlags)
+void OverlayRendererInternal::modifySmallScreenFlags(int& clearFlags, int& drawFlags)
 {
 	drawFlags = 0;
 	clearFlags |= VIEW_CLEAR;
 }
 
-void OverlayRenderer::modifyView(CViewSetup* view, bool overlay)
+void OverlayRendererInternal::modifyView(CViewSetup* view, bool overlay)
 {
 	static CViewSetup backupView;
 
@@ -96,7 +96,7 @@ void OverlayRenderer::modifyView(CViewSetup* view, bool overlay)
 	}
 }
 
-Rect_t OverlayRenderer::getRect()
+Rect_t OverlayRendererInternal::getRect()
 {
 	int width = _y_spt_overlay_width.GetFloat();
 	int height = static_cast<int>(width / spt_overlay.GetScreenAspectRatio());
@@ -110,7 +110,7 @@ Rect_t OverlayRenderer::getRect()
 	return rect;
 }
 
-float OverlayRenderer::getFOV()
+float OverlayRendererInternal::getFOV()
 {
 	const float ratioRatio = spt_overlay.GetScreenAspectRatio() / (4.0f / 3.0f);
 	float fovRad = DEG2RAD(_y_spt_overlay_fov.GetFloat());

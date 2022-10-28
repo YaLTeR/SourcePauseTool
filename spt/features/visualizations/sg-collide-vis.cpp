@@ -1,9 +1,10 @@
 #include "stdafx.h"
 
-#include "renderer\overlay_renderer.hpp"
+#include "renderer\mesh_renderer.hpp"
 
-#ifdef SPT_OVERLAY_RENDERER_ENABLED
+#ifdef SPT_MESH_RENDERING_ENABLED
 
+#include "interfaces.hpp"
 #include "spt\feature.hpp"
 #include "spt\utils\game_detection.hpp"
 #include "spt\utils\signals.hpp"
@@ -104,8 +105,8 @@ public:
 
 	struct
 	{
-		std::vector<StaticOverlayMesh> localWorld;
-		std::vector<std::pair<matrix3x4_t, StaticOverlayMesh>> remoteWorld;
+		std::vector<StaticMesh> localWorld;
+		std::vector<std::pair<matrix3x4_t, StaticMesh>> remoteWorld;
 
 		void Clear()
 		{
@@ -121,7 +122,7 @@ public:
 
 	virtual void LoadFeature() override
 	{
-		if (!MeshBuilderPro::CreateCollideWorks())
+		if (!spt_collideToMesh.Works())
 			return;
 
 		// cache all field stuff & check that spt_entutils works
@@ -141,36 +142,36 @@ public:
 
 		portalFieldOffs.simulator += sizeof(Vector) * 4;
 
-		if (OverlaySignal.Works)
-		{
-			OverlaySignal.Connect(this, &SgCollideVisFeature::OnOverlaySignal);
-			InitConcommandBase(y_spt_draw_portal_env);
-			InitConcommandBase(y_spt_draw_portal_env_type);
-			InitConcommandBase(y_spt_draw_portal_env_ents);
-			InitConcommandBase(y_spt_draw_portal_env_remote);
+		if (!MeshRenderSignal.Works)
+			return;
 
-			y_spt_draw_portal_env_type.InstallChangeCallback(
-			    [](IConVar* var, const char*, float)
+		MeshRenderSignal.Connect(this, &SgCollideVisFeature::OnMeshRenderSignal);
+		InitConcommandBase(y_spt_draw_portal_env);
+		InitConcommandBase(y_spt_draw_portal_env_type);
+		InitConcommandBase(y_spt_draw_portal_env_ents);
+		InitConcommandBase(y_spt_draw_portal_env_remote);
+
+		y_spt_draw_portal_env_type.InstallChangeCallback(
+		    [](IConVar* var, const char*, float)
+		    {
+			    auto& wish = featureInstance.userWishes;
+			    const char* typeStr = ((ConVar*)var)->GetString();
+			    wish.collide = !_stricmp(typeStr, "collide");
+			    wish._auto = !_stricmp(typeStr, "auto");
+			    wish.blue = !_stricmp(typeStr, "blue") || wish._auto;
+			    wish.orange = !_stricmp(typeStr, "orange") || wish._auto;
+			    if (!wish.collide && !wish._auto && !wish.blue && !wish.orange)
 			    {
-				    auto& wish = featureInstance.userWishes;
-				    const char* typeStr = ((ConVar*)var)->GetString();
-				    wish.collide = !_stricmp(typeStr, "collide");
-				    wish._auto = !_stricmp(typeStr, "auto");
-				    wish.blue = !_stricmp(typeStr, "blue") || wish._auto;
-				    wish.orange = !_stricmp(typeStr, "orange") || wish._auto;
-				    if (!wish.collide && !wish._auto && !wish.blue && !wish.orange)
-				    {
-					    wish.idx = true;
-					    wish.idxVal = ((ConVar*)var)->GetInt() + 1; // client -> server index
-				    }
-				    else
-				    {
-					    wish.idx = false;
-				    }
-			    });
-			// trigger callback to initialize wish values
-			y_spt_draw_portal_env_type.SetValue(y_spt_draw_portal_env_type.GetDefault());
-		}
+				    wish.idx = true;
+				    wish.idxVal = ((ConVar*)var)->GetInt() + 1; // client -> server index
+			    }
+			    else
+			    {
+				    wish.idx = false;
+			    }
+		    });
+		// trigger callback to initialize wish values
+		y_spt_draw_portal_env_type.SetValue(y_spt_draw_portal_env_type.GetDefault());
 	}
 
 	virtual void UnloadFeature() override
@@ -284,7 +285,7 @@ public:
 		return bestMatch; // couldn't find the same portal as was previously used, but maybe found something else
 	}
 
-	void OnOverlaySignal(OverlayRenderer& ovr)
+	void OnMeshRenderSignal(MeshRenderer& mr)
 	{
 		edict_t* portalEd = GetSgDrawPortal();
 		if (!portalEd)
@@ -322,7 +323,7 @@ public:
 			}
 			for (const auto& staticMesh : cache.localWorld)
 			{
-				ovr.DrawMesh(
+				mr.DrawMesh(
 				    staticMesh,
 				    [](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
 				    {
@@ -360,7 +361,7 @@ public:
 			for (const auto& [matRef, staticMesh] : cache.remoteWorld)
 			{
 				matrix3x4_t mat{matRef};
-				ovr.DrawMesh(
+				mr.DrawMesh(
 				    staticMesh,
 				    [mat](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
 				    {
@@ -380,15 +381,15 @@ public:
 		{
 			// not caching ents since the model may change for e.g. players crouching, not a significant issue
 
-			auto drawEnts = [&ovr](const CUtlVector<CBaseEntity*>& ents, const MeshColor& c)
+			auto drawEnts = [&mr](const CUtlVector<CBaseEntity*>& ents, const MeshColor& c)
 			{
 				for (int i = 0; i < ents.Size(); i++)
 				{
-					int numFaces;
+					int numTris;
 					matrix3x4_t mat;
-					auto verts = MeshBuilderPro::CreateCBaseEntMesh(ents[i], numFaces, mat);
-					auto mesh = MB_DYNAMIC(mb.AddTris(verts.get(), numFaces, c););
-					ovr.DrawMesh(mesh, [mat](auto&, auto& infoOut) { infoOut.mat = mat; });
+					auto verts = spt_collideToMesh.CreateEntMesh(ents[i], numTris, mat);
+					auto mesh = MB_DYNAMIC(mb.AddTris(verts.get(), numTris, c););
+					mr.DrawMesh(mesh, [mat](auto&, auto& infoOut) { infoOut.mat = mat; });
 				}
 			};
 			drawEnts(*(CUtlVector<CBaseEntity*>*)(sim + 8684), MC_OWNED_ENTS);
@@ -398,19 +399,19 @@ public:
 
 	void CacheLocalCollide(const CPhysCollide* pCollide, const MeshColor& c)
 	{
-		int numFaces;
-		std::unique_ptr<Vector> verts = MeshBuilderPro::CreateCollideMesh(pCollide, numFaces);
-		if (verts.get() && numFaces > 0)
-			cache.localWorld.push_back(MB_STATIC(mb.AddTris(verts.get(), numFaces, c);));
+		int numTris;
+		std::unique_ptr<Vector> verts = spt_collideToMesh.CreateCollideMesh(pCollide, numTris);
+		if (verts.get() && numTris > 0)
+			cache.localWorld.push_back(MB_STATIC(mb.AddTris(verts.get(), numTris, c);));
 	}
 
 	void CacheRemoteCPhysObj(const CPhysicsObject* pPhysObj, const MeshColor& c)
 	{
-		int numFaces;
+		int numTris;
 		matrix3x4_t mat;
-		std::unique_ptr<Vector> verts = MeshBuilderPro::CreateCPhysObjMesh(pPhysObj, numFaces, mat);
-		if (verts.get() && numFaces > 0)
-			cache.remoteWorld.emplace_back(mat, MB_STATIC(mb.AddTris(verts.get(), numFaces, c);));
+		std::unique_ptr<Vector> verts = spt_collideToMesh.CreateCPhysObjMesh(pPhysObj, numTris, mat);
+		if (verts.get() && numTris > 0)
+			cache.remoteWorld.emplace_back(mat, MB_STATIC(mb.AddTris(verts.get(), numTris, c);));
 	}
 };
 

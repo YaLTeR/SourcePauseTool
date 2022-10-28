@@ -2,17 +2,12 @@
 
 #include "mesh_builder.hpp"
 
-#ifdef SPT_MESH_BUILDER_ENABLED
-
-#include "spt\feature.hpp"
+#ifdef SPT_MESH_RENDERING_ENABLED
 
 #include "vstdlib\IKeyValuesSystem.h"
+#include "interfaces.hpp"
 
-#define VPROF_LEVEL 1
-#ifndef SSDK2007
-#define RAD_TELEMETRY_DISABLED
-#endif
-#include "vprof.h"
+#include "mesh_defs_private.hpp"
 
 #define VPROF_BUDGETGROUP_MESHBUILDER _T("Mesh_Builder")
 
@@ -42,55 +37,55 @@ IKeyValuesSystem* KeyValuesSystem()
 * is an IMesh*. We can use this directly for static meshes, but for dynamics we need to recreate the IMesh* object
 * every time we render because there's really just one dynamic mesh. This gives us our first level of abstraction.
 * 
-* A MeshComponent is either an IMesh* or contains enough information to create one. In the case of dynamic meshes,
-* a MeshComponent is an index into the VertexData mesh buffers stored here plus some additional flags. IMesh*
-* objects are made out of either lines or triangles, which brings us to the second level of abstraction.
+* A MeshWrapperComponent is either an IMesh* or contains enough information to create one. In the case of dynamic
+* meshes, it's an index into the MeshData mesh buffers stored here plus some additional flags. IMesh* objects are
+* made out of either lines or triangles, which brings us to the second level of abstraction.
 * 
-* An OverlayMesh is two MeshComponents - one for lines and one for triangles.
+* An MeshWrapper is two MeshWrapperComponent - one for lines and one for triangles.
 * 
-* For both types of meshes we create a vector of VertexData + indices from the user's mesh creation func. For
+* For both types of meshes we create a vector of MeshData + indices from the user's mesh creation func. For
 * statics, we can immediately discard/reuse those buffers after the IMesh* is created, but we need to keep them
-* around for dynamics until rendering happens later in the frame. So we have staticMDataBufs which are reused and
-* dynamicMDataBufs which are not, but are instead cleared just before the next overlay signal.
+* around for dynamics until rendering happens later in the frame. So we have reusedStaticMeshData which are reused
+* and dynamicMeshData which are not, but are instead cleared just before the next MeshRenderSignal.
 * 
-* When the user requests a mesh to be created, an OverlayMesh object is created, but where does it live? For
+* When the user requests a mesh to be created, an MeshWrapper object is created, but where does it live? For
 * statics, it lives on the heap and the user has a shared pointer to it (so that it doesn't get deleted when we
-* try to render it). For dynamics, the OverlayMesh lives in the dynamicOvrMeshes buffer and the user gets back
-* an index to it. Of course, the user can't actually do anything with it, but the overlay renderer can get the
-* associated OverlayMesh object with said index.
+* try to render it). For dynamics, the MeshWrapper lives in the dynamicMeshWrappers buffer and the user gets back
+* an index to it. Of course, the user can't actually do anything with it, but the mesh renderer can get the
+* associated MeshWrapper object with said index.
 */
 
-/**************************************** OVERLAY MESH ****************************************/
+/**************************************** MESH WRAPPER ****************************************/
 
-OverlayMesh::MeshComponent::MeshComponent(const OverlayMesh& outerOvrMesh,
-                                          int mDataIdx,
-                                          bool opaque,
-                                          bool faces,
-                                          bool dynamic)
+MeshWrapper::MeshWrapperComponent::MeshWrapperComponent(const MeshWrapper& myWrapper,
+                                                        int mDataIdx,
+                                                        bool opaque,
+                                                        bool faces,
+                                                        bool dynamic)
     : opaque(opaque)
     , dynamic(dynamic)
     , faces(faces)
-    , zTest(outerOvrMesh.params.zTestFlags & (faces ? ZTEST_FACES : ZTEST_LINES))
+    , zTest(myWrapper.params.zTestFlags & (faces ? ZTEST_FACES : ZTEST_LINES))
 {
-	auto& mb = MeshBuilderPro::singleton;
 	if (dynamic)
 	{
-		this->mDataIdx = mDataIdx;
+		this->dynamicToken = {mDataIdx};
 	}
 	else
 	{
 		// don't care about setting the exact material until rendering happens
-		const auto& mDataBuf = faces ? mb.staticMDataFaceBuf : mb.staticMDataLineBuf;
-		iMesh = mDataBuf.CreateIMesh(mb.matOpaque, outerOvrMesh.params, faces, false);
+		auto& mData = g_meshBuilder.reusedStaticMeshData;
+		const auto& mDataComp = faces ? mData.faceData : mData.lineData;
+		iMesh = mDataComp.CreateIMesh(g_meshBuilderMaterials.matOpaque, myWrapper.params, faces, false);
 	}
 }
 
-OverlayMesh::MeshComponent::MeshComponent(MeshComponent&& mc)
+MeshWrapper::MeshWrapperComponent::MeshWrapperComponent(MeshWrapperComponent&& mc)
     : opaque(mc.opaque), dynamic(mc.dynamic), faces(mc.faces), zTest(mc.zTest)
 {
 	if (dynamic)
 	{
-		mDataIdx = mc.mDataIdx;
+		dynamicToken = mc.dynamicToken;
 	}
 	else
 	{
@@ -99,7 +94,7 @@ OverlayMesh::MeshComponent::MeshComponent(MeshComponent&& mc)
 	}
 }
 
-OverlayMesh::MeshComponent::~MeshComponent()
+MeshWrapper::MeshWrapperComponent::~MeshWrapperComponent()
 {
 	if (!dynamic && iMesh)
 	{
@@ -108,37 +103,22 @@ OverlayMesh::MeshComponent::~MeshComponent()
 	}
 }
 
-bool OverlayMesh::MeshComponent::Empty() const
+bool MeshWrapper::MeshWrapperComponent::Empty() const
 {
-	if (dynamic)
-	{
-		auto& pair = MeshBuilderPro::singleton.dynamicMDataBufs[mDataIdx];
-		auto& meshData = faces ? pair.first : pair.second;
-		return meshData.verts.size() == 0;
-	}
-	else
-	{
-		return !iMesh;
-	}
+	return dynamic ? !g_meshBuilder.GetMeshData(dynamicToken, faces) : !iMesh;
 }
 
-IMesh* OverlayMesh::MeshComponent::GetIMesh(const OverlayMesh& outerOvrMesh, IMaterial* material) const
+IMesh* MeshWrapper::MeshWrapperComponent::GetIMesh(const MeshWrapper& outer, IMaterial* material) const
 {
 	if (Empty())
 		return nullptr;
 	if (dynamic)
-	{
-		auto& dynamicMData = MeshBuilderPro::singleton.dynamicMDataBufs[mDataIdx];
-		auto& meshData = faces ? dynamicMData.first : dynamicMData.second;
-		return meshData.CreateIMesh(material, outerOvrMesh.params, faces, true);
-	}
+		return g_meshBuilder.GetMeshData(dynamicToken, faces)->CreateIMesh(material, outer.params, faces, true);
 	else
-	{
 		return iMesh;
-	}
 }
 
-OverlayMesh::OverlayMesh(int mDataIdx,
+MeshWrapper::MeshWrapper(int mDataIdx,
                          const MeshPositionInfo& posInfo,
                          const CreateMeshParams& params,
                          bool facesOpaque,
@@ -153,25 +133,19 @@ OverlayMesh::OverlayMesh(int mDataIdx,
 
 /**************************************** MESH DATA ****************************************/
 
-void MeshBuilderPro::MeshData::Clear()
-{
-	verts.clear();
-	indices.clear();
-}
-
-IMesh* MeshBuilderPro::MeshData::CreateIMesh(IMaterial* material,
-                                             const CreateMeshParams& params,
-                                             bool faces,
-                                             bool dynamic) const
+IMesh* MeshComponentData::CreateIMesh(IMaterial* material,
+                                      const CreateMeshParams& params,
+                                      bool faces,
+                                      bool dynamic) const
 {
 	Assert(verts.size() <= indices.size());
 
 	if (verts.size() == 0 || !material)
 		return nullptr;
 
-	VPROF_BUDGET("MeshBuilderPro::MeshData::CreateIMesh", VPROF_BUDGETGROUP_MESHBUILDER);
+	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESHBUILDER);
 
-	CMatRenderContextPtr context(interfaces::materialSystem);
+	CMatRenderContextPtr context{interfaces::materialSystem};
 	context->Bind(material);
 
 	if (!dynamic && material->GetVertexFormat() == VERTEX_FORMAT_UNKNOWN)
@@ -237,60 +211,42 @@ IMesh* MeshBuilderPro::MeshData::CreateIMesh(IMaterial* material,
 
 /**************************************** MESH BUILDER PRO ****************************************/
 
-MeshBuilderPro MeshBuilderPro::singleton;
-
-IMaterial* MeshBuilderPro::GetMaterial(bool opaque, bool zTest, color32 colorMod)
-{
-	if (!materialsInitialized || colorMod.a == 0)
-		return nullptr;
-	IMaterial* mat = zTest ? (opaque && colorMod.a ? matOpaque : matAlpha) : matAlphaNoZ;
-	Assert(mat);
-	mat->ColorModulate(colorMod.r / 255.f, colorMod.g / 255.f, colorMod.b / 255.f);
-	mat->AlphaModulate(colorMod.a / 255.f);
-	return mat;
-}
-
-void MeshBuilderPro::ClearOldBuffers()
+void MeshBuilderInternal::ClearOldBuffers()
 {
 	// keep only as many dynamic buffers as there were dynamic meshes last frame
-	dynamicMDataBufs.resize(numDynamicMeshes);
+	dynamicMeshData.resize(numDynamicMeshes);
 	numDynamicMeshes = 0;
-	dynamicOvrMeshes.clear();
+	dynamicMeshWrappers.clear();
 }
 
-void MeshBuilderPro::BeginNewMesh(bool dynamic)
+void MeshBuilderInternal::BeginNewMesh(bool dynamic)
 {
 	if (dynamic)
 	{
 		// We have to keep the buffers around for dynamics to create the IMesh* objects later. To prevent completely
 		// reallocating the verts array for every dynamic mesh, we keep some old buffers around from the previous frame.
-		if (numDynamicMeshes >= dynamicMDataBufs.size())
-			dynamicMDataBufs.emplace_back();
-		faceData = &dynamicMDataBufs[numDynamicMeshes].first;
-		lineData = &dynamicMDataBufs[numDynamicMeshes].second;
-		numDynamicMeshes++;
+		if (numDynamicMeshes >= dynamicMeshData.size())
+			dynamicMeshData.emplace_back();
+		curMeshData = &dynamicMeshData[numDynamicMeshes++];
 	}
 	else
 	{
 		// static meshes immediately turn into IMesh* objects, so we can just reuse the same buffers
-		faceData = &staticMDataFaceBuf;
-		lineData = &staticMDataLineBuf;
+		curMeshData = &reusedStaticMeshData;
 	}
-	faceData->Clear();
-	lineData->Clear();
+	curMeshData->Clear();
 }
 
-OverlayMesh* MeshBuilderPro::CreateOverlayMesh(const CreateMeshParams& params, bool dynamic)
+MeshWrapper* MeshBuilderInternal::FinalizeCurMesh(const CreateMeshParams& params)
 {
-	const MeshData* meshData[] = {faceData, lineData};
+	const MeshComponentData* meshData[] = {&curMeshData->faceData, &curMeshData->lineData};
 
 	// figure out if the meshes are opaque
-	bool opaque[2];
+	bool opaque[2] = {true, true};
 	for (int i = 0; i < 2; i++)
 	{
 		if ((i == 0 && (params.zTestFlags & ZTEST_FACES)) || (i == 1 && (params.zTestFlags & ZTEST_LINES)))
 		{
-			opaque[i] = true;
 			for (auto& vertData : meshData[i]->verts)
 			{
 				if (vertData.col.a < 255)
@@ -309,7 +265,7 @@ OverlayMesh* MeshBuilderPro::CreateOverlayMesh(const CreateMeshParams& params, b
 	// calculate the mesh "position" - iterate over all verts for lines/faces and get the AABB
 	Vector mins;
 	Vector maxs;
-	if (faceData->verts.size() == 0 && lineData->verts.size() == 0)
+	if (curMeshData->Empty())
 	{
 		mins = maxs = vec3_origin;
 	}
@@ -329,39 +285,36 @@ OverlayMesh* MeshBuilderPro::CreateOverlayMesh(const CreateMeshParams& params, b
 	Vector center = (mins + maxs) / 2;
 	const MeshPositionInfo pos{mins, maxs};
 
-	if (dynamic)
+	if (curMeshData == &reusedStaticMeshData)
 	{
-		dynamicOvrMeshes.emplace_back(dynamicOvrMeshes.size(), pos, params, opaque[0], opaque[1], true);
-		return nullptr; // can't point to vector element because reallocations will invalidate the pointer
+		// static mesh, yeet into the heap and return it
+		return new MeshWrapper(-1, pos, params, opaque[0], opaque[1], false);
 	}
 	else
 	{
-		return new OverlayMesh(-1, pos, params, opaque[0], opaque[1], false);
+		// dynamic mesh, we keep it in the mesh builder and delete at the start of every frame
+		dynamicMeshWrappers.emplace_back(dynamicMeshWrappers.size(), pos, params, opaque[0], opaque[1], true);
+		return nullptr; // can't point to vector element because reallocations will invalidate the pointer
 	}
 }
 
-OverlayMesh& MeshBuilderPro::GetOvrMesh(const DynamicOverlayMesh& dynamicInfo)
+StaticMesh MeshBuilderPro::CreateStaticMesh(const MeshCreateFunc& createFunc, const CreateMeshParams& params)
 {
-	Assert(curFrameNum == dynamicInfo.createdFrame); // should have already checked for this in the renderer
-	return dynamicOvrMeshes[dynamicInfo.dynamicOvrIdx];
+	g_meshBuilder.BeginNewMesh(false);
+	static MeshBuilderPro mb;
+	createFunc(mb);
+	return std::shared_ptr<MeshWrapper>(g_meshBuilder.FinalizeCurMesh(params));
 }
 
-StaticOverlayMesh MeshBuilderPro::CreateStaticMesh(const MeshCreateFunc& createFunc, const CreateMeshParams& params)
+DynamicMesh MeshBuilderPro::CreateDynamicMesh(const MeshCreateFunc& createFunc, const CreateMeshParams& params)
 {
-	VPROF_BUDGET("MeshBuilderPro::CreateStaticMesh", VPROF_BUDGETGROUP_MESHBUILDER);
-	singleton.BeginNewMesh(false);
-	createFunc(singleton);
-	return std::shared_ptr<OverlayMesh>(singleton.CreateOverlayMesh(params, false));
-}
-
-DynamicOverlayMesh MeshBuilderPro::CreateDynamicMesh(const MeshCreateFunc& createFunc, const CreateMeshParams& params)
-{
-	AssertMsg(singleton.inOverlaySignal, "spt: Must create dynamic meshes in OverlaySignal!");
-	VPROF_BUDGET("MeshBuilderPro::CreateDynamicMesh", VPROF_BUDGETGROUP_MESHBUILDER);
-	singleton.BeginNewMesh(true);
-	createFunc(singleton);
-	singleton.CreateOverlayMesh(params, true);
-	return {singleton.dynamicOvrMeshes.size() - 1, singleton.curFrameNum};
+	AssertMsg(g_inMeshRenderSignal, "spt: Must create dynamic meshes in MeshRenderSignal!");
+	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESHBUILDER);
+	g_meshBuilder.BeginNewMesh(true);
+	static MeshBuilderPro mb;
+	createFunc(mb);
+	g_meshBuilder.FinalizeCurMesh(params);
+	return {g_meshBuilder.dynamicMeshWrappers.size() - 1, g_meshRenderFrameNum};
 }
 
 #endif
