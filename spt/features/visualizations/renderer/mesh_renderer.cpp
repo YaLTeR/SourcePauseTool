@@ -270,16 +270,7 @@ struct MeshWrapperInternal
 			    },
 			    ZTEST_NONE);
 
-			debugCrossMesh = MB_STATIC({
-				for (int x = 0; x < 2; x++)
-				{
-					for (int y = 0; y < 2; y++)
-					{
-						Vector off(2 * x - 1, 2 * y - 1, 1);
-						mb.AddLine(off, -off, {255, 50, 0, 255});
-					}
-				}
-			});
+			debugCrossMesh = MB_STATIC(mb.AddCross({0, 0, 0}, 2, {255, 0, 0, 255}););
 		}
 
 		CMatRenderContextPtr context{interfaces::materialSystem};
