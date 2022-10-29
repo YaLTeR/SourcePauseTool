@@ -698,6 +698,59 @@ void MeshBuilderPro::AddArrow3D(const Vector& pos,
 	}
 }
 
+void MeshBuilderPro::AddCPolyhedron(const CPolyhedron* polyhedron, const MeshColor& c)
+{
+	if (!polyhedron)
+		return;
+	if (c.faceColor.a != 0)
+	{
+		const size_t initIdx = Faces().verts.size();
+		for (int v = 0; v < polyhedron->iVertexCount; v++)
+			Faces().verts.push_back({polyhedron->pVertices[v], c.faceColor});
+		for (int p = 0; p < polyhedron->iPolygonCount; p++)
+		{
+			// Writing the indices straight from the polyhedron data instead of converting to polygons first.
+			// To make a tri we do the same thing as in AddPolygon - fix a vert and iterate over the rest.
+
+			const Polyhedron_IndexedPolygon_t& polygon = polyhedron->pPolygons[p];
+			unsigned short firstIdx = 0, prevIdx = 0;
+
+			for (int i = 0; i < polygon.iIndexCount; i++)
+			{
+				Polyhedron_IndexedLineReference_t& ref = polyhedron->pIndices[polygon.iFirstIndex + i];
+				Polyhedron_IndexedLine_t& line = polyhedron->pLines[ref.iLineIndex];
+				unsigned short curIdx = initIdx + line.iPointIndices[ref.iEndPointIndex];
+				switch (i)
+				{
+				case 0:
+					firstIdx = curIdx;
+				case 1:
+					break;
+				default:
+					Faces().indices.push_back(firstIdx);
+					Faces().indices.push_back(prevIdx);
+					Faces().indices.push_back(curIdx);
+					break;
+				}
+				prevIdx = curIdx;
+			}
+		}
+	}
+	if (c.lineColor.a != 0)
+	{
+		// edges are more straightforward since the polyhedron stores edges as pairs of indices already
+		const size_t initIdx = Lines().verts.size();
+		for (int v = 0; v < polyhedron->iVertexCount; v++)
+			Lines().verts.push_back({polyhedron->pVertices[v], c.lineColor});
+		for (int i = 0; i < polyhedron->iLineCount; i++)
+		{
+			Polyhedron_IndexedLine_t& line = polyhedron->pLines[i];
+			Lines().indices.push_back(initIdx + line.iPointIndices[0]);
+			Lines().indices.push_back(initIdx + line.iPointIndices[1]);
+		}
+	}
+}
+
 void MeshBuilderPro::_AddFaceTriangleStripIndices(size_t vIdx1, size_t vIdx2, size_t numVerts, bool loop, bool mirror)
 {
 	/*
