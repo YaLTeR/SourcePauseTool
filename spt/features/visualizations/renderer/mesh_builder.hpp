@@ -4,6 +4,8 @@
 
 #ifdef SPT_MESH_RENDERING_ENABLED
 
+#include "mathlib\polyhedron.h"
+
 #include <vector>
 #include <variant>
 
@@ -117,7 +119,9 @@ public:
 	                int numCirclePoints,
 	                const MeshColor& c);
 
-	// TODO add polyhedron, triangle strips, & cross
+	void AddCPolyhedron(const CPolyhedron* polyhedron, const MeshColor& c);
+
+	// TODO add triangle strips & cross
 
 private:
 	// internal construction helper methods

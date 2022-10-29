@@ -620,4 +620,50 @@ BEGIN_TEST_CASE("Reusing static/dynamic meshes", VEC_WRAP(400, -300, 0))
 }
 END_TEST_CASE()
 
+BEGIN_TEST_CASE("AddCPolyhedron", VEC_WRAP(600, -300, 0))
+{
+	static std::vector<VPlane> planes;
+	planes.clear();
+
+	// carve out a cube
+	const float cubeRad = 40;
+	for (int ax = 0; ax < 3; ax++)
+	{
+		for (int side = 0; side < 2; side++)
+		{
+			Vector n{0};
+			n[ax] = side * 2 - 1;
+			planes.emplace_back(n, cubeRad);
+		}
+	}
+
+	// carve out a dodecahedron
+	float dodecaRad = 50 + sin(testFeature.time) * 20;
+	planes.emplace_back(Vector{0, 0, 1}, dodecaRad);
+	planes.emplace_back(Vector{0, 0, -1}, dodecaRad);
+	for (int i = 0; i < 2; i++)
+	{
+		float z = cos((i + 1) * M_PI_F / 3);
+		float angOff = i * M_PI_F / 5;
+		for (int j = 0; j < 5; j++)
+		{
+			float x, y;
+			SinCos(j * M_PI_F / 2.5f + angOff, &x, &y);
+			Vector n{x, y, z};
+			planes.emplace_back(n * 0.8944272f, dodecaRad);
+		}
+	}
+
+	CPolyhedron* polyhedron = GeneratePolyhedronFromPlanes((float*)planes.data(), planes.size(), 0.0001f, true);
+
+	mr.DrawMesh(MeshBuilderPro::CreateDynamicMesh(
+	                [&](MeshBuilderPro& mb) {
+		                mb.AddCPolyhedron(polyhedron, MeshColor::Outline({200, 150, 50, 20}));
+	                }),
+	            [this](auto&, CallbackInfoOut& infoOut) { MatrixSetColumn(testPos, 3, infoOut.mat); });
+
+	polyhedron->Release();
+}
+END_TEST_CASE()
+
 #endif
