@@ -59,6 +59,9 @@ public:
 	// points is an array of points connected by lines
 	void AddLineStrip(const Vector* points, int numPoints, bool loop, const color32& c);
 
+	// simple position indicator
+	void AddCross(const Vector& pos, float radius, const color32& c);
+
 	// a single triangle oriented clockwise
 	void AddTri(const Vector& v1, const Vector& v2, const Vector& v3, const MeshColor& c);
 
@@ -120,8 +123,6 @@ public:
 	                const MeshColor& c);
 
 	void AddCPolyhedron(const CPolyhedron* polyhedron, const MeshColor& c);
-
-	// TODO add triangle strips & cross
 
 private:
 	// internal construction helper methods

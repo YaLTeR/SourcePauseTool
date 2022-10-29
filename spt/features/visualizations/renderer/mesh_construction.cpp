@@ -181,6 +181,22 @@ void MeshBuilderPro::AddLineStrip(const Vector* points, int numPoints, bool loop
 	_AddLineStripIndices(Lines().verts.size() - numPoints, numPoints, loop);
 }
 
+void MeshBuilderPro::AddCross(const Vector& pos, float radius, const color32& c)
+{
+	if (c.a == 0 || radius <= 0)
+		return;
+	static float axf = powf(1.f / 3, 0.5f);
+	ReserveScope rs(Lines(), 8, 8);
+	for (int x = -1; x <= 1; x += 2)
+	{
+		for (int y = -1; y <= 1; y += 2)
+		{
+			Vector v = Vector{x * axf, y * axf, axf} * radius;
+			AddLine(-v + pos, v + pos, c);
+		}
+	}
+}
+
 void MeshBuilderPro::AddTri(const Vector& v1, const Vector& v2, const Vector& v3, const MeshColor& c)
 {
 	Vector v[] = {v1, v2, v3};

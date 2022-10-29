@@ -450,18 +450,7 @@ END_TEST_CASE()
 BEGIN_TEST_CASE("AddArrow3D()", VEC_WRAP(2600, 0, 0))
 {
 	const Vector target = testPos + Vector(0, 100, 50);
-	// draw the target
-	RENDER_DYNAMIC(mr, {
-		float targetSize = 10;
-		for (int x = 0; x < 2; x++)
-		{
-			for (int y = 0; y < 2; y++)
-			{
-				Vector off((x - 0.5) * targetSize, (y - 0.5) * targetSize, targetSize / 2);
-				mb.AddLine(target + off, target - off, {255, 255, 255, 255});
-			}
-		}
-	});
+	RENDER_DYNAMIC(mr, mb.AddCross(target, 7, {255, 0, 0, 255}););
 	for (int i = 0; i < 4; i++)
 	{
 		for (int k = 0; k < 3; k++)
