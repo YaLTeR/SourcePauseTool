@@ -56,10 +56,14 @@ namespace patterns
 	PATTERNS(CRendering3dView__DrawTranslucentRenderables,
 	         "5135",
 	         "55 8B EC 83 EC 34 53 8B D9 8B 83 94 00 00 00 8B 13 56 8D B3 94 00 00 00",
+	         "5135-hl2",
+	         "55 8B EC 83 EC 34 83 3D ?? ?? ?? ?? 00",
 	         "1910503",
 	         "55 8B EC 81 EC 9C 00 00 00 53 56 8B F1 8B 86 E8 00 00 00 8B 16 57 8D BE E8 00 00 00",
 	         "7462488",
-	         "55 8B EC 81 EC A0 00 00 00 53 8B D9");
+	         "55 8B EC 81 EC A0 00 00 00 53 8B D9",
+	         "7467727-hl2",
+	         "55 8B EC 81 EC A0 00 00 00 83 3D ?? ?? ?? ?? 00");
 	// this is the static OnRenderStart(), not the virtual one; only used for portal render depth
 	PATTERNS(OnRenderStart,
 	         "5135",
