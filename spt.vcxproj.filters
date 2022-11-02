@@ -289,6 +289,9 @@
     <ClCompile Include="spt\features\autocomplete.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\leafvis.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
     <ClCompile Include="spt\features\multi_instance.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
