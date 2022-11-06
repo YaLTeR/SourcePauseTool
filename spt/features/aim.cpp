@@ -25,8 +25,10 @@ AimFeature spt_aim;
 
 void AimFeature::HandleAiming(float* va, bool& yawChanged, const Strafe::StrafeInput& input)
 {
+	float oldYaw = va[YAW];
+
 	// Use tas_aim stuff for tas_strafe_version >= 4
-	if (input.Version >= 4)
+	if (input.Version >= 4 && input.Version <= 5)
 	{
 		spt_aim.viewState.UpdateView(va[PITCH], va[YAW], input);
 	}
@@ -49,6 +51,20 @@ void AimFeature::HandleAiming(float* va, bool& yawChanged, const Strafe::StrafeI
 		yawChanged = true;
 		setYaw.set = DoAngleChange(va[YAW], setYaw.angle);
 	}
+
+	// Fix the case where anglespeed is 0
+	if (input.Version >= 6)
+	{
+		yawChanged = va[YAW] != oldYaw;
+	}
+
+	// We only want to do this in case yaw didn't change, bug fix from earlier that resulted in a fight to the death
+	// between _y_spt_setyaw and tas_strafe_vectorial
+	if (input.Version >= 6 && !yawChanged)
+	{
+		spt_aim.viewState.UpdateView(va[PITCH], va[YAW], input);
+	}
+
 }
 
 bool AimFeature::DoAngleChange(float& angle, float target)
