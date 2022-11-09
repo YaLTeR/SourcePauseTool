@@ -5,6 +5,8 @@
 #ifdef OE
 #include "interfaces.hpp"
 
+#define CON_COMMAND_CALLBACK_ARGS ConVar* var, char const* pOldString
+
 #undef CON_COMMAND
 #undef CON_COMMAND_F
 
@@ -47,4 +49,6 @@ struct ArgsWrapper
 	static ConCommand name##_command(#name, name##_wrapper, description, flags); \
 	static void name(ArgsWrapper args)
 
+#else
+#define CON_COMMAND_CALLBACK_ARGS IConVar* var, const char* pOldValue, float flOldValue
 #endif
