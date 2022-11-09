@@ -257,5 +257,11 @@ struct ArgsWrapper
 #endif
 
 #ifdef OE
+#define CON_COMMAND_CALLBACK_ARGS ConVar* var, char const* pOldString
+#else
+#define CON_COMMAND_CALLBACK_ARGS IConVar* var, const char* pOldValue, float flOldValue
+#endif
+
+#ifdef OE
 ConCommand* FindCommand(const char* name);
 #endif
