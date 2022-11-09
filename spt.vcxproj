@@ -1196,6 +1196,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClCompile Include="spt\features\ipc-spt.cpp" />
     <ClCompile Include="spt\features\isg.cpp" />
     <ClCompile Include="spt\features\leafvis.cpp" />
+    <ClCompile Include="spt\features\movement_vars.cpp" />
     <ClCompile Include="spt\features\multi_instance.cpp" />
     <ClCompile Include="spt\features\noclip_nofix.cpp" />
     <ClCompile Include="spt\features\nosleep.cpp" />

@@ -307,6 +307,9 @@
     <ClCompile Include="spt\features\fastload.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\movement_vars.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
     <ClCompile Include="spt\features\visualizations\renderer\internal\create_collide.cpp">
       <Filter>spt\features\visualizations\renderer\internal</Filter>
     </ClCompile>
