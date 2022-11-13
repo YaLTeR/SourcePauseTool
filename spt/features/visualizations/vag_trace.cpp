@@ -485,9 +485,10 @@ bool VagTrace::CalcFreeEntryPortalPos(const matrix3x4_t& entryRotMat, Vector& en
 	*/
 	VMatrix magicMat, magicMatInv;
 	magicMat.Identity();
-	magicMat.As3x4() = cache.exitInvMat;
-	MatrixMultiply(tpRotateMat, magicMat.As3x4(), magicMat.As3x4());
-	MatrixMultiply(entryRotMat, magicMat.As3x4(), magicMat.As3x4());
+	matrix3x4_t& magic3x4 = *const_cast<matrix3x4_t*>(&magicMat.As3x4()); // steampipe SDK moment
+	magic3x4 = cache.exitInvMat;
+	MatrixMultiply(tpRotateMat, magic3x4, magic3x4);
+	MatrixMultiply(entryRotMat, magic3x4, magic3x4);
 	for (int j = 0; j < 3; j++)
 		magicMat[j][j] += 1;
 	bool ret = magicMat.InverseGeneral(magicMatInv);

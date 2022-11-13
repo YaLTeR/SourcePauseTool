@@ -1,14 +1,9 @@
 ﻿#include "stdafx.h"
 
-#include "mesh_defs_public.hpp"
-
-#ifdef SPT_MESH_RENDERING_ENABLED
-
 #include <memory>
 
 #include "mesh_builder.hpp"
 #include "mesh_defs_private.hpp"
-#include "spt\feature.hpp"
 #include "spt\features\ent_props.hpp"
 #include "spt\utils\math.hpp"
 
@@ -20,12 +15,16 @@ namespace patterns
 	         "5135",
 	         "83 EC 10 8B 4C 24 14 8B 01 8B 40 08 55 56 57 33 ED 8D 54 24 10 52",
 	         "1910503",
-	         "55 8B EC 83 EC 14 8B 4D 08 8B 01 8B 40 08 53 56 57 33 DB 8D 55 EC");
+	         "55 8B EC 83 EC 14 8B 4D 08 8B 01 8B 40 08 53 56 57 33 DB 8D 55 EC",
+	         "7462488",
+	         "55 8B EC 83 EC 18 8B 4D ?? 8D 55 ??");
 	PATTERNS(CPhysicsObject__GetPosition,
 	         "5135",
 	         "8B 49 08 81 EC 80 00 00 00 8D 04 24 50 E8 ?? ?? ?? ?? 8B 84 24 84 00 00 00 85 C0",
 	         "1910503",
-	         "55 8B EC 8B 49 08 81 EC 80 00 00 00 8D 45 80 50 E8 ?? ?? ?? ?? 8B 45 08 85 C0");
+	         "55 8B EC 8B 49 08 81 EC 80 00 00 00 8D 45 80 50 E8 ?? ?? ?? ?? 8B 45 08 85 C0",
+	         "7462488",
+	         "55 8B EC 8B 49 ?? 8D 45 ?? 81 EC 80 00 00 00 50 E8 ?? ?? ?? ?? 8B 45 ??");
 } // namespace patterns
 
 void CreateCollideFeature::InitHooks()
@@ -41,13 +40,13 @@ bool CreateCollideFeature::Works()
 
 std::unique_ptr<Vector> CreateCollideFeature::CreateCollideMesh(const CPhysCollide* pCollide, int& outNumTris)
 {
-	if (!pCollide || !ORIG_CPhysicsCollision__CreateDebugMesh)
+	if (!pCollide || !spt_collideToMesh.ORIG_CPhysicsCollision__CreateDebugMesh)
 	{
 		outNumTris = 0;
 		return nullptr;
 	}
 	Vector* outVerts;
-	outNumTris = ORIG_CPhysicsCollision__CreateDebugMesh(nullptr, 0, pCollide, &outVerts) / 3;
+	outNumTris = spt_collideToMesh.ORIG_CPhysicsCollision__CreateDebugMesh(nullptr, 0, pCollide, &outVerts) / 3;
 	return std::unique_ptr<Vector>(outVerts);
 }
 
@@ -63,7 +62,7 @@ std::unique_ptr<Vector> CreateCollideFeature::CreateCPhysObjMesh(const CPhysicsO
 	}
 	Vector pos;
 	QAngle ang;
-	ORIG_CPhysicsObject__GetPosition((void*)pPhysObj, 0, &pos, &ang);
+	spt_collideToMesh.ORIG_CPhysicsObject__GetPosition((void*)pPhysObj, 0, &pos, &ang);
 	AngleMatrix(ang, pos, outMat);
 	return CreateCollideMesh(*((CPhysCollide**)pPhysObj + 3), outNumTris);
 }
@@ -82,6 +81,8 @@ std::unique_ptr<Vector> CreateCollideFeature::CreateEntMesh(const CBaseEntity* p
 	off = (off + 4) / 4;
 	return CreateCPhysObjMesh(*((CPhysicsObject**)pEnt + off), outNumTris, outMat);
 }
+
+#ifdef SPT_MESH_RENDERING_ENABLED
 
 /**************************************** MESH CONSTRUCTION ****************************************/
 

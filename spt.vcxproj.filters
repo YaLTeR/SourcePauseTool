@@ -585,9 +585,6 @@
     <ClInclude Include="spt\scripts2\variable_container2.hpp">
       <Filter>spt\scripts2</Filter>
     </ClInclude>
-    <ClInclude Include="spt\features\restart.hpp">
-      <Filter>spt\features</Filter>
-    </ClInclude>
     <ClInclude Include="spt\features\visualizations\renderer\mesh_builder.hpp">
       <Filter>spt\features\visualizations\renderer</Filter>
     </ClInclude>

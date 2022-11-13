@@ -11,6 +11,7 @@
 #include "interfaces.hpp"
 #include "signals.hpp"
 #include "spt\features\overlay.hpp"
+#include "ivrenderview.h"
 
 #define VPROF_BUDGETGROUP_MESH_RENDERER _T("Mesh_Renderer")
 
@@ -33,23 +34,38 @@ ConVar y_spt_draw_mesh_debug("y_spt_draw_mesh_debug",
 * love, gifts, and fruit baskets.
 */
 
-/**************************************** OVERLAY FEATURE ****************************************/
+/**************************************** MESH RENDER FEATURE ****************************************/
 
 struct CPortalRender
 {
+#ifdef SSDK2007
 	byte _pad[0x57c];
+#else
+	byte _pad[0x918];
+#endif
 	int m_iViewRecursionLevel;
 };
 
 namespace patterns
 {
-	PATTERNS(CRendering3dView__DrawOpaqueRenderables, "5135", "55 8D 6C 24 8C 81 EC 94 00 00 00");
+	PATTERNS(CRendering3dView__DrawOpaqueRenderables,
+	         "5135",
+	         "55 8D 6C 24 8C 81 EC 94 00 00 00",
+	         "7462488",
+	         "55 8B EC 81 EC 80 00 00 00 8B 15 ?? ?? ?? ??");
 	PATTERNS(CRendering3dView__DrawTranslucentRenderables,
 	         "5135",
 	         "55 8B EC 83 EC 34 53 8B D9 8B 83 94 00 00 00 8B 13 56 8D B3 94 00 00 00",
 	         "1910503",
-	         "55 8B EC 81 EC 9C 00 00 00 53 56 8B F1 8B 86 E8 00 00 00 8B 16 57 8D BE E8 00 00 00");
-	PATTERNS(OnRenderStart, "5135", "56 8B 35 ?? ?? ?? ?? 8B 06 8B 50 64 8B CE FF D2 8B 0D ?? ?? ?? ??");
+	         "55 8B EC 81 EC 9C 00 00 00 53 56 8B F1 8B 86 E8 00 00 00 8B 16 57 8D BE E8 00 00 00",
+	         "7462488",
+	         "55 8B EC 81 EC A0 00 00 00 53 8B D9");
+	// this is the static OnRenderStart(), not the virtual one; only used for portal render depth
+	PATTERNS(OnRenderStart,
+	         "5135",
+	         "56 8B 35 ?? ?? ?? ?? 8B 06 8B 50 64 8B CE FF D2 8B 0D ?? ?? ?? ??",
+	         "7462488",
+	         "55 8B EC 83 EC 10 53 56 8B 35 ?? ?? ?? ?? 8B CE 57 8B 06 FF 50 64 8B 0D ?? ?? ?? ??");
 } // namespace patterns
 
 extern class MeshRendererFeature g_meshRenderer;
@@ -95,8 +111,14 @@ private:
 		{
 			return;
 		}
+
 		if (ORIG_OnRenderStart)
-			g_pPortalRender = *(CPortalRender***)((uintptr_t)ORIG_OnRenderStart + 18);
+		{
+			int idx = GetPatternIndex((void**)&ORIG_OnRenderStart);
+			uint32_t offs[] = {18, 24};
+			if (idx >= 0 && idx < sizeof(offs) / sizeof(uint32_t))
+				g_pPortalRender = *(CPortalRender***)((uintptr_t)ORIG_OnRenderStart + offs[idx]);
+		}
 
 		g_meshBuilderMaterials.Load();
 	}
@@ -115,14 +137,17 @@ private:
 	virtual void UnloadFeature() override
 	{
 		g_meshBuilderMaterials.Unload();
+		Cleanup();
+		StaticMesh::DestroyAll();
 	}
 
 	DECL_MEMBER_CDECL(void, OnRenderStart);
 
-	DECL_HOOK_THISCALL(void, CRendering3dView__DrawOpaqueRenderables, bool bShadowDepth)
+	DECL_HOOK_THISCALL(void, CRendering3dView__DrawOpaqueRenderables, int param)
 	{
+		// HACK - param is a bool in SSDK2007 and enum in SSDK2013
 		// render order shouldn't matter here
-		g_meshRenderer.ORIG_CRendering3dView__DrawOpaqueRenderables(thisptr, 0, bShadowDepth);
+		g_meshRenderer.ORIG_CRendering3dView__DrawOpaqueRenderables(thisptr, 0, param);
 		g_meshRenderer.OnDrawOpaques(thisptr);
 	}
 
@@ -133,6 +158,7 @@ private:
 		g_meshRenderer.OnDrawTranslucents(thisptr);
 	}
 
+	void Cleanup();
 	void OnRenderViewSignal(void* thisptr);
 	void OnDrawOpaques(void* renderingView);
 	void OnDrawTranslucents(void* renderingView);
@@ -227,11 +253,12 @@ struct MeshWrapperInternal
 
 		if (callback)
 		{
-			CallbackInfoIn cbInfoIn = {cvs, meshWrapper.posInfo, std::nullopt};
+			CallbackInfoIn infoIn = {cvs, meshWrapper.posInfo, std::nullopt, spt_overlay.renderingOverlay};
+
 			auto pRender = g_meshRenderer.g_pPortalRender;
 			if (pRender && *pRender)
-				cbInfoIn.portalRenderDepth = (**pRender).m_iViewRecursionLevel;
-			callback(cbInfoIn, cbInfoOut = CallbackInfoOut{});
+				infoIn.portalRenderDepth = (**pRender).m_iViewRecursionLevel;
+			callback(infoIn, cbInfoOut = CallbackInfoOut{});
 		}
 
 		const MeshPositionInfo& origPos = meshWrapper.posInfo;
@@ -273,6 +300,9 @@ struct MeshWrapperInternal
 			debugCrossMesh = MB_STATIC(mb.AddCross({0, 0, 0}, 2, {255, 0, 0, 255}););
 		}
 
+		MeshWrapper* boxMeshWrapper = debugBoxMesh.meshPtr.get();
+		MeshWrapper* crossMeshWrapper = debugCrossMesh.meshPtr.get();
+
 		CMatRenderContextPtr context{interfaces::materialSystem};
 
 		// figure out box mesh dims
@@ -283,8 +313,8 @@ struct MeshWrapperInternal
 		Vector size = (myPosInfo.maxs + nudge) - (myPosInfo.mins - nudge);
 		matrix3x4_t mat({size.x, 0, 0}, {0, size.y, 0}, {0, 0, size.z}, myPosInfo.mins - nudge);
 
-		IMaterial* boxMaterial = g_meshBuilderMaterials.GetMaterial(debugBoxMesh->lineComponent.opaque,
-		                                                            debugBoxMesh->lineComponent.zTest,
+		IMaterial* boxMaterial = g_meshBuilderMaterials.GetMaterial(boxMeshWrapper->lineComponent.opaque,
+		                                                            boxMeshWrapper->lineComponent.zTest,
 		                                                            {255, 255, 255, 255});
 		Assert(boxMaterial);
 
@@ -292,7 +322,7 @@ struct MeshWrapperInternal
 		context->PushMatrix();
 		context->LoadMatrix(mat);
 		context->Bind(boxMaterial);
-		IMesh* iMesh = debugBoxMesh->lineComponent.GetIMesh(*debugBoxMesh, boxMaterial);
+		IMesh* iMesh = boxMeshWrapper->lineComponent.GetIMesh(*boxMeshWrapper, boxMaterial);
 		if (iMesh)
 			iMesh->Draw();
 
@@ -302,14 +332,14 @@ struct MeshWrapperInternal
 		float pointSize = -falloff * (biggest - smallest) / (maxBoxDim + falloff) + biggest;
 		mat.Init({pointSize, 0, 0}, {0, pointSize, 0}, {0, 0, pointSize}, camDistSqrTo);
 
-		IMaterial* crossMaterial = g_meshBuilderMaterials.GetMaterial(debugCrossMesh->lineComponent.opaque,
-		                                                              debugCrossMesh->lineComponent.zTest,
+		IMaterial* crossMaterial = g_meshBuilderMaterials.GetMaterial(crossMeshWrapper->lineComponent.opaque,
+		                                                              crossMeshWrapper->lineComponent.zTest,
 		                                                              {255, 255, 255, 255});
 		Assert(crossMaterial);
 
 		context->LoadMatrix(mat);
 		context->Bind(crossMaterial);
-		iMesh = debugCrossMesh->lineComponent.GetIMesh(*debugCrossMesh, crossMaterial);
+		iMesh = crossMeshWrapper->lineComponent.GetIMesh(*crossMeshWrapper, crossMaterial);
 		if (iMesh)
 			iMesh->Draw();
 		context->PopMatrix();
@@ -435,17 +465,20 @@ void MeshRenderer::DrawMesh(const StaticMesh& staticMesh, const RenderCallback& 
 		Warning("spt: Attempting to draw an invalid static mesh!\n");
 		return;
 	}
-	if (!staticMesh->faceComponent.Empty() || !staticMesh->lineComponent.Empty())
-		g_meshRenderer.deferredMeshWrappers.emplace_back(staticMesh, callback);
+	if (!staticMesh.meshPtr->Empty())
+		g_meshRenderer.deferredMeshWrappers.emplace_back(staticMesh.meshPtr, callback);
 }
 
-/**************************************** MESH RENDERER FEATURE ****************************************/
+void MeshRendererFeature::Cleanup()
+{
+	deferredMeshWrappers.clear();
+	g_meshBuilder.ClearOldBuffers();
+}
 
 void MeshRendererFeature::OnRenderViewSignal(void* thisptr)
 {
 	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
-	deferredMeshWrappers.clear();
-	g_meshBuilder.ClearOldBuffers();
+	Cleanup();
 	g_meshRenderFrameNum++;
 	g_inMeshRenderSignal = true;
 	static MeshRenderer renderer;
@@ -457,6 +490,7 @@ void MeshRendererFeature::OnDrawOpaques(void* renderingView)
 {
 	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	CViewSetup& cvs = *(CViewSetup*)((uintptr_t)renderingView + 8);
+	CMatRenderContextPtr context{interfaces::materialSystem};
 	MeshWrapperInternal::cachedCamMatValid = false;
 
 	for (auto& meshInternal : deferredMeshWrappers)

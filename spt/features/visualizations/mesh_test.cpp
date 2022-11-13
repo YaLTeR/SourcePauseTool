@@ -322,9 +322,11 @@ BEGIN_TEST_CASE("AddSweptBox()", VEC_WRAP(2000, 0, 0))
 
 	static std::vector<StaticMesh> boxes;
 
-	if (boxes.size() == 0)
+	if (boxes.size() == 0 || !boxes[0])
 	{
 		// create all
+		boxes.clear();
+
 		MeshColor cStart = MeshColor::Outline({0, 255, 0, 20});
 		MeshColor cEnd = MeshColor::Outline({255, 0, 0, 20});
 		MeshColor cSweep = MeshColor::Outline({150, 150, 150, 20});
@@ -404,7 +406,7 @@ BEGIN_TEST_CASE("AddSweptBox()", VEC_WRAP(2000, 0, 0))
 	}
 	for (auto& staticMesh : boxes)
 	{
-		Assert(staticMesh.get());
+		Assert(staticMesh);
 		mr.DrawMesh(staticMesh);
 	}
 }
@@ -413,20 +415,20 @@ END_TEST_CASE()
 BEGIN_TEST_CASE("AddCone()", VEC_WRAP(2200, 0, 0))
 {
 	{
-		const Vector p = testPos + Vector(-50, 0, 0);
+		const Vector org = testPos + Vector(-50, 0, 0);
 		const Vector tipOff(30, 50, 70);
 		QAngle ang;
 		VectorAngles(tipOff, ang);
-		float height = tipOff.Length();
-		RENDER_DYNAMIC(mr, mb.AddCone(p, ang, height, 20, 20, false, MeshColor::Outline({255, 255, 50, 20})););
+		float h = tipOff.Length();
+		RENDER_DYNAMIC(mr, mb.AddCone(org, ang, h, 20, 20, false, MeshColor::Outline({255, 255, 50, 20})););
 	}
 	{
-		const Vector p = testPos + Vector(50, 0, 0);
+		const Vector org = testPos + Vector(50, 0, 0);
 		const Vector tipOff(-30, -50, -70);
 		QAngle ang;
 		VectorAngles(tipOff, ang);
-		float height = tipOff.Length();
-		RENDER_DYNAMIC(mr, mb.AddCone(p, ang, height, 20, 5, true, MeshColor::Outline({255, 50, 50, 20})););
+		float h = tipOff.Length();
+		RENDER_DYNAMIC(mr, mb.AddCone(org, ang, h, 20, 5, true, MeshColor::Outline({255, 50, 50, 20})););
 	}
 }
 END_TEST_CASE()
@@ -491,16 +493,20 @@ BEGIN_TEST_CASE("Timmy", VEC_WRAP(0, -300, 0))
 		            AngleMatrix(ang, testPos, tmpMat);
 		            MatrixMultiply(tmpMat, infoOut.mat, infoOut.mat);
 		            infoOut.faces.colorModulate.a = (sin(testFeature.time) + 1) / 2.f * 255;
-		            // timmy will be more red through portals
+		            // timmy will be more yellow through portals
 		            if (infoIn.portalRenderDepth.value_or(0) >= 1)
-			            infoOut.faces.colorModulate.b = infoOut.faces.colorModulate.g = 0;
+			            infoOut.faces.colorModulate.b = 0;
+		            // timmy will be more green on the overlay
+		            if (infoIn.inOverlayView)
+			            infoOut.faces.colorModulate.r = 0;
 	            });
 }
 END_TEST_CASE()
 
 BEGIN_TEST_CASE("Lorenz Attractor", VEC_WRAP(200, -300, 0))
 {
-	// RENDER_DYNAMIC breaks intellisense & expanding everything makes clang-format do funny things, compromise
+	// Intellisense doesn't do shit when you're in a macro, so I'm not gonna use RENDER_DYNAMIC_CALLBACK for something so big.
+	// Also, clang-format does literally the most stupid thing possible sometimes and using these macros makes it better.
 
 #define MB_CREATE_BEGIN MeshBuilderPro::CreateDynamicMesh([&](MeshBuilderPro & mb)
 #define MB_CREATE_END )

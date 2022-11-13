@@ -15,16 +15,18 @@
 * meshPosInfo       - position info about the mesh the callback is for
 * portalRenderDepth - no value if not available, 0 if looking directly at mesh, 1 if looking through a
 *                     portal, 2 if looking through two portals, etc.
+* inOverlayView     - is the current view on an overlay (set to spt_overlay.renderingOverlay)
 */
 struct CallbackInfoIn
 {
 	const CViewSetup& cvs;
 	const MeshPositionInfo& meshPosInfo;
 	std::optional<uint> portalRenderDepth;
+	bool inOverlayView;
 };
 
 /*
-* mat           - a matrix that is applied to the mesh after rendering
+* mat           - a matrix that is applied to the mesh during rendering
 * colorModulate - a "multiplier" to change the color/alpha of the entire mesh, relatively slow
 *                 e.g. 128 means multiply existing value by 0.5
 * skipRender    - conditionally enable rendering on a per-view basis
@@ -53,7 +55,7 @@ struct CallbackInfoOut
 */
 typedef std::function<void(const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)> RenderCallback;
 
-// Dirty macro for a dynamic mesh with no callback. Intellisense sucks huge dong for lambdas in this macro, so
+// Simple macro for a dynamic mesh with no callback. Intellisense sucks huge dong for lambdas in this macro, so
 // maybe avoid using it if you are doing something long and complicated.
 #define RENDER_DYNAMIC(renderer, createFunc, ...) (renderer).DrawMesh(MB_DYNAMIC(createFunc, __VA_ARGS__))
 
