@@ -1376,7 +1376,6 @@
     <ClInclude Include="spt\features\ihud.hpp" />
     <ClInclude Include="spt\features\overlay.hpp" />
     <ClInclude Include="spt\features\playerio.hpp" />
-    <ClInclude Include="spt\features\restart.hpp" />
     <ClInclude Include="spt\features\rng.hpp" />
     <ClInclude Include="spt\features\shadow.hpp" />
     <ClInclude Include="spt\features\tas.hpp" />

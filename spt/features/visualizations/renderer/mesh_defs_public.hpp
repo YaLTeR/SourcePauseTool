@@ -1,18 +1,8 @@
 #pragma once
 
-#include "spt\features\restart.hpp"
+#include "spt\features\overlay.hpp"
 
-/*
-* I use a signal from spt_overlay, but that uses spt_hud which only works in 2007. The solution could be as simple
-* as hooking some other render function. In the distant utopian future we'll ideally stop using vguimatsurface
-* anyways and just transfer all hud rendering to here using materialsystem.
-* 
-* If this is expanded to work on other versions, tas_restart MUST be tested while meshes are active (especially
-* static ones). Any static meshes given to users will probably have to be destroyed and possibly automatically
-* reconstructed (or maybe just make the user check if it's been destroyed). I'm thinking there will have to be
-* some signals set up for tas_restart.
-*/
-#if !defined(OE) && defined(SSDK2007) && !defined(SPT_TAS_RESTART_ENABLED)
+#if !defined(OE) && defined(SPT_OVERLAY_ENABLED)
 
 #define SPT_MESH_RENDERING_ENABLED
 
@@ -86,8 +76,30 @@ struct CreateMeshParams
 	const TranslucentSortType sortType = TranslucentSortType::AABB_Surface;
 };
 
-// TODO test me with tas_restart
-typedef std::shared_ptr<MeshWrapper> StaticMesh;
+// typical use case - check operator bool, and if it returns false recreate the StaticMesh
+class StaticMesh
+{
+public:
+	std::shared_ptr<MeshWrapper> meshPtr;
+
+private:
+	// keep a linked list through all static meshes for proper cleanup w/ tas_restart
+	StaticMesh *prev, *next;
+	static StaticMesh* first;
+
+	void AttachToFront();
+
+public:
+	StaticMesh();
+	StaticMesh(const StaticMesh& other);
+	StaticMesh(StaticMesh&& other);
+	StaticMesh(MeshWrapper* mesh);
+	StaticMesh& operator=(const StaticMesh& r);
+	operator bool() const;
+	void Destroy();
+	static void DestroyAll();
+	~StaticMesh();
+};
 
 struct DynamicMesh
 {

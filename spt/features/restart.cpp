@@ -1,11 +1,10 @@
 #include "stdafx.h"
 #include <Windows.h>
-#include "restart.hpp"
+#include "spt\feature.hpp"
 #include "..\spt-serverplugin.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "SPTLib\Hooks.hpp"
 
-static RestartFeature spt_restart;
 static HMODULE spt_module = 0;
 
 CON_COMMAND(tas_restart_game, "Restarts the game")
@@ -17,22 +16,28 @@ CON_COMMAND(tas_restart_game, "Restarts the game")
 	}
 }
 
-bool RestartFeature::ShouldLoadFeature()
+// Does game restarts
+class RestartFeature : public FeatureWrapper<RestartFeature>
 {
-#ifdef SPT_TAS_RESTART_ENABLED
-	return true;
-#else
-	return false;
-#endif
-}
-
-void RestartFeature::LoadFeature()
-{
-	if (spt_module != 0)
+protected:
+	virtual bool ShouldLoadFeature()
 	{
-		FreeLibrary(spt_module); // clear old reference from restart
-		spt_module = 0;
+#if defined(OE) || defined(SSDK2013)
+		return true;
+#endif
+		return false;
 	}
 
-	InitCommand(tas_restart_game);
-}
+	virtual void LoadFeature() override
+	{
+		if (spt_module != 0)
+		{
+			FreeLibrary(spt_module); // clear old reference from restart
+			spt_module = 0;
+		}
+
+		InitCommand(tas_restart_game);
+	}
+};
+
+static RestartFeature spt_restart;

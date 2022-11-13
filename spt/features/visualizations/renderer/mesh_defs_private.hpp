@@ -113,6 +113,9 @@ struct MeshWrapper
 	            bool dynamic);
 	MeshWrapper(MeshWrapper&) = delete;
 	MeshWrapper(MeshWrapper&&) = default;
+	~MeshWrapper() = default;
+
+	bool Empty();
 };
 
 // the public mesh builder doesn't have any state, it's stored in this internal version instead

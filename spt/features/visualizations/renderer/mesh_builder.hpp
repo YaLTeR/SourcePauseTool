@@ -1,15 +1,11 @@
 #pragma once
 
 #include "mesh_defs_public.hpp"
+#include "spt\feature.hpp"
 
 #ifdef SPT_MESH_RENDERING_ENABLED
 
 #include "mathlib\polyhedron.h"
-
-#include <vector>
-#include <variant>
-
-#include "spt\feature.hpp"
 
 typedef std::function<void(class MeshBuilderPro& mb)> MeshCreateFunc;
 
@@ -137,6 +133,8 @@ private:
 	MeshBuilderPro(MeshBuilderPro&) = delete;
 };
 
+#endif
+
 typedef void CPhysicsObject;
 class CPhysCollide;
 class CBaseEntity;
@@ -165,5 +163,3 @@ protected:
 };
 
 inline CreateCollideFeature spt_collideToMesh;
-
-#endif
