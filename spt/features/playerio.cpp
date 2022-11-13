@@ -10,7 +10,7 @@
 #include "ent_utils.hpp"
 #include "interfaces.hpp"
 #include "signals.hpp"
-#include "..\overlay\portal_camera.hpp"
+#include "spt\utils\portal_utils.hpp"
 #include "ihud.hpp"
 #include "tas.hpp"
 #include "property_getter.hpp"
@@ -835,7 +835,7 @@ void PlayerIOFeature::LoadFeature()
 	{
 		InitCommand(tas_print_movement_vars);
 
-#if defined(SSDK2007)
+#ifdef SPT_HUD_ENABLED
 		AddHudCallback(
 		    "accelerate",
 		    [this]()

@@ -1255,9 +1255,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="spt\overlay\overlay-renderer.cpp" />
-    <ClCompile Include="spt\overlay\overlays.cpp" />
-    <ClCompile Include="spt\overlay\portal_camera.cpp" />
     <ClCompile Include="spt\patterns_archive.cpp" />
     <ClCompile Include="spt\scripts2\condition2.cpp" />
     <ClCompile Include="spt\scripts2\framebulk_handler2.cpp" />
@@ -1320,6 +1317,7 @@
     <ClCompile Include="spt\utils\file.cpp" />
     <ClCompile Include="spt\utils\game_detection.cpp" />
     <ClCompile Include="spt\utils\math.cpp" />
+    <ClCompile Include="spt\utils\portal_utils.cpp" />
     <ClCompile Include="spt\utils\property_getter.cpp" />
     <ClCompile Include="spt\utils\signals.cpp" />
     <ClCompile Include="spt\utils\string_utils.cpp" />
@@ -1390,9 +1388,6 @@
     <ClInclude Include="spt\features\visualizations\renderer\mesh_defs_private.hpp" />
     <ClInclude Include="spt\features\visualizations\renderer\mesh_defs_public.hpp" />
     <ClInclude Include="spt\ipc\ipc.hpp" />
-    <ClInclude Include="spt\overlay\overlay-renderer.hpp" />
-    <ClInclude Include="spt\overlay\overlays.hpp" />
-    <ClInclude Include="spt\overlay\portal_camera.hpp" />
     <ClInclude Include="spt\scripts2\condition2.hpp" />
     <ClInclude Include="spt\scripts2\framebulk_handler2.hpp" />
     <ClInclude Include="spt\scripts2\parsed_script2.hpp" />
@@ -1428,6 +1423,7 @@
     <ClInclude Include="spt\utils\interfaces.hpp" />
     <ClInclude Include="spt\utils\ivp_maths.hpp" />
     <ClInclude Include="spt\utils\math.hpp" />
+    <ClInclude Include="spt\utils\portal_utils.hpp" />
     <ClInclude Include="spt\utils\property_getter.hpp" />
     <ClInclude Include="spt\utils\signals.hpp" />
     <ClInclude Include="spt\utils\string_utils.hpp" />

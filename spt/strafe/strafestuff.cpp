@@ -24,9 +24,7 @@
 #include "SDK\hl_movedata.h"
 #include "interfaces.hpp"
 
-#ifndef OE
-#include "..\overlay\portal_camera.hpp"
-#endif
+#include "spt\utils\portal_utils.hpp"
 
 #ifdef max
 #undef max

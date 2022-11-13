@@ -1,8 +1,22 @@
 #include "stdafx.h"
 
+#include "overlay.hpp"
+
+#ifdef SPT_OVERLAY_ENABLED
+
+#include "vguimatsurface\imatsystemsurface.h"
 #include "convar.hpp"
+
 #include "interfaces.hpp"
+
+#include "spt\utils\portal_utils.hpp"
 #include "spt\utils\signals.hpp"
+#include "spt\utils\math.hpp"
+#include "spt\utils\game_detection.hpp"
+
+#include "playerio.hpp"
+#include "hud.hpp"
+#include "shadow.hpp"
 
 ConVar _y_spt_overlay("_y_spt_overlay",
                       "0",
@@ -49,79 +63,130 @@ ConVar _y_spt_overlay_crosshair_color("_y_spt_overlay_crosshair_color",
                                       FCVAR_CHEAT,
                                       "Overlay crosshair RGBA color.");
 
-#if defined(SSDK2007)
-#include "overlay.hpp"
-#include "hud.hpp"
-#include "..\overlay\overlay-renderer.hpp"
-
 Overlay spt_overlay;
-
-bool Overlay::ShouldLoadFeature()
-{
-	return true;
-}
 
 namespace patterns
 {
-	PATTERNS(
-	    CViewRender__RenderView,
-	    "5135",
-	    "55 8B EC 83 E4 F8 81 EC 24 01 00 00 53 56 57 8B F9 8D 8F 20 01 00 00 89 7C 24 24 E8",
-	    "3420",
-	    "55 8B EC 83 E4 F8 81 EC 24 01 00 00 53 8B 5D 08 56 57 8B F9 8D 8F 94 00 00 00 53 89 7C 24 28 89 4C 24 34 E8");
-	PATTERNS(
-	    CViewRender__Render,
-	    "5135",
-	    "81 EC 98 00 00 00 53 56 57 6A 04 6A 00 68 ?? ?? ?? ?? 6A 00 8B F1 8B ?? ?? ?? ?? ?? 68 ?? ?? ?? ?? FF ?? ?? ?? ?? ?? 8B BC 24 A8 00 00 00 8B 4F 04");
-	PATTERNS(GetScreenAspect, "5135", "83 EC 0C A1 ?? ?? ?? ?? F3");
+	PATTERNS(CViewRender__RenderView,
+	         "3420",
+	         "55 8B EC 83 E4 F8 81 EC 24 01 00 00",
+	         "1910503",
+	         "55 8B EC 81 EC 10 02 00 00 53 56 8B F1",
+	         "7462488",
+	         "55 8B EC 81 EC FC 01 00 00 53 56 57",
+	         "BMS-Retail-Xen",
+	         "55 8B EC 81 EC DC 02 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 FC 53 8B 5D 08 56 8B F1");
 } // namespace patterns
 
 void Overlay::InitHooks()
 {
-	HOOK_FUNCTION(client, CViewRender__Render);
 	HOOK_FUNCTION(client, CViewRender__RenderView);
-	FIND_PATTERN(engine, GetScreenAspect);
 }
 
 void Overlay::PreHook()
 {
-	if (ORIG_CViewRender__Render)
-		RenderSignal.Works = true;
+	if (!ORIG_CViewRender__RenderView)
+		return;
+
+#ifdef BMS
+	QueueOverlayRenderView_Offset = 26;
+#else
+	if (utils::GetBuildNumber() >= 5135)
+		QueueOverlayRenderView_Offset = 26;
+	else
+		QueueOverlayRenderView_Offset = 24;
+#endif
+
+	if (QueueOverlayRenderView_Offset != -1)
+		RenderViewSignal.Works = true; // we use this as a "loading successful" flag
 }
 
 void Overlay::LoadFeature()
 {
-	if (ORIG_CViewRender__RenderView != nullptr && ORIG_CViewRender__Render != nullptr)
+	if (!RenderViewSignal.Works)
+		return;
+	InitConcommandBase(_y_spt_overlay);
+	InitConcommandBase(_y_spt_overlay_type);
+	InitConcommandBase(_y_spt_overlay_portal);
+	InitConcommandBase(_y_spt_overlay_width);
+	InitConcommandBase(_y_spt_overlay_fov);
+	InitConcommandBase(_y_spt_overlay_swap);
+
+#ifdef SPT_HUD_ENABLED
+	bool result = spt_hud.AddHudCallback(HudCallback(
+	    "overlay", std::bind(&Overlay::DrawCrosshair, this), []() { return true; }, true));
+
+	if (result)
 	{
-		InitConcommandBase(_y_spt_overlay);
-		InitConcommandBase(_y_spt_overlay_type);
-		InitConcommandBase(_y_spt_overlay_portal);
-		InitConcommandBase(_y_spt_overlay_width);
-		InitConcommandBase(_y_spt_overlay_fov);
-		InitConcommandBase(_y_spt_overlay_swap);
-
-		bool result = spt_hud.AddHudCallback(HudCallback(
-		    "overlay", std::bind(&Overlay::DrawCrosshair, this), []() { return true; }, true));
-
-		if (result)
-		{
-			InitConcommandBase(_y_spt_overlay_crosshair_size);
-			InitConcommandBase(_y_spt_overlay_crosshair_thickness);
-			InitConcommandBase(_y_spt_overlay_crosshair_color);
-		}
+		InitConcommandBase(_y_spt_overlay_crosshair_size);
+		InitConcommandBase(_y_spt_overlay_crosshair_thickness);
+		InitConcommandBase(_y_spt_overlay_crosshair_color);
 	}
+#endif
 }
 
-void Overlay::UnloadFeature() {}
-
-float Overlay::GetScreenAspectRatio()
+HOOK_THISCALL(void, Overlay, CViewRender__RenderView, CViewSetup* cameraView, int nClearFlags, int whatToDraw)
 {
-	// The VEngineClient013 interface isn't compatible between 3420 and 5135,
-	// so we hook this function instead of using the SDK
-	// TODO: implement a custom interface to be used with the IVEngineClientWrapper and/or move to spt_generic if more features need this
-	if (spt_overlay.ORIG_GetScreenAspect)
-		return spt_overlay.ORIG_GetScreenAspect();
-	return 16.0f / 9.0f; // assume 16:9 as a default
+	/*
+	* If the overlay is enabled, we'll trigger a recursive call to RenderView() via QueueOverlayRenderView(). You
+	* could in theory use this to have several overlays, in which case you'd need to keep track of the overlay
+	* depth to make everyone happy.
+	*/
+
+	static int callDepth = 0;
+	callDepth++;
+
+	// this is hardcoded to false for overlays, so we copy its value to be the same as for the main view
+	static bool doBloomAndToneMapping;
+
+	auto& ovr = spt_overlay;
+
+	if (callDepth == 1)
+	{
+		// for mesh rendering, should only be signaled once per frame before DrawTranslucents/DrawOpaques
+		RenderViewSignal(thisptr);
+		doBloomAndToneMapping = cameraView->m_bDoBloomAndToneMapping;
+	}
+	else
+	{
+		ovr.renderingOverlay = true;
+		cameraView->m_bDoBloomAndToneMapping = doBloomAndToneMapping;
+	}
+
+	if (_y_spt_overlay.GetBool())
+	{
+		if (!ovr.renderingOverlay)
+		{
+			// Queue a RenderView() call, this will make a copy of the params that we got called with. This
+			// function is in the SDK but has different virtual offsets for 3420/5135 :/.
+			ovr.CViewRender__QueueOverlayRenderView(thisptr, *cameraView, nClearFlags, whatToDraw);
+		}
+		ovr.ModifyView(cameraView);
+		ovr.ModifyScreenFlags(nClearFlags, whatToDraw);
+	}
+	// it just so happens that we don't need to make a full copy of the view and can use pointers instead
+	if (ovr.renderingOverlay)
+		ovr.overlayView = cameraView;
+	else
+		ovr.mainView = cameraView;
+
+	ovr.ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
+	callDepth--;
+	if (callDepth == 1)
+		ovr.renderingOverlay = false;
+}
+
+void Overlay::CViewRender__QueueOverlayRenderView(void* thisptr,
+                                                  const CViewSetup& renderView,
+                                                  int nClearFlags,
+                                                  int whatToDraw)
+{
+	Assert(QueueOverlayRenderView_Offset != -1);
+	typedef void(__thiscall * _QueueOverlayRenderView)(void* thisptr, const CViewSetup&, int, int);
+	((_QueueOverlayRenderView**)thisptr)[0][QueueOverlayRenderView_Offset](thisptr,
+	                                                                       renderView,
+	                                                                       nClearFlags,
+	                                                                       whatToDraw);
 }
 
 void Overlay::DrawCrosshair()
@@ -135,10 +200,9 @@ void Overlay::DrawCrosshair()
 		sscanf(color.c_str(), "%d %d %d %d", &r, &g, &b, &a);
 	}
 
-	vrect_t* screen = (vrect_t*)screenRect;
 	interfaces::surface->DrawSetColor(r, g, b, a);
-	int x = screen->x + screen->width / 2;
-	int y = screen->y + screen->height / 2;
+	int x = spt_hud.renderView->x + spt_hud.renderView->width / 2;
+	int y = spt_hud.renderView->y + spt_hud.renderView->height / 2;
 	int width = _y_spt_overlay_crosshair_size.GetInt();
 	int thickness = _y_spt_overlay_crosshair_thickness.GetInt();
 
@@ -153,61 +217,69 @@ void Overlay::DrawCrosshair()
 	                                    y + thickness / 2 + 1);
 }
 
-void __fastcall Overlay::HOOKED_CViewRender__RenderView(void* thisptr,
-                                                        int edx,
-                                                        void* cameraView,
-                                                        int nClearFlags,
-                                                        int whatToDraw)
+void Overlay::ModifyView(CViewSetup* renderView)
 {
-	if (spt_overlay.ORIG_CViewRender__Render == nullptr)
+	if (renderingOverlay)
 	{
-		spt_overlay.ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
-	}
-	else
-	{
-		if (g_OverlayRenderer.shouldRenderOverlay())
-		{
-			g_OverlayRenderer.modifyView(static_cast<CViewSetup*>(cameraView),
-			                             spt_overlay.renderingOverlay);
-			if (spt_overlay.renderingOverlay)
-			{
-				g_OverlayRenderer.modifySmallScreenFlags(nClearFlags, whatToDraw);
-			}
-			else
-			{
-				g_OverlayRenderer.modifyBigScreenFlags(nClearFlags, whatToDraw);
-			}
-		}
+		// scale this view to be smol
 
-		spt_overlay.ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
+		renderView->x = 0;
+		renderView->y = 0;
+
+		// game does some funny fov scaling, fixup so that overlay fov is scaled in the same way as the main view
+		const float half_ang = M_PI_F / 360.f;
+		float aspect = renderView->m_flAspectRatio;
+		renderView->fov = atan(tan(_y_spt_overlay_fov.GetFloat() * half_ang) * .75f * aspect) / half_ang;
+
+		renderView->width = _y_spt_overlay_width.GetFloat();
+		renderView->height = static_cast<int>(renderView->width / renderView->m_flAspectRatio);
+	}
+
+	if (renderingOverlay != _y_spt_overlay_swap.GetBool())
+	{
+		// move/rotate this view
+
+		switch (_y_spt_overlay_type.GetInt())
+		{
+#ifdef SPT_PORTAL_UTILS
+		case 0: // saveglitch offset
+			if (utils::DoesGameLookLikePortal())
+				calculateSGPosition(renderView->origin, renderView->angles);
+			break;
+		case 1: // angle glitch tp pos
+			if (utils::DoesGameLookLikePortal())
+				calculateAGPosition(renderView->origin, renderView->angles);
+			break;
+#endif
+		case 2: // rear view cam
+			renderView->angles.y += 180;
+			break;
+		case 3: // havok pos
+			spt_player_shadow.GetPlayerHavokPos(&renderView->origin, nullptr);
+			renderView->origin += spt_playerio.m_vecViewOffset.GetValue();
+			break;
+		case 4: // don't transform when behind sg portal
+			renderView->origin = utils::GetPlayerEyePosition();
+			renderView->angles = utils::GetPlayerEyeAngles();
+			break;
+		default:
+			break;
+		}
+		// normalize yaw
+		renderView->angles.y = utils::NormalizeDeg(renderView->angles.y);
 	}
 }
 
-void __fastcall Overlay::HOOKED_CViewRender__Render(void* thisptr, int edx, vrect_t* rect)
+void Overlay::ModifyScreenFlags(int& clearFlags, int& drawFlags)
 {
-	RenderSignal(thisptr, rect);
-	if (spt_overlay.ORIG_CViewRender__RenderView == nullptr)
+	if (renderingOverlay)
 	{
-		spt_overlay.ORIG_CViewRender__Render(thisptr, edx, rect);
+		drawFlags = RENDERVIEW_UNSPECIFIED;
+		clearFlags |= VIEW_CLEAR_COLOR;
 	}
-	else
+	else if (_y_spt_overlay_swap.GetBool())
 	{
-		spt_overlay.renderingOverlay = false;
-		spt_overlay.screenRect = rect;
-		if (!g_OverlayRenderer.shouldRenderOverlay())
-		{
-			spt_overlay.ORIG_CViewRender__Render(thisptr, edx, rect);
-		}
-		else
-		{
-			spt_overlay.ORIG_CViewRender__Render(thisptr, edx, rect);
-
-			spt_overlay.renderingOverlay = true;
-			Rect_t rec = g_OverlayRenderer.getRect();
-			spt_overlay.screenRect = &rec;
-			spt_overlay.ORIG_CViewRender__Render(thisptr, edx, &rec);
-			spt_overlay.renderingOverlay = false;
-		}
+		drawFlags &= ~RENDERVIEW_DRAWVIEWMODEL;
 	}
 }
 

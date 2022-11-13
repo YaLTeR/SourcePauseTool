@@ -148,15 +148,6 @@
     <ClCompile Include="spt\spt-serverplugin.cpp">
       <Filter>spt</Filter>
     </ClCompile>
-    <ClCompile Include="spt\overlay\overlay-renderer.cpp">
-      <Filter>spt\overlay</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\overlay\overlays.cpp">
-      <Filter>spt\overlay</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\overlay\portal_camera.cpp">
-      <Filter>spt\overlay</Filter>
-    </ClCompile>
     <ClCompile Include="spt\scripts\condition.cpp">
       <Filter>spt\scripts</Filter>
     </ClCompile>
@@ -294,6 +285,9 @@
     </ClCompile>
     <ClCompile Include="spt\features\visualizations\renderer\mesh_renderer.cpp">
       <Filter>spt\features\visualizations\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\utils\portal_utils.cpp">
+      <Filter>spt\utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -486,15 +480,6 @@
     <ClInclude Include="spt\spt-serverplugin.hpp">
       <Filter>spt</Filter>
     </ClInclude>
-    <ClInclude Include="spt\overlay\overlay-renderer.hpp">
-      <Filter>spt\overlay</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\overlay\overlays.hpp">
-      <Filter>spt\overlay</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\overlay\portal_camera.hpp">
-      <Filter>spt\overlay</Filter>
-    </ClInclude>
     <ClInclude Include="spt\scripts\condition.hpp">
       <Filter>spt\scripts</Filter>
     </ClInclude>
@@ -618,6 +603,9 @@
     <ClInclude Include="spt\utils\typeinfo.h">
       <Filter>spt\utils</Filter>
     </ClInclude>
+    <ClInclude Include="spt\utils\portal_utils.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">
@@ -657,9 +645,6 @@
     </Filter>
     <Filter Include="spt\features">
       <UniqueIdentifier>{e24a2a7d-8667-4610-887c-f14d62c9fbf7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="spt\overlay">
-      <UniqueIdentifier>{a5343f9b-ae64-4b1f-8126-a7964c98afb0}</UniqueIdentifier>
     </Filter>
     <Filter Include="spt\vgui">
       <UniqueIdentifier>{ef90278d-c4de-4d5f-b06f-50c99a1d056f}</UniqueIdentifier>

@@ -72,7 +72,7 @@ void ShadowPosition::LoadFeature()
 {
 	if (ORIG_GetShadowPosition)
 	{
-#ifdef SSDK2007
+#ifdef SPT_HUD_ENABLED
 		AddHudCallback(
 		    "shadow",
 		    [this]()

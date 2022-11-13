@@ -83,7 +83,7 @@ void ISGFeature::LoadFeature()
 	{
 		InitCommand(y_spt_set_isg);
 
-#ifdef SSDK2007
+#ifdef SPT_HUD_ENABLED
 		AddHudCallback(
 		    "isg", []() { spt_hud.DrawTopHudElement(L"isg: %d", IsISGActive()); }, y_spt_hud_isg);
 #endif

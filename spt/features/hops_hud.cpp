@@ -1,9 +1,12 @@
 #include "stdafx.h"
-#if defined(SSDK2007)
+
+#include "hud.hpp"
+
+#ifdef SPT_HUD_ENABLED
+
 #include "..\feature.hpp"
 #include <algorithm>
 #include "convar.hpp"
-#include "hud.hpp"
 #include "interfaces.hpp"
 #include "math.hpp"
 #include "signals.hpp"
@@ -449,7 +452,6 @@ void HopsHud::PrintStrafeCol(std::function<void(const ljstats::SegmentStats&, wc
 	wchar_t buffer[BUFFER_SIZE];
 
 	auto surface = interfaces::surface;
-	auto screen = spt_hud.screen;
 	auto fontTall = surface->GetFontTall(hopsFont);
 	int ticks = ljstats::lastJump.TotalTicks();
 
@@ -465,7 +467,7 @@ void HopsHud::PrintStrafeCol(std::function<void(const ljstats::SegmentStats&, wc
 		}
 
 		// Leave space left for last line
-		if (y + fontTall * 2 > screen->height)
+		if (y + fontTall * 2 > spt_hud.renderView->height)
 		{
 			break;
 		}
@@ -521,7 +523,7 @@ void HopsHud::DrawHopHud()
 	}
 
 	auto surface = interfaces::surface;
-	auto screen = spt_hud.screen;
+	auto renderView = spt_hud.renderView;
 
 	surface->DrawSetTextFont(hopsFont);
 	surface->DrawSetTextColor(255, 255, 255, 255);
@@ -531,8 +533,8 @@ void HopsHud::DrawHopHud()
 	const int MARGIN = 2;
 	const int BUFFER_SIZE = 256;
 	wchar_t buffer[BUFFER_SIZE];
-	int x = screen->width / 2 + y_spt_hud_hops_x.GetFloat();
-	int y = screen->height / 2 + y_spt_hud_hops_y.GetFloat();
+	int x = renderView->width / 2 + y_spt_hud_hops_x.GetFloat();
+	int y = renderView->height / 2 + y_spt_hud_hops_y.GetFloat();
 
 	if (y_spt_hud_hops.GetBool())
 	{
@@ -562,12 +564,11 @@ void HopsHud::DrawHopHud()
 		surface->DrawSetTextColor(255, 255, 255, 255);
 		surface->DrawSetTexture(0);
 		fontTall = surface->GetFontTall(hopsFont);
-		int i = 0;
 		int ticks = ljstats::lastJump.TotalTicks();
 		const int COL_WIDTH = 75;
 
 		x = 6;
-		y = screen->height / 3;
+		y = renderView->height / 3;
 
 		PrintStrafeCol([](const ljstats::SegmentStats& segment, wchar_t* buffer, int x, int y)
 		               { swprintf(buffer, L"%.3f", segment.positiveAccel); },

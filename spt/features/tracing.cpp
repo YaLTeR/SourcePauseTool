@@ -284,7 +284,7 @@ void Tracing::LoadFeature()
 	}
 #endif
 
-#if defined(SSDK2007)
+#ifdef SPT_HUD_ENABLED
 	if (ORIG_CEngineTrace__PointOutsideWorld)
 	{
 		AddHudCallback(

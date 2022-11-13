@@ -1,7 +1,11 @@
 #include "stdafx.h"
-#if defined(SSDK2007)
-#include <algorithm>
+
 #include "hud.hpp"
+
+#ifdef SPT_HUD_ENABLED
+
+#include <algorithm>
+#include "overlay.hpp"
 #include "convar.hpp"
 #include "game_detection.hpp"
 #include "interfaces.hpp"
@@ -22,23 +26,30 @@ const std::string FONT_HudNumbers = "HudNumbers";
 
 namespace patterns
 {
-	PATTERNS(VGui_Paint, "5135", "E8 ?? ?? ?? ?? 8B 10 8B 52 34 8B C8 FF E2 CC CC");
 	PATTERNS(
-	    StartDrawing,
+	    CMatSystemSurface__StartDrawing,
 	    "5135",
-	    "55 8B EC 83 E4 C0 83 EC 38 80 ?? ?? ?? ?? ?? ?? 56 57 8B F9 75 57 8B ?? ?? ?? ?? ?? C6 ?? ?? ?? ?? ?? ?? FF ?? 8B 10 6A 00 8B C8 8B 42 20");
+	    "55 8B EC 83 E4 C0 83 EC 38 80 ?? ?? ?? ?? ?? ?? 56 57 8B F9 75 57 8B ?? ?? ?? ?? ?? C6 ?? ?? ?? ?? ?? ?? FF ?? 8B 10 6A 00 8B C8 8B 42 20",
+	    "7462488",
+	    "55 8B EC 64 A1 ?? ?? ?? ?? 6A FF 68 ?? ?? ?? ?? 50 64 89 25 ?? ?? ?? ?? 83 EC 14");
 	PATTERNS(
-	    FinishDrawing,
+	    CMatSystemSurface__FinishDrawing,
 	    "5135",
-	    "56 6A 00 E8 ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? 8B 01 8B ?? ?? ?? ?? ?? 83 C4 04 FF D2 8B F0 85 F6 74 09 8B 06 8B 50 08 8B CE FF D2");
-
+	    "56 6A 00 E8 ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? 8B 01 8B ?? ?? ?? ?? ?? 83 C4 04 FF D2 8B F0 85 F6 74 09 8B 06 8B 50 08 8B CE FF D2",
+	    "7462488",
+	    "55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 64 89 25 ?? ?? ?? ?? 51 56 6A 00");
+	PATTERNS(CEngineVGui__Paint,
+	         "5135",
+	         "83 EC 18 56 6A 04 6A 00",
+	         "7462488",
+	         "55 8B EC 83 EC 2C 53 8B D9 8B 0D ?? ?? ?? ?? 56");
 } // namespace patterns
 
 void HUDFeature::InitHooks()
 {
-	FIND_PATTERN(vguimatsurface, StartDrawing);
-	FIND_PATTERN(vguimatsurface, FinishDrawing);
-	HOOK_FUNCTION(engine, VGui_Paint);
+	FIND_PATTERN(vguimatsurface, CMatSystemSurface__StartDrawing);
+	FIND_PATTERN(vguimatsurface, CMatSystemSurface__FinishDrawing);
+	HOOK_FUNCTION(engine, CEngineVGui__Paint);
 }
 
 bool HUDFeature::AddHudCallback(HudCallback callback)
@@ -55,9 +66,7 @@ void HUDFeature::DrawTopHudElement(const wchar* format, ...)
 	vgui::HFont font;
 
 	if (!GetFont(FONT_DefaultFixedOutline, font))
-	{
 		return;
-	}
 
 	va_list args;
 	va_start(args, format);
@@ -107,31 +116,34 @@ bool HUDFeature::GetFont(const std::string& fontName, vgui::HFont& fontOut)
 	}
 }
 
-void HUDFeature::LoadFeature()
-{
-	if (loadingSuccessful)
-	{
-		InitConcommandBase(y_spt_hud_left);
-		cl_showpos = interfaces::g_pCVar->FindVar("cl_showpos");
-		cl_showfps = interfaces::g_pCVar->FindVar("cl_showfps");
-	}
-}
-
 void HUDFeature::PreHook()
 {
-	loadingSuccessful = ORIG_FinishDrawing && ORIG_StartDrawing && ORIG_VGui_Paint;
+	loadingSuccessful =
+	    ORIG_CMatSystemSurface__StartDrawing && ORIG_CMatSystemSurface__FinishDrawing && ORIG_CEngineVGui__Paint;
 }
 
-void HUDFeature::UnloadFeature() {}
+void HUDFeature::LoadFeature()
+{
+	if (!loadingSuccessful)
+		return;
+	cl_showpos = g_pCVar->FindVar("cl_showpos");
+	cl_showfps = g_pCVar->FindVar("cl_showfps");
+	InitConcommandBase(y_spt_hud_left);
+}
 
-void HUDFeature::DrawHUD()
+void HUDFeature::UnloadFeature()
+{
+	cl_showpos = cl_showfps = nullptr;
+}
+
+void HUDFeature::DrawHUD(bool overlay)
 {
 	vgui::HFont font;
 
-	if (!screen || !interfaces::surface || !GetFont(FONT_DefaultFixedOutline, font))
+	if (!interfaces::surface || !GetFont(FONT_DefaultFixedOutline, font))
 		return;
 
-	ORIG_StartDrawing(interfaces::surface, 0);
+	ORIG_CMatSystemSurface__StartDrawing(interfaces::surface, 0);
 
 	try
 	{
@@ -152,7 +164,7 @@ void HUDFeature::DrawHUD()
 		}
 		else
 		{
-			topX = screen->width - 300 + 2;
+			topX = renderView->width - 300 + 2;
 			if (cl_showpos && cl_showpos->GetBool())
 				topVertIndex += 3;
 			if (cl_showfps && cl_showfps->GetBool())
@@ -161,16 +173,13 @@ void HUDFeature::DrawHUD()
 
 		for (auto& callback : hudCallbacks)
 		{
-			if (spt_overlay.renderingOverlay && callback.renderTime == RenderTime::overlay
-			    && callback.shouldDraw())
-			{
+#ifdef SPT_OVERLAY_ENABLED
+			if (overlay == callback.drawInOverlay && callback.shouldDraw())
 				callback.draw();
-			}
-			else if (!spt_overlay.renderingOverlay && callback.renderTime == RenderTime::paint
-			         && callback.shouldDraw())
-			{
+#else
+			if (!callback.drawInOverlay && callback.shouldDraw())
 				callback.draw();
-			}
+#endif
 		}
 	}
 	catch (const std::exception& e)
@@ -178,21 +187,34 @@ void HUDFeature::DrawHUD()
 		Msg("Error drawing HUD: %s\n", e.what());
 	}
 
-	ORIG_FinishDrawing(interfaces::surface, 0);
+	ORIG_CMatSystemSurface__FinishDrawing(interfaces::surface, 0);
 }
 
-void __fastcall HUDFeature::HOOKED_VGui_Paint(void* thisptr, int edx, int mode)
+HOOK_THISCALL(void, HUDFeature, CEngineVGui__Paint, PaintMode_t mode)
 {
-#ifndef OE
-	if (spt_hud.loadingSuccessful && (mode == 2 || spt_overlay.renderingOverlay))
+#ifdef SPT_OVERLAY_ENABLED
+	if (spt_hud.loadingSuccessful && mode == PAINT_INGAMEPANELS)
 	{
-		spt_hud.screen = (vrect_t*)spt_overlay.screenRect;
-		spt_hud.DrawHUD();
+		/*
+		* Getting the HUD & overlay to not fight turns out to be somewhat tricky. There might be a better way, but
+		* the only approach that I've found so far is to draw the HUD for both the main view and overlay at the
+		* same time, otherwise the HUD for the main view gets cleared. The old version did this from VGui_Paint(),
+		* but the pattern for that isn't unique on steampipe so we use CEngineVGui::Paint() instead. By the time
+		* this is called, we're rendering the main view (after the overlay) so spt_overlay has the pointers for
+		* both views.
+		*/
+		Assert(spt_overlay.mainView);
+		spt_hud.renderView = spt_overlay.mainView;
+		spt_hud.DrawHUD(false);
+		if (_y_spt_overlay.GetBool())
+		{
+			Assert(spt_overlay.overlayView);
+			spt_hud.renderView = spt_overlay.overlayView;
+			spt_hud.DrawHUD(true);
+		}
 	}
-
 #endif
-
-	spt_hud.ORIG_VGui_Paint(thisptr, edx, mode);
+	spt_hud.ORIG_CEngineVGui__Paint(thisptr, edx, mode);
 }
 
 HudCallback::HudCallback(std::string key, std::function<void()> draw, std::function<bool()> shouldDraw, bool overlay)
@@ -200,7 +222,7 @@ HudCallback::HudCallback(std::string key, std::function<void()> draw, std::funct
 	this->sortKey = key;
 	this->draw = draw;
 	this->shouldDraw = shouldDraw;
-	this->renderTime = overlay ? RenderTime::overlay : RenderTime::paint;
+	this->drawInOverlay = overlay;
 }
 
 #endif

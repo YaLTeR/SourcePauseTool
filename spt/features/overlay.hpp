@@ -1,44 +1,44 @@
-#ifndef OE
+#pragma once
+
+#if !defined(OE) && !defined(BMS)
+
+#define SPT_OVERLAY_ENABLED
+
 #include "..\feature.hpp"
 
-typedef void(
-    __fastcall* _CViewRender__RenderView)(void* thisptr, int edx, void* cameraView, int nClearFlags, int whatToDraw);
-typedef void(__fastcall* _CViewRender__Render)(void* thisptr, int edx, void* rect);
-typedef float(__cdecl* _GetScreenAspect)();
+class C_BasePlayer;
+enum SkyboxVisibility_t;
+#include "networkvar.h"
+#include "viewrender.h"
 
 // Overlay hook stuff, could combine with overlay renderer as well
 class Overlay : public FeatureWrapper<Overlay>
 {
 public:
 	bool renderingOverlay = false;
-	void* screenRect = nullptr;
+	// these point to the call stack, only valid while we're in RenderView()
+	CViewSetup* mainView = nullptr;
+	CViewSetup* overlayView = nullptr;
 
-	float GetScreenAspectRatio();
-
-	_CViewRender__Render ORIG_CViewRender__Render = nullptr;
+	DECL_HOOK_THISCALL(void, CViewRender__RenderView, CViewSetup* cameraView, int nClearFlags, int whatToDraw);
 
 protected:
-	virtual bool ShouldLoadFeature() override;
-
 	virtual void InitHooks() override;
 
 	virtual void PreHook() override;
 
 	virtual void LoadFeature() override;
 
-	virtual void UnloadFeature() override;
-
 private:
-	void DrawCrosshair();
-	_CViewRender__RenderView ORIG_CViewRender__RenderView = nullptr;
-	_GetScreenAspect ORIG_GetScreenAspect = nullptr;
+	int QueueOverlayRenderView_Offset = -1;
 
-	static void __fastcall HOOKED_CViewRender__RenderView(void* thisptr,
-	                                                      int edx,
-	                                                      void* cameraView,
-	                                                      int nClearFlags,
-	                                                      int whatToDraw);
-	static void __fastcall HOOKED_CViewRender__Render(void* thisptr, int edx, vrect_t* rect);
+	void CViewRender__QueueOverlayRenderView(void* thisptr,
+	                                         const CViewSetup& renderView,
+	                                         int nClearFlags,
+	                                         int whatToDraw);
+	void DrawCrosshair();
+	void ModifyView(CViewSetup* renderView);
+	void ModifyScreenFlags(int& clearFlags, int& drawFlags);
 };
 
 extern Overlay spt_overlay;

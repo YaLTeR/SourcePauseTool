@@ -2,7 +2,7 @@
 
 #include "condition2.hpp"
 
-#include "..\overlay\portal_camera.hpp"
+#include "spt\utils\portal_utils.hpp"
 
 #include "ent_utils.hpp"
 #include "math.hpp"
@@ -166,4 +166,4 @@ namespace scripts2
 		return false;
 	}
 #endif
-} // namespace scripts
+} // namespace scripts2
