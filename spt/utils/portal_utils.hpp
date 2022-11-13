@@ -1,6 +1,9 @@
 #pragma once
 
-#ifndef OE
+#if !defined(OE) && !defined(BMS)
+
+#define SPT_PORTAL_UTILS
+
 #include <string>
 #include "engine\iserverplugin.h"
 #include "icliententity.h"
@@ -17,4 +20,5 @@ void calculateAGOffsetPortal(IClientEntity* enter_portal,
 void calculateSGPosition(Vector& new_player_origin, QAngle& new_player_angles);
 void calculateOffsetPlayer(IClientEntity* saveglitch_portal, Vector& new_player_origin, QAngle& new_player_angles);
 std::wstring calculateWillAGSG(Vector& new_player_origin, QAngle& new_player_angles);
+
 #endif

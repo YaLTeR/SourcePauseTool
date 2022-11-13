@@ -82,12 +82,12 @@ private:
 	{
 		/*
 		* 1) InitHooks: spt_overlay finds the render function.
-		* 2) PreHook: spt_overlay may connect the render signal. To not depend on feature load order
-		*    we cannot check if the signal exists, but we can check if the render function was found.
+		* 2) PreHook: spt_overlay may connect the RenderViewSignal. To not depend on feature load order
+		*    we cannot check if the signal exists, but we can check if the RenderView function was found.
 		* 3) LoadFeature: Anything that uses the mesh rendering system can check to see if the signal exists.
 		*/
 		if (ORIG_CRendering3dView__DrawOpaqueRenderables && ORIG_CRendering3dView__DrawTranslucentRenderables
-		    && spt_overlay.ORIG_CViewRender__Render)
+		    && spt_overlay.ORIG_CViewRender__RenderView)
 		{
 			MeshRenderSignal.Works = true;
 		}
@@ -103,12 +103,12 @@ private:
 
 	virtual void LoadFeature() override
 	{
-		// if the mesh render signal works, we've set it in PreHook() and the RenderSignal will definitely work
+		// if the mesh render signal works, we've set it in PreHook() and the RenderViewSignal will definitely work
 		if (MeshRenderSignal.Works)
 		{
-			Assert(RenderSignal.Works);
+			Assert(RenderViewSignal.Works);
 			InitConcommandBase(y_spt_draw_mesh_debug);
-			RenderSignal.Connect(this, &MeshRendererFeature::OnRenderSignal);
+			RenderViewSignal.Connect(this, &MeshRendererFeature::OnRenderViewSignal);
 		}
 	}
 
@@ -133,7 +133,7 @@ private:
 		g_meshRenderer.OnDrawTranslucents(thisptr);
 	}
 
-	void OnRenderSignal(void* thisptr, vrect_t*);
+	void OnRenderViewSignal(void* thisptr);
 	void OnDrawOpaques(void* renderingView);
 	void OnDrawTranslucents(void* renderingView);
 };
@@ -441,7 +441,7 @@ void MeshRenderer::DrawMesh(const StaticMesh& staticMesh, const RenderCallback& 
 
 /**************************************** MESH RENDERER FEATURE ****************************************/
 
-void MeshRendererFeature::OnRenderSignal(void* thisptr, vrect_t*)
+void MeshRendererFeature::OnRenderViewSignal(void* thisptr)
 {
 	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	deferredMeshWrappers.clear();

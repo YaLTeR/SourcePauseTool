@@ -19,5 +19,5 @@ extern Gallant::Signal0<void> DemoStartPlaybackSignal;
 extern Gallant::Signal1<bool> SV_FrameSignal;
 extern Gallant::Signal2<void*, void*> ProcessMovementPost_Signal;
 extern Gallant::Signal2<void*, void*> ProcessMovementPre_Signal;
-extern Gallant::Signal2<void*, struct vrect_t*> RenderSignal;
+extern Gallant::Signal1<void*> RenderViewSignal;
 extern Gallant::Signal1<MeshRenderer&> MeshRenderSignal;

@@ -1,8 +1,11 @@
 #include "stdafx.h"
-#ifdef SSDK2007
+
+#include "hud.hpp"
+
+#ifdef SPT_HUD_ENABLED
+
 #include "..\feature.hpp"
 #include "convar.hpp"
-#include "hud.hpp"
 #include "interfaces.hpp"
 #include "playerio.hpp"
 #include "signals.hpp"
@@ -56,7 +59,7 @@ void BoogFeature::BoogTick()
 
 bool BoogFeature::ShouldDrawBoog()
 {
-	bool rval = ticksLeftToDrawBoog > 0 && y_spt_hud_edgebug.GetBool() && interfaces::surface && spt_hud.screen;
+	bool rval = ticksLeftToDrawBoog > 0 && y_spt_hud_edgebug.GetBool() && interfaces::surface && spt_hud.renderView;
 
 	if (rval)
 	{
@@ -71,7 +74,7 @@ bool BoogFeature::ShouldDrawBoog()
 void BoogFeature::DrawBoog()
 {
 	auto surface = interfaces::surface;
-	auto screen = spt_hud.screen;
+	auto view = spt_hud.renderView;
 
 	if (boogFont == 0)
 	{
@@ -96,12 +99,12 @@ void BoogFeature::DrawBoog()
 	int tall = 0, len = 0;
 	surface->GetTextSize(boogFont, L"boog", len, tall);
 
-	int x = screen->width / 2 - len / 2;
-	int y = screen->height / 2 + 100;
+	int x = view->width / 2 - len / 2;
+	int y = view->height / 2 + 100;
 	
-	if (tall + y > screen->height)
+	if (tall + y > view->height)
 	{
-		y = screen->height - tall;
+		y = view->height - tall;
 	}
 
 	surface->DrawSetTextPos(x, y);

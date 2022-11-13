@@ -1,6 +1,9 @@
 #include "stdafx.h"
 
-#ifndef OE
+#include "portal_utils.hpp"
+
+#ifdef SPT_PORTAL_UTILS
+
 #include "..\spt-serverplugin.hpp"
 
 #include "ent_utils.hpp"
@@ -12,8 +15,6 @@
 #include "eiface.h"
 #include "engine\iserverplugin.h"
 #include "mathlib\vmatrix.h"
-#include "overlay-renderer.hpp"
-#include "portal_camera.hpp"
 #include "tier2\tier2.h"
 #include "interfaces.hpp"
 #include "..\features\ent_props.hpp"

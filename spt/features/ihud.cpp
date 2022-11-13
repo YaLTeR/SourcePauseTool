@@ -1,6 +1,8 @@
 #include "stdafx.h"
-#if defined(SSDK2007)
+
 #include "ihud.hpp"
+
+#ifdef SPT_HUD_ENABLED
 
 #include "..\cvars.hpp"
 #include "command.hpp"
@@ -11,6 +13,9 @@
 #include "..\sptlib-wrapper.hpp"
 
 #include <cctype>
+#undef min
+#undef max
+#include <algorithm>
 
 InputHud spt_ihud;
 
@@ -493,8 +498,8 @@ void InputHud::DrawInputHud()
 	// get offset from percentage
 	int ihudSizeX, ihudSizeY;
 	GetCurrentSize(ihudSizeX, ihudSizeY);
-	xOffset = (spt_hud.screen->width - ihudSizeX) * y_spt_ihud_x.GetFloat() * 0.01f;
-	yOffset = (spt_hud.screen->height - ihudSizeY) * y_spt_ihud_y.GetFloat() * 0.01f;
+	xOffset = (spt_hud.renderView->width - ihudSizeX) * y_spt_ihud_x.GetFloat() * 0.01f;
+	yOffset = (spt_hud.renderView->height - ihudSizeY) * y_spt_ihud_y.GetFloat() * 0.01f;
 
 	gridSize = y_spt_ihud_grid_size.GetInt();
 	padding = y_spt_ihud_grid_padding.GetInt();

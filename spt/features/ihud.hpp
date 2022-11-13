@@ -1,8 +1,10 @@
 #pragma once
 
-#if defined(SSDK2007)
-#include "..\feature.hpp"
 #include "hud.hpp"
+
+#ifdef SPT_HUD_ENABLED
+
+#include "..\feature.hpp"
 #include "basehandle.h"
 #include "Color.h"
 

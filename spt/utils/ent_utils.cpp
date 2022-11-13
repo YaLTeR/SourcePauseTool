@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "..\cvars.hpp"
-#include "..\overlay\portal_camera.hpp"
+#include "spt\utils\portal_utils.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "..\strafe\strafestuff.hpp"
 #include "SPTLib\sptlib.hpp"
@@ -53,6 +53,8 @@ namespace utils
 		}
 	}
 
+#ifdef SPT_PORTAL_UTILS
+
 	void PrintAllPortals()
 	{
 		int maxIndex = interfaces::entList->GetHighestEntityIndex();
@@ -76,6 +78,8 @@ namespace utils
 			}
 		}
 	}
+
+#endif
 
 	IClientEntity* GetPlayer()
 	{

@@ -311,7 +311,7 @@ void TASFeature::LoadFeature()
 		InitConcommandBase(tas_script_onsuccess);
 
 		AfterFramesSignal.Connect(&scripts::g_TASReader, &scripts::SourceTASReader::OnAfterFrames);
-#if defined(SSDK2007)
+#ifdef SPT_HUD_ENABLED
 		AddHudCallback(
 		    "frame",
 		    [this]()

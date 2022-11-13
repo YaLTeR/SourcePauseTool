@@ -7,7 +7,7 @@
 #include "spt\utils\game_detection.hpp"
 #include "spt\utils\signals.hpp"
 #include "spt\utils\interfaces.hpp"
-#include "spt\overlay\portal_camera.hpp"
+#include "spt\utils\portal_utils.hpp"
 #include "spt\utils\ent_utils.hpp"
 #include "spt\features\ent_props.hpp"
 #include "spt\utils\math.hpp"

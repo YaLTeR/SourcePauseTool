@@ -43,8 +43,6 @@
 #endif
 
 #include "SPTLib\sptlib.hpp"
-#include "overlay\overlay-renderer.hpp"
-#include "overlay\overlays.hpp"
 #include "tier0\memdbgoff.h" // YaLTeR - switch off the memory debugging.
 using namespace std::literals;
 
