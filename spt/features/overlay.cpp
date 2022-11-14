@@ -98,12 +98,12 @@ void Overlay::PreHook()
 #endif
 
 	if (QueueOverlayRenderView_Offset != -1)
-		RenderViewSignal.Works = true; // we use this as a "loading successful" flag
+		RenderViewPre_Signal.Works = true; // we use this as a "loading successful" flag
 }
 
 void Overlay::LoadFeature()
 {
-	if (!RenderViewSignal.Works)
+	if (!RenderViewPre_Signal.Works)
 		return;
 	InitConcommandBase(_y_spt_overlay);
 	InitConcommandBase(_y_spt_overlay_type);
@@ -143,8 +143,6 @@ HOOK_THISCALL(void, Overlay, CViewRender__RenderView, CViewSetup* cameraView, in
 
 	if (callDepth == 1)
 	{
-		// for mesh rendering, should only be signaled once per frame before DrawTranslucents/DrawOpaques
-		RenderViewSignal(thisptr);
 		doBloomAndToneMapping = cameraView->m_bDoBloomAndToneMapping;
 	}
 	else
@@ -152,6 +150,7 @@ HOOK_THISCALL(void, Overlay, CViewRender__RenderView, CViewSetup* cameraView, in
 		ovr.renderingOverlay = true;
 		cameraView->m_bDoBloomAndToneMapping = doBloomAndToneMapping;
 	}
+	RenderViewPre_Signal(thisptr, cameraView);
 
 	if (_y_spt_overlay.GetBool())
 	{

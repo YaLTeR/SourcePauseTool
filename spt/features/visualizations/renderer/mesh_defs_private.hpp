@@ -1,7 +1,59 @@
-/*
+﻿/*
 * Purpose: private shared stuff between the mesh builder and renderer. Helps keep the public header(s) relatively
 * clean and can be used by any other internal rendering files. You should never have to include this file as a
 * user unless you want to do something quirky like adding custom verts/indices.
+* 
+* Here's a basic overview of the system:
+* 
+* We want a system that allows the user to create a mesh made of lines, faces, and different colors. At the end of
+* the day we need to call CMatRenderContextPtr->GetDynamicMesh() & CMatRenderContextPtr->CraeteStaticMesh(). The
+* latter can be used (almost) as-is, but the former needs to be filled every single time it's rendered.
+* 
+*  ┌────────────────────┐                                       ┌───────────────────────┐
+*  │CreateCollideFeature│                                       │       MeshData        │
+*  └────────┬───────────┘                                       │┌─────────────────────┐│
+*           │                                                   ││MeshComponentData(2x)││
+*           │can be used for                                    ││    ┌──────────┐     ││
+*           ▼                                                   ││    │vector of │     ││
+*  ┌───────────────────┐ edits state of ┌───────────────────┐   ││    │VertexData│     ││
+*  │MeshBuilderDelegate├───────────────►│MeshBuilderInternal├──►││    └──────────┘     ││
+*  └───────────────────┘                └───────────────────┘   └┴┬────────────────────┴┘
+*   (stateless) ▲                                                 │
+*               │gives user a delegate                            │converted to a MeshUnit
+*               │                                                 │- immediately for statics
+*    ┌──────────┴───┐                                             │- during rendering for dynamics
+*    │MeshBuilderPro│                                             ▼
+*    └──────────────┘                                        ┌──────────────────┐
+*     (stateless)                                            │     MeshUnit     │
+*                                                            │┌────────────────┐│
+*  ┌───────────────────┐          returned to user           ││IMeshWrapper(2x)││
+*  │Static/Dynamic Mesh│◄────────────────────────────────────┤│    ┌──────┐    ││
+*  └────────┬──────────┘                                     ││    │IMesh*│    ││
+*           │                                                ││    └──────┘    ││
+*           │user gives to delegate                          └┴────────────────┴┘
+*           ▼
+* ┌────────────────────┐        ┌────────────────────────────┐    ┌───────────────────────┐
+* │MeshRendererDelegate├───────►│std::vector<MeshUnitWrapper>├───►│DrawOpaqueRenderables()│
+* └────────────────────┘ queues └───────────────────────────┬┘    └───────────────────────┘
+*  (stateless) ▲                                            │ rendered
+*              │gives user a delegate                       │   ┌────────────────────────────┐
+*              │                                            └──►│DrawTranslucentRenderables()│
+*  ┌───────────┴───────┐ signals pre-frame ┌───────────┐        └────────────────────────────┘
+*  │MeshRendererFeature│◄──────────────────┤spt_overlay│
+*  └───────────────────┘                   └───────────┘
+* 
+* A brief description of some of the main classes:
+* 
+* MeshBuilderInternal - holds temporary MeshData buffers for static/dynamic meshes
+* MeshComponentData - holds the verts & indices needed for mesh creation
+* IMeshWrapper - a wrapper of the game's mesh representation, used to store or make IMesh* objects
+* MeshUnit - a fully cooked and seasoned mesh ready for rendering (or has enough data to create one)
+* MeshRendererFeature - handles loading/unloading of the whole system, rendering, and render callbacks
+* MeshUnitWrapper - wraps static/dynamic meshes, also handles rendering and render callbacks
+* 
+* The purpose of having stateless classes is to keep public headers clean (state is managed by internal classes).
+* The purpose of using std::function for mesh building/rendering is to enforce proper initialization and cleanup.
+* The purpose of using delegates is for shorter variable names.
 */
 
 #pragma once
@@ -20,6 +72,9 @@
 #endif
 #include "vprof.h"
 
+#define VPROF_BUDGETGROUP_MESHBUILDER _T("Mesh_Builder")
+#define VPROF_BUDGETGROUP_MESH_RENDERER _T("Mesh_Renderer")
+
 #include <vector>
 
 inline int g_meshRenderFrameNum = 0;
@@ -32,7 +87,7 @@ struct VertexData
 	color32 col;
 };
 
-// list of verts + indices into that list
+// list of verts + indices
 struct MeshComponentData
 {
 	std::vector<VertexData> verts;
@@ -42,22 +97,14 @@ struct MeshComponentData
 	MeshComponentData(MeshComponentData&) = delete;
 	MeshComponentData(MeshComponentData&&) = default;
 
-	inline bool Empty() const
-	{
-		return verts.size() == 0;
-	};
-
-	inline void Clear()
-	{
-		verts.clear();
-		indices.clear();
-	}
+	bool Empty() const;
+	void Clear();
 
 	void Reserve(size_t numExtraVerts, size_t numExtraIndices);
 	IMesh* CreateIMesh(IMaterial* material, const CreateMeshParams& params, bool faces, bool dynamic) const;
 };
 
-// verts & indices for faces & lines
+// two components - faces/lines
 struct MeshData
 {
 	MeshComponentData faceData, lineData;
@@ -66,25 +113,17 @@ struct MeshData
 	MeshData(MeshData&) = delete;
 	MeshData(MeshData&&) = default;
 
-	inline bool Empty() const
-	{
-		return faceData.Empty() && lineData.Empty();
-	}
-
-	inline void Clear()
-	{
-		faceData.Clear();
-		lineData.Clear();
-	}
+	bool Empty() const;
+	void Clear();
 };
 
 typedef int DynamicComponentToken;
 
-// face & line component
-struct MeshWrapper
+// two IMeshWrappers - faces/lines
+struct MeshUnit
 {
 	// either an IMesh*, or contains enough data to create one
-	struct MeshWrapperComponent
+	struct IMeshWrapper
 	{
 		union
 		{
@@ -93,32 +132,31 @@ struct MeshWrapper
 		};
 		const bool opaque, faces, dynamic, zTest;
 
-		MeshWrapperComponent(const MeshWrapper& myWrapper, int mDataIdx, bool opaque, bool faces, bool dynamic);
-		MeshWrapperComponent(MeshWrapperComponent&) = delete;
-		MeshWrapperComponent(MeshWrapperComponent&&);
-		~MeshWrapperComponent();
+		IMeshWrapper(const MeshUnit& myWrapper, int mDataIdx, bool opaque, bool faces, bool dynamic);
+		IMeshWrapper(IMeshWrapper&) = delete;
+		IMeshWrapper(IMeshWrapper&&);
+		~IMeshWrapper();
 		bool Empty() const;
-		IMesh* GetIMesh(const MeshWrapper& outer, IMaterial* material) const;
+		IMesh* GetIMesh(const MeshUnit& outer, IMaterial* material) const;
 	};
 
 	const MeshPositionInfo posInfo;
 	const CreateMeshParams params; // MUST BE BEFORE MESH COMPONENTS FOR CORRECT INITIALIZATION ORDER
-	MeshWrapperComponent faceComponent, lineComponent;
+	IMeshWrapper faceComponent, lineComponent;
 
-	MeshWrapper(int mDataIdx,
-	            const MeshPositionInfo& posInfo,
-	            const CreateMeshParams& params,
-	            bool facesOpaque,
-	            bool linesOpaque,
-	            bool dynamic);
-	MeshWrapper(MeshWrapper&) = delete;
-	MeshWrapper(MeshWrapper&&) = default;
-	~MeshWrapper() = default;
+	MeshUnit(int mDataIdx,
+	         const MeshPositionInfo& posInfo,
+	         const CreateMeshParams& params,
+	         bool facesOpaque,
+	         bool linesOpaque,
+	         bool dynamic);
+	MeshUnit(MeshUnit&) = delete;
+	MeshUnit(MeshUnit&&) = default;
+	~MeshUnit() = default;
 
 	bool Empty();
 };
 
-// the public mesh builder doesn't have any state, it's stored in this internal version instead
 struct MeshBuilderInternal
 {
 	MeshData* curMeshData = nullptr;
@@ -126,27 +164,16 @@ struct MeshBuilderInternal
 	std::vector<MeshData> dynamicMeshData;
 	size_t numDynamicMeshes = 0;
 
-	std::vector<MeshWrapper> dynamicMeshWrappers;
+	std::vector<MeshUnit> dynamicMeshUnits;
 
 	void ClearOldBuffers();
 	void BeginNewMesh(bool dynamic);
-	MeshWrapper* FinalizeCurMesh(const CreateMeshParams& params);
-
-	inline const MeshComponentData* GetMeshData(DynamicComponentToken token, bool faces) const
-	{
-		if (token < 0)
-			return nullptr;
-		auto& mData = dynamicMeshData[token];
-		return faces ? &mData.faceData : &mData.lineData;
-	}
-
-	inline const MeshWrapper& GetMeshWrapper(DynamicMesh dynMesh) const
-	{
-		return dynamicMeshWrappers[dynMesh.dynamicMeshIdx];
-	}
+	MeshUnit* FinalizeCurMesh(const CreateMeshParams& params);
+	const MeshComponentData* GetMeshData(DynamicComponentToken token, bool faces) const;
+	const MeshUnit& GetMeshUnit(DynamicMesh dynMesh) const;
 };
 
-inline MeshBuilderInternal g_meshBuilder;
+inline MeshBuilderInternal g_meshBuilderInternal;
 
 struct MeshBuilderMatMgr
 {
@@ -158,6 +185,6 @@ struct MeshBuilderMatMgr
 	IMaterial* GetMaterial(bool opaque, bool zTest, color32 colorMod);
 };
 
-inline MeshBuilderMatMgr g_meshBuilderMaterials;
+inline MeshBuilderMatMgr g_meshMaterialMgr;
 
 #endif

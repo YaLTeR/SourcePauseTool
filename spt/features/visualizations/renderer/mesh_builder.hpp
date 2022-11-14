@@ -7,11 +7,6 @@
 
 #include "mathlib\polyhedron.h"
 
-typedef std::function<void(class MeshBuilderPro& mb)> MeshCreateFunc;
-
-#define MB_DYNAMIC(mbFunc, ...) MeshBuilderPro::CreateDynamicMesh([&](MeshBuilderPro& mb) { mbFunc }, {__VA_ARGS__})
-#define MB_STATIC(mbFunc, ...) MeshBuilderPro::CreateStaticMesh([&](MeshBuilderPro& mb) { mbFunc }, {__VA_ARGS__})
-
 /*
 * The game uses a CMeshBuilder to create meshes, but we can't use it directly because parts of its implementation
 * are private and/or not in the SDK. Not to worry - Introducing The MeshBuilderPro™! The MeshBuilderPro™ can be
@@ -19,33 +14,28 @@ typedef std::function<void(class MeshBuilderPro& mb)> MeshCreateFunc;
 * internal mesh & vertex buffers for speed™ and efficiency™.
 * 
 * You can create two kinds of meshes: static and dynamic. Both kinds are made with a MeshCreateFunc which gives
-* you a mesh builder instance that you can use to create your mesh (trying to create a mesh outside of a
-* MeshCreateFunc func is undefined behavior).
+* you a mesh builder delegate that you can use to create your mesh (trying to create a mesh outside of a
+* MeshCreateFunc func is undefined behavior). There is no way to edit meshes after creation except for a
+* RenderCallback (see mesh_renderer.hpp).
 * 
 * For stuff that changes a lot or used in e.g. animations, you'll probably want to use dynamic meshes. These must
-* be created in the MeshRenderSignal (doing so anywhere else is undefined behavior), and they'll automatically get
-* deleted before the next MeshRenderSignal.
+* be created in the MeshRenderer signal (doing so anywhere else is undefined behavior), and their cleanup is
+* handle automatically.
 * 
 * Static meshes are for stuff that rarely changes and/or stuff that's expensive to recreate every frame. These
 * guys are more efficient and can be created at any time (in LoadFeature() or after). To render them you simply
-* give your static mesh to the meshrenderer on whatever frames you want it to be drawn. Static meshes are shared
-* pointers, so deletion is handled automatically once you've destroyed your last reference. Just like for dynamics
-* there is no way to 'edit' meshes after creation (aside from using the MeshRenderCallback).
+* give your static mesh to the meshrenderer on whatever frames you want it to be drawn. Before rendering, you must
+* call their Valid() method to check if they're alive, and recreate them if not. Internally they are shared
+* pointers, so they'll get deleted once you get rid of the last copy.
 * 
 * Creating few big meshes is MUCH more efficient than many small ones, and this is great for opaque meshes. If
 * your mesh has ANY translucent vertex however, the whole thing is considered translucent, and it's possible you
 * may get meshes getting rendered in the wrong order relative to each other. For translucent meshes the best way
 * to solve this is to break your mesh apart into small pieces, but this sucks for fps :(.
-* 
-* The mesh create func is executed immediately, so you can capture stuff by reference in a lambda.
 */
-class MeshBuilderPro
+class MeshBuilderDelegate
 {
 public:
-	static DynamicMesh CreateDynamicMesh(const MeshCreateFunc& createFunc, const CreateMeshParams& params = {});
-
-	static StaticMesh CreateStaticMesh(const MeshCreateFunc& createFunc, const CreateMeshParams& params = {});
-
 	// a single line segment
 	void AddLine(const Vector& v1, const Vector& v2, const color32& c);
 
@@ -65,7 +55,7 @@ public:
 	void AddTris(const Vector* verts, int numFaces, const MeshColor& c);
 
 	// a single quad oriented clockwise
-	void AddQuad(const Vector& v1, const Vector& v2, const Vector& v3, const Vector v4, const MeshColor& c);
+	void AddQuad(const Vector& v1, const Vector& v2, const Vector& v3, const Vector& v4, const MeshColor& c);
 
 	// verts is a 4-pair-wise clockwise oriented array of points
 	void AddQuads(const Vector* verts, int numFaces, const MeshColor& c);
@@ -121,6 +111,7 @@ public:
 	void AddCPolyhedron(const CPolyhedron* polyhedron, const MeshColor& c);
 
 private:
+	friend struct MeshBuilderPro;
 	// internal construction helper methods
 
 	void _AddFaceTriangleStripIndices(size_t vIdx1, size_t vIdx2, size_t numVerts, bool loop, bool mirror = false);
@@ -129,9 +120,25 @@ private:
 	void _AddSubdivCube(int numSubdivisions, const MeshColor& c);
 	Vector* _CreateCircleVerts(const Vector& pos, const QAngle& ang, float radius, int numPoints);
 
-	MeshBuilderPro() = default;
-	MeshBuilderPro(MeshBuilderPro&) = delete;
+	MeshBuilderDelegate() = default;
+	MeshBuilderDelegate(MeshBuilderDelegate&) = delete;
 };
+
+typedef std::function<void(MeshBuilderDelegate& mb)> MeshCreateFunc;
+
+// give this guy a function which accepts a mesh builder delegate -
+// it'll be executed immediately so you can capture stuff by reference if you're using a lambda
+class MeshBuilderPro
+{
+public:
+	DynamicMesh CreateDynamicMesh(const MeshCreateFunc& createFunc, const CreateMeshParams& params = {});
+	StaticMesh CreateStaticMesh(const MeshCreateFunc& createFunc, const CreateMeshParams& params = {});
+};
+
+inline MeshBuilderPro spt_meshBuilder;
+
+#define MB_DYNAMIC(func, ...) spt_meshBuilder.CreateDynamicMesh([&](MeshBuilderDelegate& mb) { func }, {__VA_ARGS__})
+#define MB_STATIC(func, ...) spt_meshBuilder.CreateStaticMesh([&](MeshBuilderDelegate& mb) { func }, {__VA_ARGS__})
 
 #endif
 

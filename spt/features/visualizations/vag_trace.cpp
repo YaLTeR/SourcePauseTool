@@ -140,15 +140,15 @@ public:
 		NoValidPortals
 	};
 
-	void OnMeshRenderSignal(MeshRenderer& mr);
+	void OnMeshRenderSignal(MeshRendererDelegate& mr);
 
 	CacheCheckResult CheckCache();
 	void RecomputeCache();
 	bool CalcFreeEntryPortalPos(const matrix3x4_t& entryRotMat, Vector& entryPosOut);
 	void CalcFreeExitPortalPos(const matrix3x4_t& exitRotMat, Vector& exitPosOut);
 
-	void DrawTrace(MeshRenderer& mr);
-	void DrawTargetTrace(MeshRenderer& mr);
+	void DrawTrace(MeshRendererDelegate& mr);
+	void DrawTargetTrace(MeshRendererDelegate& mr);
 };
 
 static VagTrace spt_vag_trace;
@@ -161,9 +161,9 @@ CON_COMMAND(y_spt_draw_vag_target_set, "Set VAG target\n")
 
 void VagTrace::LoadFeature()
 {
-	if (!MeshRenderSignal.Works)
+	if (!spt_meshRenderer.signal.Works)
 		return;
-	MeshRenderSignal.Connect(this, &VagTrace::OnMeshRenderSignal);
+	spt_meshRenderer.signal.Connect(this, &VagTrace::OnMeshRenderSignal);
 	InitCommand(y_spt_draw_vag_target_set);
 	InitConcommandBase(y_spt_draw_vag_trace);
 	InitConcommandBase(y_spt_draw_vag_target_trace);
@@ -171,7 +171,7 @@ void VagTrace::LoadFeature()
 	InitConcommandBase(y_spt_draw_vag_lock_entry);
 }
 
-void VagTrace::OnMeshRenderSignal(MeshRenderer& mr)
+void VagTrace::OnMeshRenderSignal(MeshRendererDelegate& mr)
 {
 	if (!y_spt_draw_vag_trace.GetBool() && !y_spt_draw_vag_target_trace.GetBool())
 		return;
@@ -180,7 +180,7 @@ void VagTrace::OnMeshRenderSignal(MeshRenderer& mr)
 	{
 		// draw the target even if we don't have valid portals
 		static StaticMesh targetMesh;
-		if (!targetMesh)
+		if (!targetMesh.Valid())
 		{
 			targetMesh = MB_STATIC(
 			    {
@@ -517,11 +517,11 @@ void VagTrace::CalcFreeExitPortalPos(const matrix3x4_t& exitRotMat, Vector& exit
 	exitPosOut = cache.entryPortal.pos - rhsWithRotation;
 }
 
-void VagTrace::DrawTrace(MeshRenderer& mr)
+void VagTrace::DrawTrace(MeshRendererDelegate& mr)
 {
 	// draw lines between portals and to VAG destination
-	mr.DrawMesh(MeshBuilderPro::CreateDynamicMesh(
-	                [&](MeshBuilderPro& mb)
+	mr.DrawMesh(spt_meshBuilder.CreateDynamicMesh(
+	                [&](MeshBuilderDelegate& mb)
 	                {
 		                mb.AddLine(cache.exitPortal.pos, cache.entryPortal.pos, {255, 0, 255, 255});
 		                mb.AddLine(cache.entryPortal.pos, cache.vagDestination, {175, 0, 175, 255});
@@ -538,7 +538,7 @@ void VagTrace::DrawTrace(MeshRenderer& mr)
 	            });
 
 	static StaticMesh arrowMesh, circleMesh;
-	if (!arrowMesh || !circleMesh)
+	if (!arrowMesh.Valid() || !circleMesh.Valid())
 	{
 		arrowMesh = MB_STATIC({
 			mb.AddArrow3D({0, 0, 0}, {1, 0, 0}, ARROW_PARAMS, MeshColor::Outline({255, 255, 255, 40}));
@@ -617,10 +617,10 @@ void VagTrace::DrawTrace(MeshRenderer& mr)
 	}
 }
 
-void VagTrace::DrawTargetTrace(MeshRenderer& mr)
+void VagTrace::DrawTargetTrace(MeshRendererDelegate& mr)
 {
 	static StaticMesh portalMeshDetailed, portalMeshSimple, circleMesh;
-	if (!portalMeshDetailed || !portalMeshSimple || !circleMesh)
+	if (!portalMeshDetailed.Valid() || !portalMeshSimple.Valid() || !circleMesh.Valid())
 	{
 		// box representing a portal w/ arrow towards local forward
 		portalMeshDetailed = MB_STATIC(

@@ -277,17 +277,32 @@
     <ClCompile Include="spt\features\visualizations\vag_trace.cpp">
       <Filter>spt\features\visualizations</Filter>
     </ClCompile>
-    <ClCompile Include="spt\features\visualizations\renderer\mesh_builder.cpp">
-      <Filter>spt\features\visualizations\renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\visualizations\renderer\mesh_construction.cpp">
-      <Filter>spt\features\visualizations\renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\visualizations\renderer\mesh_renderer.cpp">
-      <Filter>spt\features\visualizations\renderer</Filter>
-    </ClCompile>
     <ClCompile Include="spt\utils\portal_utils.cpp">
       <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\renderer\source files\mesh_builder.cpp">
+      <Filter>spt\features\visualizations\renderer\source files</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\renderer\source files\mesh_construction.cpp">
+      <Filter>spt\features\visualizations\renderer\source files</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\renderer\source files\mesh_renderer.cpp">
+      <Filter>spt\features\visualizations\renderer\source files</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\renderer\source files\materials_manager.cpp">
+      <Filter>spt\features\visualizations\renderer\source files</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\renderer\source files\create_collide.cpp">
+      <Filter>spt\features\visualizations\renderer\source files</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\renderer\source files\static_mesh.cpp">
+      <Filter>spt\features\visualizations\renderer\source files</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\renderer\source files\mesh_unit.cpp">
+      <Filter>spt\features\visualizations\renderer\source files</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\renderer\source files\mesh_data.cpp">
+      <Filter>spt\features\visualizations\renderer\source files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -663,6 +678,9 @@
     </Filter>
     <Filter Include="spt\features\visualizations\renderer">
       <UniqueIdentifier>{84fb8368-d0e8-4d2a-9327-96b181523bfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\features\visualizations\renderer\source files">
+      <UniqueIdentifier>{84814768-34cb-4968-8ef2-07312a178bc4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -1,90 +1,13 @@
 ﻿#include "stdafx.h"
 
-#include <memory>
-
-#include "mesh_builder.hpp"
-#include "mesh_defs_private.hpp"
-#include "spt\features\ent_props.hpp"
-#include "spt\utils\math.hpp"
-
-/**************************************** CreateCollideFeature ****************************************/
-
-namespace patterns
-{
-	PATTERNS(CPhysicsCollision__CreateDebugMesh,
-	         "5135",
-	         "83 EC 10 8B 4C 24 14 8B 01 8B 40 08 55 56 57 33 ED 8D 54 24 10 52",
-	         "1910503",
-	         "55 8B EC 83 EC 14 8B 4D 08 8B 01 8B 40 08 53 56 57 33 DB 8D 55 EC",
-	         "7462488",
-	         "55 8B EC 83 EC 18 8B 4D ?? 8D 55 ??");
-	PATTERNS(CPhysicsObject__GetPosition,
-	         "5135",
-	         "8B 49 08 81 EC 80 00 00 00 8D 04 24 50 E8 ?? ?? ?? ?? 8B 84 24 84 00 00 00 85 C0",
-	         "1910503",
-	         "55 8B EC 8B 49 08 81 EC 80 00 00 00 8D 45 80 50 E8 ?? ?? ?? ?? 8B 45 08 85 C0",
-	         "7462488",
-	         "55 8B EC 8B 49 ?? 8D 45 ?? 81 EC 80 00 00 00 50 E8 ?? ?? ?? ?? 8B 45 ??");
-} // namespace patterns
-
-void CreateCollideFeature::InitHooks()
-{
-	FIND_PATTERN(vphysics, CPhysicsCollision__CreateDebugMesh);
-	FIND_PATTERN(vphysics, CPhysicsObject__GetPosition);
-}
-
-bool CreateCollideFeature::Works()
-{
-	return ORIG_CPhysicsCollision__CreateDebugMesh && ORIG_CPhysicsObject__GetPosition;
-}
-
-std::unique_ptr<Vector> CreateCollideFeature::CreateCollideMesh(const CPhysCollide* pCollide, int& outNumTris)
-{
-	if (!pCollide || !spt_collideToMesh.ORIG_CPhysicsCollision__CreateDebugMesh)
-	{
-		outNumTris = 0;
-		return nullptr;
-	}
-	Vector* outVerts;
-	outNumTris = spt_collideToMesh.ORIG_CPhysicsCollision__CreateDebugMesh(nullptr, 0, pCollide, &outVerts) / 3;
-	return std::unique_ptr<Vector>(outVerts);
-}
-
-std::unique_ptr<Vector> CreateCollideFeature::CreateCPhysObjMesh(const CPhysicsObject* pPhysObj,
-                                                                 int& outNumTris,
-                                                                 matrix3x4_t& outMat)
-{
-	if (!pPhysObj || !Works())
-	{
-		outNumTris = 0;
-		SetIdentityMatrix(outMat);
-		return nullptr;
-	}
-	Vector pos;
-	QAngle ang;
-	spt_collideToMesh.ORIG_CPhysicsObject__GetPosition((void*)pPhysObj, 0, &pos, &ang);
-	AngleMatrix(ang, pos, outMat);
-	return CreateCollideMesh(*((CPhysCollide**)pPhysObj + 3), outNumTris);
-}
-
-std::unique_ptr<Vector> CreateCollideFeature::CreateEntMesh(const CBaseEntity* pEnt,
-                                                            int& outNumTris,
-                                                            matrix3x4_t& outMat)
-{
-	int off = spt_entutils.GetFieldOffset("CBaseEntity", "m_CollisionGroup", true);
-	if (!pEnt || !Works() || off == utils::INVALID_DATAMAP_OFFSET)
-	{
-		outNumTris = 0;
-		SetIdentityMatrix(outMat);
-		return nullptr;
-	}
-	off = (off + 4) / 4;
-	return CreateCPhysObjMesh(*((CPhysicsObject**)pEnt + off), outNumTris, outMat);
-}
+#include "..\mesh_defs_private.hpp"
 
 #ifdef SPT_MESH_RENDERING_ENABLED
 
-/**************************************** MESH CONSTRUCTION ****************************************/
+#include <memory>
+
+#include "..\mesh_builder.hpp"
+#include "spt\utils\math.hpp"
 
 Vector* Scratch(size_t n)
 {
@@ -100,12 +23,12 @@ Vector* Scratch(size_t n)
 
 inline static MeshComponentData& Faces()
 {
-	return g_meshBuilder.curMeshData->faceData;
+	return g_meshBuilderInternal.curMeshData->faceData;
 }
 
 inline static MeshComponentData& Lines()
 {
-	return g_meshBuilder.curMeshData->lineData;
+	return g_meshBuilderInternal.curMeshData->lineData;
 }
 
 void MeshComponentData::Reserve(size_t numExtraVerts, size_t numExtraIndices)
@@ -149,7 +72,7 @@ struct ReserveScope
 	}
 };
 
-void MeshBuilderPro::AddLine(const Vector& v1, const Vector& v2, const color32& c)
+void MeshBuilderDelegate::AddLine(const Vector& v1, const Vector& v2, const color32& c)
 {
 	if (c.a == 0)
 		return;
@@ -160,7 +83,7 @@ void MeshBuilderPro::AddLine(const Vector& v1, const Vector& v2, const color32& 
 	Lines().verts.push_back({v2, c});
 }
 
-void MeshBuilderPro::AddLines(const Vector* points, int numSegments, const color32& c)
+void MeshBuilderDelegate::AddLines(const Vector* points, int numSegments, const color32& c)
 {
 	if (!points || numSegments <= 0 || c.a == 0)
 		return;
@@ -172,7 +95,7 @@ void MeshBuilderPro::AddLines(const Vector* points, int numSegments, const color
 	}
 }
 
-void MeshBuilderPro::AddLineStrip(const Vector* points, int numPoints, bool loop, const color32& c)
+void MeshBuilderDelegate::AddLineStrip(const Vector* points, int numPoints, bool loop, const color32& c)
 {
 	if (!points || numPoints < 2 || c.a == 0)
 		return;
@@ -182,7 +105,7 @@ void MeshBuilderPro::AddLineStrip(const Vector* points, int numPoints, bool loop
 	_AddLineStripIndices(Lines().verts.size() - numPoints, numPoints, loop);
 }
 
-void MeshBuilderPro::AddCross(const Vector& pos, float radius, const color32& c)
+void MeshBuilderDelegate::AddCross(const Vector& pos, float radius, const color32& c)
 {
 	if (c.a == 0 || radius <= 0)
 		return;
@@ -198,13 +121,13 @@ void MeshBuilderPro::AddCross(const Vector& pos, float radius, const color32& c)
 	}
 }
 
-void MeshBuilderPro::AddTri(const Vector& v1, const Vector& v2, const Vector& v3, const MeshColor& c)
+void MeshBuilderDelegate::AddTri(const Vector& v1, const Vector& v2, const Vector& v3, const MeshColor& c)
 {
 	Vector v[] = {v1, v2, v3};
 	AddTris(v, 1, c);
 }
 
-void MeshBuilderPro::AddTris(const Vector* verts, int numFaces, const MeshColor& c)
+void MeshBuilderDelegate::AddTris(const Vector* verts, int numFaces, const MeshColor& c)
 {
 	if (!verts || numFaces <= 0)
 		return;
@@ -227,13 +150,17 @@ void MeshBuilderPro::AddTris(const Vector* verts, int numFaces, const MeshColor&
 	}
 }
 
-void MeshBuilderPro::AddQuad(const Vector& v1, const Vector& v2, const Vector& v3, const Vector v4, const MeshColor& c)
+void MeshBuilderDelegate::AddQuad(const Vector& v1,
+                                  const Vector& v2,
+                                  const Vector& v3,
+                                  const Vector& v4,
+                                  const MeshColor& c)
 {
 	Vector v[] = {v1, v2, v3, v4};
 	AddPolygon(v, 4, c);
 }
 
-void MeshBuilderPro::AddQuads(const Vector* verts, int numFaces, const MeshColor& c)
+void MeshBuilderDelegate::AddQuads(const Vector* verts, int numFaces, const MeshColor& c)
 {
 	if (!verts || numFaces <= 0)
 		return;
@@ -251,7 +178,7 @@ void MeshBuilderPro::AddQuads(const Vector* verts, int numFaces, const MeshColor
 	}
 }
 
-void MeshBuilderPro::AddPolygon(const Vector* verts, int numVerts, const MeshColor& c)
+void MeshBuilderDelegate::AddPolygon(const Vector* verts, int numVerts, const MeshColor& c)
 {
 	if (!verts || numVerts < 3)
 		return;
@@ -268,18 +195,22 @@ void MeshBuilderPro::AddPolygon(const Vector* verts, int numVerts, const MeshCol
 		AddLineStrip(verts, numVerts, true, c.lineColor);
 }
 
-void MeshBuilderPro::AddCircle(const Vector& pos, const QAngle& ang, float radius, int numPoints, const MeshColor& col)
+void MeshBuilderDelegate::AddCircle(const Vector& pos,
+                                    const QAngle& ang,
+                                    float radius,
+                                    int numPoints,
+                                    const MeshColor& col)
 {
 	if (numPoints < 3 || radius < 0 || (col.faceColor.a == 0 && col.lineColor.a == 0))
 		return;
 	AddPolygon(_CreateCircleVerts(pos, ang, radius, numPoints), numPoints, col);
 }
 
-void MeshBuilderPro::AddBox(const Vector& pos,
-                            const Vector& mins,
-                            const Vector& maxs,
-                            const QAngle& ang,
-                            const MeshColor& c)
+void MeshBuilderDelegate::AddBox(const Vector& pos,
+                                 const Vector& mins,
+                                 const Vector& maxs,
+                                 const QAngle& ang,
+                                 const MeshColor& c)
 {
 	if (c.faceColor.a == 0 && c.lineColor.a == 0)
 		return;
@@ -302,7 +233,7 @@ void MeshBuilderPro::AddBox(const Vector& pos,
 		utils::VectorTransform(finalMat, Lines().verts[i].pos);
 }
 
-void MeshBuilderPro::AddSphere(const Vector& pos, float radius, int numSubdivisions, const MeshColor& c)
+void MeshBuilderDelegate::AddSphere(const Vector& pos, float radius, int numSubdivisions, const MeshColor& c)
 {
 	if (numSubdivisions < 0 || radius < 0 || (c.faceColor.a == 0 && c.lineColor.a == 0))
 		return;
@@ -329,13 +260,13 @@ void MeshBuilderPro::AddSphere(const Vector& pos, float radius, int numSubdivisi
 	}
 }
 
-void MeshBuilderPro::AddSweptBox(const Vector& start,
-                                 const Vector& end,
-                                 const Vector& mins,
-                                 const Vector& maxs,
-                                 const MeshColor& cStart,
-                                 const MeshColor& cEnd,
-                                 const MeshColor& cSweep)
+void MeshBuilderDelegate::AddSweptBox(const Vector& start,
+                                      const Vector& end,
+                                      const Vector& mins,
+                                      const Vector& maxs,
+                                      const MeshColor& cStart,
+                                      const MeshColor& cEnd,
+                                      const MeshColor& cSweep)
 {
 	/*
 	* This looks a bit different from the debug overlay swept box, the differences are:
@@ -563,13 +494,13 @@ void MeshBuilderPro::AddSweptBox(const Vector& start,
 	}
 }
 
-void MeshBuilderPro::AddCone(const Vector& pos,
-                             const QAngle& ang,
-                             float height,
-                             float radius,
-                             int numCirclePoints,
-                             bool drawBase,
-                             const MeshColor& c)
+void MeshBuilderDelegate::AddCone(const Vector& pos,
+                                  const QAngle& ang,
+                                  float height,
+                                  float radius,
+                                  int numCirclePoints,
+                                  bool drawBase,
+                                  const MeshColor& c)
 {
 	if (height < 0 || radius < 0 || numCirclePoints < 3 || (c.faceColor.a == 0 && c.lineColor.a == 0))
 		return;
@@ -621,14 +552,14 @@ void MeshBuilderPro::AddCone(const Vector& pos,
 	}
 }
 
-void MeshBuilderPro::AddCylinder(const Vector& pos,
-                                 const QAngle& ang,
-                                 float height,
-                                 float radius,
-                                 int numCirclePoints,
-                                 bool drawCap1,
-                                 bool drawCap2,
-                                 const MeshColor& c)
+void MeshBuilderDelegate::AddCylinder(const Vector& pos,
+                                      const QAngle& ang,
+                                      float height,
+                                      float radius,
+                                      int numCirclePoints,
+                                      bool drawCap1,
+                                      bool drawCap2,
+                                      const MeshColor& c)
 {
 	if (numCirclePoints < 3 || height < 0 || (c.faceColor.a == 0 && c.lineColor.a == 0))
 		return;
@@ -676,14 +607,14 @@ void MeshBuilderPro::AddCylinder(const Vector& pos,
 	}
 }
 
-void MeshBuilderPro::AddArrow3D(const Vector& pos,
-                                const Vector& target,
-                                float tailLength,
-                                float tailRadius,
-                                float tipHeight,
-                                float tipRadius,
-                                int numCirclePoints,
-                                const MeshColor& c)
+void MeshBuilderDelegate::AddArrow3D(const Vector& pos,
+                                     const Vector& target,
+                                     float tailLength,
+                                     float tailRadius,
+                                     float tipHeight,
+                                     float tipRadius,
+                                     int numCirclePoints,
+                                     const MeshColor& c)
 {
 	if (numCirclePoints < 3 || (c.faceColor.a == 0 && c.lineColor.a == 0))
 		return;
@@ -715,7 +646,7 @@ void MeshBuilderPro::AddArrow3D(const Vector& pos,
 	}
 }
 
-void MeshBuilderPro::AddCPolyhedron(const CPolyhedron* polyhedron, const MeshColor& c)
+void MeshBuilderDelegate::AddCPolyhedron(const CPolyhedron* polyhedron, const MeshColor& c)
 {
 	if (!polyhedron)
 		return;
@@ -768,7 +699,11 @@ void MeshBuilderPro::AddCPolyhedron(const CPolyhedron* polyhedron, const MeshCol
 	}
 }
 
-void MeshBuilderPro::_AddFaceTriangleStripIndices(size_t vIdx1, size_t vIdx2, size_t numVerts, bool loop, bool mirror)
+void MeshBuilderDelegate::_AddFaceTriangleStripIndices(size_t vIdx1,
+                                                       size_t vIdx2,
+                                                       size_t numVerts,
+                                                       bool loop,
+                                                       bool mirror)
 {
 	/*
 	* Creates indices representing a filled triangle strip using existing verts at the given vert indices for faces only.
@@ -830,7 +765,7 @@ void MeshBuilderPro::_AddFaceTriangleStripIndices(size_t vIdx1, size_t vIdx2, si
 	}
 }
 
-void MeshBuilderPro::_AddFacePolygonIndices(size_t vertsIdx, int numVerts, bool reverse)
+void MeshBuilderDelegate::_AddFacePolygonIndices(size_t vertsIdx, int numVerts, bool reverse)
 {
 	// Creates indices representing a filled convex polygon using existing verts at the given vert index for faces only.
 	Assert(numVerts >= 3);
@@ -852,7 +787,7 @@ void MeshBuilderPro::_AddFacePolygonIndices(size_t vertsIdx, int numVerts, bool 
 	}
 }
 
-void MeshBuilderPro::_AddLineStripIndices(size_t vertsIdx, int numVerts, bool loop)
+void MeshBuilderDelegate::_AddLineStripIndices(size_t vertsIdx, int numVerts, bool loop)
 {
 	Assert(numVerts >= 2);
 	ReserveScope rs(Lines(), 0, (numVerts - 1 + (loop && numVerts > 2)) * 2);
@@ -868,7 +803,7 @@ void MeshBuilderPro::_AddLineStripIndices(size_t vertsIdx, int numVerts, bool lo
 	}
 }
 
-void MeshBuilderPro::_AddSubdivCube(int numSubdivisions, const MeshColor& c)
+void MeshBuilderDelegate::_AddSubdivCube(int numSubdivisions, const MeshColor& c)
 {
 	bool doFaces = c.faceColor.a != 0;
 	bool doLines = c.lineColor.a != 0;
@@ -975,7 +910,7 @@ void MeshBuilderPro::_AddSubdivCube(int numSubdivisions, const MeshColor& c)
 	}
 }
 
-Vector* MeshBuilderPro::_CreateCircleVerts(const Vector& pos, const QAngle& ang, float radius, int numPoints)
+Vector* MeshBuilderDelegate::_CreateCircleVerts(const Vector& pos, const QAngle& ang, float radius, int numPoints)
 {
 	VMatrix mat;
 	mat.SetupMatrixOrgAngles(pos, ang);

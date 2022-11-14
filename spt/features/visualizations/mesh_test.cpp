@@ -27,7 +27,7 @@ protected:
 	}
 
 public:
-	virtual void TestFunc(MeshRenderer& mr) = 0;
+	virtual void TestFunc(MeshRendererDelegate& mr) = 0;
 };
 
 class MeshTestFeature : public FeatureWrapper<MeshTestFeature>
@@ -35,14 +35,14 @@ class MeshTestFeature : public FeatureWrapper<MeshTestFeature>
 protected:
 	virtual void LoadFeature()
 	{
-		if (MeshRenderSignal.Works)
+		if (spt_meshRenderer.signal.Works)
 		{
-			MeshRenderSignal.Connect(this, &MeshTestFeature::OnMeshRenderSignal);
+			spt_meshRenderer.signal.Connect(this, &MeshTestFeature::OnMeshRenderSignal);
 			InitConcommandBase(y_spt_draw_mesh_examples);
 		}
 	};
 
-	void OnMeshRenderSignal(MeshRenderer& mr)
+	void OnMeshRenderSignal(MeshRendererDelegate& mr)
 	{
 		float lastTime = time;
 		time = interfaces::engine_tool->HostTime();
@@ -73,10 +73,10 @@ MeshTestFeature testFeature;
 		class _Test : BaseMeshRenderTest \
 		{ \
 			const Vector testPos = position; \
-			virtual void TestFunc(MeshRenderer& mr) override; \
+			virtual void TestFunc(MeshRendererDelegate& mr) override; \
 		}; \
 		static _Test _inst; \
-		void _Test::TestFunc(MeshRenderer& mr) \
+		void _Test::TestFunc(MeshRendererDelegate& mr) \
 		{ \
 			if (interfaces::debugOverlay) \
 				interfaces::debugOverlay->AddTextOverlay(testPos + Vector{0, 0, 150}, 0, desc);
@@ -249,8 +249,8 @@ BEGIN_TEST_CASE("AddQuad()", VEC_WRAP(1400, 0, 0))
 		if (numUpdated < 10) // naive check to speed up simulation
 			minigameTick += 2;
 	}
-	mr.DrawMesh(MeshBuilderPro::CreateDynamicMesh(
-	    [&](MeshBuilderPro& mb)
+	mr.DrawMesh(spt_meshBuilder.CreateDynamicMesh(
+	    [&](MeshBuilderDelegate& mb)
 	    {
 		    const color32 c1 = {50, 50, 200, 255};
 		    const color32 c2 = {150, 0, 0, 255};
@@ -322,7 +322,7 @@ BEGIN_TEST_CASE("AddSweptBox()", VEC_WRAP(2000, 0, 0))
 
 	static std::vector<StaticMesh> boxes;
 
-	if (boxes.size() == 0 || !boxes[0])
+	if (boxes.size() == 0 || !boxes[0].Valid())
 	{
 		// create all
 		boxes.clear();
@@ -406,7 +406,7 @@ BEGIN_TEST_CASE("AddSweptBox()", VEC_WRAP(2000, 0, 0))
 	}
 	for (auto& staticMesh : boxes)
 	{
-		Assert(staticMesh);
+		Assert(staticMesh.Valid());
 		mr.DrawMesh(staticMesh);
 	}
 }
@@ -471,7 +471,7 @@ END_TEST_CASE()
 BEGIN_TEST_CASE("Timmy", VEC_WRAP(0, -300, 0))
 {
 	static StaticMesh timmyMesh;
-	if (!timmyMesh)
+	if (!timmyMesh.Valid())
 	{
 		const Vector mins = {-20, -20, -20};
 		const MeshColor c = {{100, 100, 255, 255}, {255, 0, 255, 255}};
@@ -508,7 +508,7 @@ BEGIN_TEST_CASE("Lorenz Attractor", VEC_WRAP(200, -300, 0))
 	// Intellisense doesn't do shit when you're in a macro, so I'm not gonna use RENDER_DYNAMIC_CALLBACK for something so big.
 	// Also, clang-format does literally the most stupid thing possible sometimes and using these macros makes it better.
 
-#define MB_CREATE_BEGIN MeshBuilderPro::CreateDynamicMesh([&](MeshBuilderPro & mb)
+#define MB_CREATE_BEGIN spt_meshBuilder.CreateDynamicMesh([&](MeshBuilderDelegate & mb)
 #define MB_CREATE_END )
 
 	mr.DrawMesh(
@@ -586,17 +586,19 @@ BEGIN_TEST_CASE("Reusing static/dynamic meshes", VEC_WRAP(400, -300, 0))
 {
 	// returns a create func given a color
 	auto coloredCreateFunc = [](const MeshColor& c) {
-		return [&](MeshBuilderPro& mb) { mb.AddBox(vec3_origin, {-10, -10, 0}, {10, 10, 50}, vec3_angle, c); };
+		return [&](MeshBuilderDelegate& mb) {
+			mb.AddBox(vec3_origin, {-10, -10, 0}, {10, 10, 50}, vec3_angle, c);
+		};
 	};
 
 	// create once
 	static StaticMesh staticMesh;
-	if (!staticMesh)
-		staticMesh = MeshBuilderPro::CreateStaticMesh(coloredCreateFunc(MeshColor::Outline({0, 0, 255, 20})));
+	if (!staticMesh.Valid())
+		staticMesh = spt_meshBuilder.CreateStaticMesh(coloredCreateFunc(MeshColor::Outline({0, 0, 255, 20})));
 
 	// recreate every frame
 	DynamicMesh dynamicMesh =
-	    MeshBuilderPro::CreateDynamicMesh(coloredCreateFunc(MeshColor::Outline({255, 0, 0, 20})));
+	    spt_meshBuilder.CreateDynamicMesh(coloredCreateFunc(MeshColor::Outline({255, 0, 0, 20})));
 
 	for (int i = 0; i < 20; i++)
 	{
@@ -651,8 +653,8 @@ BEGIN_TEST_CASE("AddCPolyhedron", VEC_WRAP(600, -300, 0))
 
 	CPolyhedron* polyhedron = GeneratePolyhedronFromPlanes((float*)planes.data(), planes.size(), 0.0001f, true);
 
-	mr.DrawMesh(MeshBuilderPro::CreateDynamicMesh(
-	                [&](MeshBuilderPro& mb) {
+	mr.DrawMesh(spt_meshBuilder.CreateDynamicMesh(
+	                [&](MeshBuilderDelegate& mb) {
 		                mb.AddCPolyhedron(polyhedron, MeshColor::Outline({200, 150, 50, 20}));
 	                }),
 	            [this](auto&, CallbackInfoOut& infoOut) { MatrixSetColumn(testPos, 3, infoOut.mat); });
