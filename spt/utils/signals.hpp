@@ -2,7 +2,7 @@
 
 #include "thirdparty/Signal.h"
 
-class MeshRenderer;
+class CViewSetup;
 
 extern Gallant::Signal0<void> AdjustAngles;
 extern Gallant::Signal0<void> AfterFramesSignal;
@@ -19,5 +19,4 @@ extern Gallant::Signal0<void> DemoStartPlaybackSignal;
 extern Gallant::Signal1<bool> SV_FrameSignal;
 extern Gallant::Signal2<void*, void*> ProcessMovementPost_Signal;
 extern Gallant::Signal2<void*, void*> ProcessMovementPre_Signal;
-extern Gallant::Signal1<void*> RenderViewSignal;
-extern Gallant::Signal1<MeshRenderer&> MeshRenderSignal;
+extern Gallant::Signal2<void*, CViewSetup*> RenderViewPre_Signal;

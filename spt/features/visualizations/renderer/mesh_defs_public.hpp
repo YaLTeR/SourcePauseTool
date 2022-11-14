@@ -6,7 +6,7 @@
 
 #define SPT_MESH_RENDERING_ENABLED
 
-struct MeshWrapper;
+struct MeshUnit;
 
 /*
 * The renderer needs some position metric for meshes to figure out which order to render translucent meshes in.
@@ -76,11 +76,11 @@ struct CreateMeshParams
 	const TranslucentSortType sortType = TranslucentSortType::AABB_Surface;
 };
 
-// typical use case - check operator bool, and if it returns false recreate the StaticMesh
+// typical use case - check Valid() and if it returns false recreate
 class StaticMesh
 {
 public:
-	std::shared_ptr<MeshWrapper> meshPtr;
+	std::shared_ptr<MeshUnit> meshPtr;
 
 private:
 	// keep a linked list through all static meshes for proper cleanup w/ tas_restart
@@ -93,9 +93,9 @@ public:
 	StaticMesh();
 	StaticMesh(const StaticMesh& other);
 	StaticMesh(StaticMesh&& other);
-	StaticMesh(MeshWrapper* mesh);
+	StaticMesh(MeshUnit* mesh);
 	StaticMesh& operator=(const StaticMesh& r);
-	operator bool() const;
+	bool Valid() const;
 	void Destroy();
 	static void DestroyAll();
 	~StaticMesh();

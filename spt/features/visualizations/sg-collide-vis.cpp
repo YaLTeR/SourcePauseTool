@@ -142,10 +142,10 @@ public:
 
 		portalFieldOffs.simulator += sizeof(Vector) * 4;
 
-		if (!MeshRenderSignal.Works)
+		if (!spt_meshRenderer.signal.Works)
 			return;
 
-		MeshRenderSignal.Connect(this, &SgCollideVisFeature::OnMeshRenderSignal);
+		spt_meshRenderer.signal.Connect(this, &SgCollideVisFeature::OnMeshRenderSignal);
 		InitConcommandBase(y_spt_draw_portal_env);
 		InitConcommandBase(y_spt_draw_portal_env_type);
 		InitConcommandBase(y_spt_draw_portal_env_ents);
@@ -285,7 +285,7 @@ public:
 		return bestMatch; // couldn't find the same portal as was previously used, but maybe found something else
 	}
 
-	void OnMeshRenderSignal(MeshRenderer& mr)
+	void OnMeshRenderSignal(MeshRendererDelegate& mr)
 	{
 		edict_t* portalEd = GetSgDrawPortal();
 		if (!portalEd)
@@ -311,7 +311,7 @@ public:
 
 		if (y_spt_draw_portal_env.GetBool())
 		{
-			if (cache.localWorld.size() == 0)
+			if (cache.localWorld.size() == 0 || !cache.localWorld[0].Valid())
 			{
 				CacheLocalCollide(*(CPhysCollide**)(sim + 280), MC_PORTAL_HOLE);
 				CacheLocalCollide(*(CPhysCollide**)(sim + 304), MC_LOCAL_WORLD_BRUSHES);
@@ -351,7 +351,7 @@ public:
 				lastLinkedInfo = curLinkedInfo;
 			}
 
-			if (cache.remoteWorld.size() == 0)
+			if (cache.remoteWorld.size() == 0 || !cache.remoteWorld[0].second.Valid())
 			{
 				CacheRemoteCPhysObj(*(CPhysicsObject**)(sim + 412), MC_REMOTE_WORLD_BRUSHES);
 				const auto& staticProps = *(CUtlVector<CPhysicsObject*>*)(sim + 416);

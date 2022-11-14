@@ -10,6 +10,9 @@
 
 #include <optional>
 
+#include "spt\feature.hpp"
+#include "thirdparty\Signal.h"
+
 /*
 * cvs               - camera info for current view
 * meshPosInfo       - position info about the mesh the callback is for
@@ -26,10 +29,10 @@ struct CallbackInfoIn
 };
 
 /*
-* mat           - a matrix that is applied to the mesh during rendering
+* mat           - a matrix applied to the mesh for the current view
 * colorModulate - a "multiplier" to change the color/alpha of the entire mesh, relatively slow
 *                 e.g. 128 means multiply existing value by 0.5
-* skipRender    - conditionally enable rendering on a per-view basis
+* skipRender    - conditionally enable rendering on a per-view basis (e.g. only on overlays)
 * 
 * You can specify different values for the line/face components of your mesh.
 */
@@ -57,46 +60,55 @@ typedef std::function<void(const CallbackInfoIn& infoIn, CallbackInfoOut& infoOu
 
 // Simple macro for a dynamic mesh with no callback. Intellisense sucks huge dong for lambdas in this macro, so
 // maybe avoid using it if you are doing something long and complicated.
-#define RENDER_DYNAMIC(renderer, createFunc, ...) (renderer).DrawMesh(MB_DYNAMIC(createFunc, __VA_ARGS__))
+#define RENDER_DYNAMIC(rdrDelegate, createFunc, ...) (rdrDelegate).DrawMesh(MB_DYNAMIC(createFunc, __VA_ARGS__))
 
-/*
-* A (mostly) superior version of the debugoverlay. Allows meshes to be drawn on a per frame instead of per tick
-* basis. Doesn't handle text and hud stuff yet. In LoadFeature, connect yourself to the MeshRenderSignal and feed the
-* renderer the meshes you've created with the mesh builder.
-* 
-* Example usage:
-* 
-* void OnMeshRenderSignal(MeshRenderer& mr)
-* {
-*     RENDER_DYNAMIC(mr, mb.AddLine({0, 0, 0}, {10, 10, 10}, {120, 200, 255, 255}););
-*     
-*     // ^this^ is equivalent to:
-*     
-*     mr.DrawMesh(MeshBuilderPro::CreateDynamicMesh(
-*         [&](MeshBuilderPro& mb)
-*         {
-*             mb.AddLine({0, 0, 0}, {10, 10, 10}, {120, 200, 255, 255});
-*         }));
-*     
-*     // a common use case for static meshes - creating a complex mesh once and reusing it:
-*     
-*     static StaticMesh myMesh;
-*     if (!myMesh)
-*     {
-*         myMesh = MB_STATIC({
-*             mb.AddSphere(...);
-*             mb.AddSphere(...);
-*             mb.AddCylinder(...);
-*        });
-*     }
-*     mr.DrawMesh(myMesh);
-* }
-*/
-class MeshRenderer
+class MeshRendererDelegate
 {
 public:
 	void DrawMesh(const DynamicMesh& mesh, const RenderCallback& callback = nullptr);
 	void DrawMesh(const StaticMesh& mesh, const RenderCallback& callback = nullptr);
+
+private:
+	friend class MeshRendererFeature;
+	MeshRendererDelegate() = default;
+	MeshRendererDelegate(MeshRendererDelegate&) = delete;
 };
+
+/*
+* To use, connect yourself to the signal (after checking if it Works). In the callback, create meshes with the
+* MeshBuilderPro™ (or create static meshes whenever) and feed them to the MeshRendererDelegate given to the
+* signal. The signal will be triggered once at the start of every frame.
+*/
+class MeshRendererFeature : public FeatureWrapper<MeshRendererFeature>
+{
+private:
+	struct CPortalRender** g_pPortalRender = nullptr;
+
+public:
+	// Works() method valid during or after PreHook()
+	Gallant::Signal1<MeshRendererDelegate&> signal;
+
+	std::optional<uint> CurrentPortalRenderDepth() const;
+
+protected:
+	bool ShouldLoadFeature() override;
+	void InitHooks() override;
+	void PreHook() override;
+	void LoadFeature() override;
+	void UnloadFeature() override;
+
+private:
+	DECL_MEMBER_CDECL(void, OnRenderStart);
+	DECL_HOOK_THISCALL(void, CRendering3dView__DrawOpaqueRenderables, int param);
+	DECL_HOOK_THISCALL(void, CRendering3dView__DrawTranslucentRenderables, bool bInSkybox, bool bShadowDepth);
+
+	bool Works() const;
+	void FrameCleanup();
+	void OnRenderViewPre_Signal(void* thisptr, CViewSetup* cameraView);
+	void OnDrawOpaques(void* renderingView);
+	void OnDrawTranslucents(void* renderingView);
+};
+
+inline MeshRendererFeature spt_meshRenderer;
 
 #endif

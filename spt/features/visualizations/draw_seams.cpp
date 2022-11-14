@@ -19,14 +19,15 @@ class DrawSeamsFeature : public FeatureWrapper<DrawSeamsFeature>
 protected:
 	void LoadFeature() override
 	{
-		if (MeshRenderSignal.Works && spt_tracing.ORIG_TraceFirePortal && spt_tracing.ORIG_GetActiveWeapon)
+		if (spt_meshRenderer.signal.Works && spt_tracing.ORIG_TraceFirePortal
+		    && spt_tracing.ORIG_GetActiveWeapon)
 		{
 			InitConcommandBase(y_spt_draw_seams);
-			MeshRenderSignal.Connect(this, &DrawSeamsFeature::OnMeshRenderSignal);
+			spt_meshRenderer.signal.Connect(this, &DrawSeamsFeature::OnMeshRenderSignal);
 		}
 	}
 
-	void OnMeshRenderSignal(MeshRenderer& mr);
+	void OnMeshRenderSignal(MeshRendererDelegate& mr);
 };
 
 static DrawSeamsFeature drawSeamsFeature;
@@ -142,7 +143,7 @@ void FindClosestPlane(const trace_t& tr, trace_t& out, float maxDistSqr)
 	}
 }
 
-void DrawSeamsFeature::OnMeshRenderSignal(MeshRenderer& mr)
+void DrawSeamsFeature::OnMeshRenderSignal(MeshRendererDelegate& mr)
 {
 	if (!y_spt_draw_seams.GetBool())
 		return;
@@ -191,8 +192,8 @@ void DrawSeamsFeature::OnMeshRenderSignal(MeshRenderer& mr)
 	Vector edge = edgeTr.plane.normal.Cross(tr.plane.normal);
 	VectorNormalize(edge);
 
-	mr.DrawMesh(MeshBuilderPro::CreateDynamicMesh(
-	    [&](MeshBuilderPro& mb)
+	mr.DrawMesh(spt_meshBuilder.CreateDynamicMesh(
+	    [&](MeshBuilderDelegate& mb)
 	    {
 		    const color32 red{255, 0, 0, 255};
 		    const color32 green{0, 255, 0, 255};

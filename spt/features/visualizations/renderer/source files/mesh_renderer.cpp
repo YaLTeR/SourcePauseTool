@@ -1,19 +1,14 @@
 ﻿#include "stdafx.h"
 
-#include "mesh_defs_public.hpp"
+#include "..\mesh_renderer.hpp"
 
 #ifdef SPT_MESH_RENDERING_ENABLED
 
 #include <algorithm>
 
-#include "mesh_renderer.hpp"
-#include "mesh_defs_private.hpp"
+#include "..\mesh_defs_private.hpp"
 #include "interfaces.hpp"
 #include "signals.hpp"
-#include "spt\features\overlay.hpp"
-#include "ivrenderview.h"
-
-#define VPROF_BUDGETGROUP_MESH_RENDERER _T("Mesh_Renderer")
 
 ConVar y_spt_draw_mesh_debug("y_spt_draw_mesh_debug",
                              "0",
@@ -34,7 +29,10 @@ ConVar y_spt_draw_mesh_debug("y_spt_draw_mesh_debug",
 * love, gifts, and fruit baskets.
 */
 
-/**************************************** MESH RENDER FEATURE ****************************************/
+// can't put this as a member in the feature without including defs_private in the header, so we make it a global
+static std::vector<struct MeshUnitWrapper> g_meshUnitWrappers;
+
+/**************************************** MESH RENDERER FEATURE ****************************************/
 
 struct CPortalRender
 {
@@ -72,159 +70,97 @@ namespace patterns
 	         "55 8B EC 83 EC 10 53 56 8B 35 ?? ?? ?? ?? 8B CE 57 8B 06 FF 50 64 8B 0D ?? ?? ?? ??");
 } // namespace patterns
 
-extern class MeshRendererFeature g_meshRenderer;
-
-class MeshRendererFeature : public FeatureWrapper<MeshRendererFeature>
+bool MeshRendererFeature::ShouldLoadFeature()
 {
-public:
-	CPortalRender** g_pPortalRender = nullptr;
-	std::vector<struct MeshWrapperInternal> deferredMeshWrappers;
-
-private:
-	virtual bool ShouldLoadFeature() override
+	if (!interfaces::materialSystem)
 	{
-		if (!interfaces::materialSystem)
-		{
-			DevWarning("Mesh rendering not available because materialSystem was not initialized!\n");
-			return false;
-		}
-		return true;
+		DevWarning("Mesh rendering not available because materialSystem was not initialized!\n");
+		return false;
 	}
-
-	virtual void InitHooks() override
-	{
-		HOOK_FUNCTION(client, CRendering3dView__DrawOpaqueRenderables);
-		HOOK_FUNCTION(client, CRendering3dView__DrawTranslucentRenderables);
-		FIND_PATTERN(client, OnRenderStart);
-	}
-
-	virtual void PreHook() override
-	{
-		/*
-		* 1) InitHooks: spt_overlay finds the render function.
-		* 2) PreHook: spt_overlay may connect the RenderViewSignal. To not depend on feature load order
-		*    we cannot check if the signal exists, but we can check if the RenderView function was found.
-		* 3) LoadFeature: Anything that uses the mesh rendering system can check to see if the signal exists.
-		*/
-		if (ORIG_CRendering3dView__DrawOpaqueRenderables && ORIG_CRendering3dView__DrawTranslucentRenderables
-		    && spt_overlay.ORIG_CViewRender__RenderView)
-		{
-			MeshRenderSignal.Works = true;
-		}
-		else
-		{
-			return;
-		}
-
-		if (ORIG_OnRenderStart)
-		{
-			int idx = GetPatternIndex((void**)&ORIG_OnRenderStart);
-			uint32_t offs[] = {18, 24};
-			if (idx >= 0 && idx < sizeof(offs) / sizeof(uint32_t))
-				g_pPortalRender = *(CPortalRender***)((uintptr_t)ORIG_OnRenderStart + offs[idx]);
-		}
-
-		g_meshBuilderMaterials.Load();
-	}
-
-	virtual void LoadFeature() override
-	{
-		// if the mesh render signal works, we've set it in PreHook() and the RenderViewSignal will definitely work
-		if (MeshRenderSignal.Works)
-		{
-			Assert(RenderViewSignal.Works);
-			InitConcommandBase(y_spt_draw_mesh_debug);
-			RenderViewSignal.Connect(this, &MeshRendererFeature::OnRenderViewSignal);
-		}
-	}
-
-	virtual void UnloadFeature() override
-	{
-		g_meshBuilderMaterials.Unload();
-		Cleanup();
-		StaticMesh::DestroyAll();
-	}
-
-	DECL_MEMBER_CDECL(void, OnRenderStart);
-
-	DECL_HOOK_THISCALL(void, CRendering3dView__DrawOpaqueRenderables, int param)
-	{
-		// HACK - param is a bool in SSDK2007 and enum in SSDK2013
-		// render order shouldn't matter here
-		g_meshRenderer.ORIG_CRendering3dView__DrawOpaqueRenderables(thisptr, 0, param);
-		g_meshRenderer.OnDrawOpaques(thisptr);
-	}
-
-	DECL_HOOK_THISCALL(void, CRendering3dView__DrawTranslucentRenderables, bool bInSkybox, bool bShadowDepth)
-	{
-		// render order matters here, render our stuff on top of other translucents
-		g_meshRenderer.ORIG_CRendering3dView__DrawTranslucentRenderables(thisptr, 0, bInSkybox, bShadowDepth);
-		g_meshRenderer.OnDrawTranslucents(thisptr);
-	}
-
-	void Cleanup();
-	void OnRenderViewSignal(void* thisptr);
-	void OnDrawOpaques(void* renderingView);
-	void OnDrawTranslucents(void* renderingView);
-};
-
-MeshRendererFeature g_meshRenderer;
-
-/**************************************** MATERIALS MANAGER ****************************************/
-
-void MeshBuilderMatMgr::Load()
-{
-	KeyValues* kv;
-
-	kv = new KeyValues("unlitgeneric");
-	kv->SetInt("$vertexcolor", 1);
-	matOpaque = interfaces::materialSystem->CreateMaterial("_spt_UnlitOpaque", kv);
-
-	kv = new KeyValues("unlitgeneric");
-	kv->SetInt("$vertexcolor", 1);
-	kv->SetInt("$vertexalpha", 1);
-	matAlpha = interfaces::materialSystem->CreateMaterial("_spt_UnlitTranslucent", kv);
-
-	kv = new KeyValues("unlitgeneric");
-	kv->SetInt("$vertexcolor", 1);
-	kv->SetInt("$vertexalpha", 1);
-	kv->SetInt("$ignorez", 1);
-	matAlphaNoZ = interfaces::materialSystem->CreateMaterial("_spt_UnlitTranslucentNoZ", kv);
-
-	materialsInitialized = matOpaque && matAlpha && matAlphaNoZ;
-	if (!materialsInitialized)
-		matOpaque = matAlpha = matAlphaNoZ = nullptr;
+	return true;
 }
 
-void MeshBuilderMatMgr::Unload()
+void MeshRendererFeature::InitHooks()
 {
-	materialsInitialized = false;
-	if (matOpaque)
-		matOpaque->DecrementReferenceCount();
-	if (matAlpha)
-		matAlpha->DecrementReferenceCount();
-	if (matAlphaNoZ)
-		matAlphaNoZ->DecrementReferenceCount();
-	matOpaque = matAlpha = matAlphaNoZ = nullptr;
+	HOOK_FUNCTION(client, CRendering3dView__DrawOpaqueRenderables);
+	HOOK_FUNCTION(client, CRendering3dView__DrawTranslucentRenderables);
+	FIND_PATTERN(client, OnRenderStart);
 }
 
-IMaterial* MeshBuilderMatMgr::GetMaterial(bool opaque, bool zTest, color32 colorMod)
+void MeshRendererFeature::PreHook()
 {
-	if (!materialsInitialized || colorMod.a == 0)
-		return nullptr;
-	IMaterial* mat = zTest ? (opaque && colorMod.a ? matOpaque : matAlpha) : matAlphaNoZ;
-	Assert(mat);
-	mat->ColorModulate(colorMod.r / 255.f, colorMod.g / 255.f, colorMod.b / 255.f);
-	mat->AlphaModulate(colorMod.a / 255.f);
-	return mat;
+	signal.Works = Works();
+
+	if (ORIG_OnRenderStart)
+	{
+		int idx = GetPatternIndex((void**)&ORIG_OnRenderStart);
+		uint32_t offs[] = {18, 24};
+		if (idx >= 0 && idx < sizeof(offs) / sizeof(uint32_t))
+			g_pPortalRender = *(CPortalRender***)((uintptr_t)ORIG_OnRenderStart + offs[idx]);
+	}
+
+	g_meshMaterialMgr.Load();
 }
 
-/**************************************** INTERNAL MESH WRAPPER ****************************************/
+void MeshRendererFeature::LoadFeature()
+{
+	if (!Works())
+		return;
+	RenderViewPre_Signal.Connect(this, &MeshRendererFeature::OnRenderViewPre_Signal);
+	InitConcommandBase(y_spt_draw_mesh_debug);
+}
 
-struct MeshWrapperInternal
+void MeshRendererFeature::UnloadFeature()
+{
+	signal.Clear();
+	FrameCleanup();
+	g_meshMaterialMgr.Unload();
+	StaticMesh::DestroyAll();
+	g_pPortalRender = nullptr;
+}
+
+bool MeshRendererFeature::Works() const
+{
+	/*
+	* 1) InitHooks: spt_overlay finds the render function.
+	* 2) PreHook: spt_overlay may connect the RenderViewSignal. To not depend on feature load order
+	*    we cannot check if the signal exists, but we can check if the RenderView function was found.
+	* 3) LoadFeature: Anything that uses the mesh rendering system can check to see if the signal exists.
+	*/
+	return !!ORIG_CRendering3dView__DrawOpaqueRenderables && !!ORIG_CRendering3dView__DrawTranslucentRenderables
+	       && spt_overlay.ORIG_CViewRender__RenderView;
+}
+
+std::optional<uint> MeshRendererFeature::CurrentPortalRenderDepth() const
+{
+	if (!g_pPortalRender || !*g_pPortalRender)
+		return std::nullopt;
+	return (**g_pPortalRender).m_iViewRecursionLevel;
+}
+
+HOOK_THISCALL(void, MeshRendererFeature, CRendering3dView__DrawOpaqueRenderables, int param)
+{
+	// HACK - param is a bool in SSDK2007 and enum in SSDK2013
+	// render order shouldn't matter here
+	spt_meshRenderer.ORIG_CRendering3dView__DrawOpaqueRenderables(thisptr, 0, param);
+	if (spt_meshRenderer.Works())
+		spt_meshRenderer.OnDrawOpaques(thisptr);
+}
+
+HOOK_THISCALL(void, MeshRendererFeature, CRendering3dView__DrawTranslucentRenderables, bool inSkybox, bool shadowDepth)
+{
+	// render order matters here, render our stuff on top of other translucents
+	spt_meshRenderer.ORIG_CRendering3dView__DrawTranslucentRenderables(thisptr, 0, inSkybox, shadowDepth);
+	if (spt_meshRenderer.Works())
+		spt_meshRenderer.OnDrawTranslucents(thisptr);
+}
+
+/**************************************** MESH UNIT WRAPPER ****************************************/
+
+struct MeshUnitWrapper
 {
 	// keep statics alive as long as we render
-	const std::shared_ptr<MeshWrapper> _staticMeshPtr;
+	const std::shared_ptr<MeshUnit> _staticMeshPtr;
 	const DynamicMesh _dynamicInfo;
 	const RenderCallback callback;
 
@@ -236,43 +172,43 @@ struct MeshWrapperInternal
 	inline static bool cachedCamMatValid = false;
 	inline static VMatrix cachedCamMat;
 
-	MeshWrapperInternal(const DynamicMesh& dynamicInfo, const RenderCallback& callback)
+	MeshUnitWrapper(const DynamicMesh& dynamicInfo, const RenderCallback& callback)
 	    : _staticMeshPtr(nullptr), _dynamicInfo(dynamicInfo), callback(callback)
 	{
 	}
 
-	MeshWrapperInternal(const std::shared_ptr<MeshWrapper>& staticMeshPtr, const RenderCallback& callback)
+	MeshUnitWrapper(const std::shared_ptr<MeshUnit>& staticMeshPtr, const RenderCallback& callback)
 	    : _staticMeshPtr(staticMeshPtr), _dynamicInfo{}, callback(callback)
 	{
 	}
 
-	const MeshWrapper& GetMeshWrapper() const
+	const MeshUnit& GetMeshUnit() const
 	{
-		return _staticMeshPtr ? *_staticMeshPtr : g_meshBuilder.GetMeshWrapper(_dynamicInfo);
+		return _staticMeshPtr ? *_staticMeshPtr : g_meshBuilderInternal.GetMeshUnit(_dynamicInfo);
 	}
 
 	void ApplyCallbackAndCalcCamDist(const CViewSetup& cvs, bool inDrawOpaques)
 	{
-		const MeshWrapper& meshWrapper = GetMeshWrapper();
+		const MeshUnit& meshUnit = GetMeshUnit();
 
 		if (callback)
 		{
-			CallbackInfoIn infoIn = {cvs, meshWrapper.posInfo, std::nullopt, spt_overlay.renderingOverlay};
+			CallbackInfoIn infoIn = {cvs,
+			                         meshUnit.posInfo,
+			                         spt_meshRenderer.CurrentPortalRenderDepth(),
+			                         spt_overlay.renderingOverlay};
 
-			auto pRender = g_meshRenderer.g_pPortalRender;
-			if (pRender && *pRender)
-				infoIn.portalRenderDepth = (**pRender).m_iViewRecursionLevel;
 			callback(infoIn, cbInfoOut = CallbackInfoOut{});
 		}
 
-		const MeshPositionInfo& origPos = meshWrapper.posInfo;
+		const MeshPositionInfo& origPos = meshUnit.posInfo;
 		if (callback)
 			TransformAABB(cbInfoOut.mat, origPos.mins, origPos.maxs, newPosInfo.mins, newPosInfo.maxs);
 
-		const MeshPositionInfo& actualPosInfo = callback ? newPosInfo : meshWrapper.posInfo;
+		const MeshPositionInfo& actualPosInfo = callback ? newPosInfo : meshUnit.posInfo;
 
 		Vector center = (actualPosInfo.mins + actualPosInfo.maxs) / 2.f;
-		switch (meshWrapper.params.sortType)
+		switch (meshUnit.params.sortType)
 		{
 		case TranslucentSortType::AABB_Center:
 			camDistSqrTo = center;
@@ -290,7 +226,7 @@ struct MeshWrapperInternal
 	{
 		static StaticMesh debugBoxMesh, debugCrossMesh;
 
-		if (!debugBoxMesh || !debugCrossMesh)
+		if (!debugBoxMesh.Valid() || !debugCrossMesh.Valid())
 		{
 			// opaque and only use lines - other places assume this!
 
@@ -304,29 +240,29 @@ struct MeshWrapperInternal
 			debugCrossMesh = MB_STATIC(mb.AddCross({0, 0, 0}, 2, {255, 0, 0, 255}););
 		}
 
-		MeshWrapper* boxMeshWrapper = debugBoxMesh.meshPtr.get();
-		MeshWrapper* crossMeshWrapper = debugCrossMesh.meshPtr.get();
+		MeshUnit* boxMeshUnit = debugBoxMesh.meshPtr.get();
+		MeshUnit* crossMeshUnit = debugCrossMesh.meshPtr.get();
 
 		CMatRenderContextPtr context{interfaces::materialSystem};
 
 		// figure out box mesh dims
-		const MeshWrapper& myWrapper = GetMeshWrapper();
+		const MeshUnit& myWrapper = GetMeshUnit();
 		Assert(!myWrapper.faceComponent.Empty() || !myWrapper.lineComponent.Empty());
 		auto& myPosInfo = callback ? newPosInfo : myWrapper.posInfo;
 		const Vector nudge(0.05);
 		Vector size = (myPosInfo.maxs + nudge) - (myPosInfo.mins - nudge);
 		matrix3x4_t mat({size.x, 0, 0}, {0, size.y, 0}, {0, 0, size.z}, myPosInfo.mins - nudge);
 
-		IMaterial* boxMaterial = g_meshBuilderMaterials.GetMaterial(boxMeshWrapper->lineComponent.opaque,
-		                                                            boxMeshWrapper->lineComponent.zTest,
-		                                                            {255, 255, 255, 255});
+		IMaterial* boxMaterial = g_meshMaterialMgr.GetMaterial(boxMeshUnit->lineComponent.opaque,
+		                                                       boxMeshUnit->lineComponent.zTest,
+		                                                       {255, 255, 255, 255});
 		Assert(boxMaterial);
 
 		context->MatrixMode(MATERIAL_MODEL);
 		context->PushMatrix();
 		context->LoadMatrix(mat);
 		context->Bind(boxMaterial);
-		IMesh* iMesh = boxMeshWrapper->lineComponent.GetIMesh(*boxMeshWrapper, boxMaterial);
+		IMesh* iMesh = boxMeshUnit->lineComponent.GetIMesh(*boxMeshUnit, boxMaterial);
 		if (iMesh)
 			iMesh->Draw();
 
@@ -336,14 +272,14 @@ struct MeshWrapperInternal
 		float pointSize = -falloff * (biggest - smallest) / (maxBoxDim + falloff) + biggest;
 		mat.Init({pointSize, 0, 0}, {0, pointSize, 0}, {0, 0, pointSize}, camDistSqrTo);
 
-		IMaterial* crossMaterial = g_meshBuilderMaterials.GetMaterial(crossMeshWrapper->lineComponent.opaque,
-		                                                              crossMeshWrapper->lineComponent.zTest,
-		                                                              {255, 255, 255, 255});
+		IMaterial* crossMaterial = g_meshMaterialMgr.GetMaterial(crossMeshUnit->lineComponent.opaque,
+		                                                         crossMeshUnit->lineComponent.zTest,
+		                                                         {255, 255, 255, 255});
 		Assert(crossMaterial);
 
 		context->LoadMatrix(mat);
 		context->Bind(crossMaterial);
-		iMesh = crossMeshWrapper->lineComponent.GetIMesh(*crossMeshWrapper, crossMaterial);
+		iMesh = crossMeshUnit->lineComponent.GetIMesh(*crossMeshUnit, crossMaterial);
 		if (iMesh)
 			iMesh->Draw();
 		context->PopMatrix();
@@ -353,8 +289,8 @@ struct MeshWrapperInternal
 	{
 		VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 
-		const MeshWrapper& meshWrapper = GetMeshWrapper();
-		auto& component = faces ? meshWrapper.faceComponent : meshWrapper.lineComponent;
+		const MeshUnit& meshUnit = GetMeshUnit();
+		auto& component = faces ? meshUnit.faceComponent : meshUnit.lineComponent;
 		Assert(!component.Empty());
 
 		CMatRenderContextPtr context{interfaces::materialSystem};
@@ -378,7 +314,7 @@ struct MeshWrapperInternal
 				cachedCamMatValid = true;
 			}
 
-			auto& posInfo = callback ? newPosInfo : meshWrapper.posInfo;
+			auto& posInfo = callback ? newPosInfo : meshUnit.posInfo;
 			const Vector& mins = posInfo.mins;
 			const Vector& maxs = posInfo.maxs;
 
@@ -413,11 +349,11 @@ struct MeshWrapperInternal
 			auto& cbData = faces ? cbInfoOut.faces : cbInfoOut.lines;
 			cMod = cbData.colorModulate;
 		}
-		IMaterial* material = g_meshBuilderMaterials.GetMaterial(component.opaque, component.zTest, cMod);
+		IMaterial* material = g_meshMaterialMgr.GetMaterial(component.opaque, component.zTest, cMod);
 		if (!material)
 			return;
 
-		IMesh* iMesh = component.GetIMesh(meshWrapper, material);
+		IMesh* iMesh = component.GetIMesh(meshUnit, material);
 		if (!iMesh)
 			return;
 
@@ -436,57 +372,25 @@ struct MeshWrapperInternal
 	}
 };
 
-/**************************************** MESH RENDERER ****************************************/
+/**************************************** MESH RENDER FEATURE ****************************************/
 
-void MeshRenderer::DrawMesh(const DynamicMesh& dynamicMesh, const RenderCallback& callback)
+void MeshRendererFeature::FrameCleanup()
 {
-	if (!g_inMeshRenderSignal)
-	{
-		AssertMsg(0, "spt: Meshes can only be drawn in MeshRenderSignal!");
-		return;
-	}
-	if (dynamicMesh.createdFrame != g_meshRenderFrameNum)
-	{
-		AssertMsg(0, "spt: Attempted to reuse dynamic mesh between frames");
-		Warning("spt: Can only draw dynamic meshes on the frame they were created!\n");
-		return;
-	}
-	const MeshWrapper& meshWrapper = g_meshBuilder.GetMeshWrapper(dynamicMesh);
-	if (!meshWrapper.faceComponent.Empty() || !meshWrapper.lineComponent.Empty())
-		g_meshRenderer.deferredMeshWrappers.emplace_back(dynamicMesh, callback);
+	g_meshUnitWrappers.clear();
+	g_meshBuilderInternal.ClearOldBuffers();
 }
 
-void MeshRenderer::DrawMesh(const StaticMesh& staticMesh, const RenderCallback& callback)
+void MeshRendererFeature::OnRenderViewPre_Signal(void* thisptr, CViewSetup* cameraView)
 {
-	if (!g_inMeshRenderSignal)
-	{
-		AssertMsg(0, "spt: Meshes can only be drawn in MeshRenderSignal!");
+	// ensure we only run once per frame
+	if (spt_overlay.renderingOverlay || !signal.Works)
 		return;
-	}
-	if (!staticMesh)
-	{
-		AssertMsg(0, "spt: This static mesh has been destroyed!");
-		Warning("spt: Attempting to draw an invalid static mesh!\n");
-		return;
-	}
-	if (!staticMesh.meshPtr->Empty())
-		g_meshRenderer.deferredMeshWrappers.emplace_back(staticMesh.meshPtr, callback);
-}
-
-void MeshRendererFeature::Cleanup()
-{
-	deferredMeshWrappers.clear();
-	g_meshBuilder.ClearOldBuffers();
-}
-
-void MeshRendererFeature::OnRenderViewSignal(void* thisptr)
-{
 	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
-	Cleanup();
+	FrameCleanup();
 	g_meshRenderFrameNum++;
 	g_inMeshRenderSignal = true;
-	static MeshRenderer renderer;
-	MeshRenderSignal(renderer);
+	MeshRendererDelegate renderDelgate = {};
+	signal(renderDelgate);
 	g_inMeshRenderSignal = false;
 }
 
@@ -494,13 +398,12 @@ void MeshRendererFeature::OnDrawOpaques(void* renderingView)
 {
 	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	CViewSetup& cvs = *(CViewSetup*)((uintptr_t)renderingView + 8);
-	CMatRenderContextPtr context{interfaces::materialSystem};
-	MeshWrapperInternal::cachedCamMatValid = false;
+	MeshUnitWrapper::cachedCamMatValid = false;
 
-	for (auto& meshInternal : deferredMeshWrappers)
+	for (auto& meshInternal : g_meshUnitWrappers)
 	{
 		meshInternal.ApplyCallbackAndCalcCamDist(cvs, true);
-		const MeshWrapper& meshWrapper = meshInternal.GetMeshWrapper();
+		const MeshUnit& meshUnit = meshInternal.GetMeshUnit();
 		/*
 		* Check both components (faces & lines), skip rendering if:
 		* - the component is empty
@@ -510,7 +413,7 @@ void MeshRendererFeature::OnDrawOpaques(void* renderingView)
 		*/
 		for (int i = 0; i < 2; i++)
 		{
-			auto& component = i == 0 ? meshWrapper.faceComponent : meshWrapper.lineComponent;
+			auto& component = i == 0 ? meshUnit.faceComponent : meshUnit.lineComponent;
 			if (component.Empty() || !component.opaque)
 				continue;
 			if (meshInternal.callback)
@@ -530,16 +433,16 @@ void MeshRendererFeature::OnDrawTranslucents(void* renderingView)
 	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	CViewSetup& cvs = *(CViewSetup*)((uintptr_t)renderingView + 8);
 
-	static std::vector<MeshWrapperInternal*> showDebugMeshFor;
-	static std::vector<std::pair<MeshWrapperInternal*, bool>> sortedTranslucents; // <mesh_ptr, is_face_component>
+	static std::vector<MeshUnitWrapper*> showDebugMeshFor;
+	static std::vector<std::pair<MeshUnitWrapper*, bool>> sortedTranslucents; // <mesh_ptr, is_face_component>
 	sortedTranslucents.clear();
 	showDebugMeshFor.clear();
-	MeshWrapperInternal::cachedCamMatValid = false;
+	MeshUnitWrapper::cachedCamMatValid = false;
 
-	for (auto& meshInternal : deferredMeshWrappers)
+	for (auto& meshInternal : g_meshUnitWrappers)
 	{
 		meshInternal.ApplyCallbackAndCalcCamDist(cvs, false);
-		const MeshWrapper& meshWrapper = meshInternal.GetMeshWrapper();
+		const MeshUnit& meshUnit = meshInternal.GetMeshUnit();
 		/*
 		* Check both components (faces & lines), skip rendering if:
 		* - the component is empty
@@ -551,7 +454,7 @@ void MeshRendererFeature::OnDrawTranslucents(void* renderingView)
 		bool drawDebugMesh = false;
 		for (int i = 0; i < 2; i++)
 		{
-			auto& component = i == 0 ? meshWrapper.faceComponent : meshWrapper.lineComponent;
+			auto& component = i == 0 ? meshUnit.faceComponent : meshUnit.lineComponent;
 			if (component.Empty())
 				continue;
 			if (meshInternal.callback)
@@ -578,12 +481,12 @@ void MeshRendererFeature::OnDrawTranslucents(void* renderingView)
 
 	std::sort(sortedTranslucents.begin(),
 	          sortedTranslucents.end(),
-	          [](const std::pair<MeshWrapperInternal*, bool>& a, const std::pair<MeshWrapperInternal*, bool>& b)
+	          [](const std::pair<MeshUnitWrapper*, bool>& a, const std::pair<MeshUnitWrapper*, bool>& b)
 	          {
-		          bool zTestA = a.second ? a.first->GetMeshWrapper().faceComponent.zTest
-		                                 : a.first->GetMeshWrapper().lineComponent.zTest;
-		          bool zTestB = b.second ? b.first->GetMeshWrapper().faceComponent.zTest
-		                                 : b.first->GetMeshWrapper().lineComponent.zTest;
+		          bool zTestA = a.second ? a.first->GetMeshUnit().faceComponent.zTest
+		                                 : a.first->GetMeshUnit().lineComponent.zTest;
+		          bool zTestB = b.second ? b.first->GetMeshUnit().faceComponent.zTest
+		                                 : b.first->GetMeshUnit().lineComponent.zTest;
 		          // $ignorez stuff needs to be rendered last on top of everything - materials with it
 		          // don't change the z buffer so anything rendered after can still overwrite them
 		          if (zTestA != zTestB)
@@ -596,6 +499,43 @@ void MeshRendererFeature::OnDrawTranslucents(void* renderingView)
 
 	for (auto meshInternal : showDebugMeshFor)
 		meshInternal->RenderDebugMesh();
+}
+
+/**************************************** MESH RENDERER ****************************************/
+
+void MeshRendererDelegate::DrawMesh(const DynamicMesh& dynamicMesh, const RenderCallback& callback)
+{
+	if (!g_inMeshRenderSignal)
+	{
+		AssertMsg(0, "spt: Meshes can only be drawn in MeshRenderSignal!");
+		return;
+	}
+	if (dynamicMesh.createdFrame != g_meshRenderFrameNum)
+	{
+		AssertMsg(0, "spt: Attempted to reuse dynamic mesh between frames");
+		Warning("spt: Can only draw dynamic meshes on the frame they were created!\n");
+		return;
+	}
+	const MeshUnit& meshUnit = g_meshBuilderInternal.GetMeshUnit(dynamicMesh);
+	if (!meshUnit.faceComponent.Empty() || !meshUnit.lineComponent.Empty())
+		g_meshUnitWrappers.emplace_back(dynamicMesh, callback);
+}
+
+void MeshRendererDelegate::DrawMesh(const StaticMesh& staticMesh, const RenderCallback& callback)
+{
+	if (!g_inMeshRenderSignal)
+	{
+		AssertMsg(0, "spt: Meshes can only be drawn in MeshRenderSignal!");
+		return;
+	}
+	if (!staticMesh.Valid())
+	{
+		AssertMsg(0, "spt: This static mesh has been destroyed!");
+		Warning("spt: Attempting to draw an invalid static mesh!\n");
+		return;
+	}
+	if (!staticMesh.meshPtr->Empty())
+		g_meshUnitWrappers.emplace_back(staticMesh.meshPtr, callback);
 }
 
 #endif
