@@ -122,7 +122,7 @@ public:
 
 	virtual void LoadFeature() override
 	{
-		if (!spt_collideToMesh.Works())
+		if (!spt_collideToMesh.Works() || !spt_meshRenderer.signal.Works)
 			return;
 
 		// cache all field stuff & check that spt_entutils works
@@ -141,9 +141,6 @@ public:
 			return;
 
 		portalFieldOffs.simulator += sizeof(Vector) * 4;
-
-		if (!spt_meshRenderer.signal.Works)
-			return;
 
 		spt_meshRenderer.signal.Connect(this, &SgCollideVisFeature::OnMeshRenderSignal);
 		InitConcommandBase(y_spt_draw_portal_env);
@@ -311,7 +308,10 @@ public:
 
 		if (y_spt_draw_portal_env.GetBool())
 		{
-			if (cache.localWorld.size() == 0 || !cache.localWorld[0].Valid())
+			if (!cache.localWorld.empty() && !cache.localWorld[0].Valid())
+				cache.localWorld.clear();
+
+			if (cache.localWorld.empty())
 			{
 				CacheLocalCollide(*(CPhysCollide**)(sim + 280), MC_PORTAL_HOLE);
 				CacheLocalCollide(*(CPhysCollide**)(sim + 304), MC_LOCAL_WORLD_BRUSHES);
@@ -339,28 +339,35 @@ public:
 		}
 		if (y_spt_draw_portal_env_remote.GetBool())
 		{
-			// invalidate remote cache if the linked portal changed
-			PortalInfo curLinkedInfo;
-			edict_t* linkedEd = engine_server->PEntityOfEntIndex(curInfo.linked.GetEntryIndex());
-			if (!GetPortalInfo(linkedEd, &curLinkedInfo))
-				curLinkedInfo.isOpen = false;
-			if (!curInfo.isOpen || lastLinkedInfo.pos != curLinkedInfo.pos
-			    || lastLinkedInfo.ang != curLinkedInfo.ang || lastLinkedInfo.isOpen != curLinkedInfo.isOpen)
-			{
+			if (!cache.remoteWorld.empty() && !cache.remoteWorld[0].second.Valid())
 				cache.remoteWorld.clear();
-				lastLinkedInfo = curLinkedInfo;
+
+			if (!cache.remoteWorld.empty())
+			{
+				// invalidate remote cache if the linked portal changed
+				PortalInfo curLinkedInfo;
+				edict_t* linkedEd = engine_server->PEntityOfEntIndex(curInfo.linked.GetEntryIndex());
+				if (!GetPortalInfo(linkedEd, &curLinkedInfo))
+					curLinkedInfo.isOpen = false;
+
+				if (!curInfo.isOpen || lastLinkedInfo.pos != curLinkedInfo.pos
+				    || lastLinkedInfo.ang != curLinkedInfo.ang
+				    || lastLinkedInfo.isOpen != curLinkedInfo.isOpen)
+				{
+					cache.remoteWorld.clear();
+					lastLinkedInfo = curLinkedInfo;
+				}
 			}
 
-			if (cache.remoteWorld.size() == 0 || !cache.remoteWorld[0].second.Valid())
+			if (cache.remoteWorld.empty())
 			{
 				CacheRemoteCPhysObj(*(CPhysicsObject**)(sim + 412), MC_REMOTE_WORLD_BRUSHES);
 				const auto& staticProps = *(CUtlVector<CPhysicsObject*>*)(sim + 416);
 				for (int i = 0; i < staticProps.Count(); i++)
 					CacheRemoteCPhysObj(staticProps[i], MC_REMOTE_STATIC_PROPS);
 			}
-			for (const auto& [matRef, staticMesh] : cache.remoteWorld)
+			for (const auto& [mat, staticMesh] : cache.remoteWorld)
 			{
-				matrix3x4_t mat{matRef};
 				mr.DrawMesh(
 				    staticMesh,
 				    [mat](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
