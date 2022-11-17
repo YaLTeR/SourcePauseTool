@@ -527,11 +527,13 @@ CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 #ifdef SPT_PORTAL_UTILS
 CON_COMMAND(y_spt_find_portals, "Prints info for all portals")
 {
+	bool found = false;
 	for (int i = 0; i < MAX_EDICTS; ++i)
 	{
 		auto ent = utils::GetClientEntity(i);
 		if (!invalidPortal(ent))
 		{
+			found = true;
 			auto color = utils::GetProperty<bool>(i, "m_bIsPortal2") ? "orange" : "blue";
 			int remoteIdx = utils::GetProperty<int>(i, "m_hLinkedPortal");
 			bool activated = utils::GetProperty<bool>(i, "m_bActivated");
@@ -548,6 +550,8 @@ CON_COMMAND(y_spt_find_portals, "Prints info for all portals")
 			    origin.z);
 		}
 	}
+	if (!found)
+		Msg("SPT: No portals!\n");
 }
 #endif
 
