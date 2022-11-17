@@ -413,7 +413,6 @@ bool PlayerIOFeature::IsGroundEntitySet()
 	else
 	{
 		// Not bugged around portals
-		const int INDEX_MASK = MAX_EDICTS - 1;
 		int index = m_hGroundEntity.GetValue() & INDEX_MASK;
 		return index != INDEX_MASK;
 	}
@@ -525,7 +524,7 @@ CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 	Warning("Velocity (xy): %f\n", vel.Length2D());
 }
 
-#if defined(SSDK2007) || defined(SSDK2013)
+#ifdef SPT_PORTAL_UTILS
 CON_COMMAND(y_spt_find_portals, "Prints info for all portals")
 {
 	for (int i = 0; i < MAX_EDICTS; ++i)
@@ -754,7 +753,7 @@ const wchar* MOVETYPE_FLAGS[] = {L"MOVETYPE_NONE",
 const wchar* MOVECOLLIDE_FLAGS[] = {L"MOVECOLLIDE_DEFAULT",
                                     L"MOVECOLLIDE_FLY_BOUNCE",
                                     L"MOVECOLLIDE_FLY_CUSTOM",
-                                    L"MOVECOLLIDE_COUNT"};
+                                    L"MOVECOLLIDE_FLY_SLIDE"};
 
 const wchar* COLLISION_GROUPS[] = {L"COLLISION_GROUP_NONE",
                                    L"COLLISION_GROUP_DEBRIS",
@@ -793,7 +792,7 @@ const wchar* COLLISION_GROUPS[] = {L"COLLISION_GROUP_NONE",
 		             fontTall); \
 	}
 
-#if defined(SSDK2007)
+#ifdef SPT_HUD_ENABLED
 void DrawFlagsHud(bool mutuallyExclusiveFlags, const wchar* hudName, const wchar** nameArray, int count, int flags)
 {
 	for (int u = 0; u < count; ++u)
@@ -858,7 +857,7 @@ void PlayerIOFeature::LoadFeature()
 	if (m_vecAbsVelocity.Found())
 	{
 		InitCommand(_y_spt_getvel);
-#if defined(SSDK2007)
+#ifdef SPT_HUD_ENABLED
 		if (TickSignal.Works)
 		{
 			TickSignal.Connect(this, &PlayerIOFeature::OnTick);
@@ -898,6 +897,7 @@ void PlayerIOFeature::LoadFeature()
 		    },
 		    y_spt_hud_velocity_angles);
 
+#ifdef SPT_PORTAL_UTILS
 		if (utils::DoesGameLookLikePortal())
 		{
 			AddHudCallback(
@@ -911,6 +911,7 @@ void PlayerIOFeature::LoadFeature()
 			    },
 			    y_spt_hud_ag_sg_tester);
 		}
+#endif
 #endif
 	}
 
@@ -927,12 +928,14 @@ void PlayerIOFeature::LoadFeature()
 		InitCommand(y_spt_calc_relative_position);
 	}
 #endif
-#if defined(SSDK2007)
+#ifdef SPT_HUD_ENABLED
+#ifdef SPT_PORTAL_UTILS
 	if (utils::DoesGameLookLikePortal() && interfaces::engine_server
 	    && offServerAbsOrigin != utils::INVALID_DATAMAP_OFFSET)
 	{
 		InitCommand(y_spt_find_portals);
 	}
+#endif
 
 	if (m_fFlags.Found())
 	{
