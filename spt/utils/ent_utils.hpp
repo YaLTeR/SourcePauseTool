@@ -9,9 +9,7 @@
 #include "iserverunknown.h"
 #include "trace.h"
 
-#ifndef OE
-const int INDEX_MASK = MAX_EDICTS - 1;
-#endif
+#define INDEX_MASK (MAX_EDICTS - 1)
 
 namespace utils
 {
