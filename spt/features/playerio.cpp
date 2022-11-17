@@ -99,7 +99,11 @@ bool PlayerIOFeature::ShouldLoadFeature()
 	return interfaces::engine != nullptr && spt_entutils.ShouldLoadFeature();
 }
 
-void PlayerIOFeature::UnloadFeature() {}
+void PlayerIOFeature::UnloadFeature()
+{
+	fetchedPlayerFields = false;
+	cinput_thisptr = nullptr;
+}
 
 void PlayerIOFeature::PreHook()
 {
@@ -361,8 +365,7 @@ Vector PlayerIOFeature::GetPlayerEyePos()
 
 void PlayerIOFeature::GetPlayerFields()
 {
-	static bool fetched = false;
-	if (fetched)
+	if (fetchedPlayerFields)
 		return;
 
 	if (spt_entutils.ShouldLoadFeature())
@@ -394,7 +397,7 @@ void PlayerIOFeature::GetPlayerFields()
 			m_surfaceFriction.field.serverOffset -= 4; // Take the previous 4 byte aligned address
 		}
 	}
-	fetched = true;
+	fetchedPlayerFields = true;
 }
 
 bool PlayerIOFeature::IsGroundEntitySet()

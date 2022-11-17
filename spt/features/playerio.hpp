@@ -50,6 +50,7 @@ public:
 	void GetPlayerFields();
 	void OnTick();
 
+	bool fetchedPlayerFields = false;
 	bool duckspam = false;
 	bool forceJump = false;
 	bool forceUnduck = false;
