@@ -681,13 +681,14 @@ const wchar* COLLISION_GROUPS[] = {L"COLLISION_GROUP_NONE",
 	}
 
 #ifdef SPT_HUD_ENABLED
-void DrawFlagsHud(bool mutuallyExclusiveFlags, const wchar* hudName, const wchar** nameArray, int count, int flags)
+void DrawFlagsHud(bool mutuallyExclusiveFlags, const wchar* hudName, const wchar** nameArray, uint count, uint flags)
 {
-	for (int u = 0; u < count; ++u)
+	uint mask = (1 << count) - 1;
+	for (uint u = 0; u < count; ++u)
 	{
 		if (nameArray[u])
 		{
-			if (mutuallyExclusiveFlags && flags == u)
+			if (mutuallyExclusiveFlags && (flags & mask) == u)
 			{
 				spt_hud.DrawTopHudElement(L"%s: %s", hudName, nameArray[u]);
 			}
