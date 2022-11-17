@@ -65,7 +65,7 @@ std::unique_ptr<Vector> CreateCollideFeature::CreateEntMesh(const CBaseEntity* p
                                                             int& outNumTris,
                                                             matrix3x4_t& outMat)
 {
-	int off = spt_entutils.GetFieldOffset("CBaseEntity", "m_CollisionGroup", true);
+	int off = spt_entprops.GetFieldOffset("CBaseEntity", "m_CollisionGroup", true);
 	if (!pEnt || !Works() || off == utils::INVALID_DATAMAP_OFFSET)
 	{
 		outNumTris = 0;

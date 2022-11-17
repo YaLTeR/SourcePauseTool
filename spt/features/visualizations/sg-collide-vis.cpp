@@ -125,18 +125,18 @@ public:
 		if (!spt_collideToMesh.Works() || !spt_meshRenderer.signal.Works)
 			return;
 
-		// cache all field stuff & check that spt_entutils works
-		portalFieldOffs.pos = spt_entutils.GetFieldOffset(PORTAL_CLASS, "m_vecAbsOrigin", true);
-		portalFieldOffs.ang = spt_entutils.GetFieldOffset(PORTAL_CLASS, "m_angAbsRotation", true);
-		portalFieldOffs.isOrange = spt_entutils.GetFieldOffset(PORTAL_CLASS, "m_bIsPortal2", true);
-		portalFieldOffs.linked = spt_entutils.GetFieldOffset(PORTAL_CLASS, "m_hLinkedPortal", true);
-		portalFieldOffs.isActivated = spt_entutils.GetFieldOffset(PORTAL_CLASS, "m_bActivated", true);
-		portalFieldOffs.simulator = spt_entutils.GetFieldOffset(PORTAL_CLASS, "m_vPortalCorners", true);
+		// cache all field stuff & check that spt_entprops works
+		portalFieldOffs.pos = spt_entprops.GetFieldOffset(PORTAL_CLASS, "m_vecAbsOrigin", true);
+		portalFieldOffs.ang = spt_entprops.GetFieldOffset(PORTAL_CLASS, "m_angAbsRotation", true);
+		portalFieldOffs.isOrange = spt_entprops.GetFieldOffset(PORTAL_CLASS, "m_bIsPortal2", true);
+		portalFieldOffs.linked = spt_entprops.GetFieldOffset(PORTAL_CLASS, "m_hLinkedPortal", true);
+		portalFieldOffs.isActivated = spt_entprops.GetFieldOffset(PORTAL_CLASS, "m_bActivated", true);
+		portalFieldOffs.simulator = spt_entprops.GetFieldOffset(PORTAL_CLASS, "m_vPortalCorners", true);
 
 		for (int i = 0; i < sizeof(portalFieldOffs) / sizeof(int); i++)
 			if (reinterpret_cast<int*>(&portalFieldOffs)[i] == utils::INVALID_DATAMAP_OFFSET)
 				return;
-		envPortalField = spt_entutils.GetPlayerField<int>("m_hPortalEnvironment", PropMode::Server);
+		envPortalField = spt_entprops.GetPlayerField<int>("m_hPortalEnvironment", PropMode::Server);
 		if (!envPortalField.ServerOffsetFound())
 			return;
 

@@ -96,7 +96,7 @@ void PlayerIOFeature::InitHooks()
 
 bool PlayerIOFeature::ShouldLoadFeature()
 {
-	return interfaces::engine != nullptr && spt_entutils.ShouldLoadFeature();
+	return interfaces::engine != nullptr && spt_entprops.ShouldLoadFeature();
 }
 
 void PlayerIOFeature::UnloadFeature()
@@ -368,26 +368,26 @@ void PlayerIOFeature::GetPlayerFields()
 	if (fetchedPlayerFields)
 		return;
 
-	if (spt_entutils.ShouldLoadFeature())
+	if (spt_entprops.ShouldLoadFeature())
 	{
-		m_afPhysicsFlags = spt_entutils.GetPlayerField<int>("m_afPhysicsFlags");
-		m_bDucking = spt_entutils.GetPlayerField<bool>("m_Local.m_bDucking");
-		m_CollisionGroup = spt_entutils.GetPlayerField<int>("m_CollisionGroup");
-		m_fFlags = spt_entutils.GetPlayerField<int>("m_fFlags");
-		m_flDuckJumpTime = spt_entutils.GetPlayerField<float>("m_Local.m_flDuckJumpTime");
-		m_flMaxspeed = spt_entutils.GetPlayerField<float>("m_flMaxspeed");
-		m_hGroundEntity = spt_entutils.GetPlayerField<int>("m_hGroundEntity");
-		m_MoveCollide = spt_entutils.GetPlayerField<int>("m_MoveCollide");
-		m_MoveType = spt_entutils.GetPlayerField<int>("m_MoveType");
-		m_vecAbsOrigin = spt_entutils.GetPlayerField<Vector>("m_vecAbsOrigin");
-		m_vecAbsVelocity = spt_entutils.GetPlayerField<Vector>("m_vecAbsVelocity");
-		m_vecPreviouslyPredictedOrigin = spt_entutils.GetPlayerField<Vector>("m_vecPreviouslyPredictedOrigin");
-		m_vecPunchAngle = spt_entutils.GetPlayerField<QAngle>("m_Local.m_vecPunchAngle");
-		m_vecPunchAngleVel = spt_entutils.GetPlayerField<QAngle>("m_Local.m_vecPunchAngleVel");
-		m_vecViewOffset = spt_entutils.GetPlayerField<Vector>("m_vecViewOffset");
+		m_afPhysicsFlags = spt_entprops.GetPlayerField<int>("m_afPhysicsFlags");
+		m_bDucking = spt_entprops.GetPlayerField<bool>("m_Local.m_bDucking");
+		m_CollisionGroup = spt_entprops.GetPlayerField<int>("m_CollisionGroup");
+		m_fFlags = spt_entprops.GetPlayerField<int>("m_fFlags");
+		m_flDuckJumpTime = spt_entprops.GetPlayerField<float>("m_Local.m_flDuckJumpTime");
+		m_flMaxspeed = spt_entprops.GetPlayerField<float>("m_flMaxspeed");
+		m_hGroundEntity = spt_entprops.GetPlayerField<int>("m_hGroundEntity");
+		m_MoveCollide = spt_entprops.GetPlayerField<int>("m_MoveCollide");
+		m_MoveType = spt_entprops.GetPlayerField<int>("m_MoveType");
+		m_vecAbsOrigin = spt_entprops.GetPlayerField<Vector>("m_vecAbsOrigin");
+		m_vecAbsVelocity = spt_entprops.GetPlayerField<Vector>("m_vecAbsVelocity");
+		m_vecPreviouslyPredictedOrigin = spt_entprops.GetPlayerField<Vector>("m_vecPreviouslyPredictedOrigin");
+		m_vecPunchAngle = spt_entprops.GetPlayerField<QAngle>("m_Local.m_vecPunchAngle");
+		m_vecPunchAngleVel = spt_entprops.GetPlayerField<QAngle>("m_Local.m_vecPunchAngleVel");
+		m_vecViewOffset = spt_entprops.GetPlayerField<Vector>("m_vecViewOffset");
 		offServerAbsOrigin = m_vecAbsOrigin.field.serverOffset;
 
-		int m_bSinglePlayerGameEndingOffset = spt_entutils.GetPlayerOffset("m_bSinglePlayerGameEnding", true);
+		int m_bSinglePlayerGameEndingOffset = spt_entprops.GetPlayerOffset("m_bSinglePlayerGameEnding", true);
 		if (m_bSinglePlayerGameEndingOffset != utils::INVALID_DATAMAP_OFFSET)
 		{
 			// There's 2 chars between m_bSinglePlayerGameEnding and m_surfaceFriction and floats are 4 byte aligned
@@ -405,7 +405,7 @@ bool PlayerIOFeature::IsGroundEntitySet()
 	if (tas_strafe_version.GetInt() <= 4)
 	{
 		// This is bugged around portals, here for backwards compat
-		auto player = spt_entutils.GetPlayer(false);
+		auto player = spt_entprops.GetPlayer(false);
 		if (ORIG_GetGroundEntity == nullptr || !player)
 			return false;
 		else

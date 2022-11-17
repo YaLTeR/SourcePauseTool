@@ -26,7 +26,7 @@ static wchar INFO_ARRAY[MAX_ENTRIES * INFO_BUFFER_SIZE];
 static const char ENT_SEPARATOR = ';';
 static const char PROP_SEPARATOR = ',';
 
-EntUtils spt_entutils;
+EntProps spt_entprops;
 
 namespace patterns
 {
@@ -39,25 +39,25 @@ namespace patterns
 	         "C7 05 ?? ?? ?? ?? ?? ?? ?? ?? B8 ?? ?? ?? ?? C7 05");
 }
 
-void EntUtils::InitHooks()
+void EntProps::InitHooks()
 {
 	AddMatchAllPattern(patterns::Datamap, "client", "Datamap", &clientPatterns);
 	AddMatchAllPattern(patterns::Datamap, "server", "Datamap", &serverPatterns);
 	tablesProcessed = false;
 }
 
-void EntUtils::PreHook()
+void EntProps::PreHook()
 {
 	ProcessTablesLazy();
 }
 
-void EntUtils::UnloadFeature()
+void EntProps::UnloadFeature()
 {
 	for (auto* map : wrappers)
 		delete map;
 }
 
-void EntUtils::WalkDatamap(std::string key)
+void EntProps::WalkDatamap(std::string key)
 {
 	ProcessTablesLazy();
 	auto* result = GetDatamapWrapper(key);
@@ -67,7 +67,7 @@ void EntUtils::WalkDatamap(std::string key)
 		Msg("No datamap found with name %s\n", key.c_str());
 }
 
-void EntUtils::PrintDatamaps()
+void EntProps::PrintDatamaps()
 {
 	Msg("Printing all datamaps:\n");
 	std::vector<std::string> names;
@@ -86,7 +86,7 @@ void EntUtils::PrintDatamaps()
 	}
 }
 
-int EntUtils::GetPlayerOffset(const std::string& key, bool server)
+int EntProps::GetPlayerOffset(const std::string& key, bool server)
 {
 	ProcessTablesLazy();
 	auto* playermap = GetPlayerDatamapWrapper();
@@ -100,7 +100,7 @@ int EntUtils::GetPlayerOffset(const std::string& key, bool server)
 		return playermap->GetClientOffset(key);
 }
 
-void* EntUtils::GetPlayer(bool server)
+void* EntProps::GetPlayer(bool server)
 {
 	if (server)
 	{
@@ -119,7 +119,7 @@ void* EntUtils::GetPlayer(bool server)
 	}
 }
 
-int EntUtils::GetFieldOffset(const std::string& mapKey, const std::string& key, bool server)
+int EntProps::GetFieldOffset(const std::string& mapKey, const std::string& key, bool server)
 {
 	auto map = GetDatamapWrapper(mapKey);
 	if (!map)
@@ -133,7 +133,7 @@ int EntUtils::GetFieldOffset(const std::string& mapKey, const std::string& key, 
 		return map->GetClientOffset(key);
 }
 
-_InternalPlayerField EntUtils::_GetPlayerField(const std::string& key, PropMode mode)
+_InternalPlayerField EntProps::_GetPlayerField(const std::string& key, PropMode mode)
 {
 	_InternalPlayerField out;
 	// Do nothing if we didn't load
@@ -188,7 +188,7 @@ static bool DoesMapLookValid(datamap_t* map, uint8_t* moduleStart, std::size_t l
 	return false;
 }
 
-PropMode EntUtils::ResolveMode(PropMode mode)
+PropMode EntProps::ResolveMode(PropMode mode)
 {
 	auto svplayer = GetPlayer(true);
 	auto clplayer = GetPlayer(false);
@@ -224,7 +224,7 @@ PropMode EntUtils::ResolveMode(PropMode mode)
 	}
 }
 
-void EntUtils::AddMap(datamap_t* map, bool server)
+void EntProps::AddMap(datamap_t* map, bool server)
 {
 	std::string name = map->dataClassName;
 
@@ -254,7 +254,7 @@ void EntUtils::AddMap(datamap_t* map, bool server)
 		ptr->_clientMap = map;
 }
 
-utils::DatamapWrapper* EntUtils::GetDatamapWrapper(const std::string& key)
+utils::DatamapWrapper* EntProps::GetDatamapWrapper(const std::string& key)
 {
 	auto result = nameToMapWrapper.find(key);
 	if (result != nameToMapWrapper.end())
@@ -263,7 +263,7 @@ utils::DatamapWrapper* EntUtils::GetDatamapWrapper(const std::string& key)
 		return nullptr;
 }
 
-utils::DatamapWrapper* EntUtils::GetPlayerDatamapWrapper()
+utils::DatamapWrapper* EntProps::GetPlayerDatamapWrapper()
 {
 	// Grab cached result if exists, can also be NULL!
 	if (playerDatamapSearched)
@@ -318,7 +318,7 @@ static void GetDatamapInfo(patterns::MatchedPattern pattern, int& numfields, dat
 	}
 }
 
-void EntUtils::ProcessTablesLazy()
+void EntProps::ProcessTablesLazy()
 {
 	if (tablesProcessed)
 		return;
@@ -418,15 +418,15 @@ CON_COMMAND(y_spt_print_ent_props, "Prints all props for a given entity index.")
 
 CON_COMMAND(_y_spt_datamap_print, "Prints all datamaps.")
 {
-	spt_entutils.PrintDatamaps();
+	spt_entprops.PrintDatamaps();
 }
 
 CON_COMMAND(_y_spt_datamap_walk, "Walk through a datamap and print all offsets.")
 {
-	spt_entutils.WalkDatamap(args.Arg(1));
+	spt_entprops.WalkDatamap(args.Arg(1));
 }
 
-void EntUtils::LoadFeature()
+void EntProps::LoadFeature()
 {
 	InitCommand(_y_spt_datamap_print);
 	InitCommand(_y_spt_datamap_walk);
@@ -483,7 +483,7 @@ void EntUtils::LoadFeature()
 
 void** _InternalPlayerField::GetServerPtr() const
 {
-	auto serverplayer = reinterpret_cast<uintptr_t>(spt_entutils.GetPlayer(true));
+	auto serverplayer = reinterpret_cast<uintptr_t>(spt_entprops.GetPlayer(true));
 	if (serverplayer && serverOffset != utils::INVALID_DATAMAP_OFFSET)
 		return reinterpret_cast<void**>(serverplayer + serverOffset);
 	else
@@ -492,7 +492,7 @@ void** _InternalPlayerField::GetServerPtr() const
 
 void** _InternalPlayerField::GetClientPtr() const
 {
-	auto clientPlayer = reinterpret_cast<uintptr_t>(spt_entutils.GetPlayer(false));
+	auto clientPlayer = reinterpret_cast<uintptr_t>(spt_entprops.GetPlayer(false));
 	if (clientPlayer && clientOffset != utils::INVALID_DATAMAP_OFFSET)
 		return reinterpret_cast<void**>(clientPlayer + clientOffset);
 	else
