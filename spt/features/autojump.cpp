@@ -138,7 +138,7 @@ void AutojumpFeature::InitHooks()
 
 bool AutojumpFeature::ShouldLoadFeature()
 {
-	return spt_entutils.ShouldLoadFeature();
+	return spt_entprops.ShouldLoadFeature();
 }
 
 void AutojumpFeature::LoadFeature()
@@ -190,7 +190,7 @@ void AutojumpFeature::LoadFeature()
 	if (ORIG_FinishGravity)
 	{
 		InitConcommandBase(y_spt_jumpboost);
-		m_bDucked = spt_entutils.GetPlayerField<bool>("m_Local.m_bDucked");
+		m_bDucked = spt_entprops.GetPlayerField<bool>("m_Local.m_bDucked");
 	}
 
 	if (utils::DoesGameLookLikePortal() && ORIG_CGameMovement__AirMove && ORIG_CPortalGameMovement__AirMove)

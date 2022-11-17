@@ -191,7 +191,7 @@ void calculateOffsetPlayer(IClientEntity* saveglitch_portal, Vector& new_player_
 	else
 	{
 		edict_t* e = interfaces::engine_server->PEntityOfEntIndex(saveglitch_portal->entindex());
-		static int offset = spt_entutils.GetFieldOffset("CProp_Portal", "m_matrixThisToLinked", true);
+		static int offset = spt_entprops.GetFieldOffset("CProp_Portal", "m_matrixThisToLinked", true);
 		if (e && offset != -1)
 		{
 			uintptr_t serverEnt = reinterpret_cast<uintptr_t>(e->GetUnknown());

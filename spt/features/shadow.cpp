@@ -137,7 +137,7 @@ IPhysicsPlayerController* ShadowPosition::GetPlayerController()
 	auto player = utils::GetServerPlayer();
 	if (!player)
 		return nullptr;
-	int off = spt_entutils.GetPlayerOffset("m_oldOrigin", true);
+	int off = spt_entprops.GetPlayerOffset("m_oldOrigin", true);
 	if (off == utils::INVALID_DATAMAP_OFFSET)
 		return nullptr;
 	// this is the closest field that's in the datamap, go back 3 pointers

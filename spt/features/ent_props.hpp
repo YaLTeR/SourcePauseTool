@@ -47,7 +47,7 @@ struct PlayerField
 };
 
 // Initializes ent utils stuff
-class EntUtils : public FeatureWrapper<EntUtils>
+class EntProps : public FeatureWrapper<EntProps>
 {
 public:
 	virtual bool ShouldLoadFeature()
@@ -85,10 +85,10 @@ protected:
 	std::unordered_map<std::string, utils::DatamapWrapper*> nameToMapWrapper;
 };
 
-extern EntUtils spt_entutils;
+extern EntProps spt_entprops;
 
 template<typename T>
-inline PlayerField<T> EntUtils::GetPlayerField(const std::string& key, PropMode mode)
+inline PlayerField<T> EntProps::GetPlayerField(const std::string& key, PropMode mode)
 {
 	PlayerField<T> field;
 	field.field = _GetPlayerField(key, mode);
@@ -110,7 +110,7 @@ inline T PlayerField<T>::GetValue() const
 template<typename T>
 inline T* PlayerField<T>::GetPtr() const
 {
-	auto resolved = spt_entutils.ResolveMode(mode);
+	auto resolved = spt_entprops.ResolveMode(mode);
 	if (resolved == PropMode::Server)
 		return reinterpret_cast<T*>(field.GetServerPtr());
 	else if (resolved == PropMode::Client)
