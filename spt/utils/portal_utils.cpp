@@ -7,7 +7,7 @@
 #include "..\spt-serverplugin.hpp"
 
 #include "ent_utils.hpp"
-#include "property_getter.hpp"
+#include "..\features\property_getter.hpp"
 #include "..\cvars.hpp"
 #include "cdll_int.h"
 #include "client_class.h"
@@ -58,7 +58,7 @@ bool invalidPortal(IClientEntity* portal)
 
 IClientEntity* GetEnvironmentPortal()
 {
-	int handle = utils::GetProperty<int>(0, "m_hPortalEnvironment");
+	int handle = spt_propertyGetter.GetProperty<int>(0, "m_hPortalEnvironment");
 	int index = (handle & INDEX_MASK) - 1;
 
 	return utils::GetClientEntity(index);

@@ -54,8 +54,8 @@ void VagSearcher::StartSearch()
 	entry_index = enter_portal->entindex();
 	exit_index = exit_portal->entindex();
 
-	if (utils::GetProperty<int>(entry_index - 1, "m_bActivated") == 0
-	    || utils::GetProperty<int>(exit_index - 1, "m_bActivated") == 0)
+	if (spt_propertyGetter.GetProperty<int>(entry_index - 1, "m_bActivated") == 0
+	    || spt_propertyGetter.GetProperty<int>(exit_index - 1, "m_bActivated") == 0)
 	{
 		Msg("Portal not activated.\n");
 		return;
@@ -105,7 +105,7 @@ void VagSearcher::StartIterations()
 	AngleVectors(angle, &entry_norm);
 
 	exit_origin = utils::GetPortalPosition(exit_portal);
-	is_crouched = (utils::GetProperty<int>(0, "m_fFlags") & 2) != 0;
+	is_crouched = (spt_propertyGetter.GetProperty<int>(0, "m_fFlags") & 2) != 0;
 	// change z pos so player center is where the portal center is
 	player_half_height = is_crouched ? 18 : 36;
 	player_setpos = entry_origin;
@@ -145,10 +145,10 @@ VagSearcher::VagSearchResult VagSearcher::RunIteration()
 		crash = false;
 		return WOULD_CAUSE_CRASH;
 	}
-	auto new_player_pos = utils::GetProperty<Vector>(0, "m_vecOrigin");
+	auto new_player_pos = spt_propertyGetter.GetProperty<Vector>(0, "m_vecOrigin");
 	new_player_pos.z += player_half_height;
 
-	auto player_portal_idx = utils::GetProperty<int>(0, "m_hPortalEnvironment") & 0xfff;
+	auto player_portal_idx = spt_propertyGetter.GetProperty<int>(0, "m_hPortalEnvironment") & 0xfff;
 
 	DevMsg("Player pos: %f %f %f\n", new_player_pos.x, new_player_pos.y, new_player_pos.z);
 	if (player_portal_idx == entry_index)

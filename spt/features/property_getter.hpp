@@ -2,6 +2,8 @@
 
 #include <map>
 #include <string>
+#include "spt/feature.hpp"
+
 #include "cdll_int.h"
 #include "engine\ivmodelinfo.h"
 #include "client_class.h"
@@ -9,17 +11,27 @@
 #include "icliententitylist.h"
 #include "ent_utils.hpp"
 
-namespace utils
+#define INVALID_OFFSET -1
+
+struct PropMap
 {
-	const int INVALID_OFFSET = -1;
+	std::map<std::string, RecvProp*> props;
+	bool foundOffsets;
+};
 
-	struct PropMap
-	{
-		std::map<std::string, RecvProp*> props;
-		bool foundOffsets;
-	};
+class PropertyGetterFeature : public FeatureWrapper<PropertyGetterFeature>
+{
+private:
+	std::map<std::string, PropMap> classToOffsetsMap;
 
+	PropMap FindOffsets(IClientEntity* ent);
+
+protected:
+	void UnloadFeature() override;
+
+public:
 	int GetOffset(int entindex, const std::string& key);
+
 	RecvProp* GetRecvProp(int entindex, const std::string& key);
 
 	template<typename T>
@@ -28,7 +40,7 @@ namespace utils
 #ifdef OE
 		return T();
 #else
-		auto ent = GetClientEntity(entindex);
+		auto ent = utils::GetClientEntity(entindex);
 
 		if (!ent)
 			return T();
@@ -42,4 +54,6 @@ namespace utils
 		}
 #endif
 	}
-} // namespace utils
+};
+
+inline PropertyGetterFeature spt_propertyGetter;
