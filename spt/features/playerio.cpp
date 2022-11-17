@@ -551,125 +551,6 @@ CON_COMMAND(y_spt_find_portals, "Prints info for all portals")
 }
 #endif
 
-#if SSDK2007
-// TODO: remove fixed offsets.
-
-void calculate_offset_player_pos(edict_t* saveglitch_portal, Vector& new_player_origin, QAngle& new_player_angles)
-{
-	// Here we make sure that the eye position and the eye angles match up.
-	const Vector view_offset(0, 0, 64);
-	auto& player_origin = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(utils::GetServerPlayer())
-	                                                 + spt_playerio.offServerAbsOrigin);
-	auto& player_angles = *reinterpret_cast<QAngle*>(reinterpret_cast<uintptr_t>(utils::GetServerPlayer()) + 2568);
-
-	auto& matrix = *reinterpret_cast<VMatrix*>(reinterpret_cast<uintptr_t>(saveglitch_portal->GetUnknown()) + 1072);
-
-	auto eye_origin = player_origin + view_offset;
-	auto new_eye_origin = matrix * eye_origin;
-	new_player_origin = new_eye_origin - view_offset;
-
-	new_player_angles = TransformAnglesToWorldSpace(player_angles, matrix.As3x4());
-	new_player_angles.x = AngleNormalizePositive(new_player_angles.x);
-	new_player_angles.y = AngleNormalizePositive(new_player_angles.y);
-	new_player_angles.z = AngleNormalizePositive(new_player_angles.z);
-}
-
-CON_COMMAND(
-    y_spt_calc_relative_position,
-    "y_spt_calc_relative_position <index of the save glitch portal | \"blue\" | \"orange\"> [1 if you want to teleport there instead of just printing]")
-{
-	if (args.ArgC() != 2 && args.ArgC() != 3)
-	{
-		Msg("Usage: y_spt_calc_relative_position <index of the save glitch portal | \"blue\" | \"orange\"> [1 if you want to teleport there instead of just printing]\n");
-		return;
-	}
-
-	int portal_index = atoi(args.Arg(1));
-
-	if (!strcmp(args.Arg(1), "blue") || !strcmp(args.Arg(1), "orange"))
-	{
-		std::vector<int> indices;
-
-		for (int i = 0; i < MAX_EDICTS; ++i)
-		{
-			auto ent = interfaces::engine_server->PEntityOfEntIndex(i);
-
-			if (ent && !ent->IsFree() && !strcmp(ent->GetClassName(), "prop_portal"))
-			{
-				auto is_orange_portal =
-				    *reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(ent->GetUnknown()) + 1137);
-
-				if (is_orange_portal == (args.Arg(1)[0] == 'o'))
-					indices.push_back(i);
-			}
-		}
-
-		if (indices.size() > 1)
-		{
-			Msg("There are multiple %s portals, please use the index:\n", args.Arg(1));
-
-			for (auto i : indices)
-			{
-				auto ent = interfaces::engine_server->PEntityOfEntIndex(i);
-				auto& origin = *reinterpret_cast<Vector*>(reinterpret_cast<uintptr_t>(ent->GetUnknown())
-				                                          + spt_playerio.offServerAbsOrigin);
-
-				Msg("%d located at %.8f %.8f %.8f\n", i, origin.x, origin.y, origin.z);
-			}
-
-			return;
-		}
-		else if (indices.size() == 0)
-		{
-			Msg("There are no %s portals.\n", args.Arg(1));
-			return;
-		}
-		else
-		{
-			portal_index = indices[0];
-		}
-	}
-
-	auto portal = interfaces::engine_server->PEntityOfEntIndex(portal_index);
-	if (!portal || portal->IsFree() || strcmp(portal->GetClassName(), "prop_portal") != 0)
-	{
-		Warning("The portal index is invalid.\n");
-		return;
-	}
-
-	Vector new_player_origin;
-	QAngle new_player_angles;
-	calculate_offset_player_pos(portal, new_player_origin, new_player_angles);
-
-	if (args.ArgC() == 2)
-	{
-		Msg("setpos %.8f %.8f %.8f;setang %.8f %.8f %.8f\n",
-		    new_player_origin.x,
-		    new_player_origin.y,
-		    new_player_origin.z,
-		    new_player_angles.x,
-		    new_player_angles.y,
-		    new_player_angles.z);
-	}
-	else
-	{
-		char buf[256];
-		snprintf(buf,
-		         ARRAYSIZE(buf),
-		         "setpos %.8f %.8f %.8f;setang %.8f %.8f %.8f\n",
-		         new_player_origin.x,
-		         new_player_origin.y,
-		         new_player_origin.z,
-		         new_player_angles.x,
-		         new_player_angles.y,
-		         new_player_angles.z);
-
-		interfaces::engine->ClientCmd(buf);
-	}
-}
-
-#endif
-
 CON_COMMAND(tas_print_movement_vars, "Prints movement vars.")
 {
 	auto vars = spt_playerio.GetMovementVars();
@@ -921,13 +802,6 @@ void PlayerIOFeature::LoadFeature()
 		InitConcommandBase(DuckspamDown_Command);
 	}
 
-#ifdef SSDK2007
-	if (interfaces::engine_server && interfaces::engine && utils::DoesGameLookLikePortal()
-	    && m_vecAbsOrigin.Found()) // 5135 only
-	{
-		InitCommand(y_spt_calc_relative_position);
-	}
-#endif
 #ifdef SPT_HUD_ENABLED
 #ifdef SPT_PORTAL_UTILS
 	if (utils::DoesGameLookLikePortal() && interfaces::engine_server
