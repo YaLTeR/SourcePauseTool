@@ -228,7 +228,12 @@ CON_COMMAND(y_spt_ihud_add_key, "y_spt_ihud_add_key <key> - Add custom key to ih
 
 namespace patterns
 {
-	PATTERNS(DecodeUserCmdFromBuffer, "5135", "83 EC 54 33 C0 D9 EE 89 44 24 ?? D9 54 24 ?? 89 44 24 ??");
+	PATTERNS(
+	    DecodeUserCmdFromBuffer,
+	    "5135",
+	    "83 EC 54 33 C0 D9 EE 89 44 24 ?? D9 54 24 ?? 89 44 24 ??",
+	    "7197370",
+	    "55 8B EC 83 EC 54 56 8B F1 C7 45 ?? ?? ?? ?? ?? 8D 4D ?? C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 E8 ?? ?? ?? ?? 8B 4D ??");
 }
 
 void InputHud::InitHooks()
