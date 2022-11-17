@@ -535,7 +535,7 @@ void InputHud::DrawInputHud()
 			// Movement
 			Vector movement = inputMovement;
 			int movementSpeed = movement.Length();
-			float maxSpeed = utils::GetProperty<float>(0, "m_flMaxspeed");
+			float maxSpeed = spt_propertyGetter.GetProperty<float>(0, "m_flMaxspeed");
 			movement /= movementSpeed > maxSpeed ? movementSpeed : maxSpeed;
 
 			// Draw

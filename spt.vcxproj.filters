@@ -139,9 +139,6 @@
     <ClCompile Include="spt\utils\math.cpp">
       <Filter>spt\utils</Filter>
     </ClCompile>
-    <ClCompile Include="spt\utils\property_getter.cpp">
-      <Filter>spt\utils</Filter>
-    </ClCompile>
     <ClCompile Include="spt\utils\string_utils.cpp">
       <Filter>spt\utils</Filter>
     </ClCompile>
@@ -303,6 +300,9 @@
     </ClCompile>
     <ClCompile Include="spt\features\visualizations\renderer\source files\mesh_data.cpp">
       <Filter>spt\features\visualizations\renderer\source files</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\property_getter.cpp">
+      <Filter>spt\features</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -483,9 +483,6 @@
     <ClInclude Include="spt\utils\math.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
-    <ClInclude Include="spt\utils\property_getter.hpp">
-      <Filter>spt\utils</Filter>
-    </ClInclude>
     <ClInclude Include="spt\utils\string_utils.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
@@ -617,6 +614,9 @@
     </ClInclude>
     <ClInclude Include="spt\utils\portal_utils.hpp">
       <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\property_getter.hpp">
+      <Filter>spt\features</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

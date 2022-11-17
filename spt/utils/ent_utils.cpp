@@ -14,7 +14,7 @@
 #include "SPTLib\sptlib.hpp"
 #include "client_class.h"
 #include "game_detection.hpp"
-#include "property_getter.hpp"
+#include "..\features\property_getter.hpp"
 #include "string_utils.hpp"
 #include "math.hpp"
 #include "game_detection.hpp"
@@ -239,7 +239,7 @@ namespace utils
 
 		if (ply)
 		{
-			auto offset = utils::GetProperty<Vector>(0, "m_vecViewOffset[0]");
+			auto offset = spt_propertyGetter.GetProperty<Vector>(0, "m_vecViewOffset[0]");
 
 			return ply->GetAbsOrigin() + offset;
 		}
@@ -250,14 +250,14 @@ namespace utils
 	QAngle GetPlayerEyeAngles()
 	{
 		if (DoesGameLookLikePortal())
-			return utils::GetProperty<QAngle>(0, "m_angEyeAngles[0]");
+			return spt_propertyGetter.GetProperty<QAngle>(0, "m_angEyeAngles[0]");
 		else
-			return utils::GetProperty<QAngle>(0, "m_angRotation");
+			return spt_propertyGetter.GetProperty<QAngle>(0, "m_angRotation");
 	}
 
 	int PortalIsOrange(IClientEntity* ent)
 	{
-		return utils::GetProperty<int>(ent->entindex() - 1, "m_bIsPortal2");
+		return spt_propertyGetter.GetProperty<int>(ent->entindex() - 1, "m_bIsPortal2");
 	}
 
 	static IClientEntity* prevPortal = nullptr;
@@ -265,7 +265,7 @@ namespace utils
 
 	IClientEntity* FindLinkedPortal(IClientEntity* ent)
 	{
-		int ehandle = utils::GetProperty<int>(ent->entindex() - 1, "m_hLinkedPortal");
+		int ehandle = spt_propertyGetter.GetProperty<int>(ent->entindex() - 1, "m_hLinkedPortal");
 		int index = ehandle & INDEX_MASK;
 
 		// Backup linking thing for fizzled portals(not sure if you can actually properly figure it out using client portals only)

@@ -534,9 +534,9 @@ CON_COMMAND(y_spt_find_portals, "Prints info for all portals")
 		if (!invalidPortal(ent))
 		{
 			found = true;
-			auto color = utils::GetProperty<bool>(i, "m_bIsPortal2") ? "orange" : "blue";
-			int remoteIdx = utils::GetProperty<int>(i, "m_hLinkedPortal");
-			bool activated = utils::GetProperty<bool>(i, "m_bActivated");
+			auto color = spt_propertyGetter.GetProperty<bool>(i, "m_bIsPortal2") ? "orange" : "blue";
+			int remoteIdx = spt_propertyGetter.GetProperty<int>(i, "m_hLinkedPortal");
+			bool activated = spt_propertyGetter.GetProperty<bool>(i, "m_bActivated");
 			bool closed = (remoteIdx & INDEX_MASK) == INDEX_MASK;
 			auto openStr = closed ? (activated ? "a closed" : "an invisible") : "an open";
 			const auto& origin = utils::GetPortalPosition(ent);

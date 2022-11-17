@@ -1161,6 +1161,7 @@
     <ClCompile Include="spt\features\overlay.cpp" />
     <ClCompile Include="spt\features\pause.cpp" />
     <ClCompile Include="spt\features\playerio.cpp" />
+    <ClCompile Include="spt\features\property_getter.cpp" />
     <ClCompile Include="spt\features\restart.cpp" />
     <ClCompile Include="spt\features\rng.cpp" />
     <ClCompile Include="spt\features\shadow.cpp" />
@@ -1323,7 +1324,6 @@
     <ClCompile Include="spt\utils\game_detection.cpp" />
     <ClCompile Include="spt\utils\math.cpp" />
     <ClCompile Include="spt\utils\portal_utils.cpp" />
-    <ClCompile Include="spt\utils\property_getter.cpp" />
     <ClCompile Include="spt\utils\signals.cpp" />
     <ClCompile Include="spt\utils\string_utils.cpp" />
     <ClCompile Include="spt\vgui\vgui_utils.cpp" />
@@ -1381,6 +1381,7 @@
     <ClInclude Include="spt\features\ihud.hpp" />
     <ClInclude Include="spt\features\overlay.hpp" />
     <ClInclude Include="spt\features\playerio.hpp" />
+    <ClInclude Include="spt\features\property_getter.hpp" />
     <ClInclude Include="spt\features\rng.hpp" />
     <ClInclude Include="spt\features\shadow.hpp" />
     <ClInclude Include="spt\features\tas.hpp" />
@@ -1428,7 +1429,6 @@
     <ClInclude Include="spt\utils\ivp_maths.hpp" />
     <ClInclude Include="spt\utils\math.hpp" />
     <ClInclude Include="spt\utils\portal_utils.hpp" />
-    <ClInclude Include="spt\utils\property_getter.hpp" />
     <ClInclude Include="spt\utils\signals.hpp" />
     <ClInclude Include="spt\utils\string_utils.hpp" />
     <ClInclude Include="spt\utils\typeinfo.h" />

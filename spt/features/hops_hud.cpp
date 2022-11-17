@@ -660,7 +660,7 @@ void HopsHud::CalculateAbhVel()
 {
 	auto vel = spt_playerio.GetPlayerVelocity().Length2D();
 	auto ducked = spt_playerio.m_fFlags.GetValue() & FL_DUCKING;
-	auto sprinting = utils::GetProperty<bool>(0, "m_fIsSprinting");
+	auto sprinting = spt_propertyGetter.GetProperty<bool>(0, "m_fIsSprinting");
 	auto vars = spt_playerio.GetMovementVars();
 
 	float modifier;

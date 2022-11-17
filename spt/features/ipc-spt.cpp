@@ -259,7 +259,7 @@ CON_COMMAND(
 		for (int i = 2; i < argc; ++i)
 		{
 			const char* propName = args.Arg(i);
-			auto prop = utils::GetRecvProp(index, propName);
+			auto prop = spt_propertyGetter.GetRecvProp(index, propName);
 
 			if (prop)
 			{
