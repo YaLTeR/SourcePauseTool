@@ -24,6 +24,10 @@ namespace patterns
 	         "8B 0D ?? ?? ?? ?? 83 EC 08 85 C9 74 10 8B 44 24 0C 84 C0 74 08 8B 11 50 8B 42 78 FF D0 83 3D");
 	PATTERNS(GetScreenAspect, "5135", "83 EC 0C A1 ?? ?? ?? ?? F3");
 	PATTERNS(CVRenderView__VGui_Paint, "5135", "E8 ?? ?? ?? ?? 8B 10 8B 52 34 8B C8 FF E2 CC CC");
+	PATTERNS(
+	    CEngineTrace__PointOutsideWorld,
+	    "5135",
+	    "8B 44 24 04 50 E8 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? C1 E0 04 83 C4 04 66 83 7C 08 04 FF 0F 94 C0 C2 04 00");
 
 	/****************************** CLIENT ******************************/
 
