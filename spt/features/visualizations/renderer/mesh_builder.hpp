@@ -111,7 +111,7 @@ public:
 	void AddCPolyhedron(const CPolyhedron* polyhedron, const MeshColor& c);
 
 private:
-	friend struct MeshBuilderPro;
+	friend class MeshBuilderPro;
 	// internal construction helper methods
 
 	void _AddFaceTriangleStripIndices(size_t vIdx1, size_t vIdx2, size_t numVerts, bool loop, bool mirror = false);
