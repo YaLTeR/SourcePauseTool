@@ -22,7 +22,9 @@ namespace patterns
 	    "5135",
 	    "8B 44 24 10 8B 4C 24 0C 83 EC 10 56 6A 00 50 51 8D 4C 24 10 E8 ?? ?? ?? ?? 8B 74 24 28 8B 0D ?? ?? ?? ?? 8B 11 8B 52 10",
 	    "3420",
-	    "8B 44 24 10 8B 4C 24 0C 83 EC 0C 56 50 51 8D 4C 24 0C E8 ?? ?? ?? ?? 8B 74 24 24 8B 0D ?? ?? ?? ?? 8B 11 8B 52 10");
+	    "8B 44 24 10 8B 4C 24 0C 83 EC 0C 56 50 51 8D 4C 24 0C E8 ?? ?? ?? ?? 8B 74 24 24 8B 0D ?? ?? ?? ?? 8B 11 8B 52 10",
+	    "7462488",
+	    "55 8B EC 83 EC 10 8D 4D ?? 56 FF 75 ?? FF 75 ??");
 	PATTERNS(CGameMovement__TracePlayerBBox, "5135", "55 8B EC 83 E4 F0 83 EC 5C 56 8B F1 8B 06 8B 50 24");
 	PATTERNS(CPortalGameMovement__TracePlayerBBox,
 	         "5135",
@@ -41,10 +43,6 @@ namespace patterns
 	    CGameMovement__GetPlayerMaxs,
 	    "4104",
 	    "8B 41 ?? 8B 88 ?? ?? ?? ?? C1 E9 03 F6 C1 01 8B 0D ?? ?? ?? ?? 8B 11 74 09 8B 42 ?? FF D0 83 C0 54 C3");
-	PATTERNS(
-	    CEngineTrace__PointOutsideWorld,
-	    "5135",
-	    "8B 44 24 04 50 E8 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? C1 E0 04 83 C4 04 66 83 7C 08 04 FF 0F 94 C0 C2 04 00");
 
 } // namespace patterns
 
@@ -64,7 +62,6 @@ void Tracing::InitHooks()
 		AddOffsetHook("server", 0xCCE90, "GetActiveWeapon", reinterpret_cast<void**>(&ORIG_GetActiveWeapon));
 		AddOffsetHook("server", 0x441730, "TraceFirePortal", reinterpret_cast<void**>(&ORIG_TraceFirePortal));
 	}
-	FIND_PATTERN(engine, CEngineTrace__PointOutsideWorld);
 #endif
 }
 
@@ -227,7 +224,7 @@ CON_COMMAND(
 	}
 
 	Vector a_normal, b_normal;
-	const auto distance = std::max(trace_fire_portal(a, a_normal), trace_fire_portal(b,b_normal));
+	const auto distance = std::max(trace_fire_portal(a, a_normal), trace_fire_portal(b, b_normal));
 
 	// If our trace had a distance greater than the a or b distance by this amount, treat it as a seam shot.
 	constexpr double GOOD_DISTANCE_DIFFERENCE = 50.0 * 50.0;
@@ -285,7 +282,7 @@ void Tracing::LoadFeature()
 #endif
 
 #ifdef SPT_HUD_ENABLED
-	if (ORIG_CEngineTrace__PointOutsideWorld)
+	if (interfaces::engineTraceClient)
 	{
 		AddHudCallback(
 		    "oob",
@@ -294,7 +291,7 @@ void Tracing::LoadFeature()
 			    Vector v = spt_generic.GetCameraOrigin();
 			    trace_t tr;
 			    Strafe::Trace(tr, v, v + Vector(1, 1, 1));
-			    int oob = spt_tracing.ORIG_CEngineTrace__PointOutsideWorld(nullptr, 0, v) && !tr.startsolid;
+			    int oob = interfaces::engineTraceClient->PointOutsideWorld(v) && !tr.startsolid;
 			    spt_hud.DrawTopHudElement(L"oob: %d", oob);
 		    },
 		    y_spt_hud_oob);

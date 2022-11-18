@@ -58,7 +58,6 @@ typedef float(__fastcall* _TraceFirePortal)(void* thisptr,
 typedef void*(__fastcall* _GetActiveWeapon)(void* thisptr);
 typedef const Vector&(__fastcall* _CGameMovement__GetPlayerMaxs)(void* thisptr, int edx);
 typedef const Vector&(__fastcall* _CGameMovement__GetPlayerMins)(void* thisptr, int edx);
-typedef bool(__fastcall* _CEngineTrace__PointOutsideWorld)(void* thisptr, int edx, const Vector& pt);
 
 // Tracing related functionality
 class Tracing : public FeatureWrapper<Tracing>
@@ -68,7 +67,6 @@ public:
 	_TracePlayerBBoxForGround ORIG_TracePlayerBBoxForGround = nullptr;
 	_TracePlayerBBoxForGround2 ORIG_TracePlayerBBoxForGround2 = nullptr;
 	_GetActiveWeapon ORIG_GetActiveWeapon = nullptr;
-	_CEngineTrace__PointOutsideWorld ORIG_CEngineTrace__PointOutsideWorld = nullptr;
 	_TraceFirePortal ORIG_TraceFirePortal = nullptr;
 
 	bool TraceClientRay(const Ray_t& ray,

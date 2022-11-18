@@ -13,6 +13,7 @@
 #include "cdll_int.h"
 #include "icliententitylist.h"
 #include "engine\ivmodelinfo.h"
+#include "engine\IEngineTrace.h"
 
 namespace interfaces
 {
@@ -32,4 +33,5 @@ namespace interfaces
 	extern IClientEntityList* entList;
 	extern IVModelInfo* modelInfo;
 	extern IBaseClientDLL* clientInterface;
+	extern IEngineTrace* engineTraceClient;
 } // namespace interfaces
