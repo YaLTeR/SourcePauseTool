@@ -74,7 +74,7 @@ bool BoogFeature::ShouldDrawBoog()
 void BoogFeature::DrawBoog()
 {
 	auto surface = interfaces::surface;
-	auto view = spt_hud.renderView;
+	auto renderView = spt_hud.renderView;
 
 	if (boogFont == 0)
 	{
@@ -99,12 +99,12 @@ void BoogFeature::DrawBoog()
 	int tall = 0, len = 0;
 	surface->GetTextSize(boogFont, L"boog", len, tall);
 
-	int x = view->width / 2 - len / 2;
-	int y = view->height / 2 + 100;
+	int x = renderView->width / 2 - len / 2;
+	int y = renderView->height / 2 + 100;
 	
-	if (tall + y > view->height)
+	if (tall + y > renderView->height)
 	{
-		y = view->height - tall;
+		y = renderView->height - tall;
 	}
 
 	surface->DrawSetTextPos(x, y);

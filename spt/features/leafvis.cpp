@@ -43,6 +43,9 @@ static __forceinline int GetLeafIndex()
 	return y_spt_draw_leaf.GetInt();
 }
 
+#pragma warning(push)
+#pragma warning(disable : 4740)
+
 /**
 * The game calls CM_PointLeafnum, returning the leaf index of the current view
 * point and loads ESI with it. This hooks is right after that, setting the leaf
@@ -64,3 +67,5 @@ __declspec(naked) void LeafVisFeature::HOOKED_MiddleOfLeafVisBuild()
 		jmp spt_leafvis.ORIG_MiddleOfLeafVisBuild;
 	}
 }
+
+#pragma warning(pop)

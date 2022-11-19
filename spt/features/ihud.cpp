@@ -451,8 +451,8 @@ void InputHud::GetCurrentSize(int& x, int& y)
 	int gridWidth = 0;
 	int gridHeight = 0;
 
-	int gridSize = y_spt_ihud_grid_size.GetInt();
-	int padding = y_spt_ihud_grid_padding.GetInt();
+	gridSize = y_spt_ihud_grid_size.GetInt();
+	padding = y_spt_ihud_grid_padding.GetInt();
 
 	if (tasPreset)
 	{
@@ -670,9 +670,9 @@ void InputHud::DrawRectAndCenterTxt(Color buttonColor,
                                     Color textColor,
                                     const wchar_t* text)
 {
-	vgui::HFont font;
+	vgui::HFont rectFont;
 
-	if (!spt_hud.GetFont(fontName, font))
+	if (!spt_hud.GetFont(fontName, rectFont))
 	{
 		return;
 	}
@@ -681,10 +681,10 @@ void InputHud::DrawRectAndCenterTxt(Color buttonColor,
 	surface->DrawFilledRect(x0, y0, x1, y1);
 
 	int tw, th;
-	surface->GetTextSize(font, text, tw, th);
+	surface->GetTextSize(rectFont, text, tw, th);
 	int xc = x0 + ((x1 - x0) / 2);
 	int yc = y0 + ((y1 - y0) / 2);
-	surface->DrawSetTextFont(font);
+	surface->DrawSetTextFont(rectFont);
 	surface->DrawSetTextColor(textColor);
 	surface->DrawSetTextPos(xc - (tw / 2), yc - (th / 2));
 	surface->DrawPrintText(text, wcslen(text));

@@ -453,7 +453,6 @@ void HopsHud::PrintStrafeCol(std::function<void(const ljstats::SegmentStats&, wc
 
 	auto surface = interfaces::surface;
 	auto fontTall = surface->GetFontTall(hopsFont);
-	int ticks = ljstats::lastJump.TotalTicks();
 
 	surface->DrawSetTextPos(x, y);
 	surface->DrawPrintText(fieldName, wcslen(fieldName));

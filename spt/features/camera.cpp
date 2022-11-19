@@ -613,7 +613,7 @@ void Camera::DrawPath()
 #define NDEBUG_PERSIST_TILL_NEXT_SERVER 0.01023f
 #endif
 
-	for (int i = 0; i < interp_path_cache.size(); i++)
+	for (size_t i = 0; i < interp_path_cache.size(); i++)
 	{
 		auto current = interp_path_cache[i];
 		Vector forward;
