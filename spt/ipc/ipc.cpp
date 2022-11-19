@@ -30,7 +30,7 @@ static bool DataAvailable(int& socket)
 	timeout.tv_usec = 0;
 
 	FD_ZERO(&read);
-	FD_SET(socket, &read);
+	FD_SET((uint32_t)socket, &read);
 	int result = select(socket + 1, &read, &read, &read, &timeout);
 
 	return result > 0;

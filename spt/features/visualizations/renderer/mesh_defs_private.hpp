@@ -64,7 +64,11 @@
 
 #include "mathlib\vector.h"
 #include "materialsystem\imaterial.h"
+
+#pragma warning(push)
+#pragma warning(disable : 5054)
 #include "materialsystem\imesh.h"
+#pragma warning(pop)
 
 #define VPROF_LEVEL 1
 #ifndef SSDK2007

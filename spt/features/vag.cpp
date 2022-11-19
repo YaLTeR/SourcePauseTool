@@ -72,6 +72,9 @@ void VAG::LoadFeature()
 
 void VAG::UnloadFeature() {}
 
+#pragma warning(push)
+#pragma warning(disable : 4740)
+
 __declspec(naked) void VAG::HOOKED_MiddleOfTeleportTouchingEntity()
 {
 	/**
@@ -106,6 +109,8 @@ __declspec(naked) void VAG::HOOKED_EndOfTeleportTouchingEntity()
 	}
 }
 
+#pragma warning(pop)
+
 /**
 * A no free edicts crash when trying to do a vag happens when the 2nd teleport places the entity
 * behind the entry portal. This causes another teleport by the entry portal to be queued which
@@ -135,9 +140,7 @@ void __fastcall VAG::HOOKED_MiddleOfTeleportTouchingEntity_Func(void* portalPtr,
 		    portalNorm->z,
 		    spt_vag.recursiveTeleportCount);
 		// push entity further into the portal so it comes further out after the teleport
-		entPos->x -= portalNorm->x;
-		entPos->y -= portalNorm->y;
-		entPos->z -= portalNorm->z;
+		*entPos -= *portalNorm;
 		VagCrashSignal();
 	}
 }

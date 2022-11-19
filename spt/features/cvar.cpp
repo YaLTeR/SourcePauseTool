@@ -39,8 +39,8 @@ CON_COMMAND_F_COMPLETION(y_spt_cvar, "CVar manipulation.", 0, y_spt_cvar_Complet
 		return;
 	}
 
-	ConVar* cvar = g_pCVar->FindVar(args.Arg(1));
-	if (!cvar)
+	ConVar* cv = g_pCVar->FindVar(args.Arg(1));
+	if (!cv)
 	{
 		Warning("Couldn't find the cvar: %s\n", args.Arg(1));
 		return;
@@ -48,29 +48,29 @@ CON_COMMAND_F_COMPLETION(y_spt_cvar, "CVar manipulation.", 0, y_spt_cvar_Complet
 
 	if (args.ArgC() == 2)
 	{
-		Msg("\"%s\" = \"%s\"\n", cvar->GetName(), cvar->GetString(), cvar->GetHelpText());
-		Msg("Default: %s\n", cvar->GetDefault());
+		Msg("\"%s\" = \"%s\"\n", cv->GetName(), cv->GetString(), cv->GetHelpText());
+		Msg("Default: %s\n", cv->GetDefault());
 
 		float val;
-		if (cvar->GetMin(val))
+		if (cv->GetMin(val))
 		{
 			Msg("Min: %f\n", val);
 		}
 
-		if (cvar->GetMax(val))
+		if (cv->GetMax(val))
 		{
 			Msg("Max: %f\n", val);
 		}
 
-		const char* helpText = cvar->GetHelpText();
+		const char* helpText = cv->GetHelpText();
 		if (helpText[0] != '\0')
-			Msg("- %s\n", cvar->GetHelpText());
+			Msg("- %s\n", cv->GetHelpText());
 
 		return;
 	}
 
 	const char* value = args.Arg(2);
-	cvar->SetValue(value);
+	cv->SetValue(value);
 }
 
 CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
@@ -84,8 +84,8 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 		return;
 	}
 
-	ConVar* cvar = g_pCVar->FindVar(args.Arg(1));
-	if (!cvar)
+	ConVar* cv = g_pCVar->FindVar(args.Arg(1));
+	if (!cv)
 	{
 		Warning("Couldn't find the cvar: %s\n", args.Arg(1));
 		return;
@@ -95,7 +95,7 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 	float max = std::stof(args.Arg(3));
 
 	float r = utils::RandomFloat(min, max);
-	cvar->SetValue(r);
+	cv->SetValue(r);
 }
 
 #if !defined(OE)
@@ -124,8 +124,8 @@ CON_COMMAND_F_COMPLETION(y_spt_cvar2,
 		return;
 	}
 
-	ConVar* cvar = g_pCVar->FindVar(args.Arg(1));
-	if (!cvar)
+	ConVar* cv = g_pCVar->FindVar(args.Arg(1));
+	if (!cv)
 	{
 		Warning("Couldn't find the cvar: %s\n", args.Arg(1));
 		return;
@@ -133,29 +133,29 @@ CON_COMMAND_F_COMPLETION(y_spt_cvar2,
 
 	if (args.ArgC() == 2)
 	{
-		Msg("\"%s\" = \"%s\"\n", cvar->GetName(), cvar->GetString(), cvar->GetHelpText());
-		Msg("Default: %s\n", cvar->GetDefault());
+		Msg("\"%s\" = \"%s\"\n", cv->GetName(), cv->GetString(), cv->GetHelpText());
+		Msg("Default: %s\n", cv->GetDefault());
 
 		float val;
-		if (cvar->GetMin(val))
+		if (cv->GetMin(val))
 		{
 			Msg("Min: %f\n", val);
 		}
 
-		if (cvar->GetMax(val))
+		if (cv->GetMax(val))
 		{
 			Msg("Max: %f\n", val);
 		}
 
-		const char* helpText = cvar->GetHelpText();
+		const char* helpText = cv->GetHelpText();
 		if (helpText[0] != '\0')
-			Msg("- %s\n", cvar->GetHelpText());
+			Msg("- %s\n", cv->GetHelpText());
 
 		return;
 	}
 
 	const char* value = args.ArgS() + strlen(args.Arg(1)) + 1;
-	cvar->SetValue(value);
+	cv->SetValue(value);
 }
 
 CON_COMMAND(y_spt_dev_cvars, "Prints all developer/hidden CVars.")

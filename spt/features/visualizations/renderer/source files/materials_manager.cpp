@@ -4,29 +4,7 @@
 
 #ifdef SPT_MESH_RENDERING_ENABLED
 
-#include "vstdlib\IKeyValuesSystem.h"
 #include "interfaces.hpp"
-
-// We need KeyValues to make materials; they in turn need KeyValuesSystem(), but we don't link against vstdlib.
-// Here's a little hack to make that work - find the KeyValuesSystem function by searching for its symbol.
-#pragma warning(push)
-#pragma warning(disable : 4273)
-IKeyValuesSystem* KeyValuesSystem()
-{
-	static IKeyValuesSystem* ptr = nullptr;
-
-	if (ptr != nullptr)
-		return ptr;
-
-	void* moduleHandle;
-	if (MemUtils::GetModuleInfo(L"vstdlib.dll", &moduleHandle, nullptr, nullptr))
-	{
-		typedef IKeyValuesSystem*(__cdecl * _KVS)();
-		ptr = ((_KVS)MemUtils::GetSymbolAddress(moduleHandle, "KeyValuesSystem"))();
-	}
-	return ptr;
-}
-#pragma warning(pop)
 
 void MeshBuilderMatMgr::Load()
 {
