@@ -108,7 +108,7 @@ void* EntProps::GetPlayer(bool server)
 			return nullptr;
 
 		auto edict = interfaces::engine_server->PEntityOfEntIndex(1);
-		if (!edict)
+		if (!edict || (uint32_t)edict == 0xFFFFFFFF)
 			return nullptr;
 
 		return edict->GetUnknown();

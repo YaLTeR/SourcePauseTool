@@ -1,7 +1,5 @@
 #pragma once
 
-#ifndef OE
-
 class IClientMode;
 
 #include "inputsystem\buttoncode.h"
@@ -13,5 +11,3 @@ namespace vgui
 	IClientMode* GetClientMode();
 	IScheme* GetScheme();
 } // namespace vgui
-
-#endif

@@ -10,7 +10,6 @@
 #include "game_detection.hpp"
 #include "interfaces.hpp"
 #include "tier0\basetypes.h"
-#include "overlay.hpp"
 #include "..\vgui\vgui_utils.hpp"
 #include "..\cvars.hpp"
 #include "string_utils.hpp"
@@ -42,13 +41,17 @@ namespace patterns
 	         "5135",
 	         "83 EC 18 56 6A 04 6A 00",
 	         "7462488",
-	         "55 8B EC 83 EC 2C 53 8B D9 8B 0D ?? ?? ?? ?? 56");
+	         "55 8B EC 83 EC 2C 53 8B D9 8B 0D ?? ?? ?? ?? 56",
+	         "4044",
+	         "6A FF 68 B8 CA 2C 20");
 } // namespace patterns
 
 void HUDFeature::InitHooks()
 {
+#ifndef OE
 	FIND_PATTERN(vguimatsurface, CMatSystemSurface__StartDrawing);
 	FIND_PATTERN(vguimatsurface, CMatSystemSurface__FinishDrawing);
+#endif
 	HOOK_FUNCTION(engine, CEngineVGui__Paint);
 }
 
@@ -84,7 +87,7 @@ void HUDFeature::DrawTopHudElement(const wchar* format, ...)
 
 bool HUDFeature::ShouldLoadFeature()
 {
-	return !utils::DoesGameLookLikeBMSMod();
+	return !utils::DoesGameLookLikeBMSMod() && !utils::DoesGameLookLikeDMoMM();
 }
 
 bool HUDFeature::GetFont(const std::string& fontName, vgui::HFont& fontOut)
@@ -119,7 +122,10 @@ bool HUDFeature::GetFont(const std::string& fontName, vgui::HFont& fontOut)
 void HUDFeature::PreHook()
 {
 	loadingSuccessful =
-	    ORIG_CMatSystemSurface__StartDrawing && ORIG_CMatSystemSurface__FinishDrawing && ORIG_CEngineVGui__Paint;
+#ifndef OE
+		ORIG_CMatSystemSurface__FinishDrawing && ORIG_CMatSystemSurface__StartDrawing &&
+#endif
+		ORIG_CEngineVGui__Paint;
 }
 
 void HUDFeature::LoadFeature()
@@ -143,7 +149,9 @@ void HUDFeature::DrawHUD(bool overlay)
 	if (!interfaces::surface || !GetFont(FONT_DefaultFixedOutline, font))
 		return;
 
+#ifndef OE
 	ORIG_CMatSystemSurface__StartDrawing(interfaces::surface, 0);
+#endif
 
 	try
 	{
@@ -170,7 +178,6 @@ void HUDFeature::DrawHUD(bool overlay)
 			if (cl_showfps && cl_showfps->GetBool())
 				++topVertIndex;
 		}
-
 		for (auto& callback : hudCallbacks)
 		{
 #ifdef SPT_OVERLAY_ENABLED
@@ -187,14 +194,16 @@ void HUDFeature::DrawHUD(bool overlay)
 		Msg("Error drawing HUD: %s\n", e.what());
 	}
 
+#ifndef OE
 	ORIG_CMatSystemSurface__FinishDrawing(interfaces::surface, 0);
+#endif
 }
 
 HOOK_THISCALL(void, HUDFeature, CEngineVGui__Paint, PaintMode_t mode)
 {
-#ifdef SPT_OVERLAY_ENABLED
-	if (spt_hud.loadingSuccessful && mode == PAINT_INGAMEPANELS)
+	if (spt_hud.loadingSuccessful && mode & PAINT_INGAMEPANELS)
 	{
+#ifdef SPT_OVERLAY_ENABLED
 		/*
 		* Getting the HUD & overlay to not fight turns out to be somewhat tricky. There might be a better way, but
 		* the only approach that I've found so far is to draw the HUD for both the main view and overlay at the
@@ -212,8 +221,11 @@ HOOK_THISCALL(void, HUDFeature, CEngineVGui__Paint, PaintMode_t mode)
 			spt_hud.renderView = spt_overlay.overlayView;
 			spt_hud.DrawHUD(true);
 		}
-	}
+#else
+		Assert(spt_hud.renderView);
+		spt_hud.DrawHUD(false);
 #endif
+	}
 	spt_hud.ORIG_CEngineVGui__Paint(thisptr, edx, mode);
 }
 

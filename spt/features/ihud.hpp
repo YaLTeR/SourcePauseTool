@@ -21,7 +21,10 @@ public:
 	void DrawInputHud();
 	void SetInputInfo(int button, Vector movement);
 	bool ModifySetting(const char* element, const char* param, const char* value);
+
+#ifndef OE
 	void AddCustomKey(const char* key);
+#endif
 
 	struct Button
 	{

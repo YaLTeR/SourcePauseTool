@@ -1,15 +1,22 @@
 #pragma once
 
 #if !defined(OE) && !defined(BMS)
-
 #define SPT_OVERLAY_ENABLED
+#endif
+
+#ifndef BMS
 
 #include "..\feature.hpp"
 
 class C_BasePlayer;
 enum SkyboxVisibility_t;
 #include "networkvar.h"
+
+#ifndef OE
 #include "viewrender.h"
+#else
+#include "view_shared.h"
+#endif
 
 // Overlay hook stuff, could combine with overlay renderer as well
 class Overlay : public FeatureWrapper<Overlay>
@@ -21,6 +28,7 @@ public:
 	CViewSetup* overlayView = nullptr;
 
 	DECL_HOOK_THISCALL(void, CViewRender__RenderView, CViewSetup* cameraView, int nClearFlags, int whatToDraw);
+	DECL_HOOK_THISCALL(void, CViewRender__RenderView_4044, CViewSetup* cameraView, bool drawViewmodel);
 
 protected:
 	virtual void InitHooks() override;
@@ -42,4 +50,5 @@ private:
 };
 
 extern Overlay spt_overlay;
+
 #endif

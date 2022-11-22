@@ -72,7 +72,11 @@ namespace patterns
 	    "BMS-Retail",
 	    "55 8B EC 83 EC 54 53 56 8B 75 08 B8 ?? ?? ?? ?? F7 EE 57 03 D6 8B F9 C1 FA 06 8B CE 8B C2 C1 E8 1F 03 C2 6B C0 5A",
 	    "hl1movement",
-	    "55 8B EC 83 EC 18 53 56 57 8B 7D ?? B8 ?? ?? ?? ?? F7 EF 8B F1 8B CF 03 D7 C1 FA 06 8B C2 C1 E8 1F 03 C2 6B C0 5A");
+	    "55 8B EC 83 EC 18 53 56 57 8B 7D ?? B8 ?? ?? ?? ?? F7 EF 8B F1 8B CF 03 D7 C1 FA 06 8B C2 C1 E8 1F 03 C2 6B C0 5A",
+	    "4044",
+	    "8B 44 24 ?? 83 EC 1C 53 55 56 57",
+	    "dmomm",
+	    "83 EC 10 53 8B 5C 24 ?? 55 56 8B F1");
 	PATTERNS(
 	    GetGroundEntity,
 	    "5135",
@@ -121,7 +125,7 @@ void PlayerIOFeature::PreHook()
 		{
 			offM_pCommands = 180;
 		}
-		else if (utils::DoesGameLookLikeBMS())
+		else if (index == 7 || index == 8 || utils::DoesGameLookLikeBMS()) // OE & BMS
 		{
 			offM_pCommands = 244;
 		}
