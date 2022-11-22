@@ -216,6 +216,7 @@ CON_COMMAND_AUTOCOMPLETE(y_spt_ihud_preset,
 	}
 }
 
+#ifndef OE
 CON_COMMAND(y_spt_ihud_add_key, "y_spt_ihud_add_key <key> - Add custom key to ihud.")
 {
 	if (args.ArgC() != 2)
@@ -225,6 +226,7 @@ CON_COMMAND(y_spt_ihud_add_key, "y_spt_ihud_add_key <key> - Add custom key to ih
 	}
 	spt_ihud.AddCustomKey(args.Arg(1));
 }
+#endif
 
 namespace patterns
 {
@@ -233,7 +235,9 @@ namespace patterns
 	    "5135",
 	    "83 EC 54 33 C0 D9 EE 89 44 24 ?? D9 54 24 ?? 89 44 24 ??",
 	    "7197370",
-	    "55 8B EC 83 EC 54 56 8B F1 C7 45 ?? ?? ?? ?? ?? 8D 4D ?? C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 E8 ?? ?? ?? ?? 8B 4D ??");
+	    "55 8B EC 83 EC 54 56 8B F1 C7 45 ?? ?? ?? ?? ?? 8D 4D ?? C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 E8 ?? ?? ?? ?? 8B 4D ??",
+	    "4044",
+	    "83 EC 54 53 57 8D 44 24 ?? 50 8B 44 24 ?? 99");
 }
 
 void InputHud::InitHooks()
@@ -258,7 +262,11 @@ void InputHud::LoadFeature()
 	{
 		InitCommand(y_spt_ihud_modify);
 		InitCommand(y_spt_ihud_preset);
+
+#ifndef OE
 		InitCommand(y_spt_ihud_add_key);
+#endif
+
 		InitConcommandBase(y_spt_ihud_grid_size);
 		InitConcommandBase(y_spt_ihud_grid_padding);
 		InitConcommandBase(y_spt_ihud_x);
@@ -411,6 +419,7 @@ bool InputHud::ModifySetting(const char* element, const char* param, const char*
 	return true;
 }
 
+#ifndef OE
 void InputHud::AddCustomKey(const char* key)
 {
 	ButtonCode_t code = interfaces::inputSystem->StringToButtonCode(key);
@@ -425,6 +434,7 @@ void InputHud::AddCustomKey(const char* key)
 	buttonSettings[str] =
 	    {false, true, wstr, font, 0, 0, 1, 1, background, highlight, textcolor, texthighlight, code};
 }
+#endif
 
 Color InputHud::StringToColor(const char* color)
 {

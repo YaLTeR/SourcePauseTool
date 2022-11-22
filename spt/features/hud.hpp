@@ -1,6 +1,6 @@
 #pragma once
 
-#ifndef OE
+#ifndef BMS
 
 #define SPT_HUD_ENABLED
 
@@ -15,8 +15,13 @@
 
 class C_BasePlayer;
 enum SkyboxVisibility_t;
+
 #include "networkvar.h"
+#ifndef OE
 #include "viewrender.h"
+#else
+#include "view_shared.h"
+#endif
 
 extern const std::string FONT_DefaultFixedOutline;
 extern const std::string FONT_Trebuchet20;

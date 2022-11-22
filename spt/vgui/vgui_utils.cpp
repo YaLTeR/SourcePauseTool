@@ -6,7 +6,6 @@
 
 namespace vgui
 {
-#ifndef OE
 	IClientMode* GetClientMode()
 	{
 		if (spt_generic.ORIG_GetClientModeNormal)
@@ -18,5 +17,4 @@ namespace vgui
 	{
 		return interfaces::scheme->GetIScheme(interfaces::scheme->GetDefaultScheme());
 	}
-#endif
 } // namespace vgui

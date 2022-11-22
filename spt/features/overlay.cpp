@@ -1,8 +1,8 @@
 #include "stdafx.h"
 
-#include "overlay.hpp"
+#ifndef BMS
 
-#ifdef SPT_OVERLAY_ENABLED
+#include "overlay.hpp"
 
 #include "vguimatsurface\imatsystemsurface.h"
 #include "convar.hpp"
@@ -76,11 +76,16 @@ namespace patterns
 	         "55 8B EC 81 EC FC 01 00 00 53 56 57",
 	         "BMS-Retail-Xen",
 	         "55 8B EC 81 EC DC 02 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 FC 53 8B 5D 08 56 8B F1");
+	PATTERNS(CViewRender__RenderView_4044, "4044", "81 EC 98 00 00 00 53 55 56 57 6A 00 6A 00");
 } // namespace patterns
 
 void Overlay::InitHooks()
 {
+#ifndef OE
 	HOOK_FUNCTION(client, CViewRender__RenderView);
+#else
+	HOOK_FUNCTION(client, CViewRender__RenderView_4044);
+#endif
 }
 
 void Overlay::PreHook()
@@ -90,6 +95,8 @@ void Overlay::PreHook()
 
 #ifdef BMS
 	QueueOverlayRenderView_Offset = 26;
+#elif OE
+	QueueOverlayRenderView_Offset = -1;
 #else
 	if (utils::GetBuildNumber() >= 5135)
 		QueueOverlayRenderView_Offset = 26;
@@ -173,6 +180,12 @@ HOOK_THISCALL(void, Overlay, CViewRender__RenderView, CViewSetup* cameraView, in
 	callDepth--;
 	if (callDepth == 1)
 		ovr.renderingOverlay = false;
+}
+
+HOOK_THISCALL(void, Overlay, CViewRender__RenderView_4044, CViewSetup* cameraView, bool drawViewmodel)
+{
+	spt_hud.renderView = cameraView;
+	spt_overlay.ORIG_CViewRender__RenderView_4044(thisptr, edx, cameraView, drawViewmodel);
 }
 
 void Overlay::CViewRender__QueueOverlayRenderView(void* thisptr,

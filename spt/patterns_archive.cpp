@@ -28,6 +28,9 @@ namespace patterns
 	    CEngineTrace__PointOutsideWorld,
 	    "5135",
 	    "8B 44 24 04 50 E8 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? C1 E0 04 83 C4 04 66 83 7C 08 04 FF 0F 94 C0 C2 04 00");
+	PATTERNS(CEngineVGui__Paint,
+	         "dmomm",
+	         "6A FF 68 ?? ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 64 89 25 ?? ?? ?? ?? 83 EC 1C 56 6A 04");
 
 	/****************************** CLIENT ******************************/
 
@@ -72,6 +75,7 @@ namespace patterns
 	         "7462488",
 	         "55 8B EC 56 FF 75 ?? 8B F1 8D 8E ?? ?? ?? ??");
 	PATTERNS(CDebugViewRender__Draw2DDebuggingInfo, "5135", "A1 ?? ?? ?? ?? 81 EC 9C 00 00 00");
+	PATTERNS(DecodeUserCmdFromBuffer, "dmomm", "81 EC BC 00 00 00 56 8B F1 8D 4C 24 ?? E8 ?? ?? ?? ?? 8D 44 24 ??");
 
 	/****************************** SERVER ******************************/
 
