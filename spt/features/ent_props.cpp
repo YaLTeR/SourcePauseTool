@@ -390,7 +390,6 @@ CON_COMMAND(y_spt_canjb, "Tests if player can jumpbug on a given height, with th
 		Msg("No, missed by %.6f in %d ticks.\n", can.landingHeight - height, can.ticks);
 }
 
-#ifndef OE
 CON_COMMAND(y_spt_print_ents, "Prints all client entity indices and their corresponding classes.")
 {
 	utils::PrintAllClientEntities();
@@ -414,7 +413,6 @@ CON_COMMAND(y_spt_print_ent_props, "Prints all props for a given entity index.")
 		utils::PrintAllProps(std::stoi(args.Arg(1)));
 	}
 }
-#endif
 
 CON_COMMAND(_y_spt_datamap_print, "Prints all datamaps.")
 {
@@ -430,14 +428,12 @@ void EntProps::LoadFeature()
 {
 	InitCommand(_y_spt_datamap_print);
 	InitCommand(_y_spt_datamap_walk);
-#ifndef OE
 	InitCommand(y_spt_canjb);
 	InitCommand(y_spt_print_ents);
 	InitCommand(y_spt_print_ent_props);
 #ifdef SPT_PORTAL_UTILS
 	if (utils::DoesGameLookLikePortal())
 		InitCommand(y_spt_print_portals);
-#endif
 #endif
 #if defined(SPT_HUD_ENABLED) && defined(SPT_PORTAL_UTILS)
 	if (utils::DoesGameLookLikePortal())

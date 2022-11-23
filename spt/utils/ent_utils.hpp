@@ -13,7 +13,6 @@
 
 namespace utils
 {
-#ifndef OE
 	struct propValue
 	{
 		std::string name;
@@ -39,7 +38,6 @@ namespace utils
 	int FillInfoArray(std::string argString, wchar* arr, int maxEntries, int bufferSize, char sep, char entSep);
 	void SimulateFrames(int frames);
 	int GetIndex(void* ent);
-#endif
 	IServerUnknown* GetServerPlayer();
 	struct JBData
 	{

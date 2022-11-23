@@ -4,7 +4,6 @@
 #include <vector>
 #include "ent_utils.hpp"
 
-#ifndef OE
 PropMap PropertyGetterFeature::FindOffsets(IClientEntity* ent)
 {
 	PropMap out;
@@ -26,7 +25,6 @@ PropMap PropertyGetterFeature::FindOffsets(IClientEntity* ent)
 	out.foundOffsets = true;
 	return out;
 }
-#endif
 
 void PropertyGetterFeature::UnloadFeature()
 {
@@ -35,22 +33,15 @@ void PropertyGetterFeature::UnloadFeature()
 
 int PropertyGetterFeature::GetOffset(int entindex, const std::string& key)
 {
-#ifdef OE
-	return INVALID_OFFSET;
-#else
 	auto prop = GetRecvProp(entindex, key);
 	if (prop)
 		return prop->GetOffset();
 	else
 		return INVALID_OFFSET;
-#endif
 }
 
 RecvProp* PropertyGetterFeature::GetRecvProp(int entindex, const std::string& key)
 {
-#ifdef OE
-	return nullptr;
-#else
 	auto ent = utils::GetClientEntity(entindex);
 	std::string className = ent->GetClientClass()->m_pNetworkName;
 
@@ -68,5 +59,4 @@ RecvProp* PropertyGetterFeature::GetRecvProp(int entindex, const std::string& ke
 		return classMap[key];
 	else
 		return nullptr;
-#endif
 }
