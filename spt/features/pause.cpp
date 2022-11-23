@@ -122,12 +122,12 @@ void PauseFeature::LoadFeature()
 	{
 		if (!pause1_works)
 		{
-			Warning("y_spt_pause 2 has no effect.\n");
+			Warning("y_spt_pause 1 has no effect.\n");
 		}
 
 		if (!pause2_works)
 		{
-			Warning("y_spt_pause 1 has no effect.\n");
+			Warning("y_spt_pause 2 has no effect.\n");
 		}
 
 		InitConcommandBase(y_spt_pause);
