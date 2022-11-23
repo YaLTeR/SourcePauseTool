@@ -33,7 +33,6 @@
 
 namespace utils
 {
-#ifndef OE
 	IClientEntity* GetClientEntity(int index)
 	{
 		return interfaces::entList->GetClientEntity(index + 1);
@@ -454,7 +453,6 @@ namespace utils
 			return INVALID_OFFSET;
 		}
 	}
-#endif
 
 	IServerUnknown* GetServerPlayer()
 	{
@@ -518,11 +516,7 @@ namespace utils
 
 	bool playerEntityAvailable()
 	{
-#ifdef OE
-		return false;
-#else
 		return GetClientEntity(0) != nullptr;
-#endif
 	}
 
 	static CBaseEntity* GetServerEntity(int index)

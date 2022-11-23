@@ -37,9 +37,6 @@ public:
 	template<typename T>
 	T GetProperty(int entindex, const std::string& key)
 	{
-#ifdef OE
-		return T();
-#else
 		auto ent = utils::GetClientEntity(entindex);
 
 		if (!ent)
@@ -52,7 +49,6 @@ public:
 		{
 			return *reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(ent) + offset);
 		}
-#endif
 	}
 };
 
