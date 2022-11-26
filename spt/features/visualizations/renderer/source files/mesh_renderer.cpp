@@ -187,7 +187,8 @@ struct MeshUnitWrapper
 		return _staticMeshPtr ? *_staticMeshPtr : g_meshBuilderInternal.GetMeshUnit(_dynamicInfo);
 	}
 
-	void ApplyCallbackAndCalcCamDist(const CViewSetup& cvs, bool inDrawOpaques)
+	// returns true if we're in the frustum
+	bool ApplyCallbackAndCalcCamDist(const CViewSetup& cvs, const VPlane frustum[6])
 	{
 		const MeshUnit& meshUnit = GetMeshUnit();
 
@@ -220,6 +221,13 @@ struct MeshUnitWrapper
 			break;
 		}
 		camDistSqr = cvs.origin.DistToSqr(camDistSqrTo);
+
+		// check if mesh is outside frustum
+
+		for (int i = 0; i < 6; i++)
+			if (frustum[i].BoxOnPlaneSide(actualPosInfo.mins, actualPosInfo.maxs) == SIDE_BACK)
+				return false;
+		return true;
 	}
 
 	void RenderDebugMesh()
@@ -295,54 +303,6 @@ struct MeshUnitWrapper
 
 		CMatRenderContextPtr context{interfaces::materialSystem};
 
-		// UNDONE: projecting to the screen loses information - we should really compare against the frustom planes
-
-		/*
-		* Check if we can skip creating the IMesh*. Project all AABB corners on the screen and see
-		* if the whole thing is off screen. Technically sort of creates a AABB around the projected
-		* mesh AABB corners, so misses cases where the mesh AABB has a corner in front and a corner
-		* behind the camera plane. Gives like 10 extra fps :p
-		*/
-		/*if (component.dynamic)
-		{
-			if (!cachedCamMatValid)
-			{
-				VMatrix view, projection;
-				context->GetMatrix(MATERIAL_VIEW, &view);
-				context->GetMatrix(MATERIAL_PROJECTION, &projection);
-				cachedCamMat = projection * view;
-				cachedCamMatValid = true;
-			}
-
-			auto& posInfo = callback ? newPosInfo : meshUnit.posInfo;
-			const Vector& mins = posInfo.mins;
-			const Vector& maxs = posInfo.maxs;
-
-			float min_x = INFINITY, max_x = -INFINITY;
-			float min_y = INFINITY, max_y = -INFINITY;
-			float min_z = INFINITY, max_z = -INFINITY;
-			for (int i = 0; i < 8; i++)
-			{
-				Vector4D point{
-				    (i & 1) ? maxs.x : mins.x,
-				    (i & 2) ? maxs.y : mins.y,
-				    (i & 4) ? maxs.z : mins.z,
-				    1.0,
-				};
-				Vector4D result;
-				cachedCamMat.V4Mul(point, result);
-				result /= result.w;
-				min_x = MIN(min_x, result.x);
-				max_x = MAX(max_x, result.x);
-				min_y = MIN(min_y, result.y);
-				max_y = MAX(max_y, result.y);
-				min_z = MIN(min_z, result.z);
-				max_z = MAX(max_z, result.z);
-			}
-			if (min_x > 1.0 || max_x < -1.0 || min_y > 1.0 || max_y < -1.0 || min_z > 1.0 || max_z < 0.0)
-				return;
-		}*/
-
 		color32 cMod = {255, 255, 255, 255};
 		if (callback)
 		{
@@ -394,18 +354,27 @@ void MeshRendererFeature::OnRenderViewPre_Signal(void* thisptr, CViewSetup* came
 	g_inMeshRenderSignal = false;
 }
 
+void MeshRendererFeature::SetupViewInfo(CRendering3dView* rendering3dView)
+{
+	viewInfo.rendering3dView = rendering3dView;
+	// if only more stuff was public ://
+	viewInfo.viewSetup = (CViewSetup*)((uintptr_t)rendering3dView + 8);
+	viewInfo.frustum = *(VPlane**)(viewInfo.viewSetup + 1); // inward facing
+}
+
 void MeshRendererFeature::OnDrawOpaques(void* renderingView)
 {
 	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
-	CViewSetup& cvs = *(CViewSetup*)((uintptr_t)renderingView + 8);
+	SetupViewInfo((CRendering3dView*)renderingView);
 	MeshUnitWrapper::cachedCamMatValid = false;
 
 	for (auto& meshInternal : g_meshUnitWrappers)
 	{
-		meshInternal.ApplyCallbackAndCalcCamDist(cvs, true);
+		bool bDraw = meshInternal.ApplyCallbackAndCalcCamDist(*viewInfo.viewSetup, viewInfo.frustum);
 		const MeshUnit& meshUnit = meshInternal.GetMeshUnit();
 		/*
 		* Check both components (faces & lines), skip rendering if:
+		* * the mesh is outside the frustum
 		* - the component is empty
 		* - the component is translucent
 		* - there was a callback w/ alpha modulation (forcing the mesh to be translucent)
@@ -414,7 +383,7 @@ void MeshRendererFeature::OnDrawOpaques(void* renderingView)
 		for (int i = 0; i < 2; i++)
 		{
 			auto& component = i == 0 ? meshUnit.faceComponent : meshUnit.lineComponent;
-			if (component.Empty() || !component.opaque)
+			if (!bDraw || component.Empty() || !component.opaque)
 				continue;
 			if (meshInternal.callback)
 			{
@@ -431,7 +400,7 @@ void MeshRendererFeature::OnDrawOpaques(void* renderingView)
 void MeshRendererFeature::OnDrawTranslucents(void* renderingView)
 {
 	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
-	CViewSetup& cvs = *(CViewSetup*)((uintptr_t)renderingView + 8);
+	SetupViewInfo((CRendering3dView*)renderingView);
 
 	static std::vector<MeshUnitWrapper*> showDebugMeshFor;
 	static std::vector<std::pair<MeshUnitWrapper*, bool>> sortedTranslucents; // <mesh_ptr, is_face_component>
@@ -441,21 +410,21 @@ void MeshRendererFeature::OnDrawTranslucents(void* renderingView)
 
 	for (auto& meshInternal : g_meshUnitWrappers)
 	{
-		meshInternal.ApplyCallbackAndCalcCamDist(cvs, false);
+		bool drawDebugMesh = meshInternal.ApplyCallbackAndCalcCamDist(*viewInfo.viewSetup, viewInfo.frustum);
 		const MeshUnit& meshUnit = meshInternal.GetMeshUnit();
 		/*
 		* Check both components (faces & lines), skip rendering if:
+		* - the component is outside the frustum
 		* - the component is empty
 		* - there was no callback & the component is opaque
 		* - there was a callback, the component is opaque, and the alpha was kept at 1
 		* - there was a callback & and the user disabled rendering for the current view
 		* If the component is not empty and rendering is not disabled for both faces/lines then we draw the debug mesh.
 		*/
-		bool drawDebugMesh = false;
 		for (int i = 0; i < 2; i++)
 		{
 			auto& component = i == 0 ? meshUnit.faceComponent : meshUnit.lineComponent;
-			if (component.Empty())
+			if (!drawDebugMesh || component.Empty())
 				continue;
 			if (meshInternal.callback)
 			{

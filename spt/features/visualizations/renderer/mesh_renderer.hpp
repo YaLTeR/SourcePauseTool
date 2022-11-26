@@ -5,6 +5,7 @@
 #ifdef SPT_MESH_RENDERING_ENABLED
 
 #include "view_shared.h"
+#include "viewrender.h"
 
 #include "mesh_builder.hpp" // so that users can import just one header
 
@@ -98,6 +99,13 @@ protected:
 	void UnloadFeature() override;
 
 private:
+	struct
+	{
+		CRendering3dView* rendering3dView;
+		CViewSetup* viewSetup;
+		VPlane* frustum;
+	} viewInfo;
+
 	DECL_MEMBER_CDECL(void, OnRenderStart);
 	DECL_HOOK_THISCALL(void, CRendering3dView__DrawOpaqueRenderables, int param);
 	DECL_HOOK_THISCALL(void, CRendering3dView__DrawTranslucentRenderables, bool bInSkybox, bool bShadowDepth);
@@ -105,6 +113,7 @@ private:
 	bool Works() const;
 	void FrameCleanup();
 	void OnRenderViewPre_Signal(void* thisptr, CViewSetup* cameraView);
+	void SetupViewInfo(CRendering3dView* rendering3dView);
 	void OnDrawOpaques(void* renderingView);
 	void OnDrawTranslucents(void* renderingView);
 };
