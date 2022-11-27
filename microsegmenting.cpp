@@ -35,12 +35,11 @@ void MicroSegmenting::UnloadFeature()
 	playerName = nullptr;
 }
 
-CON_COMMAND(spt_microsegmenting_set_current_segment,
-            "The current segment. Usage: spt_microsegmenting_set_current_segment <number>")
+CON_COMMAND(y_spt_microsegmenting_set, "Set the current segment. Usage: y_spt_microsegmenting_set <number>")
 {
 	if (args.ArgC() != 2)
 	{
-		Msg("Usage: spt_microsegmenting_set_current_segment <number>\n");
+		Msg("Usage: y_spt_microsegmenting_set <number>\n");
 		return;
 	}
 	spt_microsegmenting.currentSegment = std::atoi(args.Arg(1));
@@ -49,7 +48,7 @@ CON_COMMAND(spt_microsegmenting_set_current_segment,
 	Msg("########## SEGMENT %i ##########\n", spt_microsegmenting.currentSegment);
 }
 
-CON_COMMAND(spt_microsegmenting_previous_segment, "Go back one segment.")
+CON_COMMAND(y_spt_microsegmenting_previous, "Go back one segment.")
 {
 	spt_microsegmenting.currentSegment--;
 	spt_microsegmenting.previousSegment--;
@@ -57,7 +56,7 @@ CON_COMMAND(spt_microsegmenting_previous_segment, "Go back one segment.")
 	Msg("########## SEGMENT %i ##########\n", spt_microsegmenting.currentSegment);
 }
 
-CON_COMMAND(spt_microsegmenting_next_segment, "Go up one segment.")
+CON_COMMAND(y_spt_microsegmenting_next, "Go up one segment.")
 {
 	spt_microsegmenting.currentSegment++;
 	spt_microsegmenting.previousSegment++;
@@ -65,8 +64,7 @@ CON_COMMAND(spt_microsegmenting_next_segment, "Go up one segment.")
 	Msg("########## SEGMENT %i ##########\n", spt_microsegmenting.currentSegment);
 }
 
-CON_COMMAND(spt_microsegmenting_record_segment,
-            "Start recording a segment. If provided with an arguement, runs an alias of that name after recording.")
+CON_COMMAND(y_spt_microsegmenting_record, "Start recording a segment. If provided with an arguement, runs an alias of that name after recording.")
 {
 	std::ostringstream startCmd;
 	startCmd << "record " << spt_microsegmenting.runFolder << spt_microsegmenting.currentSegment << "-"
@@ -79,9 +77,7 @@ CON_COMMAND(spt_microsegmenting_record_segment,
 	}
 }
 
-CON_COMMAND(
-    spt_microsegmenting_stop_segment,
-    "Stop the current segment. If provided with an arguement, runs an alias of that name instead of the default commands after saving.")
+CON_COMMAND(y_spt_microsegmenting_stop, "Stop the current segment. If provided with an arguement, runs an alias of that name instead of the default commands after saving.")
 {
 	std::ostringstream saveCmd;
 	saveCmd << "save " << spt_microsegmenting.runFolder << spt_microsegmenting.currentSegment << "-"
@@ -98,9 +94,7 @@ CON_COMMAND(
 	}
 }
 
-CON_COMMAND(
-    spt_microsegmenting_load_segment,
-    "Loads the current segment. If provided with one arguement, runs an alias of that name after loading. If provided with a 2nd, uses that as the player name instead of your own.")
+CON_COMMAND(y_spt_microsegmenting_load, "Loads the current segment. If provided with one arguement, runs an alias of that name after loading. If provided with a 2nd, uses that as the player name instead of your own.")
 {
 	std::ostringstream loadCmd;
 	loadCmd << "load " << spt_microsegmenting.runFolder << spt_microsegmenting.previousSegment << "-"
@@ -117,9 +111,7 @@ CON_COMMAND(
 	}
 }
 
-CON_COMMAND(
-    spt_microsegmenting_folder,
-    "If set, resulting demos/saves will be loaded and saved from this folder. Need to create it in both the root mod directory and in the SAVE folder.")
+CON_COMMAND(y_spt_microsegmenting_folder, "If set, resulting demos/saves will be loaded and saved from this folder. Need to create it in both the root mod directory and in the SAVE folder.")
 {
 	spt_microsegmenting.runFolder = "";
 
@@ -133,11 +125,11 @@ void MicroSegmenting::LoadFeature()
 {
 	spt_microsegmenting.playerName = g_pCVar->FindVar("name");
 
-	InitCommand(spt_microsegmenting_set_current_segment);
-	InitCommand(spt_microsegmenting_previous_segment);
-	InitCommand(spt_microsegmenting_next_segment);
-	InitCommand(spt_microsegmenting_stop_segment);
-	InitCommand(spt_microsegmenting_record_segment);
-	InitCommand(spt_microsegmenting_load_segment);
-	InitCommand(spt_microsegmenting_folder);
+	InitCommand(y_spt_microsegmenting_set);
+	InitCommand(y_spt_microsegmenting_previous);
+	InitCommand(y_spt_microsegmenting_next);
+	InitCommand(y_spt_microsegmenting_stop);
+	InitCommand(y_spt_microsegmenting_record);
+	InitCommand(y_spt_microsegmenting_load);
+	InitCommand(y_spt_microsegmenting_folder);
 }
