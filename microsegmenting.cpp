@@ -1,13 +1,13 @@
 #include "stdafx.h"
 #include "..\feature.hpp"
 #include "..\sptlib-wrapper.hpp"
+#include <sstream>
 
 // Port of waezone's microsegmenting AHK file
 class MicroSegmenting : public FeatureWrapper<MicroSegmenting>
 {
 public:
 	int currentSegment = 1;
-	int previousSegment = 0;
 	std::string runFolder = "";
 	ConVar* playerName = nullptr;
 
@@ -43,7 +43,6 @@ CON_COMMAND(y_spt_microsegmenting_set, "Set the current segment. Usage: y_spt_mi
 		return;
 	}
 	spt_microsegmenting.currentSegment = std::atoi(args.Arg(1));
-	spt_microsegmenting.previousSegment = spt_microsegmenting.currentSegment - 1;
 
 	Msg("########## SEGMENT %i ##########\n", spt_microsegmenting.currentSegment);
 }
@@ -51,7 +50,6 @@ CON_COMMAND(y_spt_microsegmenting_set, "Set the current segment. Usage: y_spt_mi
 CON_COMMAND(y_spt_microsegmenting_previous, "Go back one segment.")
 {
 	spt_microsegmenting.currentSegment--;
-	spt_microsegmenting.previousSegment--;
 
 	Msg("########## SEGMENT %i ##########\n", spt_microsegmenting.currentSegment);
 }
@@ -59,7 +57,6 @@ CON_COMMAND(y_spt_microsegmenting_previous, "Go back one segment.")
 CON_COMMAND(y_spt_microsegmenting_next, "Go up one segment.")
 {
 	spt_microsegmenting.currentSegment++;
-	spt_microsegmenting.previousSegment++;
 
 	Msg("########## SEGMENT %i ##########\n", spt_microsegmenting.currentSegment);
 }
@@ -77,7 +74,7 @@ CON_COMMAND(y_spt_microsegmenting_record, "Start recording a segment. If provide
 	}
 }
 
-CON_COMMAND(y_spt_microsegmenting_stop, "Stop the current segment. If provided with an arguement, runs an alias of that name instead of the default commands after saving.")
+CON_COMMAND(y_spt_microsegmenting_stop, "Stop the current segment. If provided with an arguement, runs an alias of that name instead of the default commands after saving. Defaut commands: \"echo #SAVE#;sensitivity 0;wait 100;stop\"")
 {
 	std::ostringstream saveCmd;
 	saveCmd << "save " << spt_microsegmenting.runFolder << spt_microsegmenting.currentSegment << "-"
@@ -94,10 +91,10 @@ CON_COMMAND(y_spt_microsegmenting_stop, "Stop the current segment. If provided w
 	}
 }
 
-CON_COMMAND(y_spt_microsegmenting_load, "Loads the current segment. If provided with one arguement, runs an alias of that name after loading. If provided with a 2nd, uses that as the player name instead of your own.")
+CON_COMMAND(y_spt_microsegmenting_load, "Loads the current segment. If provided with one arguement, runs an alias of that name after loading instead of the default command. Default command: \"sensitivity 0\" If provided with a 2nd, uses that as the player name instead of your own.")
 {
 	std::ostringstream loadCmd;
-	loadCmd << "load " << spt_microsegmenting.runFolder << spt_microsegmenting.previousSegment << "-"
+	loadCmd << "load " << spt_microsegmenting.runFolder << spt_microsegmenting.currentSegment - 1 << "-"
 	        << ((args.ArgC() > 2) ? args.Arg(2) : spt_microsegmenting.playerName->GetString()) << "-";
 	EngineConCmd(loadCmd.str().c_str());
 
