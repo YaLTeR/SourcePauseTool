@@ -304,6 +304,9 @@
     <ClCompile Include="spt\features\property_getter.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
+    <ClCompile Include="microsegmenting.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
