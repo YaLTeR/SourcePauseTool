@@ -76,22 +76,24 @@ void MeshBuilderDelegate::AddLine(const Vector& v1, const Vector& v2, const colo
 {
 	if (c.a == 0)
 		return;
-	ReserveScope rs(Lines(), 2, 2);
-	Lines().indices.push_back(Lines().verts.size());
-	Lines().indices.push_back(Lines().verts.size() + 1);
-	Lines().verts.push_back({v1, c});
-	Lines().verts.push_back({v2, c});
+	auto& lines = Lines();
+	ReserveScope rs(lines, 2, 2);
+	lines.indices.push_back(lines.verts.size());
+	lines.indices.push_back(lines.verts.size() + 1);
+	lines.verts.emplace_back(v1, c);
+	lines.verts.emplace_back(v2, c);
 }
 
 void MeshBuilderDelegate::AddLines(const Vector* points, int numSegments, const color32& c)
 {
 	if (!points || numSegments <= 0 || c.a == 0)
 		return;
-	ReserveScope rs(Lines(), numSegments * 2, numSegments * 2);
+	auto& lines = Lines();
+	ReserveScope rs(lines, numSegments * 2, numSegments * 2);
 	for (int i = 0; i < numSegments * 2; i++)
 	{
-		Lines().indices.push_back(Lines().verts.size());
-		Lines().verts.push_back({points[i], c});
+		lines.indices.push_back(lines.verts.size());
+		lines.verts.emplace_back(points[i], c);
 	}
 }
 
@@ -99,10 +101,11 @@ void MeshBuilderDelegate::AddLineStrip(const Vector* points, int numPoints, bool
 {
 	if (!points || numPoints < 2 || c.a == 0)
 		return;
-	ReserveScope rs(Lines(), numPoints, (numPoints - 1 + loop) * 2);
+	auto& lines = Lines();
+	ReserveScope rs(lines, numPoints, (numPoints - 1 + loop) * 2);
 	for (int i = 0; i < numPoints; i++)
-		Lines().verts.push_back({points[i], c});
-	_AddLineStripIndices(Lines().verts.size() - numPoints, numPoints, loop);
+		lines.verts.emplace_back(points[i], c);
+	_AddLineStripIndices(lines.verts.size() - numPoints, numPoints, loop);
 }
 
 void MeshBuilderDelegate::AddCross(const Vector& pos, float radius, const color32& c)
@@ -134,11 +137,12 @@ void MeshBuilderDelegate::AddTris(const Vector* verts, int numFaces, const MeshC
 
 	if (c.faceColor.a != 0)
 	{
-		ReserveScope rs(Faces(), numFaces * 3, numFaces * 3);
+		auto& faces = Faces();
+		ReserveScope rs(faces, numFaces * 3, numFaces * 3);
 		for (int i = 0; i < numFaces * 3; i++)
 		{
-			Faces().indices.push_back(Faces().verts.size());
-			Faces().verts.push_back({verts[i], c.faceColor});
+			faces.indices.push_back(faces.verts.size());
+			faces.verts.emplace_back(verts[i], c.faceColor);
 		}
 	}
 
@@ -185,10 +189,11 @@ void MeshBuilderDelegate::AddPolygon(const Vector* verts, int numVerts, const Me
 
 	if (c.faceColor.a != 0)
 	{
-		ReserveScope rs(Faces(), numVerts, (numVerts - 2) * 3);
+		auto& faces = Faces();
+		ReserveScope rs(faces, numVerts, (numVerts - 2) * 3);
 		for (int i = 0; i < numVerts; i++)
-			Faces().verts.push_back({verts[i], c.faceColor});
-		_AddFacePolygonIndices(Faces().verts.size() - numVerts, numVerts, false);
+			faces.verts.emplace_back(verts[i], c.faceColor);
+		_AddFacePolygonIndices(faces.verts.size() - numVerts, numVerts, false);
 	}
 
 	if (c.lineColor.a != 0)
@@ -225,8 +230,10 @@ void MeshBuilderDelegate::AddBox(const Vector& pos,
 	if (c.faceColor.a == 0 && c.lineColor.a == 0)
 		return;
 
-	size_t origNumFaceVerts = Faces().verts.size();
-	size_t origNumLineVerts = Lines().verts.size();
+	auto& faces = Faces();
+	auto& lines = Lines();
+	size_t origNumFaceVerts = faces.verts.size();
+	size_t origNumLineVerts = lines.verts.size();
 	_AddSubdivCube(0, c);
 
 	Vector size, actualMins;
@@ -237,10 +244,10 @@ void MeshBuilderDelegate::AddBox(const Vector& pos,
 	AngleMatrix(ang, pos, offMat);                                             // rotate box and put at 'pos'
 	MatrixMultiply(offMat, scaleMat, finalMat);
 
-	for (size_t i = origNumFaceVerts; i < Faces().verts.size(); i++)
-		utils::VectorTransform(finalMat, Faces().verts[i].pos);
-	for (size_t i = origNumLineVerts; i < Lines().verts.size(); i++)
-		utils::VectorTransform(finalMat, Lines().verts[i].pos);
+	for (size_t i = origNumFaceVerts; i < faces.verts.size(); i++)
+		utils::VectorTransform(finalMat, faces.verts[i].pos);
+	for (size_t i = origNumLineVerts; i < lines.verts.size(); i++)
+		utils::VectorTransform(finalMat, lines.verts[i].pos);
 }
 
 void MeshBuilderDelegate::AddSphere(const Vector& pos, float radius, int numSubdivisions, const MeshColor& c)
@@ -248,22 +255,24 @@ void MeshBuilderDelegate::AddSphere(const Vector& pos, float radius, int numSubd
 	if (numSubdivisions < 0 || radius < 0 || (c.faceColor.a == 0 && c.lineColor.a == 0))
 		return;
 
-	size_t origNumFaceVerts = Faces().verts.size();
-	size_t origNumLineVerts = Lines().verts.size();
+	auto& faces = Faces();
+	auto& lines = Lines();
+	size_t origNumFaceVerts = faces.verts.size();
+	size_t origNumLineVerts = lines.verts.size();
 	_AddSubdivCube(numSubdivisions, c);
 
 	// center, normalize, scale, transform :)
 	Vector subdivCubeOff((numSubdivisions + 1) / -2.f);
-	for (size_t i = origNumFaceVerts; i < Faces().verts.size(); i++)
+	for (size_t i = origNumFaceVerts; i < faces.verts.size(); i++)
 	{
-		Vector& v = Faces().verts[i].pos;
+		Vector& v = faces.verts[i].pos;
 		v += subdivCubeOff;
 		VectorNormalize(v);
 		v = v * radius + pos;
 	}
-	for (size_t i = origNumLineVerts; i < Lines().verts.size(); i++)
+	for (size_t i = origNumLineVerts; i < lines.verts.size(); i++)
 	{
-		Vector& v = Lines().verts[i].pos;
+		Vector& v = lines.verts[i].pos;
 		v += subdivCubeOff;
 		VectorNormalize(v);
 		v = v * radius + pos;
@@ -432,13 +441,13 @@ void MeshBuilderDelegate::AddSweptBox(const Vector& start,
 
 				bool mirrorStrips = fabs(diff[ax1]) > fabs(diff[ax2]);
 				// e.g. A1 B1 C1
-				verts.push_back({start + v2, c});
-				verts.push_back({start + v1, c});
-				verts.push_back({start + v3, c});
+				verts.emplace_back(start + v2, c);
+				verts.emplace_back(start + v1, c);
+				verts.emplace_back(start + v3, c);
 				// e.g. A2 b2 C2
-				verts.push_back({end + v2, c});
-				verts.push_back({end + v1 + diagOffsetForEndBox, c});
-				verts.push_back({end + v3, c});
+				verts.emplace_back(end + v2, c);
+				verts.emplace_back(end + v1 + diagOffsetForEndBox, c);
+				verts.emplace_back(end + v3, c);
 
 				if (doingFaces)
 				{
@@ -453,7 +462,7 @@ void MeshBuilderDelegate::AddSweptBox(const Vector& start,
 				for (int j = 0; j < 6; j++)
 				{
 					VertexData& tmp = verts[numVerts + j];
-					verts.push_back({tmp.pos + ax0Off, c});
+					verts.emplace_back(tmp.pos + ax0Off, c);
 				}
 				numVerts += 6;
 				if (doingFaces)
@@ -523,41 +532,43 @@ void MeshBuilderDelegate::AddCone(const Vector& pos,
 
 	if (c.faceColor.a != 0)
 	{
-		ReserveScope rs(Faces(),
+		auto& faces = Faces();
+		ReserveScope rs(faces,
 		                numCirclePoints + 1,
 		                numCirclePoints * 3 + (drawBase ? 3 * (numCirclePoints - 2) : 0));
-		size_t tipIdx = Faces().verts.size();
-		Faces().verts.push_back({tip, c.faceColor});
+		size_t tipIdx = faces.verts.size();
+		faces.verts.emplace_back(tip, c.faceColor);
 		for (int i = 0; i < numCirclePoints; i++)
 		{
 			if (i > 0)
 			{
 				// faces on top of cone
-				Faces().indices.push_back(Faces().verts.size() - 1);
-				Faces().indices.push_back(Faces().verts.size());
-				Faces().indices.push_back(tipIdx);
+				faces.indices.push_back(faces.verts.size() - 1);
+				faces.indices.push_back(faces.verts.size());
+				faces.indices.push_back(tipIdx);
 			}
-			Faces().verts.push_back({circleVerts[i], c.faceColor});
+			faces.verts.emplace_back(circleVerts[i], c.faceColor);
 		}
 		// final face on top of cone
-		Faces().indices.push_back(Faces().verts.size() - 1);
-		Faces().indices.push_back(tipIdx + 1);
-		Faces().indices.push_back(tipIdx);
+		faces.indices.push_back(faces.verts.size() - 1);
+		faces.indices.push_back(tipIdx + 1);
+		faces.indices.push_back(tipIdx);
 		if (drawBase)
 			_AddFacePolygonIndices(tipIdx + 1, numCirclePoints, true);
 	}
 
 	if (c.lineColor.a != 0)
 	{
-		ReserveScope rs(Lines(), numCirclePoints + 1, numCirclePoints * 4);
-		size_t tipIdx = Lines().verts.size();
-		Lines().verts.push_back({tip, c.lineColor});
+		auto& lines = Lines();
+		ReserveScope rs(lines, numCirclePoints + 1, numCirclePoints * 4);
+		size_t tipIdx = lines.verts.size();
+		lines.verts.emplace_back(tip, c.lineColor);
 		AddLineStrip(circleVerts, numCirclePoints, true, c.lineColor);
 		for (int i = 0; i < numCirclePoints; i++)
 		{
 			// lines from tip to base
-			Lines().indices.push_back(tipIdx);
-			Lines().indices.push_back(tipIdx + i + 1);
+			lines.indices.push_back(tipIdx);
+			lines.indices.push_back(tipIdx + i + 1);
 		}
 	}
 }
@@ -582,15 +593,16 @@ void MeshBuilderDelegate::AddCylinder(const Vector& pos,
 
 	if (c.faceColor.a != 0)
 	{
-		ReserveScope rs(Faces(),
+		auto& faces = Faces();
+		ReserveScope rs(faces,
 		                numCirclePoints * 2,
 		                numCirclePoints * 6 + (numCirclePoints - 2) * 3 * (drawCap1 + drawCap2));
-		size_t idx1 = Faces().verts.size();
+		size_t idx1 = faces.verts.size();
 		for (int i = 0; i < numCirclePoints; i++)
-			Faces().verts.push_back({circleVerts[i], c.faceColor});
-		size_t idx2 = Faces().verts.size();
+			faces.verts.emplace_back(circleVerts[i], c.faceColor);
+		size_t idx2 = faces.verts.size();
 		for (int i = 0; i < numCirclePoints; i++)
-			Faces().verts.push_back({circleVerts[i] + heightOff, c.faceColor});
+			faces.verts.emplace_back(circleVerts[i] + heightOff, c.faceColor);
 		_AddFaceTriangleStripIndices(idx2, idx1, numCirclePoints, true);
 		if (drawCap1)
 			_AddFacePolygonIndices(idx1, numCirclePoints, true);
@@ -600,19 +612,20 @@ void MeshBuilderDelegate::AddCylinder(const Vector& pos,
 
 	if (c.lineColor.a != 0)
 	{
-		ReserveScope rs(Lines(), numCirclePoints * 2, numCirclePoints * 6);
-		size_t idx1 = Lines().verts.size();
+		auto& lines = Lines();
+		ReserveScope rs(lines, numCirclePoints * 2, numCirclePoints * 6);
+		size_t idx1 = lines.verts.size();
 		for (int i = 0; i < numCirclePoints; i++)
-			Lines().verts.push_back({circleVerts[i], c.lineColor});
-		size_t idx2 = Lines().verts.size();
+			lines.verts.emplace_back(circleVerts[i], c.lineColor);
+		size_t idx2 = lines.verts.size();
 		for (int i = 0; i < numCirclePoints; i++)
-			Lines().verts.push_back({circleVerts[i] + heightOff, c.lineColor});
+			lines.verts.emplace_back(circleVerts[i] + heightOff, c.lineColor);
 		_AddLineStripIndices(idx1, numCirclePoints, true);
 		_AddLineStripIndices(idx2, numCirclePoints, true);
 		for (int i = 0; i < numCirclePoints; i++)
 		{
-			Lines().indices.push_back(idx1 + i);
-			Lines().indices.push_back(idx2 + i);
+			lines.indices.push_back(idx1 + i);
+			lines.indices.push_back(idx2 + i);
 		}
 	}
 }
@@ -629,6 +642,9 @@ void MeshBuilderDelegate::AddArrow3D(const Vector& pos,
 	if (numCirclePoints < 3 || (c.faceColor.a == 0 && c.lineColor.a == 0))
 		return;
 
+	auto& faces = Faces();
+	auto& lines = Lines();
+
 	Vector dir = target - pos;
 	dir.NormalizeInPlace();
 	QAngle ang;
@@ -636,12 +652,12 @@ void MeshBuilderDelegate::AddArrow3D(const Vector& pos,
 
 	AddCylinder(pos, ang, tailLength, tailRadius, numCirclePoints, true, false, c);
 	// assumes AddCylinder() puts the "top" vertices at the end of the vert list for faces & lines
-	size_t innerCircleFaceIdx = Faces().verts.size() - numCirclePoints;
-	size_t innerCircleLineIdx = Lines().verts.size() - numCirclePoints;
+	size_t innerCircleFaceIdx = faces.verts.size() - numCirclePoints;
+	size_t innerCircleLineIdx = lines.verts.size() - numCirclePoints;
 	AddCone(pos + dir * tailLength, ang, tipHeight, tipRadius, numCirclePoints, false, c);
 	// assumes AddCone() puts the base vertices at the end of the vert list for faces & lines
-	size_t outerCircleFaceIdx = Faces().verts.size() - numCirclePoints;
-	size_t outerCircleLineIdx = Lines().verts.size() - numCirclePoints;
+	size_t outerCircleFaceIdx = faces.verts.size() - numCirclePoints;
+	size_t outerCircleLineIdx = lines.verts.size() - numCirclePoints;
 
 	if (c.faceColor.a != 0)
 		_AddFaceTriangleStripIndices(outerCircleFaceIdx, innerCircleFaceIdx, numCirclePoints, true);
@@ -650,8 +666,8 @@ void MeshBuilderDelegate::AddArrow3D(const Vector& pos,
 	{
 		for (int i = 0; i < numCirclePoints; i++)
 		{
-			Lines().indices.push_back(innerCircleLineIdx + i);
-			Lines().indices.push_back(outerCircleLineIdx + i);
+			lines.indices.push_back(innerCircleLineIdx + i);
+			lines.indices.push_back(outerCircleLineIdx + i);
 		}
 	}
 }
@@ -662,9 +678,10 @@ void MeshBuilderDelegate::AddCPolyhedron(const CPolyhedron* polyhedron, const Me
 		return;
 	if (c.faceColor.a != 0)
 	{
-		const size_t initIdx = Faces().verts.size();
+		auto& faces = Faces();
+		const size_t initIdx = faces.verts.size();
 		for (int v = 0; v < polyhedron->iVertexCount; v++)
-			Faces().verts.push_back({polyhedron->pVertices[v], c.faceColor});
+			faces.verts.emplace_back(polyhedron->pVertices[v], c.faceColor);
 		for (int p = 0; p < polyhedron->iPolygonCount; p++)
 		{
 			// Writing the indices straight from the polyhedron data instead of converting to polygons first.
@@ -685,9 +702,9 @@ void MeshBuilderDelegate::AddCPolyhedron(const CPolyhedron* polyhedron, const Me
 				case 1:
 					break;
 				default:
-					Faces().indices.push_back(firstIdx);
-					Faces().indices.push_back(prevIdx);
-					Faces().indices.push_back(curIdx);
+					faces.indices.push_back(firstIdx);
+					faces.indices.push_back(prevIdx);
+					faces.indices.push_back(curIdx);
 					break;
 				}
 				prevIdx = curIdx;
@@ -697,14 +714,15 @@ void MeshBuilderDelegate::AddCPolyhedron(const CPolyhedron* polyhedron, const Me
 	if (c.lineColor.a != 0)
 	{
 		// edges are more straightforward since the polyhedron stores edges as pairs of indices already
-		const size_t initIdx = Lines().verts.size();
+		auto& lines = Lines();
+		const size_t initIdx = lines.verts.size();
 		for (int v = 0; v < polyhedron->iVertexCount; v++)
-			Lines().verts.push_back({polyhedron->pVertices[v], c.lineColor});
+			lines.verts.emplace_back(polyhedron->pVertices[v], c.lineColor);
 		for (int i = 0; i < polyhedron->iLineCount; i++)
 		{
 			Polyhedron_IndexedLine_t& line = polyhedron->pLines[i];
-			Lines().indices.push_back(initIdx + line.iPointIndices[0]);
-			Lines().indices.push_back(initIdx + line.iPointIndices[1]);
+			lines.indices.push_back(initIdx + line.iPointIndices[0]);
+			lines.indices.push_back(initIdx + line.iPointIndices[1]);
 		}
 	}
 }
@@ -729,48 +747,49 @@ void MeshBuilderDelegate::_AddFaceTriangleStripIndices(size_t vIdx1,
 	else
 		Assert(numVerts >= 2);
 
-	ReserveScope rs(Faces(), 0, (numVerts - 1 + loop) * 6);
+	auto& faces = Faces();
+	ReserveScope rs(faces, 0, (numVerts - 1 + loop) * 6);
 
 	for (size_t i = 0; i < numVerts - 1; i++)
 	{
 		if (mirror)
 		{
-			Faces().indices.push_back(vIdx1 + i);
-			Faces().indices.push_back(vIdx2 + i);
-			Faces().indices.push_back(vIdx1 + i + 1);
-			Faces().indices.push_back(vIdx2 + i);
-			Faces().indices.push_back(vIdx2 + i + 1);
-			Faces().indices.push_back(vIdx1 + i + 1);
+			faces.indices.push_back(vIdx1 + i);
+			faces.indices.push_back(vIdx2 + i);
+			faces.indices.push_back(vIdx1 + i + 1);
+			faces.indices.push_back(vIdx2 + i);
+			faces.indices.push_back(vIdx2 + i + 1);
+			faces.indices.push_back(vIdx1 + i + 1);
 		}
 		else
 		{
-			Faces().indices.push_back(vIdx1 + i);
-			Faces().indices.push_back(vIdx2 + i);
-			Faces().indices.push_back(vIdx2 + i + 1);
-			Faces().indices.push_back(vIdx2 + i + 1);
-			Faces().indices.push_back(vIdx1 + i + 1);
-			Faces().indices.push_back(vIdx1 + i);
+			faces.indices.push_back(vIdx1 + i);
+			faces.indices.push_back(vIdx2 + i);
+			faces.indices.push_back(vIdx2 + i + 1);
+			faces.indices.push_back(vIdx2 + i + 1);
+			faces.indices.push_back(vIdx1 + i + 1);
+			faces.indices.push_back(vIdx1 + i);
 		}
 	}
 	if (loop)
 	{
 		if (mirror) // loop + mirror not tested
 		{
-			Faces().indices.push_back(vIdx1 + numVerts - 1);
-			Faces().indices.push_back(vIdx2 + numVerts - 1);
-			Faces().indices.push_back(vIdx1);
-			Faces().indices.push_back(vIdx2 + numVerts - 1);
-			Faces().indices.push_back(vIdx2);
-			Faces().indices.push_back(vIdx1);
+			faces.indices.push_back(vIdx1 + numVerts - 1);
+			faces.indices.push_back(vIdx2 + numVerts - 1);
+			faces.indices.push_back(vIdx1);
+			faces.indices.push_back(vIdx2 + numVerts - 1);
+			faces.indices.push_back(vIdx2);
+			faces.indices.push_back(vIdx1);
 		}
 		else
 		{
-			Faces().indices.push_back(vIdx1 + numVerts - 1);
-			Faces().indices.push_back(vIdx2 + numVerts - 1);
-			Faces().indices.push_back(vIdx2);
-			Faces().indices.push_back(vIdx2);
-			Faces().indices.push_back(vIdx1);
-			Faces().indices.push_back(vIdx1 + numVerts - 1);
+			faces.indices.push_back(vIdx1 + numVerts - 1);
+			faces.indices.push_back(vIdx2 + numVerts - 1);
+			faces.indices.push_back(vIdx2);
+			faces.indices.push_back(vIdx2);
+			faces.indices.push_back(vIdx1);
+			faces.indices.push_back(vIdx1 + numVerts - 1);
 		}
 	}
 }
@@ -779,20 +798,21 @@ void MeshBuilderDelegate::_AddFacePolygonIndices(size_t vertsIdx, int numVerts, 
 {
 	// Creates indices representing a filled convex polygon using existing verts at the given vert index for faces only.
 	Assert(numVerts >= 3);
-	ReserveScope rs(Faces(), 0, (numVerts - 2) * 3);
+	auto& faces = Faces();
+	ReserveScope rs(faces, 0, (numVerts - 2) * 3);
 	for (int i = 0; i < numVerts - 2; i++)
 	{
 		if (reverse)
 		{
-			Faces().indices.push_back(vertsIdx + i + 2);
-			Faces().indices.push_back(vertsIdx + i + 1);
-			Faces().indices.push_back(vertsIdx);
+			faces.indices.push_back(vertsIdx + i + 2);
+			faces.indices.push_back(vertsIdx + i + 1);
+			faces.indices.push_back(vertsIdx);
 		}
 		else
 		{
-			Faces().indices.push_back(vertsIdx);
-			Faces().indices.push_back(vertsIdx + i + 1);
-			Faces().indices.push_back(vertsIdx + i + 2);
+			faces.indices.push_back(vertsIdx);
+			faces.indices.push_back(vertsIdx + i + 1);
+			faces.indices.push_back(vertsIdx + i + 2);
 		}
 	}
 }
@@ -800,16 +820,17 @@ void MeshBuilderDelegate::_AddFacePolygonIndices(size_t vertsIdx, int numVerts, 
 void MeshBuilderDelegate::_AddLineStripIndices(size_t vertsIdx, int numVerts, bool loop)
 {
 	Assert(numVerts >= 2);
-	ReserveScope rs(Lines(), 0, (numVerts - 1 + (loop && numVerts > 2)) * 2);
+	auto& lines = Lines();
+	ReserveScope rs(lines, 0, (numVerts - 1 + (loop && numVerts > 2)) * 2);
 	for (int i = 0; i < numVerts - 1; i++)
 	{
-		Lines().indices.push_back(vertsIdx + i);
-		Lines().indices.push_back(vertsIdx + i + 1);
+		lines.indices.push_back(vertsIdx + i);
+		lines.indices.push_back(vertsIdx + i + 1);
 	}
 	if (loop && numVerts > 2)
 	{
-		Lines().indices.push_back(vertsIdx + numVerts - 1);
-		Lines().indices.push_back(vertsIdx);
+		lines.indices.push_back(vertsIdx + numVerts - 1);
+		lines.indices.push_back(vertsIdx);
 	}
 }
 
@@ -839,8 +860,10 @@ void MeshBuilderDelegate::_AddSubdivCube(int numSubdivisions, const MeshColor& c
 	int numTotalVerts = 2 * (3 * sideLength + 1) * (sideLength + 1);
 	int numTotalFaceIndices = 36 * sideLength * sideLength;
 	int numTotalLineIndices = 12 * sideLength * (2 * sideLength + 1);
-	ReserveScope rsf(Faces(), doFaces ? numTotalVerts : 0, doFaces ? numTotalFaceIndices : 0);
-	ReserveScope rsl(Lines(), doLines ? numTotalVerts : 0, doLines ? numTotalLineIndices : 0);
+	auto& faces = Faces();
+	auto& lines = Lines();
+	ReserveScope rsf(faces, doFaces ? numTotalVerts : 0, doFaces ? numTotalFaceIndices : 0);
+	ReserveScope rsl(lines, doLines ? numTotalVerts : 0, doLines ? numTotalLineIndices : 0);
 
 	// fill in everything except for caps by winding around the cube
 	for (int z = 0; z <= sideLength; z++)
@@ -860,25 +883,25 @@ void MeshBuilderDelegate::_AddSubdivCube(int numSubdivisions, const MeshColor& c
 				y--;
 
 			if (doFaces)
-				Faces().verts.push_back({Vector(x, y, z), c.faceColor});
+				faces.verts.push_back({Vector(x, y, z), c.faceColor});
 			if (doLines)
-				Lines().verts.push_back({Vector(x, y, z), c.lineColor});
+				lines.verts.push_back({Vector(x, y, z), c.lineColor});
 		}
 		if (doFaces && z > 0)
 		{
-			size_t n = Faces().verts.size();
+			size_t n = faces.verts.size();
 			_AddFaceTriangleStripIndices(n - nLayerVerts * 2, n - nLayerVerts, nLayerVerts, true);
 		}
 		if (doLines)
 		{
-			size_t n = Lines().verts.size();
+			size_t n = lines.verts.size();
 			_AddLineStripIndices(n - nLayerVerts, nLayerVerts, true);
 			if (z > 0)
 			{
 				for (int k = 0; k < nLayerVerts; k++)
 				{
-					Lines().indices.push_back(n + k - nLayerVerts * 2);
-					Lines().indices.push_back(n + k - nLayerVerts);
+					lines.indices.push_back(n + k - nLayerVerts * 2);
+					lines.indices.push_back(n + k - nLayerVerts);
 				}
 			}
 		}
@@ -892,27 +915,27 @@ void MeshBuilderDelegate::_AddSubdivCube(int numSubdivisions, const MeshColor& c
 			for (int y = 0; y <= sideLength; y++)
 			{
 				if (doFaces)
-					Faces().verts.push_back({Vector(x, y, z), c.faceColor});
+					faces.verts.push_back({Vector(x, y, z), c.faceColor});
 				if (doLines)
-					Lines().verts.push_back({Vector(x, y, z), c.lineColor});
+					lines.verts.push_back({Vector(x, y, z), c.lineColor});
 			}
 			if (doFaces && x > 0)
 			{
-				size_t n = Faces().verts.size();
+				size_t n = faces.verts.size();
 				size_t a = n - (sideLength + 1);
 				size_t b = n - (sideLength + 1) * 2;
 				_AddFaceTriangleStripIndices(top ? a : b, top ? b : a, sideLength + 1, false);
 			}
 			if (doLines)
 			{
-				size_t n = Lines().verts.size();
+				size_t n = lines.verts.size();
 				_AddLineStripIndices(n - 1 - sideLength, sideLength + 1, false);
 				if (x > 0)
 				{
 					for (int k = 0; k < sideLength; k++)
 					{
-						Lines().indices.push_back(n + k - (sideLength + 1) * 2);
-						Lines().indices.push_back(n + k - (sideLength + 1));
+						lines.indices.push_back(n + k - (sideLength + 1) * 2);
+						lines.indices.push_back(n + k - (sideLength + 1));
 					}
 				}
 			}
