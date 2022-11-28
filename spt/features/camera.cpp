@@ -7,6 +7,7 @@
 #include "command.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "..\cvars.hpp"
+#include "overlay.hpp"
 
 #include "usercmd.h"
 
@@ -671,9 +672,27 @@ HOOK_THISCALL(bool, Camera, ClientModeShared__CreateMove, float flInputSampleTim
 	return spt_camera.ORIG_ClientModeShared__CreateMove(thisptr, edx, flInputSampleTime, cmd);
 }
 
+static bool ShouldDrawPlayerModel()
+{
+	if (!spt_camera.CanOverrideView() || !y_spt_cam_control.GetBool())
+		return false;
+
+#ifdef SPT_OVERLAY_ENABLED
+	// Don't draw playe rmodel in overlay
+	if (_y_spt_overlay.GetBool())
+	{
+		bool renderingOverlay = spt_overlay.renderingOverlay;
+		if (_y_spt_overlay_swap.GetBool())
+			renderingOverlay = !renderingOverlay;
+		return !renderingOverlay;
+	}
+#endif
+	return true;
+}
+
 HOOK_THISCALL(bool, Camera, C_BasePlayer__ShouldDrawLocalPlayer)
 {
-	if (spt_camera.CanOverrideView() && y_spt_cam_control.GetBool())
+	if (ShouldDrawPlayerModel())
 	{
 		return true;
 	}
@@ -685,7 +704,7 @@ HOOK_THISCALL(bool, Camera, C_BasePlayer__ShouldDrawThisPlayer)
 {
 	// ShouldDrawLocalPlayer only decides draw view model or weapon model in steampipe
 	// We need ShouldDrawThisPlayer to make player model draw
-	if (spt_camera.CanOverrideView() && y_spt_cam_control.GetBool())
+	if (ShouldDrawPlayerModel())
 	{
 		return true;
 	}
