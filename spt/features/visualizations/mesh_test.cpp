@@ -663,4 +663,29 @@ BEGIN_TEST_CASE("AddCPolyhedron", VEC_WRAP(600, -300, 0))
 }
 END_TEST_CASE()
 
+BEGIN_TEST_CASE("AddEllipse()", VEC_WRAP(800, -300, 0))
+{
+	Vector dir(4, 2, 13);
+	QAngle ang;
+	VectorAngles(dir, ang);
+	float radius = 100.0f;
+	for (float i = 8.0; i >= 2.0f; i -= 0.5f) // draw backwards and check for sorting
+	{
+		RENDER_DYNAMIC(
+		    mr,
+		    {
+			    mb.AddEllipse(testPos + Vector(-20, 0, -30) + dir * i,
+			                  ang,
+			                  radius / i,
+			                  radius / (10 - i),
+			                  32,
+			                  MeshColor::Outline({(byte)(250 - i * 40), 200, (byte)(i * 40), 50}));
+		    },
+		    ZTEST_FACES | ZTEST_LINES,
+		    CullType::Default,
+		    TranslucentSortType::AABB_Center); // test that this works with y_spt_draw_mesh_debug
+	}
+}
+END_TEST_CASE()
+
 #endif
