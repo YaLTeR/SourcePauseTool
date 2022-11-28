@@ -64,8 +64,6 @@ public:
 
 MeshTestFeature testFeature;
 
-#define VEC_WRAP(x, y, z) Vector(x, y, z)
-
 // creates a new struct in a new namespace inheriting from the base test and implements the TestFunc
 #define BEGIN_TEST_CASE(desc, position) \
 	namespace CONCATENATE(_Test, __COUNTER__) \
@@ -85,14 +83,14 @@ MeshTestFeature testFeature;
 	} \
 	}
 
-BEGIN_TEST_CASE("AddLine()", VEC_WRAP(0, 0, 0))
+BEGIN_TEST_CASE("AddLine()", Vector(0, 0, 0))
 RENDER_DYNAMIC(mr, mb.AddLine(testPos + Vector(-70, -70, -80), testPos + Vector(70, 70, 80), {255, 0, 255, 100}););
 END_TEST_CASE()
 
 const Vector lineTestVerts[] = {{0, 0, 80}, {-70, 70, 80}, {-70, 70, -80}, {0, 0, -80}, {70, 70, -80}, {70, 70, 80}};
 const int numLineTestVerts = sizeof(lineTestVerts) / sizeof(Vector);
 
-BEGIN_TEST_CASE("AddLines()", VEC_WRAP(200, 0, 0))
+BEGIN_TEST_CASE("AddLines()", Vector(200, 0, 0))
 {
 	Vector v[numLineTestVerts];
 	for (int i = 0; i < numLineTestVerts; i++)
@@ -101,7 +99,7 @@ BEGIN_TEST_CASE("AddLines()", VEC_WRAP(200, 0, 0))
 }
 END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddLineStrip(loop=false)", VEC_WRAP(400, 0, 0))
+BEGIN_TEST_CASE("AddLineStrip(loop=false)", Vector(400, 0, 0))
 {
 	Vector v[numLineTestVerts];
 	for (int i = 0; i < numLineTestVerts; i++)
@@ -110,7 +108,7 @@ BEGIN_TEST_CASE("AddLineStrip(loop=false)", VEC_WRAP(400, 0, 0))
 }
 END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddLineStrip(loop=true)", VEC_WRAP(600, 0, 0))
+BEGIN_TEST_CASE("AddLineStrip(loop=true)", Vector(600, 0, 0))
 {
 	Vector v[numLineTestVerts];
 	for (int i = 0; i < numLineTestVerts; i++)
@@ -119,7 +117,7 @@ BEGIN_TEST_CASE("AddLineStrip(loop=true)", VEC_WRAP(600, 0, 0))
 }
 END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddPolygon()", VEC_WRAP(800, 0, 0))
+BEGIN_TEST_CASE("AddPolygon()", Vector(800, 0, 0))
 {
 	// clang-format off
 	Vector v1[] = {testPos + Vector{-70, -70, 80}, testPos + Vector{0, 70, 80}, testPos + Vector{70, -70, 80}};
@@ -135,7 +133,7 @@ BEGIN_TEST_CASE("AddPolygon()", VEC_WRAP(800, 0, 0))
 }
 END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddCircle()", VEC_WRAP(1000, 0, 0))
+BEGIN_TEST_CASE("AddCircle()", Vector(1000, 0, 0))
 {
 	Vector dir(4, 2, 13);
 	QAngle ang;
@@ -175,7 +173,7 @@ BEGIN_TEST_CASE("AddCircle()", VEC_WRAP(1000, 0, 0))
 }
 END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddTris()", VEC_WRAP(1200, 0, 0))
+BEGIN_TEST_CASE("AddTris()", Vector(1200, 0, 0))
 {
 	float c30, s30;
 	SinCos(DEG2RAD(30), &s30, &c30);
@@ -196,7 +194,7 @@ BEGIN_TEST_CASE("AddTris()", VEC_WRAP(1200, 0, 0))
 }
 END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddQuad()", VEC_WRAP(1400, 0, 0))
+BEGIN_TEST_CASE("AddQuad()", Vector(1400, 0, 0))
 {
 	// naive game of life implementation - alternate between two boards
 
@@ -287,7 +285,7 @@ BEGIN_TEST_CASE("AddQuad()", VEC_WRAP(1400, 0, 0))
 }
 END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddBox()", VEC_WRAP(1600, 0, 0))
+BEGIN_TEST_CASE("AddBox()", Vector(1600, 0, 0))
 {
 	const Vector mins(-16, -16, 0);
 	const Vector maxs(16, 16, 72);
@@ -301,7 +299,7 @@ BEGIN_TEST_CASE("AddBox()", VEC_WRAP(1600, 0, 0))
 }
 END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddSphere()", VEC_WRAP(1800, 0, 0))
+BEGIN_TEST_CASE("AddSphere()", Vector(1800, 0, 0))
 {
 	RENDER_DYNAMIC(mr, mb.AddSphere(testPos + Vector(0, 100, 20), 50, 8, MeshColor::Face({150, 100, 255, 50})););
 	RENDER_DYNAMIC(mr, mb.AddSphere(testPos + Vector(60, 0, 20), 50, 4, MeshColor::Outline({0, 200, 200, 50})););
@@ -309,7 +307,7 @@ BEGIN_TEST_CASE("AddSphere()", VEC_WRAP(1800, 0, 0))
 }
 END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddSweptBox()", VEC_WRAP(2000, 0, 0))
+BEGIN_TEST_CASE("AddSweptBox()", Vector(2000, 0, 0))
 {
 	/*
 	* The sweep may be drawn differently if it has a zero component in any of the axes and
@@ -412,7 +410,7 @@ BEGIN_TEST_CASE("AddSweptBox()", VEC_WRAP(2000, 0, 0))
 }
 END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddCone()", VEC_WRAP(2200, 0, 0))
+BEGIN_TEST_CASE("AddCone()", Vector(2200, 0, 0))
 {
 	{
 		const Vector org = testPos + Vector(-50, 0, 0);
@@ -433,7 +431,7 @@ BEGIN_TEST_CASE("AddCone()", VEC_WRAP(2200, 0, 0))
 }
 END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddCylinder()", VEC_WRAP(2400, 0, 0))
+BEGIN_TEST_CASE("AddCylinder()", Vector(2400, 0, 0))
 {
 	RENDER_DYNAMIC(mr, {
 		mb.AddCylinder(testPos, vec3_angle, 20, 10, 5, true, true, MeshColor::Outline({255, 150, 0, 40}));
@@ -449,7 +447,7 @@ BEGIN_TEST_CASE("AddCylinder()", VEC_WRAP(2400, 0, 0))
 }
 END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddArrow3D()", VEC_WRAP(2600, 0, 0))
+BEGIN_TEST_CASE("AddArrow3D()", Vector(2600, 0, 0))
 {
 	const Vector target = testPos + Vector(0, 100, 50);
 	RENDER_DYNAMIC(mr, mb.AddCross(target, 7, {255, 0, 0, 255}););
@@ -468,7 +466,7 @@ BEGIN_TEST_CASE("AddArrow3D()", VEC_WRAP(2600, 0, 0))
 }
 END_TEST_CASE()
 
-BEGIN_TEST_CASE("Timmy", VEC_WRAP(0, -300, 0))
+BEGIN_TEST_CASE("Timmy", Vector(0, -300, 0))
 {
 	static StaticMesh timmyMesh;
 	if (!timmyMesh.Valid())
@@ -503,7 +501,7 @@ BEGIN_TEST_CASE("Timmy", VEC_WRAP(0, -300, 0))
 }
 END_TEST_CASE()
 
-BEGIN_TEST_CASE("Lorenz Attractor", VEC_WRAP(200, -300, 0))
+BEGIN_TEST_CASE("Lorenz Attractor", Vector(200, -300, 0))
 {
 	// Intellisense doesn't do shit when you're in a macro, so I'm not gonna use RENDER_DYNAMIC_CALLBACK for something so big.
 	// Also, clang-format does literally the most stupid thing possible sometimes and using these macros makes it better.
@@ -582,7 +580,7 @@ BEGIN_TEST_CASE("Lorenz Attractor", VEC_WRAP(200, -300, 0))
 }
 END_TEST_CASE()
 
-BEGIN_TEST_CASE("Reusing static/dynamic meshes", VEC_WRAP(400, -300, 0))
+BEGIN_TEST_CASE("Reusing static/dynamic meshes", Vector(400, -300, 0))
 {
 	// returns a create func given a color
 	auto coloredCreateFunc = [](const MeshColor& c) {
@@ -617,7 +615,7 @@ BEGIN_TEST_CASE("Reusing static/dynamic meshes", VEC_WRAP(400, -300, 0))
 }
 END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddCPolyhedron", VEC_WRAP(600, -300, 0))
+BEGIN_TEST_CASE("AddCPolyhedron", Vector(600, -300, 0))
 {
 	static std::vector<VPlane> planes;
 	planes.clear();
@@ -663,7 +661,7 @@ BEGIN_TEST_CASE("AddCPolyhedron", VEC_WRAP(600, -300, 0))
 }
 END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddEllipse()", VEC_WRAP(800, -300, 0))
+BEGIN_TEST_CASE("AddEllipse()", Vector(800, -300, 0))
 {
 	Vector dir(4, 2, 13);
 	QAngle ang;
