@@ -64,25 +64,37 @@ bool HUDFeature::AddHudCallback(HudCallback callback)
 	return true;
 }
 
-void HUDFeature::DrawTopHudElement(const wchar* format, ...)
+void HUDFeature::vDrawTopHudElement(Color color, const wchar* format, va_list args)
 {
 	vgui::HFont font;
 
 	if (!GetFont(FONT_DefaultFixedOutline, font))
 		return;
-
-	va_list args;
-	va_start(args, format);
 	const wchar* text = FormatTempString(format, args);
-	va_end(args);
 
 	interfaces::surface->DrawSetTextFont(font);
-	interfaces::surface->DrawSetTextColor(255, 255, 255, 255);
+	interfaces::surface->DrawSetTextColor(color.r(), color.g(), color.b(), color.a());
 	interfaces::surface->DrawSetTexture(0);
 
 	interfaces::surface->DrawSetTextPos(topX, 2 + (topFontTall + 2) * topVertIndex);
 	interfaces::surface->DrawPrintText(text, wcslen(text));
 	++topVertIndex;
+}
+
+void HUDFeature::DrawTopHudElement(const wchar* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	vDrawTopHudElement({255, 255, 255, 255}, format, args);
+	va_end(args);
+}
+
+void HUDFeature::DrawColorTopHudElement(Color color, const wchar* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	vDrawTopHudElement(color, format, args);
+	va_end(args);
 }
 
 bool HUDFeature::ShouldLoadFeature()
@@ -123,9 +135,9 @@ void HUDFeature::PreHook()
 {
 	loadingSuccessful =
 #ifndef OE
-		ORIG_CMatSystemSurface__FinishDrawing && ORIG_CMatSystemSurface__StartDrawing &&
+	    ORIG_CMatSystemSurface__FinishDrawing && ORIG_CMatSystemSurface__StartDrawing &&
 #endif
-		ORIG_CEngineVGui__Paint;
+	    ORIG_CEngineVGui__Paint;
 }
 
 void HUDFeature::LoadFeature()

@@ -176,17 +176,19 @@ void calculateAGOffsetPortal(IClientEntity* enter_portal,
 	new_player_angles = utils::GetPlayerEyeAngles();
 }
 
-void calculateOffsetPlayer(IClientEntity* saveglitch_portal, Vector& new_player_origin, QAngle& new_player_angles)
+void transformThroghPortal(IClientEntity* saveglitch_portal,
+                           const Vector& start_pos,
+                           const QAngle start_angles,
+                           Vector& transformed_origin,
+                           QAngle& transformed_angles)
 {
-	const auto& player_origin = utils::GetPlayerEyePosition();
-	const auto& player_angles = utils::GetPlayerEyeAngles();
 	VMatrix matrix;
 	matrix.Identity();
 
-	if (isInfrontOfPortal(saveglitch_portal, player_origin))
+	if (isInfrontOfPortal(saveglitch_portal, start_pos))
 	{
-		new_player_origin = player_origin;
-		new_player_angles = player_angles;
+		transformed_origin = start_pos;
+		transformed_angles = start_angles;
 	}
 	else
 	{
@@ -208,14 +210,21 @@ void calculateOffsetPlayer(IClientEntity* saveglitch_portal, Vector& new_player_
 		}
 	}
 
-	auto eye_origin = player_origin;
+	auto eye_origin = start_pos;
 	auto new_eye_origin = matrix * eye_origin;
-	new_player_origin = new_eye_origin;
+	transformed_origin = new_eye_origin;
 
-	new_player_angles = TransformAnglesToWorldSpace(player_angles, matrix.As3x4());
-	new_player_angles.x = AngleNormalizePositive(new_player_angles.x);
-	new_player_angles.y = AngleNormalizePositive(new_player_angles.y);
-	new_player_angles.z = AngleNormalizePositive(new_player_angles.z);
+	transformed_angles = TransformAnglesToWorldSpace(start_angles, matrix.As3x4());
+	transformed_angles.x = AngleNormalizePositive(transformed_angles.x);
+	transformed_angles.y = AngleNormalizePositive(transformed_angles.y);
+	transformed_angles.z = AngleNormalizePositive(transformed_angles.z);
+}
+
+void calculateOffsetPlayer(IClientEntity* saveglitch_portal, Vector& new_player_origin, QAngle& new_player_angles)
+{
+	const auto& player_origin = utils::GetPlayerEyePosition();
+	const auto& player_angles = utils::GetPlayerEyeAngles();
+	transformThroghPortal(saveglitch_portal, player_origin, player_angles, new_player_origin, new_player_angles);
 }
 
 IClientEntity* getPortal(const char* arg, bool verbose)

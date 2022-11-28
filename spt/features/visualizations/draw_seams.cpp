@@ -1,16 +1,17 @@
 #include "stdafx.h"
 
 #include "renderer\mesh_renderer.hpp"
+#include "spt\features\tracing.hpp"
 
-#ifdef SPT_MESH_RENDERING_ENABLED
+#if defined(SPT_MESH_RENDERING_ENABLED) && defined(SPT_TRACE_PORTAL_ENABLED)
 
 #include "spt\feature.hpp"
 #include "spt\utils\signals.hpp"
 #include "spt\features\ent_props.hpp"
 #include "spt\utils\math.hpp"
 #include "spt\sptlib-wrapper.hpp"
-#include "spt\features\tracing.hpp"
 #include "spt\features\generic.hpp"
+#include "spt\utils\portal_utils.hpp"
 
 ConVar y_spt_draw_seams("y_spt_draw_seams", "0", FCVAR_CHEAT, "Draws seamshot stuff");
 
@@ -151,15 +152,11 @@ void DrawSeamsFeature::OnMeshRenderSignal(MeshRendererDelegate& mr)
 	if (!player)
 		return;
 
-	float va[3];
-	EngineGetViewAngles(va);
-	Vector cameraPosition = spt_generic.GetCameraOrigin();
-	QAngle angles(va[0], va[1], va[2]);
-	Vector vDirection;
-	AngleVectors(angles, &vDirection);
+	Vector cameraPosition = utils::GetPlayerEyePosition();
+	QAngle angles = utils::GetPlayerEyeAngles();
 
 	trace_t tr;
-	spt_tracing.TraceFirePortal(tr, cameraPosition, vDirection);
+	spt_tracing.TraceTransformFirePortal(tr, cameraPosition, angles);
 
 	if (tr.fraction >= 1.0f)
 		return;
