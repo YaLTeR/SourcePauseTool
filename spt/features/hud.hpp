@@ -47,6 +47,7 @@ public:
 
 	bool AddHudCallback(HudCallback callback);
 	void DrawTopHudElement(const wchar* format, ...);
+	void DrawColorTopHudElement(Color color, const wchar* format, ...);
 	virtual bool ShouldLoadFeature() override;
 	bool GetFont(const std::string& fontName, vgui::HFont& fontOut);
 
@@ -74,6 +75,7 @@ private:
 	DECL_MEMBER_THISCALL(void, CMatSystemSurface__FinishDrawing);
 
 	void DrawHUD(bool overlay);
+	void vDrawTopHudElement(Color color, const wchar* format, va_list args);
 };
 
 extern HUDFeature spt_hud;

@@ -1,6 +1,10 @@
 #pragma once
 #include "..\feature.hpp"
 
+#if defined(SSDK2013) || defined(SSDK2007)
+#define SPT_TRACE_PORTAL_ENABLED
+#endif
+
 #if defined(OE)
 #include "vector.h"
 #else
@@ -82,7 +86,20 @@ public:
 	                     unsigned int fMask,
 	                     int collisionGroup,
 	                     trace_t& pm);
+
+#ifdef SPT_TRACE_PORTAL_ENABLED
+	void* GetActiveWeapon();
 	float TraceFirePortal(trace_t& tr, const Vector& startPos, const Vector& vDirection);
+
+	// Transform through portal if in portal enviroment
+	float TraceTransformFirePortal(trace_t& tr, const Vector& startPos, const QAngle& startAngles);
+	float TraceTransformFirePortal(trace_t& tr,
+	                               const Vector& startPos,
+	                               const QAngle& startAngles,
+	                               Vector& finalPos,
+	                               QAngle& finalAngles,
+	                               bool isPortal2);
+#endif
 
 protected:
 	virtual bool ShouldLoadFeature() override;
