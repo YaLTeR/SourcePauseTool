@@ -66,6 +66,13 @@ public:
 	// 'pos' is the circle center, an 'ang' of <0,0,0> means the circle normal points towards x+
 	void AddCircle(const Vector& pos, const QAngle& ang, float radius, int numPoints, const MeshColor& c);
 
+	void AddEllipse(const Vector& pos,
+	                const QAngle& ang,
+	                float radiusA,
+	                float radiusB,
+	                int numPoints,
+	                const MeshColor& c);
+
 	void AddBox(const Vector& pos, const Vector& mins, const Vector& maxs, const QAngle& ang, const MeshColor& c);
 
 	// numSubdivisions >= 0, 0 subdivsions is just a cube :)
@@ -118,7 +125,7 @@ private:
 	void _AddFacePolygonIndices(size_t vertsIdx, int numVerts, bool reverse);
 	void _AddLineStripIndices(size_t vertsIdx, int numVerts, bool loop);
 	void _AddSubdivCube(int numSubdivisions, const MeshColor& c);
-	Vector* _CreateCircleVerts(const Vector& pos, const QAngle& ang, float radius, int numPoints);
+	Vector* _CreateEllipseVerts(const Vector& pos, const QAngle& ang, float radiusA, float radiusB, int numPoints);
 
 	MeshBuilderDelegate() = default;
 	MeshBuilderDelegate(MeshBuilderDelegate&) = delete;

@@ -201,9 +201,19 @@ void MeshBuilderDelegate::AddCircle(const Vector& pos,
                                     int numPoints,
                                     const MeshColor& col)
 {
-	if (numPoints < 3 || radius < 0 || (col.faceColor.a == 0 && col.lineColor.a == 0))
+	AddEllipse(pos, ang, radius, radius, numPoints, col);
+}
+
+void MeshBuilderDelegate::AddEllipse(const Vector& pos,
+                                     const QAngle& ang,
+                                     float radiusA,
+                                     float radiusB,
+                                     int numPoints,
+                                     const MeshColor& col)
+{
+	if (numPoints < 3 || radiusA < 0 || radiusB < 0 || (col.faceColor.a == 0 && col.lineColor.a == 0))
 		return;
-	AddPolygon(_CreateCircleVerts(pos, ang, radius, numPoints), numPoints, col);
+	AddPolygon(_CreateEllipseVerts(pos, ang, radiusA, radiusB, numPoints), numPoints, col);
 }
 
 void MeshBuilderDelegate::AddBox(const Vector& pos,
@@ -505,7 +515,7 @@ void MeshBuilderDelegate::AddCone(const Vector& pos,
 	if (height < 0 || radius < 0 || numCirclePoints < 3 || (c.faceColor.a == 0 && c.lineColor.a == 0))
 		return;
 
-	Vector* circleVerts = _CreateCircleVerts(pos, ang, radius, numCirclePoints);
+	Vector* circleVerts = _CreateEllipseVerts(pos, ang, radius, radius, numCirclePoints);
 
 	Vector tip;
 	AngleVectors(ang, &tip);
@@ -568,7 +578,7 @@ void MeshBuilderDelegate::AddCylinder(const Vector& pos,
 	AngleVectors(ang, &heightOff);
 	heightOff *= height;
 
-	Vector* circleVerts = _CreateCircleVerts(pos, ang, radius, numCirclePoints);
+	Vector* circleVerts = _CreateEllipseVerts(pos, ang, radius, radius, numCirclePoints);
 
 	if (c.faceColor.a != 0)
 	{
@@ -909,19 +919,21 @@ void MeshBuilderDelegate::_AddSubdivCube(int numSubdivisions, const MeshColor& c
 		}
 	}
 }
-
-Vector* MeshBuilderDelegate::_CreateCircleVerts(const Vector& pos, const QAngle& ang, float radius, int numPoints)
+Vector* MeshBuilderDelegate::_CreateEllipseVerts(const Vector& pos,
+                                                 const QAngle& ang,
+                                                 float radiusA,
+                                                 float radiusB,
+                                                 int numPoints)
 {
 	VMatrix mat;
 	mat.SetupMatrixOrgAngles(pos, ang);
-	mat = mat.Scale(Vector(radius));
 	Vector* scratch = Scratch(numPoints);
 	for (int i = 0; i < numPoints; i++)
 	{
 		float s, c;
 		SinCos(M_PI_F * 2 / numPoints * i, &s, &c);
 		// oriented clockwise, normal is towards x+ for an angle of <0,0,0>
-		scratch[i] = mat * Vector(0, s, c);
+		scratch[i] = mat * Vector(0, s * radiusA, c * radiusB);
 	}
 	return scratch;
 }
