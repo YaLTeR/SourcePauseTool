@@ -234,24 +234,14 @@ namespace utils
 
 	Vector GetPlayerEyePosition()
 	{
-		auto ply = GetPlayer();
-
-		if (ply)
-		{
-			auto offset = spt_propertyGetter.GetProperty<Vector>(0, "m_vecViewOffset[0]");
-
-			return ply->GetAbsOrigin() + offset;
-		}
-		else
-			return Vector();
+		return spt_playerio.m_vecAbsOrigin.GetValue() + spt_playerio.m_vecViewOffset.GetValue();
 	}
 
 	QAngle GetPlayerEyeAngles()
 	{
-		if (DoesGameLookLikePortal())
-			return spt_propertyGetter.GetProperty<QAngle>(0, "m_angEyeAngles[0]");
-		else
-			return spt_propertyGetter.GetProperty<QAngle>(0, "m_angRotation");
+		float va[3];
+		EngineGetViewAngles(va);
+		return QAngle(va[0], va[1], va[2]);
 	}
 
 	int PortalIsOrange(IClientEntity* ent)

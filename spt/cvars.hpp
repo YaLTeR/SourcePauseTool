@@ -89,6 +89,8 @@ extern ConVar y_spt_hud_ent_info;
 extern ConVar y_spt_hud_left;
 extern ConVar y_spt_hud_oob;
 extern ConVar y_spt_hud_isg;
+extern ConVar y_spt_hud_shadow_info;
+extern ConVar y_spt_hud_portal_placement;
 
 extern ConVar y_spt_ihud;
 extern ConVar y_spt_ihud_grid_size;
@@ -102,6 +104,7 @@ extern ConVar _y_spt_overlay_portal;
 extern ConVar _y_spt_overlay_width;
 extern ConVar _y_spt_overlay_fov;
 extern ConVar _y_spt_overlay_swap;
+extern ConVar _y_spt_overlay_no_roll;
 
 #ifdef OE
 extern ConVar y_spt_gamedir;

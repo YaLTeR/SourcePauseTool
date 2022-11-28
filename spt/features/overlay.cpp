@@ -62,6 +62,7 @@ ConVar _y_spt_overlay_crosshair_color("_y_spt_overlay_crosshair_color",
                                       "0 255 0 255",
                                       FCVAR_CHEAT,
                                       "Overlay crosshair RGBA color.");
+ConVar _y_spt_overlay_no_roll("_y_spt_overlay_no_roll", "1", FCVAR_CHEAT, "Set the roll of overlay camera roll to 0.");
 
 Overlay spt_overlay;
 
@@ -118,6 +119,7 @@ void Overlay::LoadFeature()
 	InitConcommandBase(_y_spt_overlay_width);
 	InitConcommandBase(_y_spt_overlay_fov);
 	InitConcommandBase(_y_spt_overlay_swap);
+	InitConcommandBase(_y_spt_overlay_no_roll);
 
 #ifdef SPT_HUD_ENABLED
 	bool result = spt_hud.AddHudCallback(HudCallback(
@@ -279,6 +281,11 @@ void Overlay::ModifyView(CViewSetup* renderView)
 		}
 		// normalize yaw
 		renderView->angles.y = utils::NormalizeDeg(renderView->angles.y);
+
+		if (_y_spt_overlay_no_roll.GetBool())
+		{
+			renderView->angles.z = 0;
+		}
 	}
 }
 
