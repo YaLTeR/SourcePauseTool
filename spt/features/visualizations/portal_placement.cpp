@@ -28,9 +28,9 @@ ConVar y_spt_hud_portal_placement("y_spt_hud_portal_placement",
                                   "0",
                                   FCVAR_CHEAT,
                                   "Show portal placement info\n"
-                                  "1 = Boolean result\n"
-                                  "2 = String result\n"
-                                  "3 = Float result");
+                                  "      1 = Boolean result\n"
+                                  "      2 = String result\n"
+                                  "      3 = Float result");
 ConVar y_spt_draw_pp("y_spt_draw_pp", "0", FCVAR_CHEAT, "Draw portal placement.");
 ConVar y_spt_draw_pp_blue("y_spt_draw_pp_blue", "1", FCVAR_CHEAT, "Draw blue portal placement.");
 ConVar y_spt_draw_pp_orange("y_spt_draw_pp_orange", "1", FCVAR_CHEAT, "Draw orange portal placement.");
@@ -173,6 +173,7 @@ static const wchar_t* PlacementResultToString(float placement)
 	if (placement == PORTAL_PLACEMENT_SUCCESS_OVERLAP_LINKED)
 		return L"Overlaps existing portal";
 	if (placement == PORTAL_PLACEMENT_SUCCESS_NEAR)
+		// Not possible for non-test shot
 		return L"Near existing portal";
 	if (placement == PORTAL_PLACEMENT_SUCCESS_INVALID_VOLUME)
 		return L"Invalid volume";

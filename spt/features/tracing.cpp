@@ -186,16 +186,8 @@ float Tracing::TraceTransformFirePortal(trace_t& tr,
 
 	const int PORTAL_PLACED_BY_PLAYER = 2;
 
-	return ORIG_TraceFirePortal(weapon,
-	                            0,
-	                            isPortal2,
-	                            transformedPos,
-	                            vDirection,
-	                            tr,
-	                            finalPos,
-	                            finalAngles,
-	                            PORTAL_PLACED_BY_PLAYER,
-	                            false);
+	return ORIG_TraceFirePortal(
+	    weapon, 0, isPortal2, transformedPos, vDirection, tr, finalPos, finalAngles, PORTAL_PLACED_BY_PLAYER, true);
 }
 
 #endif
