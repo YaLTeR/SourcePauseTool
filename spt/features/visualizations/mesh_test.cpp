@@ -250,12 +250,9 @@ BEGIN_TEST_CASE("AddQuad()", Vector(1400, 0, 0))
 	mr.DrawMesh(spt_meshBuilder.CreateDynamicMesh(
 	    [&](MeshBuilderDelegate& mb)
 	    {
-		    const color32 c1 = {50, 50, 200, 255};
-		    const color32 c2 = {150, 0, 0, 255};
-		    color32 cLerp{};
-		    float t = (float)minigameTick / maxMinigameTicks;
-		    for (int i = 0; i < 4; i++)
-			    ((byte*)&cLerp)[i] = (1 - t) * ((byte*)&c1)[i] + t * ((byte*)&c2)[i];
+		    color32 cLerp = color32RgbLerp(color32{50, 50, 200, 255},
+		                                   color32{150, 0, 0, 255},
+		                                   (float)minigameTick / maxMinigameTicks);
 
 		    auto& curBoard = minigameTick % 2 ? state1 : state0;
 		    const float tileSize = 4;
@@ -553,14 +550,9 @@ BEGIN_TEST_CASE("Lorenz Attractor", Vector(200, -300, 0))
 			    {
 				    // figure out which colors to lerp between
 				    float colorIdx = (float)i / ((float)maxVerts / (colors.size() - 1));
-				    color32 c1 = colors[(int)colorIdx];
-				    color32 c2 = colors[(int)colorIdx + 1];
-				    color32 cLerp{};
-				    for (int j = 0; j < 4; j++)
-				    {
-					    float lerp = colorIdx - (int)colorIdx;
-					    ((byte*)&cLerp)[j] = (1 - lerp) * ((byte*)&c1)[j] + lerp * ((byte*)&c2)[j];
-				    }
+				    color32 cLerp = color32RgbLerp(colors[Floor2Int(colorIdx)],
+				                                   colors[Ceil2Int(colorIdx)],
+				                                   colorIdx - Floor2Int(colorIdx));
 				    mb.AddLine(*prev, *cur, cLerp);
 			    }
 			    prev = cur;

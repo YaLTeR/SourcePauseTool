@@ -39,6 +39,15 @@ struct MeshColor
 	}
 };
 
+// very basic color lerp for very basic needs
+inline color32 color32RgbLerp(color32 a, color32 b, float f)
+{
+	return {(byte)(a.r * (1 - f) + b.r * f),
+	        (byte)(a.g * (1 - f) + b.g * f),
+	        (byte)(a.b * (1 - f) + b.b * f),
+	        (byte)(a.a * (1 - f) + b.a * f)};
+}
+
 enum ZTestFlags
 {
 	ZTEST_NONE = 0,
