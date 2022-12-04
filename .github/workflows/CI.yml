@@ -39,7 +39,7 @@ jobs:
         id: get_spt_filename
         run: |
           $spt_filename = (Get-Item "${{ matrix.Configuration }}${{ matrix.config.Configuration_2 }}\spt*.dll").BaseName
-          echo "::set-output name=spt_filename::$spt_filename"
+          echo "spt_filename=$spt_filename" >> $env:GITHUB_OUTPUT
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.Configuration }}${{ matrix.config.Configuration_2 }} - ${{ steps.get_spt_filename.outputs.spt_filename }}
