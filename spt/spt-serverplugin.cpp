@@ -187,15 +187,11 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	}
 
 	if (g_pCVar)
-#if defined(OE)
-	{
-		_viewmodel_fov = g_pCVar->FindVar("viewmodel_fov");
-	}
-#else
 	{
 #define GETCVAR(x) _##x = g_pCVar->FindVar(#x);
-#define GETCMD(x) _##x = g_pCVar->FindCommand(#x);
-
+#ifdef OE
+		GETCVAR(viewmodel_fov);
+#endif
 		GETCVAR(sv_airaccelerate);
 		GETCVAR(sv_accelerate);
 		GETCVAR(sv_friction);
@@ -205,11 +201,14 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 		GETCVAR(sv_gravity);
 		GETCVAR(sv_maxvelocity);
 		GETCVAR(sv_bounce);
-		GETCVAR(sv_cheats)
+		GETCVAR(sv_cheats);
+
+#ifndef OE
+#define GETCMD(x) _##x = g_pCVar->FindCommand(#x);
 		GETCMD(record);
 		GETCMD(stop);
-	}
 #endif
+	}
 
 #if !defined(BMS)
 	auto ptr = interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION, NULL);

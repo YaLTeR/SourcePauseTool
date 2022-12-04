@@ -3,6 +3,10 @@
 #include "interfaces.hpp"
 #include <fstream>
 
+#ifdef OE
+extern ConVar y_spt_gamedir;
+#endif
+
 bool FileExists(const std::string& fileName)
 {
 	std::string dir = fileName;
@@ -13,6 +17,9 @@ bool FileExists(const std::string& fileName)
 
 std::string GetGameDir()
 {
+#ifdef OE
+	return y_spt_gamedir.GetString();
+#else
 	char BUFFER[256];
 	if (!interfaces::engine_server)
 		return std::string();
@@ -21,4 +28,5 @@ std::string GetGameDir()
 		interfaces::engine_server->GetGameDir(BUFFER, ARRAYSIZE(BUFFER));
 		return BUFFER;
 	}
+#endif
 }

@@ -273,6 +273,10 @@ utils::DatamapWrapper* EntProps::GetPlayerDatamapWrapper()
 	{
 		__playerdatamap = GetDatamapWrapper("CPortal_Player");
 	}
+	else if (utils::DoesGameLookLikeDMoMM())
+	{
+		__playerdatamap = GetDatamapWrapper("CBasePlayer");
+	}
 
 	// Add any other game specific class names here
 	if (!__playerdatamap)

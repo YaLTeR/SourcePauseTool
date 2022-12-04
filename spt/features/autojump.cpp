@@ -152,20 +152,20 @@ void AutojumpFeature::LoadFeature()
 		int ptnNumber = GetPatternIndex((void**)&ORIG_CheckJumpButton);
 		switch (ptnNumber)
 		{
-		case 0: // 5135
-		case 2: // 5339
-		case 3: // 2257546
-		case 4: // 2257546-hl1
-		case 9: // 6879
+		case 0:  // 5135
+		case 2:  // 5339
+		case 3:  // 2257546
+		case 4:  // 2257546-hl1
+		case 9:  // 6879
 		case 11: // te120
 		case 12: // BMS-Retail-3
 			off_mv_ptr = 2;
 			break;
 
-		case 1: // 4104
-		case 5: // 2707
-		case 6: // 2949
-		case 8: // 4044-episodic
+		case 1:  // 4104
+		case 5:  // 2707
+		case 6:  // 2949
+		case 8:  // 4044-episodic
 		case 10: // missinginfo1_4_7
 			off_mv_ptr = 1;
 			break;
@@ -179,8 +179,8 @@ void AutojumpFeature::LoadFeature()
 		else if (off_mv_ptr == 2)
 			off_player_ptr = 1;
 		else
-			// not sure about dmomm
-			off_player_ptr = 0;
+			// dmomm
+			off_player_ptr = 4;
 	}
 	else
 	{

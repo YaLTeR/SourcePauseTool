@@ -56,7 +56,9 @@ namespace patterns
 	    "6879",
 	    "55 8B EC 83 EC 0C 56 8B F1 8B 0D ?? ?? ?? ?? 8B 01 8B 90 ?? ?? ?? ?? 57 89 75 F8 FF D2 8B F8 C7 45",
 	    "missinginfo1_4_7",
-	    "55 8B EC 83 EC 08 89 4D F8 C7 45 ?? ?? ?? ?? ?? 83 7D 08 00 0F 95 C0 50 68 ?? ?? ?? ?? 8B 0D");
+	    "55 8B EC 83 EC 08 89 4D F8 C7 45 ?? ?? ?? ?? ?? 83 7D 08 00 0F 95 C0 50 68 ?? ?? ?? ?? 8B 0D",
+	    "dmomm",
+	    "51 53 56 8B 35 ?? ?? ?? ?? 57 8B 7C 24 ?? 85 FF 0F 95 C3");
 	PATTERNS(
 	    CreateMove,
 	    "5135",
@@ -191,6 +193,9 @@ Strafe::MovementVars PlayerIOFeature::GetMovementVars()
 	else
 		vars.WishspeedCap = 30;
 
+#ifdef OE
+	vars.EntFriction = 1.0f;
+#else
 	auto previouslyPredictedOrigin = m_vecPreviouslyPredictedOrigin.GetValue();
 	auto absOrigin = m_vecAbsOrigin.GetValue();
 	bool gameCodeMovedPlayer = (previouslyPredictedOrigin != absOrigin);
@@ -217,6 +222,7 @@ Strafe::MovementVars PlayerIOFeature::GetMovementVars()
 			}
 		}
 	}
+#endif
 
 	vars.EntGravity = 1.0f;
 	vars.Maxvelocity = _sv_maxvelocity->GetFloat();
@@ -435,11 +441,15 @@ bool PlayerIOFeature::PlayerIOAddressesFound()
 {
 	GetPlayerFields();
 
-	return m_vecAbsVelocity.Found() && m_vecAbsOrigin.Found() && m_flMaxspeed.Found() && m_fFlags.Found()
-	       && m_vecPreviouslyPredictedOrigin.Found() && m_bDucking.Found() && m_flDuckJumpTime.Found()
-	       && m_surfaceFriction.Found() && m_hGroundEntity.Found() && ORIG_CreateMove && ORIG_GetButtonBits
-	       && _sv_airaccelerate && _sv_accelerate && _sv_friction && _sv_maxspeed && _sv_stopspeed
-	       && interfaces::engine_server != nullptr;
+	return
+#ifndef OE
+	    m_vecPreviouslyPredictedOrigin.Found() &&
+#endif
+	    m_vecAbsOrigin.Found() && m_flMaxspeed.Found() && m_fFlags.Found() && m_bDucking.Found()
+	    && m_vecAbsOrigin.Found() && m_flMaxspeed.Found() && m_fFlags.Found() && m_bDucking.Found()
+	    && m_flDuckJumpTime.Found() && m_hGroundEntity.Found() && ORIG_CreateMove && ORIG_GetButtonBits
+	    && _sv_airaccelerate && _sv_accelerate && _sv_friction && _sv_maxspeed && _sv_stopspeed
+	    && interfaces::engine_server != nullptr;
 }
 
 void PlayerIOFeature::GetMoveInput(float& forwardmove, float& sidemove)
@@ -710,6 +720,10 @@ void PlayerIOFeature::LoadFeature()
 	if (utils::DoesGameLookLikeHLS())
 	{
 		sizeofCUserCmd = 64; // Is missing a CUtlVector
+	}
+	else if (utils::DoesGameLookLikeDMoMM())
+	{
+		sizeofCUserCmd = 188;
 	}
 	else
 	{
