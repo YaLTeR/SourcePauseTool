@@ -38,10 +38,14 @@ namespace patterns
 {
 	PATTERNS(_Host_RunFrame,
 	         "5135",
-	         "55 8B EC 83 EC 1C 53 56 57 33 FF 80 3D ?? ?? ?? ?? 00 74 17 E8 ?? ?? ?? ?? 83 F8 FE 74 0D 68");
+	         "55 8B EC 83 EC 1C 53 56 57 33 FF 80 3D ?? ?? ?? ?? 00 74 17 E8 ?? ?? ?? ?? 83 F8 FE 74 0D 68",
+	         "dmomm",
+	         "55 8B EC 83 EC 10 80 3D ?? ?? ?? ?? 00 53 56 57 74 ?? E8 ?? ?? ?? ??");
 	PATTERNS(Host_AccumulateTime,
 	         "5135",
-	         "51 F3 0F 10 ?? ?? ?? ?? ?? F3 0F ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? F3 0F 11 ?? ?? ?? ?? ?? 8B 01 8B 50");
+	         "51 F3 0F 10 ?? ?? ?? ?? ?? F3 0F ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? F3 0F 11 ?? ?? ?? ?? ?? 8B 01 8B 50",
+	         "dmomm",
+	         "D9 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? D8 44 24 ?? D9 1D ?? ?? ?? ?? 8B 01");
 } // namespace patterns
 
 void TASPause::InitHooks()
@@ -54,7 +58,17 @@ void TASPause::LoadFeature()
 {
 	if (ORIG__Host_RunFrame)
 	{
-		ptrdiff_t off_pHost_Frametime = (utils::GetBuildNumber() <= 3420) ? 309 : 227;
+		int ptnNumber = GetPatternIndex((void**)&ORIG__Host_RunFrame);
+		ptrdiff_t off_pHost_Frametime;
+		switch (ptnNumber)
+		{
+		case 0: // 5135
+			off_pHost_Frametime = (utils::GetBuildNumber() <= 3420) ? 309 : 227;
+			break;
+		case 1: // dmomm
+			off_pHost_Frametime = 217;
+			break;
+		}
 		pHost_Frametime = *reinterpret_cast<float**>((uintptr_t)ORIG__Host_RunFrame + off_pHost_Frametime);
 	}
 	else
@@ -64,7 +78,18 @@ void TASPause::LoadFeature()
 
 	if (ORIG_Host_AccumulateTime)
 	{
-		pHost_Realtime = *reinterpret_cast<float**>((uintptr_t)ORIG_Host_AccumulateTime + 5);
+		int ptnNumber = GetPatternIndex((void**)&ORIG_Host_AccumulateTime);
+		ptrdiff_t off_pHost_Realtime;
+		switch (ptnNumber)
+		{
+		case 0: // 5135
+			off_pHost_Realtime = 5;
+			break;
+		case 1: // dmomm
+			off_pHost_Realtime = 2;
+			break;
+		}
+		pHost_Realtime = *reinterpret_cast<float**>((uintptr_t)ORIG_Host_AccumulateTime + off_pHost_Realtime);
 	}
 	else
 	{

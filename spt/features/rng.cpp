@@ -34,7 +34,9 @@ namespace patterns
 	         "5135",
 	         "57 8B F9 8B 07 8B 90 ?? ?? ?? ?? FF D2 A1 ?? ?? ?? ?? 83 78 30 00",
 	         "7122284",
-	         "55 8B EC 83 EC 34 57 8B F9 8B 07 FF 90 ?? ?? ?? ?? A1 ?? ?? ?? ?? 83 78 30 00");
+	         "55 8B EC 83 EC 34 57 8B F9 8B 07 FF 90 ?? ?? ?? ?? A1 ?? ?? ?? ?? 83 78 30 00",
+	         "dmomm",
+	         "57 8B F9 8B 07 FF 90 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 83 79 ?? 00");
 } // namespace patterns
 
 void RNGStuff::InitHooks()
@@ -76,7 +78,7 @@ void RNGStuff::LoadFeature()
 
 void RNGStuff::UnloadFeature() {}
 
-void __cdecl RNGStuff::HOOKED_SetPredictionRandomSeed(void* usercmd)
+HOOK_CDECL(void, RNGStuff, SetPredictionRandomSeed, void* usercmd)
 {
 	CUserCmd* ptr = reinterpret_cast<CUserCmd*>(usercmd);
 	if (ptr)
@@ -87,12 +89,15 @@ void __cdecl RNGStuff::HOOKED_SetPredictionRandomSeed(void* usercmd)
 	spt_rng.ORIG_SetPredictionRandomSeed(usercmd);
 }
 
-void __fastcall RNGStuff::HOOKED_CBasePlayer__InitVCollision(void* thisptr,
-                                                             int edx,
-                                                             const Vector& vecAbsOrigin,
-                                                             const Vector& vecAbsVelocity)
+#ifdef OE
+HOOK_THISCALL(void, RNGStuff, CBasePlayer__InitVCollision)
+{
+	spt_rng.ORIG_CBasePlayer__InitVCollision(thisptr, edx);
+#else
+HOOK_THISCALL(void, RNGStuff, CBasePlayer__InitVCollision, const Vector& vecAbsOrigin, const Vector& vecAbsVelocity)
 {
 	spt_rng.ORIG_CBasePlayer__InitVCollision(thisptr, edx, vecAbsOrigin, vecAbsVelocity);
+#endif
 	// set the seed before any vphys sim happens, don't use GetInt() since that's casted from a float
 	if (y_spt_set_ivp_seed_on_load.GetString()[0] != '\0')
 	{
