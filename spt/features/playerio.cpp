@@ -11,7 +11,6 @@
 #include "interfaces.hpp"
 #include "signals.hpp"
 #include "spt\utils\portal_utils.hpp"
-#include "ihud.hpp"
 #include "tas.hpp"
 #include "property_getter.hpp"
 #include "..\strafe\strafestuff.hpp"
