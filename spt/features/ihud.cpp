@@ -1,21 +1,106 @@
 #include "stdafx.h"
 
-#include "ihud.hpp"
+#include "hud.hpp"
 
 #ifdef SPT_HUD_ENABLED
 
-#include "..\cvars.hpp"
-#include "command.hpp"
-#include "interfaces.hpp"
-#include "playerio.hpp"
-#include "signals.hpp"
-#include "property_getter.hpp"
-#include "..\sptlib-wrapper.hpp"
+#include "spt\feature.hpp"
+#include "spt\features\playerio.hpp"
+#include "spt\features\property_getter.hpp"
+#include "spt\utils\command.hpp"
+#include "spt\utils\interfaces.hpp"
+#include "spt\utils\signals.hpp"
+
+#include "basehandle.h"
+#include "Color.h"
+
+#ifdef OE
+#include "..\game_shared\usercmd.h"
+#else
+#include "usercmd.h"
+#endif
 
 #include <cctype>
+#include <algorithm>
+
 #undef min
 #undef max
-#include <algorithm>
+
+// Input HUD
+class InputHud : public FeatureWrapper<InputHud>
+{
+public:
+	void DrawInputHud();
+	void SetInputInfo(int button, Vector movement);
+	bool ModifySetting(const char* element, const char* param, const char* value);
+
+#ifndef OE
+	void AddCustomKey(const char* key);
+#endif
+
+	struct Button
+	{
+		bool is_normal_key;
+		bool enabled;
+		std::wstring text;
+		std::string font;
+		int x;
+		int y;
+		int width;
+		int height;
+		Color background;
+		Color highlight;
+		Color textcolor;
+		Color texthighlight;
+		// used as button code if not normal key
+		int mask;
+	};
+	bool tasPreset = false;
+	std::map<std::string, Button> buttonSettings;
+	Button anglesSetting;
+
+protected:
+	virtual bool ShouldLoadFeature() override;
+
+	virtual void InitHooks() override;
+
+	virtual void LoadFeature() override;
+
+	virtual void PreHook() override;
+
+	virtual void UnloadFeature() override;
+
+private:
+	DECL_HOOK_THISCALL(void, DecodeUserCmdFromBuffer, bf_read& buf, int sequence_number);
+	void CreateMove(uintptr_t pCmd);
+	void DrawRectAndCenterTxt(Color buttonColor,
+	                          int x0,
+	                          int y0,
+	                          int x1,
+	                          int y1,
+	                          const std::string& fontName,
+	                          Color textColor,
+	                          const wchar_t* text);
+	void DrawButton(Button button);
+	Color StringToColor(const char* hex);
+	void GetCurrentSize(int& x, int& y);
+
+	IMatSystemSurface* surface;
+
+	int xOffset;
+	int yOffset;
+	int gridSize;
+	int padding;
+
+	Vector inputMovement;
+	QAngle currentAng;
+	QAngle previousAng;
+	int buttonBits;
+
+	bool awaitingFrameDraw;
+
+	bool loadingSuccessful = false;
+};
 
 InputHud spt_ihud;
 
@@ -502,9 +587,7 @@ void InputHud::DrawInputHud()
 	if (awaitingFrameDraw)
 	{
 		previousAng = currentAng;
-		float va[3];
-		EngineGetViewAngles(va);
-		currentAng = Vector(va[0], va[1], va[3]);
+		currentAng = utils::GetPlayerEyeAngles();
 		awaitingFrameDraw = false;
 	}
 

@@ -549,16 +549,10 @@
     <ClInclude Include="spt\utils\datamap_wrapper.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
-    <ClInclude Include="spt\features\ihud.hpp">
-      <Filter>spt\features</Filter>
-    </ClInclude>
     <ClInclude Include="spt\utils\datamap_wrapper.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
     <ClInclude Include="spt\features\ent_props.hpp">
-      <Filter>spt\features</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\features\vag_searcher.hpp">
       <Filter>spt\features</Filter>
     </ClInclude>
     <ClInclude Include="spt\utils\command.hpp">
@@ -566,9 +560,6 @@
     </ClInclude>
     <ClInclude Include="thirdparty\kmp-cpp.hpp">
       <Filter>thirdparty</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\features\camera.hpp">
-      <Filter>spt\features</Filter>
     </ClInclude>
     <ClInclude Include="spt\utils\ivp_maths.hpp">
       <Filter>spt\utils</Filter>

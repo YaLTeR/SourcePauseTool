@@ -1,17 +1,92 @@
 #include "stdafx.h"
+
 #ifndef OE
-#include "camera.hpp"
-#include "playerio.hpp"
-#include "interfaces.hpp"
-#include "signals.hpp"
-#include "command.hpp"
-#include "..\sptlib-wrapper.hpp"
-#include "..\cvars.hpp"
-#include "overlay.hpp"
+
+#include "spt\feature.hpp"
+#include "spt\features\demo.hpp"
+#include "spt\features\playerio.hpp"
+#include "spt\features\overlay.hpp"
+#include "spt\utils\command.hpp"
+#include "spt\utils\interfaces.hpp"
+#include "spt\utils\signals.hpp"
+#include "spt\cvars.hpp"
 
 #include "usercmd.h"
+#include "view_shared.h"
 
 #include <chrono>
+#include <sstream>
+#include <map>
+
+// Camera stuff
+class Camera : public FeatureWrapper<Camera>
+{
+public:
+	enum CameraInfoParameter
+	{
+		ORIGIN_X,
+		ORIGIN_Y,
+		ORIGIN_Z,
+		ANGLES_X,
+		ANGLES_Y,
+		ANGLES_Z,
+		FOV
+	};
+	struct CameraInfo
+	{
+		Vector origin = Vector();
+		QAngle angles = QAngle();
+		float fov = 75.0f;
+		operator std::string() const
+		{
+			std::ostringstream s;
+			s << "pos: " << origin.x << " " << origin.y << " " << origin.z << '\n';
+			s << "ang: " << angles.x << " " << angles.y << " " << angles.z << '\n';
+			s << "fov: " << fov;
+			return s.str();
+		}
+	};
+	CameraInfo current_cam;
+	std::map<int, CameraInfo> keyframes;
+
+	bool CanOverrideView() const;
+	bool CanInput() const;
+	void RecomputeInterpPath();
+
+protected:
+	virtual bool ShouldLoadFeature() override;
+	virtual void InitHooks() override;
+	virtual void PreHook() override;
+	virtual void LoadFeature() override;
+	virtual void UnloadFeature() override;
+
+private:
+	DECL_HOOK_THISCALL(void, ClientModeShared__OverrideView, CViewSetup* view);
+	DECL_HOOK_THISCALL(bool, ClientModeShared__CreateMove, float flInputSampleTime, void* cmd);
+	DECL_HOOK_THISCALL(bool, C_BasePlayer__ShouldDrawLocalPlayer);
+	DECL_HOOK_THISCALL(void, CInput__MouseMove, void* cmd);
+#if defined(SSDK2013)
+	DECL_HOOK_THISCALL(bool, C_BasePlayer__ShouldDrawThisPlayer);
+#endif
+
+	void OverrideView(CViewSetup* view);
+	void HandleDriveMode(bool active);
+	void HandleInput(bool active);
+	void HandleCinematicMode(bool active);
+	static std::vector<Vector> CameraInfoToPoints(float* x, CameraInfo* y, CameraInfoParameter param);
+	CameraInfo InterpPath(float time);
+	void GetCurrentView();
+	void RefreshTimeOffset();
+	void DrawPath();
+
+	bool loadingSuccessful = false;
+
+	int old_cursor[2] = {0, 0};
+	float time_offset = 0.0f;
+	std::vector<CameraInfo> interp_path_cache;
+
+	const ConVar* sensitivity;
+};
 
 Camera spt_camera;
 
@@ -269,9 +344,8 @@ bool Camera::CanInput() const
 void Camera::GetCurrentView()
 {
 	current_cam.origin = spt_playerio.GetPlayerEyePos();
-	float ang[3];
-	EngineGetViewAngles(ang);
-	current_cam.angles = QAngle(ang[0], ang[1], 0);
+	QAngle ang = utils::GetPlayerEyeAngles();
+	current_cam.angles = QAngle(ang.x, ang.y, 0);
 }
 
 void Camera::RefreshTimeOffset()

@@ -1382,12 +1382,10 @@
     <ClInclude Include="spt\features\afterframes.hpp" />
     <ClInclude Include="spt\features\aim.hpp" />
     <ClInclude Include="spt\features\autojump.hpp" />
-    <ClInclude Include="spt\features\camera.hpp" />
     <ClInclude Include="spt\features\demo.hpp" />
     <ClInclude Include="spt\features\ent_props.hpp" />
     <ClInclude Include="spt\features\generic.hpp" />
     <ClInclude Include="spt\features\hud.hpp" />
-    <ClInclude Include="spt\features\ihud.hpp" />
     <ClInclude Include="spt\features\overlay.hpp" />
     <ClInclude Include="spt\features\playerio.hpp" />
     <ClInclude Include="spt\features\property_getter.hpp" />
@@ -1396,7 +1394,6 @@
     <ClInclude Include="spt\features\tas.hpp" />
     <ClInclude Include="spt\features\tickrate.hpp" />
     <ClInclude Include="spt\features\tracing.hpp" />
-    <ClInclude Include="spt\features\vag_searcher.hpp" />
     <ClInclude Include="spt\features\visualizations\renderer\mesh_builder.hpp" />
     <ClInclude Include="spt\features\visualizations\renderer\mesh_renderer.hpp" />
     <ClInclude Include="spt\features\visualizations\renderer\mesh_defs_private.hpp" />
