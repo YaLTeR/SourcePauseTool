@@ -25,6 +25,38 @@ AimFeature spt_aim;
 
 void AimFeature::HandleAiming(float* va, bool& yawChanged, const Strafe::StrafeInput& input)
 {
+	if (viewState.state == aim::ViewState::AimState::POSITION
+	    || viewState.state == aim::ViewState::AimState::ENTITY)
+	{
+		Vector currentPos = utils::GetPlayerEyePosition();
+		Vector targetPos;
+		if (viewState.state == aim::ViewState::AimState::POSITION)
+		{
+			targetPos = viewState.targetPos;
+		}
+		else
+		{
+			IClientEntity* ent = utils::GetClientEntity(viewState.targetID);
+			if (!ent)
+			{
+				spt_aim.viewState.state = aim::ViewState::AimState::NO_AIM;
+				return;
+			}
+			Vector offsets = spt_aim.viewState.targetPos;
+			Vector forward, right, up;
+			AngleVectors(ent->GetAbsAngles(), &forward, &right, &up);
+			targetPos = ent->GetAbsOrigin() + offsets.x * forward - offsets.y * right + offsets.z * up;
+		}
+		VectorAngles(targetPos - currentPos, viewState.target);
+		if (viewState.target.x > 90.0f)
+		{
+			viewState.target.x -= 360.0f;
+		}
+		viewState.target.x = clamp(viewState.target.x, -89, 89);
+		viewState.target.y = utils::NormalizeDeg(viewState.target.y);
+		viewState.target.z = 0.0f;
+	}
+
 	float oldYaw = va[YAW];
 
 	// Use tas_aim stuff for tas_strafe_version >= 4
@@ -64,7 +96,6 @@ void AimFeature::HandleAiming(float* va, bool& yawChanged, const Strafe::StrafeI
 	{
 		spt_aim.viewState.UpdateView(va[PITCH], va[YAW], input);
 	}
-
 }
 
 bool AimFeature::DoAngleChange(float& angle, float target)
@@ -105,13 +136,13 @@ void AimFeature::SetJump()
 
 CON_COMMAND(tas_aim_reset, "Resets tas_aim state")
 {
-	spt_aim.viewState.set = false;
+	spt_aim.viewState.state = aim::ViewState::AimState::NO_AIM;
 	spt_aim.viewState.ticksLeft = 0;
 	spt_aim.viewState.timedChange = false;
 	spt_aim.viewState.jumpedLastTick = false;
 }
 
-CON_COMMAND(tas_aim, "Aims at a point.")
+CON_COMMAND(tas_aim, "Aims at a angle.")
 {
 	if (args.ArgC() < 3)
 	{
@@ -163,8 +194,70 @@ CON_COMMAND(tas_aim, "Aims at a point.")
 		}
 	}
 
-	spt_aim.viewState.set = true;
+	spt_aim.viewState.state = aim::ViewState::AimState::ANGLES;
 	spt_aim.viewState.target = aimAngle;
+
+	if (frames == -1)
+	{
+		spt_aim.viewState.timedChange = false;
+	}
+	else
+	{
+		spt_aim.viewState.timedChange = true;
+		spt_aim.viewState.ticksLeft = std::max(1, frames);
+	}
+}
+
+CON_COMMAND(tas_aim_pos, "Aims at a position. Usage: tas_aim_pos <x> <y> <z> [ticks]")
+{
+	int argc = args.ArgC();
+	if (argc != 4 && argc != 5)
+	{
+		Msg("Usage: tas_aim_pos <x> <y> <z> [ticks]\n");
+		return;
+	}
+
+	int frames = -1;
+	if (argc == 5)
+		frames = std::atoi(args.Arg(4));
+
+	spt_aim.viewState.state = aim::ViewState::AimState::POSITION;
+	spt_aim.viewState.targetPos = Vector(std::atof(args.Arg(1)), std::atof(args.Arg(2)), std::atof(args.Arg(3)));
+
+	if (frames == -1)
+	{
+		spt_aim.viewState.timedChange = false;
+	}
+	else
+	{
+		spt_aim.viewState.timedChange = true;
+		spt_aim.viewState.ticksLeft = std::max(1, frames);
+	}
+}
+
+CON_COMMAND(tas_aim_ent,
+            "Aim at the absolute origin of a entity with offsets (optional). Usage: tas_aim_ent <id> [x y z] [ticks]")
+{
+	int argc = args.ArgC();
+	if (argc != 2 && argc != 3 && argc != 5 && argc != 6)
+	{
+		Msg("Usage: tas_aim_ent <id> [x y z] [ticks]\n");
+		return;
+	}
+
+	int frames = -1;
+	if (argc == 3 || argc == 6)
+	{
+		frames = std::atoi(args.Arg(argc - 1));
+	}
+	if (argc >= 5)
+		spt_aim.viewState.targetPos =
+		    Vector(std::atof(args.Arg(2)), std::atof(args.Arg(3)), std::atof(args.Arg(4)));
+	else
+		spt_aim.viewState.targetPos = Vector(0.0f, 0.0f, 0.0f);
+
+	spt_aim.viewState.state = aim::ViewState::AimState::ENTITY;
+	spt_aim.viewState.targetID = std::atoi(args.Arg(1));
 
 	if (frames == -1)
 	{
@@ -242,6 +335,8 @@ void AimFeature::LoadFeature()
 	{
 		InitCommand(tas_aim_reset);
 		InitCommand(tas_aim);
+		InitCommand(tas_aim_pos);
+		InitCommand(tas_aim_ent);
 		InitCommand(_y_spt_setyaw);
 		InitCommand(_y_spt_setpitch);
 		InitCommand(_y_spt_resetpitchyaw);
