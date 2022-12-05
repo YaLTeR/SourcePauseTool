@@ -12,11 +12,22 @@ namespace aim
 {
 	struct ViewState
 	{
+		enum AimState
+		{
+			NO_AIM,
+			ANGLES,
+			POSITION,
+			ENTITY,
+		};
+		AimState state;
+
 		QAngle current;
 		QAngle target;
 
+		Vector targetPos;
+		int targetID;
+
 		int ticksLeft;
-		bool set;
 		bool timedChange;
 		bool jumpedLastTick;
 

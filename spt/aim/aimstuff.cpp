@@ -72,14 +72,14 @@ namespace aim
 	ViewState::ViewState()
 	{
 		ticksLeft = 0;
-		set = false;
+		state = NO_AIM;
 		timedChange = false;
 		jumpedLastTick = false;
 	}
 
 	float ViewState::CalculateNewYaw(float newYaw, const Strafe::StrafeInput& strafeInput)
 	{
-		if (!set && strafeInput.Strafe && strafeInput.Vectorial && strafeInput.Version >= 4)
+		if (state == NO_AIM && strafeInput.Strafe && strafeInput.Vectorial && strafeInput.Version >= 4)
 		{
 			float targetYaw =
 			    utils::NormalizeDeg(strafeInput.TargetYaw + tas_strafe_vectorial_offset.GetFloat());
@@ -92,7 +92,7 @@ namespace aim
 			                           true,
 			                           jumpedLastTick);
 		}
-		else if (set)
+		else if (state != NO_AIM)
 		{
 			current[YAW] = angleChange(newYaw,
 			                           current[YAW],
@@ -113,7 +113,7 @@ namespace aim
 
 	float ViewState::CalculateNewPitch(float newPitch, const Strafe::StrafeInput& strafeInput)
 	{
-		if (set)
+		if (state != NO_AIM)
 			current[PITCH] = angleChange(newPitch,
 			                             current[PITCH],
 			                             target[PITCH],
