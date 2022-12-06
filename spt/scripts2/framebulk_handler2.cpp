@@ -25,7 +25,7 @@ namespace scripts2
 	const auto JUMPBUG = std::pair<int, int>(0, 6);
 	const auto DUCK_BEFORE_COLLISION = std::pair<int, int>(0, 7);
 	const auto DUCK_BEFORE_GROUND = std::pair<int, int>(0, 8);
-	const auto USE_SPAM = std::pair<int, int>(0, 9);
+	const auto USESPAM = std::pair<int, int>(0, 9);
 
 	const auto FORWARD = std::pair<int, int>(1, 0);
 	const auto LEFT = std::pair<int, int>(1, 1);
@@ -71,23 +71,22 @@ namespace scripts2
 		else
 			frameBulkInfo.AddCommand("y_spt_autojump 0");
 
-		frameBulkInfo.AddPlusMinusCmd("y_spt_duckspam", frameBulkInfo.ContainsFlag(DUCKSPAM, "d"));
+		frameBulkInfo.AddPlusMinusCmd("y_spt_spam duck", frameBulkInfo.ContainsFlag(DUCKSPAM, "d"));
+		frameBulkInfo.AddPlusMinusCmd("y_spt_spam use", frameBulkInfo.ContainsFlag(USESPAM, "u"));
 
 		if (frameBulkInfo.ContainsFlag(JUMPBUG, "b"))
 			frameBulkInfo.AddCommand("tas_strafe_autojb 1");
 		else
 			frameBulkInfo.AddCommand("tas_strafe_autojb 0");
 
-			// todo
-#pragma warning(push)
-#pragma warning(disable : 4390)
-		if (frameBulkInfo.ContainsFlag(USE_SPAM, "u"))
-			;
 		if (frameBulkInfo.ContainsFlag(LGAGST, "l"))
 			frameBulkInfo.AddCommand("tas_strafe_lgagst 1");
 		else
 			frameBulkInfo.AddCommand("tas_strafe_lgagst 0");
 
+#pragma warning(push)
+#pragma warning(disable : 4390)
+		// todo
 		if (frameBulkInfo.ContainsFlag(DUCK_BEFORE_COLLISION, "c"))
 			;
 		if (frameBulkInfo.ContainsFlag(DUCK_BEFORE_GROUND, "g"))
@@ -305,4 +304,4 @@ namespace scripts2
 	{
 		return noopSections.find(section) != noopSections.end();
 	}
-} // namespace scripts
+} // namespace scripts2
