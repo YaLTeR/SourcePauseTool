@@ -10,9 +10,10 @@
 #include "ent_utils.hpp"
 #include "interfaces.hpp"
 #include "signals.hpp"
-#include "spt\utils\portal_utils.hpp"
 #include "tas.hpp"
 #include "property_getter.hpp"
+#include "spt\utils\portal_utils.hpp"
+#include "spt\utils\command.hpp"
 #include "..\strafe\strafestuff.hpp"
 
 #ifdef SSDK2007
@@ -283,25 +284,14 @@ int __fastcall PlayerIOFeature::HOOKED_GetButtonBits_Func(void* thisptr, int edx
 
 	if (bResetState == 1)
 	{
-		static bool duckPressed = false;
-
-		if (duckspam)
-		{
-			if (duckPressed)
-				duckPressed = false;
-			else
-			{
-				duckPressed = true;
-				rv |= (1 << 2); // IN_DUCK
-			}
-		}
-		else
-			duckPressed = false;
+		static int keyPressed = 0;
+		keyPressed = (keyPressed ^ spamButtons) & spamButtons;
+		rv |= keyPressed;
 
 		if (forceJump)
 		{
-			forceJump = false;
 			rv |= (1 << 1); // IN_JUMP
+			forceJump = false;
 		}
 
 		if (forceUnduck)
@@ -512,25 +502,67 @@ void PlayerIOFeature::OnTick()
 	currentVelocity = GetPlayerVelocity();
 }
 
-#if defined(OE)
-static void DuckspamDown()
-#else
-static void DuckspamDown(const CCommand& args)
-#endif
-{
-	spt_playerio.EnableDuckspam();
-}
-static ConCommand DuckspamDown_Command("+y_spt_duckspam", DuckspamDown, "Enables the duckspam.");
+static const std::map<std::string, int> buttonCodeMap = {
+    {"attack", 1 << 0},
+    {"jump", 1 << 1},
+    {"duck", 1 << 2},
+    {"forward", 1 << 3},
+    {"back", 1 << 4},
+    {"use", 1 << 5},
+    {"left", 1 << 7},
+    {"right", 1 << 8},
+    {"moveleft", 1 << 9},
+    {"moveright", 1 << 10},
+    {"attack2", 1 << 11},
+    {"reload", 1 << 13},
+    {"speed", 1 << 17},
+    {"walk", 1 << 18},
+    {"zoom", 1 << 19},
+};
 
-#if defined(OE)
-static void DuckspamUp()
-#else
-static void DuckspamUp(const CCommand& args)
-#endif
+CON_COMMAND_DOWN(
+    y_spt_spam,
+    "Enables key spam.\n"
+    "Usage: +y_spt_spam <key>\n"
+    "keys: attack, jump, duck, forward, back, use, left, right, moveleft, moveright, attack2, reload, speed, walk, zoom")
 {
-	spt_playerio.DisableDuckspam();
+	if (args.ArgC() < 2)
+	{
+		Msg("Usage: +y_spt_spam <key>\n"
+		    "keys: attack, jump, duck, forward, back, use, left, right, moveleft, moveright, attack2, reload, speed, walk, zoom\n");
+		return;
+	}
+
+	auto buttonCodeIter = buttonCodeMap.find(args.Arg(1));
+	if (buttonCodeIter != buttonCodeMap.end())
+		spt_playerio.EnableSpam(buttonCodeIter->second);
+	else
+		Msg("Cannot find key <%s>\n", args.Arg(1));
 }
-static ConCommand DuckspamUp_Command("-y_spt_duckspam", DuckspamUp, "Disables the duckspam.");
+
+CON_COMMAND_UP(y_spt_spam, "Disables key spam.")
+{
+	if (args.ArgC() < 2)
+	{
+		// clear all spam keys
+		spt_playerio.DisableSpam(0xffffffff);
+		return;
+	}
+
+	auto buttonCodeIter = buttonCodeMap.find(args.Arg(1));
+	if (buttonCodeIter != buttonCodeMap.end())
+		spt_playerio.DisableSpam(buttonCodeIter->second);
+}
+
+CON_COMMAND_DOWN(y_spt_duckspam, "Enables the duckspam. (Outdated, use +y_spt_spam instead)")
+{
+	spt_playerio.EnableSpam(1 << 2); // IN_DUCK
+}
+
+CON_COMMAND_UP(y_spt_duckspam, "Disables the duckspam.")
+{
+	spt_playerio.DisableSpam(1 << 2); // IN_DUCK
+}
 
 CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 {
@@ -823,8 +855,10 @@ void PlayerIOFeature::LoadFeature()
 
 	if (ORIG_GetButtonBits)
 	{
-		InitConcommandBase(DuckspamUp_Command);
-		InitConcommandBase(DuckspamDown_Command);
+		InitConcommandBase(y_spt_spam_down_command);
+		InitConcommandBase(y_spt_spam_up_command);
+		InitConcommandBase(y_spt_duckspam_down_command);
+		InitConcommandBase(y_spt_duckspam_up_command);
 	}
 
 #ifdef SPT_HUD_ENABLED

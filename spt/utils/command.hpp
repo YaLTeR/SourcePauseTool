@@ -36,7 +36,7 @@ private:
 };
 
 #ifdef OE
-#define CON_COMMAND_F_COMPLETION(name, description, flags, completion) \
+#define _CON_COMMAND_WRAPPER(name) \
 	static void name(ArgsWrapper args); \
 	static void name##_wrapper() \
 	{ \
@@ -44,7 +44,34 @@ private:
 			return; \
 		ArgsWrapper args; \
 		name(args); \
-	} \
+	}
+#endif
+
+#ifdef OE
+#define CON_COMMAND_DOWN(name, description) \
+	_CON_COMMAND_WRAPPER(name##_down); \
+	static ConCommand name##_down##_command("+" #name, name##_down##_wrapper, description); \
+	static void name##_down(ArgsWrapper args)
+
+#define CON_COMMAND_UP(name, description) \
+	_CON_COMMAND_WRAPPER(name##_up); \
+	static ConCommand name##_up##_command("-" #name, name##_up##_wrapper, description); \
+	static void name##_up(ArgsWrapper args)
+#else
+#define CON_COMMAND_DOWN(name, description) \
+	static void name##_down(const CCommand& args); \
+	static ConCommand name##_down##_command("+" #name, name##_down, description); \
+	static void name##_down(const CCommand& args)
+
+#define CON_COMMAND_UP(name, description) \
+	static void name##_up(const CCommand& args); \
+	static ConCommand name##_up##_command("-" #name, name##_up, description); \
+	static void name##_up(const CCommand& args)
+#endif
+
+#ifdef OE
+#define CON_COMMAND_F_COMPLETION(name, description, flags, completion) \
+	_CON_COMMAND_WRAPPER(name); \
 	static ConCommand name##_command(#name, name##_wrapper, description, flags, completion); \
 	static void name(ArgsWrapper args)
 #endif
