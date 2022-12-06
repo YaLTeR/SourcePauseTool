@@ -1,7 +1,9 @@
 #include "stdafx.h"
 
 #include "framebulk_handler2.hpp"
+
 #include "string_utils.hpp"
+#include "game_detection.hpp"
 
 namespace scripts2
 {
@@ -11,6 +13,7 @@ namespace scripts2
 	const std::string FIELD0_FILLED = "s**ljdbcgu";
 	const std::string FIELD1_FILLED = "flrbud";
 	const std::string FIELD2_FILLED = "jdu12rws";
+	const std::string MM_FIELD2_FILLED = "jdu12wsklrx"; // DMoMM
 	const std::string EMPTY_FIELD = "-";
 	const char NOOP = '<';
 	const char WILDCARD = '*';
@@ -42,6 +45,14 @@ namespace scripts2
 	const auto RELOAD = std::pair<int, int>(2, 5);
 	const auto WALK = std::pair<int, int>(2, 6);
 	const auto SPEED = std::pair<int, int>(2, 7);
+
+	// DMoMM
+	const auto MM_WALK = std::pair<int, int>(2, 5);
+	const auto MM_SPRINT = std::pair<int, int>(2, 6);
+	const auto MM_KICK = std::pair<int, int>(2, 7);
+	const auto MM_LEANLEFT = std::pair<int, int>(2, 8);
+	const auto MM_LEANRIGHT = std::pair<int, int>(2, 9);
+	const auto MM_XANA = std::pair<int, int>(2, 10);
 
 	const auto YAW_KEY = std::pair<int, int>(3, 0);
 	const auto PITCH_KEY = std::pair<int, int>(4, 0);
@@ -119,9 +130,21 @@ namespace scripts2
 		frameBulkInfo.AddPlusMinusCmd("use", frameBulkInfo.ContainsFlag(USE, "u"));
 		frameBulkInfo.AddPlusMinusCmd("attack", frameBulkInfo.ContainsFlag(ATTACK1, "1"));
 		frameBulkInfo.AddPlusMinusCmd("attack2", frameBulkInfo.ContainsFlag(ATTACK2, "2"));
-		frameBulkInfo.AddPlusMinusCmd("reload", frameBulkInfo.ContainsFlag(RELOAD, "r"));
-		frameBulkInfo.AddPlusMinusCmd("walk", frameBulkInfo.ContainsFlag(WALK, "w"));
-		frameBulkInfo.AddPlusMinusCmd("speed", frameBulkInfo.ContainsFlag(SPEED, "s"));
+		if (utils::DoesGameLookLikeDMoMM())
+		{
+			frameBulkInfo.AddPlusMinusCmd("speed", frameBulkInfo.ContainsFlag(MM_WALK, "w"));
+			frameBulkInfo.AddPlusMinusCmd("sprint", frameBulkInfo.ContainsFlag(MM_SPRINT, "s"));
+			frameBulkInfo.AddPlusMinusCmd("kick", frameBulkInfo.ContainsFlag(MM_KICK, "k"));
+			frameBulkInfo.AddPlusMinusCmd("leanleft", frameBulkInfo.ContainsFlag(MM_LEANLEFT, "l"));
+			frameBulkInfo.AddPlusMinusCmd("leanright", frameBulkInfo.ContainsFlag(MM_LEANRIGHT, "r"));
+			frameBulkInfo.AddPlusMinusCmd("xana", frameBulkInfo.ContainsFlag(MM_XANA, "x"));
+		}
+		else
+		{
+			frameBulkInfo.AddPlusMinusCmd("reload", frameBulkInfo.ContainsFlag(RELOAD, "r"));
+			frameBulkInfo.AddPlusMinusCmd("walk", frameBulkInfo.ContainsFlag(WALK, "w"));
+			frameBulkInfo.AddPlusMinusCmd("speed", frameBulkInfo.ContainsFlag(SPEED, "s"));
+		}
 	}
 
 	void Field4_5(FrameBulkInfo& frameBulkInfo)
@@ -162,7 +185,10 @@ namespace scripts2
 	{
 		frameBulkInfo.ValidateFieldFlags(frameBulkInfo, FIELD0_FILLED, 0);
 		frameBulkInfo.ValidateFieldFlags(frameBulkInfo, FIELD1_FILLED, 1);
-		frameBulkInfo.ValidateFieldFlags(frameBulkInfo, FIELD2_FILLED, 2);
+		if (utils::DoesGameLookLikeDMoMM())
+			frameBulkInfo.ValidateFieldFlags(frameBulkInfo, MM_FIELD2_FILLED, 2);
+		else
+			frameBulkInfo.ValidateFieldFlags(frameBulkInfo, FIELD2_FILLED, 2);
 	}
 
 	void InitHandlers()
