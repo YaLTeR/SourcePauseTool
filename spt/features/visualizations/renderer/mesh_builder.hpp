@@ -149,31 +149,38 @@ inline MeshBuilderPro spt_meshBuilder;
 
 #endif
 
-typedef void CPhysicsObject;
 class CPhysCollide;
+class IPhysicsObject;
 class CBaseEntity;
 
 // collide stuff - returned mesh is an array of tris, consider caching and/or using static meshes
 class CreateCollideFeature : public FeatureWrapper<CreateCollideFeature>
 {
 public:
+	// the verts don't contain pos/rot info, so they'll be at the origin
 	std::unique_ptr<Vector> CreateCollideMesh(const CPhysCollide* pCollide, int& outNumTris);
 
-	std::unique_ptr<Vector> CreateCPhysObjMesh(const CPhysicsObject* pPhysObj,
-	                                           int& outNumTris,
-	                                           matrix3x4_t& outMat);
+	// you'll need to transform the verts by applying a matrix you can create with pPhysObj->GetPosition()
+	std::unique_ptr<Vector> CreatePhysObjMesh(const IPhysicsObject* pPhysObj, int& outNumTris);
 
-	// this doesn't seem to work for stuff with bones (e.g. players or cube droppers) :/
-	std::unique_ptr<Vector> CreateEntMesh(const CBaseEntity* pEnt, int& outNumTris, matrix3x4_t& outMat);
+	// you'll need to transform the verts like described above
+	std::unique_ptr<Vector> CreateEntMesh(const CBaseEntity* pEnt, int& outNumTris);
+
+	// can be used after InitHooks()
+	static IPhysicsObject* GetPhysObj(const CBaseEntity* pEnt);
 
 	// can be used (after InitHooks()) to check if the above functions do anything
 	bool Works();
 
 protected:
 	void InitHooks() override;
+	void UnloadFeature() override;
+
+private:
+	inline static bool cachedOffset = false;
+	inline static int cached_phys_obj_off;
 
 	DECL_MEMBER_THISCALL(int, CPhysicsCollision__CreateDebugMesh, const CPhysCollide* pCollide, Vector** outVerts);
-	DECL_MEMBER_THISCALL(void, CPhysicsObject__GetPosition, Vector* worldPosition, QAngle* angles);
 };
 
 inline CreateCollideFeature spt_collideToMesh;

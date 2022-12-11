@@ -4,6 +4,8 @@
 
 #ifdef SPT_MESH_RENDERING_ENABLED
 
+#include "vphysics_interface.h"
+
 #include "interfaces.hpp"
 #include "spt\feature.hpp"
 #include "spt\utils\game_detection.hpp"
@@ -361,8 +363,8 @@ public:
 
 			if (cache.remoteWorld.empty())
 			{
-				CacheRemoteCPhysObj(*(CPhysicsObject**)(sim + 412), MC_REMOTE_WORLD_BRUSHES);
-				const auto& staticProps = *(CUtlVector<CPhysicsObject*>*)(sim + 416);
+				CacheRemoteCPhysObj(*(IPhysicsObject**)(sim + 412), MC_REMOTE_WORLD_BRUSHES);
+				const auto& staticProps = *(CUtlVector<IPhysicsObject*>*)(sim + 416);
 				for (int i = 0; i < staticProps.Count(); i++)
 					CacheRemoteCPhysObj(staticProps[i], MC_REMOTE_STATIC_PROPS);
 			}
@@ -393,10 +395,17 @@ public:
 				for (int i = 0; i < ents.Size(); i++)
 				{
 					int numTris;
-					matrix3x4_t mat;
-					auto verts = spt_collideToMesh.CreateEntMesh(ents[i], numTris, mat);
+					auto verts = spt_collideToMesh.CreateEntMesh(ents[i], numTris);
+					IPhysicsObject* pPhysObj = spt_collideToMesh.GetPhysObj(ents[i]);
+					if (!pPhysObj)
+						continue;
+					matrix3x4_t entMat;
+					Vector entPos;
+					QAngle entAng;
+					pPhysObj->GetPosition(&entPos, &entAng);
+					AngleMatrix(entAng, entPos, entMat);
 					auto mesh = MB_DYNAMIC(mb.AddTris(verts.get(), numTris, c););
-					mr.DrawMesh(mesh, [mat](auto&, auto& infoOut) { infoOut.mat = mat; });
+					mr.DrawMesh(mesh, [entMat](auto&, auto& infoOut) { infoOut.mat = entMat; });
 				}
 			};
 			drawEnts(*(CUtlVector<CBaseEntity*>*)(sim + 8684), MC_OWNED_ENTS);
@@ -412,13 +421,19 @@ public:
 			cache.localWorld.push_back(MB_STATIC(mb.AddTris(verts.get(), numTris, c);));
 	}
 
-	void CacheRemoteCPhysObj(const CPhysicsObject* pPhysObj, const MeshColor& c)
+	void CacheRemoteCPhysObj(const IPhysicsObject* pPhysObj, const MeshColor& c)
 	{
 		int numTris;
-		matrix3x4_t mat;
-		std::unique_ptr<Vector> verts = spt_collideToMesh.CreateCPhysObjMesh(pPhysObj, numTris, mat);
+		std::unique_ptr<Vector> verts = spt_collideToMesh.CreatePhysObjMesh(pPhysObj, numTris);
 		if (verts.get() && numTris > 0)
+		{
+			matrix3x4_t mat;
+			Vector pos;
+			QAngle ang;
+			pPhysObj->GetPosition(&pos, &ang);
+			AngleMatrix(ang, pos, mat);
 			cache.remoteWorld.emplace_back(mat, MB_STATIC(mb.AddTris(verts.get(), numTris, c);));
+		}
 	}
 };
 
