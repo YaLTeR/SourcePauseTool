@@ -4,6 +4,9 @@
 
 #ifdef SPT_MESH_RENDERING_ENABLED
 
+#include "predictable_entity.h"
+#include "dt_common.h"
+#include "collisionproperty.h"
 #include "vphysics_interface.h"
 
 #include "interfaces.hpp"
@@ -39,36 +42,39 @@ ConVar y_spt_draw_portal_env_remote("y_spt_draw_portal_env_remote",
                                     FCVAR_CHEAT | FCVAR_DONTRECORD,
                                     "Draw geometry from remote portal");
 
-// clang-format off
-#if 1 // 1 - black outline, 0 - default outline
-#define MC_PORTAL_HOLE MeshColor::Wire({20, 255, 20, 255})
-#define MC_LOCAL_WORLD_BRUSHES MeshColor{{255, 20, 20, 70}, {0, 0, 0, 255}}
-#define MC_REMOTE_WORLD_BRUSHES MeshColor{{255, 150, 150, 15}, {0, 0, 0, 255}}
-#define MC_LOCAL_WALL_TUBE MeshColor{{0, 255, 0, 200}, {0, 0, 0, 255}}
-#define MC_LOCAL_WALL_BRUSHES MeshColor{{40, 40, 255, 60}, {0, 0, 0, 255}}
-#define MC_LOCAL_STATIC_PROPS MeshColor{{255, 255, 40, 50}, {0, 0, 0, 255}}
-#define MC_REMOTE_STATIC_PROPS MeshColor{{255, 255, 150, 15}, {0, 0, 0, 255}}
-#define MC_OWNED_ENTS MeshColor::Wire({255, 100, 255, 255})
-#define MC_SHADOW_CLONES MeshColor::Wire({255, 255, 255, 255})
-#else
-#define MC_PORTAL_HOLE MeshColor::Wire({20, 255, 20, 255})
-#define MC_LOCAL_WORLD_BRUSHES MeshColor::Outline({255, 20, 20, 70})
-#define MC_REMOTE_WORLD_BRUSHES MeshColor::Outline({255, 150, 150, 15})
-#define MC_LOCAL_WALL_TUBE MeshColor::Outline({0, 255, 0, 200})
-#define MC_LOCAL_WALL_BRUSHES MeshColor::Outline({40, 40, 255, 60})
-#define MC_LOCAL_STATIC_PROPS MeshColor::Outline({255, 255, 40, 50})
-#define MC_REMOTE_STATIC_PROPS MeshColor::Outline({255, 255, 150, 15})
-#define MC_OWNED_ENTS MeshColor::Wire({255, 100, 255, 255})
-#define MC_SHADOW_CLONES MeshColor::Wire({255, 255, 255, 255})
-#endif
-// clang-format on
+#define MC_PORTAL_HOLE (MeshColor::Wire({255, 255, 255, 255}))
+#define MC_LOCAL_WORLD_BRUSHES (MeshColor{{255, 20, 20, 70}, {0, 0, 0, 255}})
+#define MC_REMOTE_WORLD_BRUSHES (MeshColor{{255, 150, 150, 15}, {0, 0, 0, 255}})
+#define MC_LOCAL_WALL_TUBE (MeshColor{{0, 255, 0, 200}, {0, 0, 0, 255}})
+#define MC_LOCAL_WALL_BRUSHES (MeshColor{{40, 40, 255, 60}, {0, 0, 0, 255}})
+#define MC_LOCAL_STATIC_PROPS (MeshColor{{255, 255, 40, 50}, {0, 0, 0, 255}})
+#define MC_REMOTE_STATIC_PROPS (MeshColor{{255, 255, 150, 15}, {0, 0, 0, 255}})
+
+// wireframe means either this portal or the linked own owns the entity, green means 
+
+// wire is owned ents, solid is what UTIL_PORTAL_TRACERAY collides with
+#define MC_ENTS (MeshColor{{0, 255, 0, 15}, {40, 255, 40, 255}})
+// wire is shadow clones, solid is shadow clones from other portals that aren't supposed to™ collide with UTIL_PORTAL_TRACERAY
+#define MC_SHADOW_CLONES (MeshColor{{255, 0, 255, 15}, {255, 100, 255, 255}})
 
 #define PORTAL_CLASS "CProp_Portal"
 
-// Since we're rendering geometry directly on top of the world, we get a LOT of z-fighting by default.
-// I used to fix this by extruding each triangle towards its normal by some amount. With the current
-// callback system the way I fix this is to shrink the mesh towards the camera by this factor.
-#define CALLBACK_SHRINK_FACTOR 0.9995f
+// Since we're rendering geometry directly on top of the world and other entities, we get a LOT of z-fighting by
+// default. This fixes that by scaling everything towards the camera just a little bit.
+static void RenderCallbackZFightFix(const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+{
+	infoOut.mat[0][3] -= infoIn.cvs.origin.x;
+	infoOut.mat[1][3] -= infoIn.cvs.origin.y;
+	infoOut.mat[2][3] -= infoIn.cvs.origin.z;
+
+	matrix3x4_t scaleMat;
+	SetScaleMatrix(0.9995f, scaleMat);
+	MatrixMultiply(scaleMat, infoOut.mat, infoOut.mat);
+
+	infoOut.mat[0][3] += infoIn.cvs.origin.x;
+	infoOut.mat[1][3] += infoIn.cvs.origin.y;
+	infoOut.mat[2][3] += infoIn.cvs.origin.z;
+}
 
 class SgCollideVisFeature : public FeatureWrapper<SgCollideVisFeature>
 {
@@ -83,6 +89,7 @@ public:
 		int isActivated;
 		int linked;
 		int simulator;
+		int m_Collision;
 	} portalFieldOffs;
 
 	PlayerField<int> envPortalField;
@@ -95,25 +102,56 @@ public:
 		bool isOrange, isActivated, isOpen;
 	};
 
-	CBaseHandle lastPortal{INVALID_EHANDLE_INDEX};
-	PortalInfo lastPortalInfo{vec3_invalid};
-	PortalInfo lastLinkedInfo{vec3_invalid};
-
 	struct
 	{
-		bool collide, _auto, blue, orange, idx;
+		bool collide, auto_, blue, orange, idx;
 		int idxVal;
 	} userWishes;
 
-	struct
+	enum class CachedEntType
 	{
+		OWNED,
+		SHADOW_CLONE,
+		TRACE_TEST,
+		COUNT
+	};
+
+	struct MeshCache
+	{
+		struct CachedRemoteGeo
+		{
+			matrix3x4_t mat;
+			StaticMesh mesh;
+		};
+
+		struct CachedEnt
+		{
+			CBaseEntity* pEnt;
+			IPhysicsObject* pPhysObj;
+			StaticMesh mesh;
+		};
+
+		StaticMesh portalHole;
 		std::vector<StaticMesh> localWorld;
-		std::vector<std::pair<matrix3x4_t, StaticMesh>> remoteWorld;
+		std::vector<CachedRemoteGeo> remoteWorld;
+		// bit of an oof, color modulation is really slow so we'll just have 1 mesh per color xd
+		CachedEnt ents[MAX_EDICTS][2];
+
+		CBaseHandle lastPortal{INVALID_EHANDLE_INDEX};
+		PortalInfo lastPortalInfo{vec3_invalid};
+		PortalInfo lastLinkedInfo{vec3_invalid};
 
 		void Clear()
 		{
+			portalHole.Destroy();
 			localWorld.clear();
 			remoteWorld.clear();
+			for (size_t i = 0; i < ARRAYSIZE(ents); i++)
+				for (size_t j = 0; j < ARRAYSIZE(*ents); j++)
+					ents[i][j].mesh.Destroy();
+			lastPortal.Term();
+			lastPortalInfo.pos = vec3_invalid;
+			lastLinkedInfo.pos = vec3_invalid;
 		}
 	} cache;
 
@@ -134,6 +172,7 @@ public:
 		portalFieldOffs.linked = spt_entprops.GetFieldOffset(PORTAL_CLASS, "m_hLinkedPortal", true);
 		portalFieldOffs.isActivated = spt_entprops.GetFieldOffset(PORTAL_CLASS, "m_bActivated", true);
 		portalFieldOffs.simulator = spt_entprops.GetFieldOffset(PORTAL_CLASS, "m_vPortalCorners", true);
+		portalFieldOffs.m_Collision = spt_entprops.GetFieldOffset(PORTAL_CLASS, "m_hMovePeer", true);
 
 		for (int i = 0; i < sizeof(portalFieldOffs) / sizeof(int); i++)
 			if (reinterpret_cast<int*>(&portalFieldOffs)[i] == utils::INVALID_DATAMAP_OFFSET)
@@ -143,6 +182,7 @@ public:
 			return;
 
 		portalFieldOffs.simulator += sizeof(Vector) * 4;
+		portalFieldOffs.m_Collision += sizeof(EHANDLE);
 
 		spt_meshRenderer.signal.Connect(this, &SgCollideVisFeature::OnMeshRenderSignal);
 		InitConcommandBase(y_spt_draw_portal_env);
@@ -156,10 +196,10 @@ public:
 			    auto& wish = featureInstance.userWishes;
 			    const char* typeStr = ((ConVar*)var)->GetString();
 			    wish.collide = !_stricmp(typeStr, "collide");
-			    wish._auto = !_stricmp(typeStr, "auto");
-			    wish.blue = !_stricmp(typeStr, "blue") || wish._auto;
-			    wish.orange = !_stricmp(typeStr, "orange") || wish._auto;
-			    if (!wish.collide && !wish._auto && !wish.blue && !wish.orange)
+			    wish.auto_ = !_stricmp(typeStr, "auto");
+			    wish.blue = !_stricmp(typeStr, "blue") || wish.auto_;
+			    wish.orange = !_stricmp(typeStr, "orange") || wish.auto_;
+			    if (!wish.collide && !wish.auto_ && !wish.blue && !wish.orange)
 			    {
 				    wish.idx = true;
 				    wish.idxVal = ((ConVar*)var)->GetInt() + 1; // client -> server index
@@ -240,7 +280,7 @@ public:
 		}
 
 		// player env doesn't match wish, let's check the last used index
-		int lastUsedPortalIndex = lastPortal.GetEntryIndex();
+		int lastUsedPortalIndex = cache.lastPortal.GetEntryIndex();
 		if (lastUsedPortalIndex > 0)
 		{
 			edict_t* ed = engine_server->PEntityOfEntIndex(lastUsedPortalIndex);
@@ -248,9 +288,9 @@ public:
 			if (GetPortalInfo(ed, &tmpInfo) && PortalMatchesUserWish(tmpInfo))
 			{
 				// check if the last used index refers to a different colored portal, saveloads can mess with that
-				if (!userWishes._auto)
+				if (!userWishes.auto_)
 					return ed;
-				if (userWishes._auto && tmpInfo.isOrange == lastPortalInfo.isOrange)
+				if (userWishes.auto_ && tmpInfo.isOrange == cache.lastPortalInfo.isOrange)
 					return ed;
 			}
 		}
@@ -266,8 +306,9 @@ public:
 			if (GetPortalInfo(tmpEd, &tmpInfo) && PortalMatchesUserWish(tmpInfo))
 			{
 				// same color, pos, & ang? this is exactly what we want
-				if (tmpInfo.isOrange == lastPortalInfo.isOrange && tmpInfo.pos == lastPortalInfo.pos
-				    && tmpInfo.ang == lastPortalInfo.ang)
+				if (tmpInfo.isOrange == cache.lastPortalInfo.isOrange
+				    && tmpInfo.pos == cache.lastPortalInfo.pos
+				    && tmpInfo.ang == cache.lastPortalInfo.ang)
 				{
 					return tmpEd;
 				}
@@ -293,146 +334,229 @@ public:
 		CBaseEntity* portalEnt = portalEd->GetIServerEntity()->GetBaseEntity();
 		PortalInfo curInfo;
 		GetPortalInfo(portalEd, &curInfo);
-		if (lastPortal != curPortal || lastPortalInfo.pos != curInfo.pos || lastPortalInfo.ang != curInfo.ang)
-			cache.Clear();
-		lastPortal = curPortal;
-		lastPortalInfo = curInfo;
 
+		if (cache.lastPortal != curPortal || cache.lastPortalInfo.pos != curInfo.pos
+		    || cache.lastPortalInfo.ang != curInfo.ang)
+		{
+			// wish portal moved? clear cache
+			cache.Clear();
+		}
+		else
+		{
+			// clear remote cache if the linked portal changed
+			PortalInfo curLinkedInfo;
+			edict_t* linkedEd = engine_server->PEntityOfEntIndex(curInfo.linked.GetEntryIndex());
+			if (!GetPortalInfo(linkedEd, &curLinkedInfo))
+				curLinkedInfo.isOpen = false;
+
+			if (!curInfo.isOpen || cache.lastLinkedInfo.pos != curLinkedInfo.pos
+			    || cache.lastLinkedInfo.ang != curLinkedInfo.ang
+			    || cache.lastLinkedInfo.isOpen != curLinkedInfo.isOpen)
+			{
+				cache.remoteWorld.clear();
+				cache.lastLinkedInfo = curLinkedInfo;
+			}
+		}
+		cache.lastPortal = curPortal;
+		cache.lastPortalInfo = curInfo;
+
+		// collision simulator
 		uintptr_t sim = (uintptr_t)portalEnt + portalFieldOffs.simulator;
 
-		// PS_SD_Static_World_StaticProps_ClippedProp_t
-		struct ClippedProp
+		// draw portal hole when showing anything
+		if (y_spt_draw_portal_env.GetBool() || y_spt_draw_portal_env_remote.GetBool()
+		    || y_spt_draw_portal_env_ents.GetBool())
 		{
-			char __pad1[8];
-			CPhysCollide* collide;
-			char __pad2[16];
-		};
+			if (!cache.portalHole.Valid())
+			{
+				int numTris;
+				auto verts = spt_collideToMesh.CreateCollideMesh(*(CPhysCollide**)(sim + 280), numTris);
+				cache.portalHole = MB_STATIC(mb.AddTris(verts.get(), numTris, MC_PORTAL_HOLE););
+			}
+			mr.DrawMesh(cache.portalHole);
+		}
 
 		if (y_spt_draw_portal_env.GetBool())
-		{
-			if (!cache.localWorld.empty() && !cache.localWorld[0].Valid())
-				cache.localWorld.clear();
-
-			if (cache.localWorld.empty())
-			{
-				CacheLocalCollide(*(CPhysCollide**)(sim + 280), MC_PORTAL_HOLE);
-				CacheLocalCollide(*(CPhysCollide**)(sim + 304), MC_LOCAL_WORLD_BRUSHES);
-				CacheLocalCollide(*(CPhysCollide**)(sim + 376), MC_LOCAL_WALL_TUBE);
-				CacheLocalCollide(*(CPhysCollide**)(sim + 404), MC_LOCAL_WALL_BRUSHES);
-				const CUtlVector<ClippedProp>& staticProps = *(CUtlVector<ClippedProp>*)(sim + 332);
-				for (int i = 0; i < staticProps.Count(); i++)
-					CacheLocalCollide(staticProps[i].collide, MC_LOCAL_STATIC_PROPS);
-			}
-			for (const auto& staticMesh : cache.localWorld)
-			{
-				mr.DrawMesh(
-				    staticMesh,
-				    [](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
-				    {
-					    matrix3x4_t scaleMat;
-					    SetScaleMatrix(CALLBACK_SHRINK_FACTOR, scaleMat);
-					    matrix3x4_t transMat({1, 0, 0}, {0, 1, 0}, {0, 0, 1}, infoIn.cvs.origin);
-					    // move to camera, scale towards <0,0,0>, move back
-					    infoOut.mat.Init({1, 0, 0}, {0, 1, 0}, {0, 0, 1}, -infoIn.cvs.origin);
-					    MatrixMultiply(scaleMat, infoOut.mat, infoOut.mat);
-					    MatrixMultiply(transMat, infoOut.mat, infoOut.mat);
-				    });
-			}
-		}
+			DrawLocalWorldGeometry(mr, sim);
 		if (y_spt_draw_portal_env_remote.GetBool())
+			DrawRemoteWorldGeometry(mr, sim);
+		if (y_spt_draw_portal_env_ents.GetBool())
+			DrawPortalEntities(mr, sim);
+	}
+
+	void DrawLocalWorldGeometry(MeshRendererDelegate& mr, uintptr_t sim)
+	{
+		if (!cache.localWorld.empty() && !cache.localWorld[0].Valid())
+			cache.localWorld.clear();
+
+		if (cache.localWorld.empty())
 		{
-			if (!cache.remoteWorld.empty() && !cache.remoteWorld[0].second.Valid())
-				cache.remoteWorld.clear();
-
-			if (!cache.remoteWorld.empty())
+			auto cacheLocalCollide = [this](const CPhysCollide* pCollide, const MeshColor& c)
 			{
-				// invalidate remote cache if the linked portal changed
-				PortalInfo curLinkedInfo;
-				edict_t* linkedEd = engine_server->PEntityOfEntIndex(curInfo.linked.GetEntryIndex());
-				if (!GetPortalInfo(linkedEd, &curLinkedInfo))
-					curLinkedInfo.isOpen = false;
+				int numTris;
+				std::unique_ptr<Vector> verts = spt_collideToMesh.CreateCollideMesh(pCollide, numTris);
+				if (verts.get() && numTris > 0)
+					cache.localWorld.push_back(MB_STATIC(mb.AddTris(verts.get(), numTris, c);));
+			};
 
-				if (!curInfo.isOpen || lastLinkedInfo.pos != curLinkedInfo.pos
-				    || lastLinkedInfo.ang != curLinkedInfo.ang
-				    || lastLinkedInfo.isOpen != curLinkedInfo.isOpen)
-				{
-					cache.remoteWorld.clear();
-					lastLinkedInfo = curLinkedInfo;
-				}
+			cacheLocalCollide(*(CPhysCollide**)(sim + 304), MC_LOCAL_WORLD_BRUSHES);
+			cacheLocalCollide(*(CPhysCollide**)(sim + 376), MC_LOCAL_WALL_TUBE);
+			cacheLocalCollide(*(CPhysCollide**)(sim + 404), MC_LOCAL_WALL_BRUSHES);
+			const CUtlVector<char[28]>& staticProps = *(CUtlVector<char[28]>*)(sim + 332);
+			for (int i = 0; i < staticProps.Count(); i++)
+				cacheLocalCollide(*((CPhysCollide**)staticProps[i] + 2), MC_LOCAL_STATIC_PROPS);
+		}
+		for (const auto& staticMesh : cache.localWorld)
+		{
+			mr.DrawMesh(staticMesh,
+			            [](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+			            { RenderCallbackZFightFix(infoIn, infoOut); });
+		}
+	}
+
+	void DrawRemoteWorldGeometry(MeshRendererDelegate& mr, uintptr_t sim)
+	{
+		if (!cache.remoteWorld.empty() && !cache.remoteWorld[0].mesh.Valid())
+			cache.remoteWorld.clear();
+
+		auto cacheRemotePhysObj = [this](const IPhysicsObject* pPhysObj, const MeshColor& c)
+		{
+			if (!pPhysObj)
+				return;
+			int numTris;
+			std::unique_ptr<Vector> verts = spt_collideToMesh.CreatePhysObjMesh(pPhysObj, numTris);
+			if (verts.get() && numTris > 0)
+			{
+				matrix3x4_t mat;
+				Vector pos;
+				QAngle ang;
+				pPhysObj->GetPosition(&pos, &ang);
+				AngleMatrix(ang, pos, mat);
+				cache.remoteWorld.emplace_back(mat, MB_STATIC(mb.AddTris(verts.get(), numTris, c);));
 			}
+		};
 
-			if (cache.remoteWorld.empty())
+		if (cache.remoteWorld.empty())
+		{
+			cacheRemotePhysObj(*(IPhysicsObject**)(sim + 412), MC_REMOTE_WORLD_BRUSHES);
+			const CUtlVector<IPhysicsObject*>& staticProps = *(CUtlVector<IPhysicsObject*>*)(sim + 416);
+			for (int i = 0; i < staticProps.Count(); i++)
+				cacheRemotePhysObj(staticProps[i], MC_REMOTE_STATIC_PROPS);
+		}
+
+		for (const auto& [mat, staticMesh] : cache.remoteWorld)
+		{
+			mr.DrawMesh(staticMesh,
+			            [mat](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+			            {
+				            infoOut.mat = mat;
+				            RenderCallbackZFightFix(infoIn, infoOut);
+			            });
+		}
+	}
+
+	void DrawPortalEntities(MeshRendererDelegate& mr, uintptr_t sim)
+	{
+		auto drawEnt = [this, &mr](CBaseEntity* pEnt, MeshColor mc, bool outline)
+		{
+			if (!pEnt)
+				return;
+
+			IPhysicsObject* pPhysObj = spt_collideToMesh.GetPhysObj(pEnt);
+			if (!pPhysObj)
+				return;
+
+			int idx = ((IHandleEntity*)pEnt)->GetRefEHandle().GetEntryIndex();
+			auto& cachedEnt = cache.ents[idx][outline];
+
+			// comparing two memory address to check for uniqueness, hopefully good enough
+			if (cachedEnt.pEnt != pEnt || cachedEnt.pPhysObj != pPhysObj || !cachedEnt.mesh.Valid())
 			{
-				CacheRemoteCPhysObj(*(IPhysicsObject**)(sim + 412), MC_REMOTE_WORLD_BRUSHES);
-				const auto& staticProps = *(CUtlVector<IPhysicsObject*>*)(sim + 416);
-				for (int i = 0; i < staticProps.Count(); i++)
-					CacheRemoteCPhysObj(staticProps[i], MC_REMOTE_STATIC_PROPS);
-			}
-			for (const auto& [mat, staticMesh] : cache.remoteWorld)
-			{
-				mr.DrawMesh(
-				    staticMesh,
-				    [mat](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+				cachedEnt.pEnt = pEnt;
+				cachedEnt.pPhysObj = pPhysObj;
+				cachedEnt.mesh = spt_meshBuilder.CreateStaticMesh(
+				    [=](MeshBuilderDelegate& mb)
 				    {
-					    matrix3x4_t iTransMat({1, 0, 0}, {0, 1, 0}, {0, 0, 1}, -infoIn.cvs.origin);
-					    matrix3x4_t scaleMat;
-					    SetScaleMatrix(CALLBACK_SHRINK_FACTOR, scaleMat);
-					    matrix3x4_t transMat({1, 0, 0}, {0, 1, 0}, {0, 0, 1}, infoIn.cvs.origin);
-					    // apply CPhysicsObject matrix, then do the same steps as for the collides
-					    infoOut.mat = mat;
-					    MatrixMultiply(iTransMat, infoOut.mat, infoOut.mat);
-					    MatrixMultiply(scaleMat, infoOut.mat, infoOut.mat);
-					    MatrixMultiply(transMat, infoOut.mat, infoOut.mat);
+					    int numTris;
+					    auto verts = spt_collideToMesh.CreatePhysObjMesh(pPhysObj, numTris);
+					    mb.AddTris(verts.get(), numTris, mc);
 				    });
 			}
-		}
-		if (y_spt_draw_portal_env_ents.GetBool())
-		{
-			// not caching ents since the model may change for e.g. players crouching, not a significant issue
-
-			auto drawEnts = [&mr](const CUtlVector<CBaseEntity*>& ents, const MeshColor& c)
-			{
-				for (int i = 0; i < ents.Size(); i++)
-				{
-					int numTris;
-					auto verts = spt_collideToMesh.CreateEntMesh(ents[i], numTris);
-					IPhysicsObject* pPhysObj = spt_collideToMesh.GetPhysObj(ents[i]);
-					if (!pPhysObj)
-						continue;
-					matrix3x4_t entMat;
-					Vector entPos;
-					QAngle entAng;
-					pPhysObj->GetPosition(&entPos, &entAng);
-					AngleMatrix(entAng, entPos, entMat);
-					auto mesh = MB_DYNAMIC(mb.AddTris(verts.get(), numTris, c););
-					mr.DrawMesh(mesh, [entMat](auto&, auto& infoOut) { infoOut.mat = entMat; });
-				}
-			};
-			drawEnts(*(CUtlVector<CBaseEntity*>*)(sim + 8684), MC_OWNED_ENTS);
-			drawEnts(*(CUtlVector<CBaseEntity*>*)(sim + 8664), MC_SHADOW_CLONES);
-		}
-	}
-
-	void CacheLocalCollide(const CPhysCollide* pCollide, const MeshColor& c)
-	{
-		int numTris;
-		std::unique_ptr<Vector> verts = spt_collideToMesh.CreateCollideMesh(pCollide, numTris);
-		if (verts.get() && numTris > 0)
-			cache.localWorld.push_back(MB_STATIC(mb.AddTris(verts.get(), numTris, c);));
-	}
-
-	void CacheRemoteCPhysObj(const IPhysicsObject* pPhysObj, const MeshColor& c)
-	{
-		int numTris;
-		std::unique_ptr<Vector> verts = spt_collideToMesh.CreatePhysObjMesh(pPhysObj, numTris);
-		if (verts.get() && numTris > 0)
-		{
 			matrix3x4_t mat;
 			Vector pos;
 			QAngle ang;
 			pPhysObj->GetPosition(&pos, &ang);
 			AngleMatrix(ang, pos, mat);
-			cache.remoteWorld.emplace_back(mat, MB_STATIC(mb.AddTris(verts.get(), numTris, c);));
+			mr.DrawMesh(cachedEnt.mesh,
+			            [=](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+			            {
+				            infoOut.mat = mat;
+				            RenderCallbackZFightFix(infoIn, infoOut);
+				            if (outline)
+					            infoOut.faces.skipRender = true;
+				            else
+					            infoOut.lines.skipRender = true;
+			            });
+		};
+
+		auto drawAllEnts = [this, &drawEnt](CUtlVector<CBaseEntity*>& ents, MeshColor mc, bool outline)
+		{
+			for (int i = 0; i < ents.Size(); i++)
+				drawEnt(ents[i], mc, outline);
+		};
+
+		drawAllEnts(*(CUtlVector<CBaseEntity*>*)(sim + 8664), MC_SHADOW_CLONES, true);
+		drawAllEnts(*(CUtlVector<CBaseEntity*>*)(sim + 8684), MC_ENTS, true);
+
+		if (!cache.lastPortalInfo.isOpen)
+			return;
+
+		/*
+		* The player collides with entities far away from and in front of the portal because UTIL_Portal_TraceRay
+		* uses a special entity enumerator. Specifically, an entity is considered solid to this trace if the
+		* closest point on its OBB to a point 1007 units in front of the desired portal is in front of a plane
+		* that is 7 units in front of the portal. It's a bit over-complicated and leads to some midly interesting
+		* behavior for entities on the portal plane, but we gotta replicate it to show what we collide with.
+		*/
+
+		Vector portalPos = cache.lastPortalInfo.pos;
+		Vector portalNorm;
+		AngleVectors(cache.lastPortalInfo.ang, &portalNorm);
+		Vector pt1007 = portalPos + portalNorm * 1007;
+
+		VPlane testPlane{portalNorm, portalNorm.Dot(portalPos + portalNorm * 7)};
+
+		for (int i = 2; i < MAX_EDICTS; i++)
+		{
+			edict_t* ed = interfaces::engine_server->PEntityOfEntIndex(i);
+			if (!ed || !ed->GetIServerEntity())
+				continue;
+			CBaseEntity* pEnt = ed->GetIServerEntity()->GetBaseEntity();
+			auto pCp = (CCollisionProperty*)((uint32_t)pEnt + portalFieldOffs.m_Collision);
+			if (!pCp->IsSolid())
+				continue;
+
+			// optimization - if the bounding sphere doesn't intersect the plane then don't check the OBB
+
+			SideType ballTest = testPlane.GetPointSide(pCp->WorldSpaceCenter(), pCp->BoundingRadius());
+
+			if (ballTest == SIDE_BACK)
+				continue;
+
+			if (ballTest == SIDE_ON)
+			{
+				// can't use CCollisionProperty::CalcNearestPoint because SDK funny :/
+				Vector localPt1007, localClosestTo1007, worldClosestTo1007;
+				pCp->WorldToCollisionSpace(pt1007, &localPt1007);
+				CalcClosestPointOnAABB(pCp->OBBMins(), pCp->OBBMaxs(), localPt1007, localClosestTo1007);
+				pCp->CollisionToWorldSpace(localClosestTo1007, &worldClosestTo1007);
+
+				if (testPlane.GetPointSideExact(worldClosestTo1007) == SIDE_BACK)
+					continue;
+			}
+
+			bool isShadowClone = !strcmp(ed->GetClassName(), "physicsshadowclone");
+			drawEnt(pEnt, isShadowClone ? MC_SHADOW_CLONES : MC_ENTS, false);
 		}
 	}
 };
