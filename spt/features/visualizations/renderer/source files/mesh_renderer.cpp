@@ -452,14 +452,20 @@ void MeshRendererFeature::OnDrawTranslucents(void* renderingView)
 	          sortedTranslucents.end(),
 	          [](const std::pair<MeshUnitWrapper*, bool>& a, const std::pair<MeshUnitWrapper*, bool>& b)
 	          {
-		          bool zTestA = a.second ? a.first->GetMeshUnit().faceComponent.zTest
-		                                 : a.first->GetMeshUnit().lineComponent.zTest;
-		          bool zTestB = b.second ? b.first->GetMeshUnit().faceComponent.zTest
-		                                 : b.first->GetMeshUnit().lineComponent.zTest;
+		          auto& unitA = a.first->GetMeshUnit();
+		          auto& unitB = b.first->GetMeshUnit();
+
 		          // $ignorez stuff needs to be rendered last on top of everything - materials with it
 		          // don't change the z buffer so anything rendered after can still overwrite them
+		          bool zTestA = a.second ? unitA.faceComponent.zTest : unitA.lineComponent.zTest;
+		          bool zTestB = b.second ? unitB.faceComponent.zTest : unitB.lineComponent.zTest;
 		          if (zTestA != zTestB)
 			          return zTestA;
+
+		          // ah shoot these are both part of the same unit (so the camDist is the same), just pick one
+		          if (&unitA == &unitB)
+			          return a.second;
+
 		          return a.first->camDistSqr > b.first->camDistSqr;
 	          });
 
