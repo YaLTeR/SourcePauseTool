@@ -20,27 +20,40 @@ using interfaces::engine_server;
 ConVar y_spt_draw_portal_env("y_spt_draw_portal_env",
                              "0",
                              FCVAR_CHEAT | FCVAR_DONTRECORD,
-                             "Draw the geometry in a portal's physics environment");
+                             "Draw the geometry in a portal's physics environment; draws the following colors:\n"
+                             "   - white: the portal hole\n"
+                             "   - red: world geometry in front of the portal\n"
+                             "   - blue: world geometry behind the portal\n"
+                             "   - yellow: static props");
 
 ConVar y_spt_draw_portal_env_type(
     "y_spt_draw_portal_env_type",
     "auto",
     FCVAR_CHEAT | FCVAR_DONTRECORD,
-    "Usage: y_spt_draw_portal_env_type collide|auto|blue|orange|<index>; draw world collision and static props in a portal environment\n"
+    "Usage: y_spt_draw_portal_env_type collide|auto|blue|orange|<index>; this determines what portal to use for all y_spt_draw_portal_* cvars.\n"
     "   - collide: draw what the player has collision with\n"
     "   - auto: prioritize what the player has collision with, otherwise use last drawn portal index\n"
     "   - blue/orange: look for specific portal color\n"
     "   - index: specify portal entity index");
 
-ConVar y_spt_draw_portal_env_ents("y_spt_draw_portal_env_ents",
-                                  "0",
-                                  FCVAR_CHEAT | FCVAR_DONTRECORD,
-                                  "Draw entities owned by portal and shadow clones from remote portal");
+ConVar y_spt_draw_portal_env_ents(
+    "y_spt_draw_portal_env_ents",
+    "0",
+    FCVAR_CHEAT | FCVAR_DONTRECORD,
+    "Draw entities owned by portal and shadow clones from remote portal; draws the following colors:\n"
+    "   - white: the portal hole\n"
+    "   - solid green: this entity collides with UTIL_Portal_TraceRay (and therefore the player)\n"
+    "   - solid purple: this entity collides with UTIL_Portal_TraceRay but is a shadow clone\n"
+    "   - wireframe green: the portal owns this entity\n"
+    "   - wireframe purple: this entity is a shadow clone from the linked portal");
 
 ConVar y_spt_draw_portal_env_remote("y_spt_draw_portal_env_remote",
                                     "0",
                                     FCVAR_CHEAT | FCVAR_DONTRECORD,
-                                    "Draw geometry from remote portal");
+                                    "Draw geometry from remote portal; draws the following colors:\n"
+                                    "   - white: the portal hole\n"
+                                    "   - light red: world geometry cloned from the linked portal\n"
+                                    "   - light yellow: static props cloned from the linked portal");
 
 #define MC_PORTAL_HOLE (MeshColor::Wire({255, 255, 255, 255}))
 #define MC_LOCAL_WORLD_BRUSHES (MeshColor{{255, 20, 20, 70}, {0, 0, 0, 255}})
@@ -50,11 +63,9 @@ ConVar y_spt_draw_portal_env_remote("y_spt_draw_portal_env_remote",
 #define MC_LOCAL_STATIC_PROPS (MeshColor{{255, 255, 40, 50}, {0, 0, 0, 255}})
 #define MC_REMOTE_STATIC_PROPS (MeshColor{{255, 255, 150, 15}, {0, 0, 0, 255}})
 
-// wireframe means either this portal or the linked own owns the entity, green means 
-
 // wire is owned ents, solid is what UTIL_PORTAL_TRACERAY collides with
 #define MC_ENTS (MeshColor{{0, 255, 0, 15}, {40, 255, 40, 255}})
-// wire is shadow clones, solid is shadow clones from other portals that aren't supposed toâ„¢ collide with UTIL_PORTAL_TRACERAY
+// wire is shadow clones, solid is shadow clones from other portals that aren't supposed to™ collide with UTIL_PORTAL_TRACERAY
 #define MC_SHADOW_CLONES (MeshColor{{255, 0, 255, 15}, {255, 100, 255, 255}})
 
 #define PORTAL_CLASS "CProp_Portal"
