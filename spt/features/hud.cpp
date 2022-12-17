@@ -134,10 +134,12 @@ bool HUDFeature::GetFont(const std::string& fontName, vgui::HFont& fontOut)
 void HUDFeature::PreHook()
 {
 	loadingSuccessful =
-#ifndef OE
-	    ORIG_CMatSystemSurface__FinishDrawing && ORIG_CMatSystemSurface__StartDrawing &&
+#ifdef OE
+	    ORIG_CEngineVGui__Paint && spt_overlay.ORIG_CViewRender__RenderView_4044;
+#else
+	    ORIG_CMatSystemSurface__FinishDrawing && ORIG_CMatSystemSurface__StartDrawing && ORIG_CEngineVGui__Paint
+	    && spt_overlay.ORIG_CViewRender__RenderView;
 #endif
-	    ORIG_CEngineVGui__Paint;
 }
 
 void HUDFeature::LoadFeature()
@@ -158,7 +160,7 @@ void HUDFeature::DrawHUD(bool overlay)
 {
 	vgui::HFont font;
 
-	if (!interfaces::surface || !GetFont(FONT_DefaultFixedOutline, font))
+	if (!interfaces::surface || !renderView || !GetFont(FONT_DefaultFixedOutline, font))
 		return;
 
 #ifndef OE
