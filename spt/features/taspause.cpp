@@ -59,7 +59,7 @@ void TASPause::LoadFeature()
 	if (ORIG__Host_RunFrame)
 	{
 		int ptnNumber = GetPatternIndex((void**)&ORIG__Host_RunFrame);
-		ptrdiff_t off_pHost_Frametime;
+		ptrdiff_t off_pHost_Frametime = 0;
 		switch (ptnNumber)
 		{
 		case 0: // 5135
@@ -79,7 +79,7 @@ void TASPause::LoadFeature()
 	if (ORIG_Host_AccumulateTime)
 	{
 		int ptnNumber = GetPatternIndex((void**)&ORIG_Host_AccumulateTime);
-		ptrdiff_t off_pHost_Realtime;
+		ptrdiff_t off_pHost_Realtime = 0;
 		switch (ptnNumber)
 		{
 		case 0: // 5135
