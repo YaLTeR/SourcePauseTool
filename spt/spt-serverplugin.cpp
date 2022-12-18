@@ -65,6 +65,7 @@ namespace interfaces
 	IVModelInfo* modelInfo;
 	IBaseClientDLL* clientInterface;
 	IEngineTrace* engineTraceClient = nullptr;
+	IServerPluginHelpers* pluginHelpers = nullptr;
 } // namespace interfaces
 
 ConVar* _viewmodel_fov = nullptr;
@@ -175,6 +176,8 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	interfaces::modelInfo = (IVModelInfo*)interfaceFactory(VMODELINFO_SERVER_INTERFACE_VERSION, NULL);
 	interfaces::clientInterface = (IBaseClientDLL*)clientFactory(CLIENT_DLL_INTERFACE_VERSION, NULL);
 	interfaces::engineTraceClient = (IEngineTrace*)interfaceFactory(INTERFACEVERSION_ENGINETRACE_CLIENT, NULL);
+	interfaces::pluginHelpers =
+	    (IServerPluginHelpers*)interfaceFactory(INTERFACEVERSION_ISERVERPLUGINHELPERS, NULL);
 
 	if (interfaces::gm)
 	{
@@ -314,6 +317,8 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	return true;
 }
 
+extern "C" IMAGE_DOS_HEADER __ImageBase; 
+
 void CSourcePauseTool::Unload(void)
 {
 	if (skipUnload)
@@ -322,6 +327,24 @@ void CSourcePauseTool::Unload(void)
 		skipUnload = false; // Enable unloading again
 		return;
 	}
+
+	#ifdef SSDK2007
+	// Replace the plugin handler with the real handle right before the engine tries to unload.
+	// This allows it to actually do so.
+	// In newer branches (after 3420) this is redundant but doesn't do any harm.
+	auto& plugins = *(CUtlVector<void*>*)((uint32_t)interfaces::pluginHelpers + 4);
+	extern CSourcePauseTool g_SourcePauseTool;
+	for (int i = 0; i < plugins.Count(); i++)
+	{
+		// m_pPlugin
+		if (*(IServerPluginCallbacks**)((uint32_t)plugins[i] + 132) == &g_SourcePauseTool)
+		{
+			// m_pPluginModule
+			*(void**)((uint32_t)plugins[i] + 140) = ((void*)&__ImageBase);
+			break;
+		}
+	}
+	#endif
 
 	Cvar_UnregisterSPTCvars();
 	DisconnectTier1Libraries();
