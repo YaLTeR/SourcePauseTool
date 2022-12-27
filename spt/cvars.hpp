@@ -27,6 +27,10 @@ extern ConVar y_spt_cam_control;
 extern ConVar y_spt_cam_drive;
 extern ConVar y_spt_cam_path_draw;
 
+#ifdef BMS
+extern ConVar y_spt_bms_flashlight_fix;
+#endif
+
 extern ConVar tas_strafe;
 extern ConVar tas_strafe_type;
 extern ConVar tas_strafe_dir;

@@ -1149,6 +1149,7 @@
     <ClCompile Include="spt\features\aim.cpp" />
     <ClCompile Include="spt\features\autocomplete.cpp" />
     <ClCompile Include="spt\features\autojump.cpp" />
+    <ClCompile Include="spt\features\bms_flashlight_fix.cpp" />
     <ClCompile Include="spt\features\boog.cpp" />
     <ClCompile Include="spt\features\camera.cpp" />
     <ClCompile Include="spt\features\collision_group.cpp" />

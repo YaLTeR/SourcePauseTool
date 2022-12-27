@@ -307,6 +307,9 @@
     <ClCompile Include="spt\features\visualizations\portal_placement.cpp">
       <Filter>spt\features\visualizations</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\bms_flashlight_fix.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
