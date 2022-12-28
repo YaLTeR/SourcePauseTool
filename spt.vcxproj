@@ -130,7 +130,7 @@
     <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <TargetName>spt</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">
@@ -140,7 +140,7 @@
     <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <TargetName>spt-2013</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">
@@ -150,7 +150,7 @@
     <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <TargetName>spt-bms</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">
@@ -160,7 +160,7 @@
     <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <TargetName>spt-oe</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -170,7 +170,7 @@
     <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <TargetName>spt</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">
@@ -180,7 +180,7 @@
     <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <TargetName>spt-2013</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">
@@ -190,7 +190,7 @@
     <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <TargetName>spt-bms</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">
@@ -210,8 +210,11 @@
     <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <TargetName>spt-oe</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>false</VcpkgEnabled>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <PreBuildEvent>
@@ -279,7 +282,9 @@
     </Bscmake>
     <PostBuildEvent>
       <Message />
-      <Command>copy "$(TargetPath)" "D:\Games\Source Unpack\portal\"</Command>
+      <Command>md "$(IntDir)..\..\builds"
+del "$(IntDir)..\..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">
@@ -351,7 +356,9 @@
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>copy "$(TargetPath)" "D:\Games\Source Unpack\portal\"</Command>
+      <Command>md "$(IntDir)..\..\builds"
+del "$(IntDir)..\..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">
@@ -423,7 +430,9 @@
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>copy "$(TargetPath)" "D:\Games\Source Unpack\portal\"</Command>
+      <Command>md "$(IntDir)..\..\builds"
+del "$(IntDir)..\..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">
@@ -495,7 +504,9 @@
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>copy "$(TargetPath)" "E:\SteamLibrary\steamapps\common\Dark Messiah Might and Magic Single Player\bin\"</Command>
+      <Command>md "$(IntDir)..\..\builds"
+del "$(IntDir)..\..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -572,7 +583,9 @@
     </Bscmake>
     <PostBuildEvent>
       <Message />
-      <Command>copy "$(TargetPath)" "D:\Games\Source Unpack\portal\"</Command>
+      <Command>md "$(IntDir)..\..\builds"
+del "$(IntDir)..\..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">
@@ -652,7 +665,9 @@
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>copy "$(TargetPath)" "D:\Games\SteamLibrary\steamapps\common\Black Mesa\bms\"</Command>
+      <Command>md "$(IntDir)..\..\builds"
+del "$(IntDir)..\..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">
@@ -732,7 +747,9 @@
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>copy "$(TargetPath)" "D:\Games\SteamLibrary\steamapps\common\Black Mesa\bms\"</Command>
+      <Command>md "$(IntDir)..\..\builds"
+del "$(IntDir)..\..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">
@@ -891,7 +908,9 @@
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>copy "$(TargetPath)" "E:\SteamLibrary\steamapps\common\Dark Messiah Might and Magic Single Player\bin\"</Command>
+      <Command>md "$(IntDir)..\..\builds"
+del "$(IntDir)..\..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
