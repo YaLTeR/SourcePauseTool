@@ -4,8 +4,6 @@
 #define SPT_OVERLAY_ENABLED
 #endif
 
-#ifndef BMS
-
 #include "..\feature.hpp"
 
 class C_BasePlayer;
@@ -21,6 +19,7 @@ enum SkyboxVisibility_t;
 // Overlay hook stuff, could combine with overlay renderer as well
 class Overlay : public FeatureWrapper<Overlay>
 {
+
 public:
 	bool renderingOverlay = false;
 	// these point to the call stack, only valid while we're in RenderView()
@@ -50,5 +49,3 @@ private:
 };
 
 extern Overlay spt_overlay;
-
-#endif

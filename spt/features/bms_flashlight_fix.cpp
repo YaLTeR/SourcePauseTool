@@ -1,15 +1,16 @@
 #include "stdafx.h"
 #include "..\feature.hpp"
 #include "convar.hpp"
+#include "game_detection.hpp"
 
 #ifdef BMS
 
 static void BMSFlashLightFixCVarCallback(IConVar* pConVar, const char* pOldValue, float flOldValue);
 
-ConVar y_spt_bms_flashlight_fix("y_spt_bms_0point9_flashlight_fix",
+ConVar y_spt_bms_flashlight_fix("y_spt_bms_flashlight_fix",
                                 "0",
                                 0,
-                                "Disables all extra movement on flashlight. (0.9 ONLY, FOR NOW!!!)",
+                                "Disables all extra movement on flashlight.",
                                 BMSFlashLightFixCVarCallback);
 
 // Gives the option to disable all extra flashlight movement, including delay, swaying, and bobbing.
@@ -34,7 +35,7 @@ protected:
 private:
 	uintptr_t ptrTimerFloatFirst = 0;
 	uintptr_t ptrTimerFloatSecond = 0;
-	uint8_t timerFloatRestore[4] = {0x00, 0x00, 0x80, 0x30}; // 0.0625
+	uint8_t timerFloatRestore[4] = {0x00, 0x00, 0x80, 0x3D}; // 0.0625
 	uint8_t timerFloatWrite[4] = {0x00, 0x00, 0x80, 0xBF};   // -1
 
 	uintptr_t ptrRandInscFirst = 0;
@@ -76,6 +77,9 @@ static void BMSFlashLightFixCVarCallback(IConVar* pConVar, const char* pOldValue
 
 bool BMSFlashlightFixFeature::ShouldLoadFeature()
 {
+	if (!utils::DoesGameLookLikeBMS() || utils::DoesGameLookLikeBMSMod() || utils::DoesGameLookLikeBMSLatest())
+		return false;
+
 	void* handle;
 	void* clientStartArg = 0;
 	size_t clientSize = 0;

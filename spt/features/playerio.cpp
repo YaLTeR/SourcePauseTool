@@ -58,7 +58,9 @@ namespace patterns
 	    "missinginfo1_4_7",
 	    "55 8B EC 83 EC 08 89 4D F8 C7 45 ?? ?? ?? ?? ?? 83 7D 08 00 0F 95 C0 50 68 ?? ?? ?? ?? 8B 0D",
 	    "dmomm",
-	    "51 53 56 8B 35 ?? ?? ?? ?? 57 8B 7C 24 ?? 85 FF 0F 95 C3");
+	    "51 53 56 8B 35 ?? ?? ?? ?? 57 8B 7C 24 ?? 85 FF 0F 95 C3",
+	    "BMS-Retail-0.9",
+	    "55 8B EC 51 8B 15 ?? ?? ?? ?? B8 00 00 02 00 53 56 33 F6 8B D9 F6 C2 03 B9 FD FF FF FF 57 0F 45 F0 BF FC FF FF FF A1 ?? ?? ?? ?? A9 00 00 02 00 89 7D FC");
 	PATTERNS(
 	    CreateMove,
 	    "5135",

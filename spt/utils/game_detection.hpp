@@ -6,6 +6,7 @@ namespace utils
 	bool DoesGameLookLikeDMoMM();
 	bool DoesGameLookLikeHLS();
 	bool DoesGameLookLikeBMS();
+	bool DoesGameLookLikeBMSLatest();
 	bool DoesGameLookLikeBMSMod();
 	bool DoesGameLookLikeEstranged();
 	int GetBuildNumber();

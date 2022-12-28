@@ -1,7 +1,5 @@
 #include "stdafx.h"
 
-#ifndef BMS
-
 #include "overlay.hpp"
 
 #include "vguimatsurface\imatsystemsurface.h"
@@ -17,6 +15,8 @@
 #include "playerio.hpp"
 #include "hud.hpp"
 #include "shadow.hpp"
+
+#ifndef SPT_HUD_TEXTONLY
 
 ConVar _y_spt_overlay("_y_spt_overlay",
                       "0",
@@ -63,6 +63,8 @@ ConVar _y_spt_overlay_crosshair_color("_y_spt_overlay_crosshair_color",
                                       FCVAR_CHEAT,
                                       "Overlay crosshair RGBA color.");
 ConVar _y_spt_overlay_no_roll("_y_spt_overlay_no_roll", "1", FCVAR_CHEAT, "Set the roll of overlay camera roll to 0.");
+
+#endif
 
 Overlay spt_overlay;
 
@@ -113,6 +115,9 @@ void Overlay::LoadFeature()
 {
 	if (!RenderViewPre_Signal.Works)
 		return;
+
+#ifndef SPT_HUD_TEXTONLY
+
 	InitConcommandBase(_y_spt_overlay);
 	InitConcommandBase(_y_spt_overlay_type);
 	InitConcommandBase(_y_spt_overlay_portal);
@@ -132,10 +137,20 @@ void Overlay::LoadFeature()
 		InitConcommandBase(_y_spt_overlay_crosshair_color);
 	}
 #endif
+
+#endif
 }
 
 HOOK_THISCALL(void, Overlay, CViewRender__RenderView, CViewSetup* cameraView, int nClearFlags, int whatToDraw)
 {
+
+#ifdef SPT_HUD_TEXTONLY
+
+	spt_hud.renderView = cameraView;
+	spt_overlay.ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
+
+#else
+
 	/*
 	* If the overlay is enabled, we'll trigger a recursive call to RenderView() via QueueOverlayRenderView(). You
 	* could in theory use this to have several overlays, in which case you'd need to keep track of the overlay
@@ -172,6 +187,7 @@ HOOK_THISCALL(void, Overlay, CViewRender__RenderView, CViewSetup* cameraView, in
 		ovr.ModifyView(cameraView);
 		ovr.ModifyScreenFlags(nClearFlags, whatToDraw);
 	}
+
 	// it just so happens that we don't need to make a full copy of the view and can use pointers instead
 	if (ovr.renderingOverlay)
 		ovr.overlayView = cameraView;
@@ -182,6 +198,8 @@ HOOK_THISCALL(void, Overlay, CViewRender__RenderView, CViewSetup* cameraView, in
 	callDepth--;
 	if (callDepth == 1)
 		ovr.renderingOverlay = false;
+
+#endif
 }
 
 HOOK_THISCALL(void, Overlay, CViewRender__RenderView_4044, CViewSetup* cameraView, bool drawViewmodel)
@@ -189,6 +207,9 @@ HOOK_THISCALL(void, Overlay, CViewRender__RenderView_4044, CViewSetup* cameraVie
 	spt_hud.renderView = cameraView;
 	spt_overlay.ORIG_CViewRender__RenderView_4044(thisptr, edx, cameraView, drawViewmodel);
 }
+
+
+#ifndef SPT_HUD_TEXTONLY
 
 void Overlay::CViewRender__QueueOverlayRenderView(void* thisptr,
                                                   const CViewSetup& renderView,
