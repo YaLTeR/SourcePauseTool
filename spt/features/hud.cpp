@@ -142,11 +142,13 @@ void HUDFeature::vDrawTopHudElement(Color color, const wchar* format, va_list ar
 	CALL(DrawSetTexture, 0);
 	CALL(DrawSetTextPos, topX, 2 + (topFontTall + 2) * topVertIndex);
 
+#ifdef BMS
 	if (isLatest)
 	{
 		CALL(DrawPrintText_BMSLatest, text, wcslen(text), vgui::FONT_DRAW_DEFAULT, 0x0);
 	}
 	else
+#endif
 	{
 		CALL(DrawPrintText, text, wcslen(text), vgui::FONT_DRAW_DEFAULT);
 	}

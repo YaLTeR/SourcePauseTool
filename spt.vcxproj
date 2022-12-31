@@ -1165,6 +1165,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClCompile Include="spt\cvars.cpp" />
     <ClCompile Include="spt\feature.cpp" />
     <ClCompile Include="spt\features\afterframes.cpp" />
+    <ClCompile Include="spt\features\afterticks.cpp" />
     <ClCompile Include="spt\features\aim.cpp" />
     <ClCompile Include="spt\features\autocomplete.cpp" />
     <ClCompile Include="spt\features\autojump.cpp" />
@@ -1400,6 +1401,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClInclude Include="spt\cvars.hpp" />
     <ClInclude Include="spt\feature.hpp" />
     <ClInclude Include="spt\features\afterframes.hpp" />
+    <ClInclude Include="spt\features\afterticks.hpp" />
     <ClInclude Include="spt\features\aim.hpp" />
     <ClInclude Include="spt\features\autojump.hpp" />
     <ClInclude Include="spt\features\demo.hpp" />

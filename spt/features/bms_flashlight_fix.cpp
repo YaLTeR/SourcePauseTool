@@ -3,8 +3,6 @@
 #include "convar.hpp"
 #include "game_detection.hpp"
 
-#ifdef BMS
-
 static void BMSFlashLightFixCVarCallback(IConVar* pConVar, const char* pOldValue, float flOldValue);
 
 ConVar y_spt_bms_flashlight_fix("y_spt_bms_flashlight_fix",
@@ -157,5 +155,3 @@ void BMSFlashlightFixFeature::Toggle(bool enabled)
 		WRITE(ptrUpDownBobInsc, upDownBobRestore);
 	}
 }
-
-#endif // BMS

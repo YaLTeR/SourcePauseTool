@@ -310,6 +310,9 @@
     <ClCompile Include="spt\features\bms_flashlight_fix.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\afterticks.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -613,6 +616,9 @@
       <Filter>spt\utils</Filter>
     </ClInclude>
     <ClInclude Include="spt\features\property_getter.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\afterticks.hpp">
       <Filter>spt\features</Filter>
     </ClInclude>
   </ItemGroup>

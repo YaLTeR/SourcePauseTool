@@ -72,6 +72,7 @@ extern ConVar tas_script_savestates;
 extern ConVar tas_script_onsuccess;
 
 extern ConVar _y_spt_autojump_ensure_legit;
+extern ConVar _y_spt_afterticks_reset_on_server_activate;
 extern ConVar _y_spt_afterframes_reset_on_server_activate;
 extern ConVar _y_spt_anglesetspeed;
 extern ConVar _y_spt_pitchspeed;
