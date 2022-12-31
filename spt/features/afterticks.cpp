@@ -70,6 +70,7 @@ bool AfterticksFeature::ShouldLoadFeature()
 void AfterticksFeature::UnloadFeature() 
 {
 	ptrHostTickCount = NULL;
+	Works = false;
 }
 
 void AfterticksFeature::OnFrame()
@@ -200,6 +201,8 @@ void AfterticksFeature::InitHooks()
 
 void AfterticksFeature::LoadFeature()
 {
+	Works = false;
+
 	if (!spt_generic.ORIG_HudUpdate)
 		return;
 
@@ -305,4 +308,6 @@ void AfterticksFeature::LoadFeature()
 			Warning("_y_spt_afterticks_await_legacy 1 has no effect.\n");
 		}
 	}
+
+	Works = true;
 }

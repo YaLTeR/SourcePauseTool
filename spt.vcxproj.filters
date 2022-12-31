@@ -313,6 +313,9 @@
     <ClCompile Include="spt\features\afterticks.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\saveloads.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -619,6 +622,9 @@
       <Filter>spt\features</Filter>
     </ClInclude>
     <ClInclude Include="spt\features\afterticks.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\saveloads.hpp">
       <Filter>spt\features</Filter>
     </ClInclude>
   </ItemGroup>

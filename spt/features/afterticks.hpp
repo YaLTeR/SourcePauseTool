@@ -25,6 +25,8 @@ public:
 	void ResumeAfterticksQueue();
 	void DelayAfterticksQueue(int delay);
 
+	bool Works = false;
+
 protected:
 	virtual bool ShouldLoadFeature() override;
 	virtual void LoadFeature() override;
