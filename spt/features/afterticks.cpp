@@ -208,11 +208,7 @@ void AfterticksFeature::LoadFeature()
 		if (!ORIG_HostRunframe__TargetString || MATCHES_Engine__StringReferences.empty())
 			return;
 
-		void* handle = nullptr;
-		void* base = nullptr;
-		size_t size = 0;
-		if (!MemUtils::GetModuleInfo(L"engine.dll", &handle, &base, &size))
-			return;
+		GET_MODULE(engine);
 
 		for (auto match : MATCHES_Engine__StringReferences)
 		{
@@ -232,7 +228,7 @@ void AfterticksFeature::LoadFeature()
 				{
 					int jump = *(int*)(bytes + i + 2);
 					uintptr_t loopStart = (uintptr_t)bytes + jump + i + 6;
-					if (loopStart < (uintptr_t)base)
+					if (loopStart < (uintptr_t)engineBase)
 						// bogus jump
 						continue; 
 
@@ -246,7 +242,7 @@ void AfterticksFeature::LoadFeature()
 						* if we find another pointer point to somewhere near it.
 						*/
 						uintptr_t candidate = *(uintptr_t*)loopStart;
-						if (candidate - (uintptr_t)base > size)
+						if (candidate - (uintptr_t)engineBase > engineSize)
 							continue;
 
 						// xx (xx) [host_tickcount]			INC [host_tickcount]
@@ -255,7 +251,7 @@ void AfterticksFeature::LoadFeature()
 						for (int k = 0; k <= 2; k++)
 						{
 							uintptr_t candidateCurFrameTick = *(uintptr_t*)(loopStart + 4 + k);
-							if (candidateCurFrameTick - (uintptr_t)base > size ||
+							if (candidateCurFrameTick - (uintptr_t)engineBase > engineSize ||
 								candidateCurFrameTick - candidate > 0x8)
 								continue;
 

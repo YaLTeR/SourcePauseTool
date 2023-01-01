@@ -34,14 +34,14 @@ private:
 	uintptr_t ORIG_Server__NoclipString;
 	std::vector<patterns::MatchedPattern> MATCHES_Server__StringReferences;
 
-	uintptr_t ptrJumpInsc;
-	uint8 origJumpBytes[6] = {};
+	DECL_BYTE_REPLACE(Jump, 6);
+
 	byte inscCompare[4] = {0x84, 0xC0, 0x0F, 0x85};
 	int jmpDistance = 0x0;
 };
 
 static NoclipNofixFeature spt_noclipnofix;
-void NoclipNofixCVarCallback(IConVar* pConVar, const char* pOldValue, float flOldValue)
+static void NoclipNofixCVarCallback(IConVar* pConVar, const char* pOldValue, float flOldValue)
 {
 	spt_noclipnofix.Toggle(((ConVar*)pConVar)->GetBool());
 }
@@ -92,39 +92,42 @@ void NoclipNofixFeature::LoadFeature()
 			if (memcmp((void*)(bytes + i), (void*)inscCompare, 4))
 				continue;
 
-			ptrJumpInsc = (uintptr_t)(bytes + i + 2);
-			memcpy((void*)origJumpBytes, (void*)(ptrJumpInsc), 6);
+			INIT_BYTE_REPLACE(Jump, (uintptr_t)(bytes + i + 2));
 
 			/*
 			* When we replace the instruction with a JMP, we replace the last byte with NOP,
 			* meaning the starting point of our jump is shifted up by 1 to that byte.
 			*/
 			jmpDistance = jmpOff + 1;
+			goto success;
 		}
-	}
 
+	}
+	return;
+	
+	success:;
 	InitConcommandBase(y_spt_noclip_nofix);
 }
 
 void NoclipNofixFeature::UnloadFeature()
 {
-	Toggle(false);
+	DESTROY_BYTE_REPLACE(Jump);
 }
 
 
 void NoclipNofixFeature::Toggle(bool enabled)
 {
-	if (ptrJumpInsc == 0)
+	if (PTR_Jump == 0)
 		return;
 
 	if (enabled)
 	{
-		MemUtils::ReplaceBytes((void*)ptrJumpInsc, 1, new uint8[1]{0xE9});
-		MemUtils::ReplaceBytes((void*)(ptrJumpInsc + 1), 4, (uint8*)&jmpDistance);
-		MemUtils::ReplaceBytes((void*)(ptrJumpInsc + 5), 1, new uint8[1]{0x90});
+		MemUtils::ReplaceBytes((void*)PTR_Jump, 1, new uint8[1]{0xE9});
+		MemUtils::ReplaceBytes((void*)(PTR_Jump + 1), 4, (uint8*)&jmpDistance);
+		MemUtils::ReplaceBytes((void*)(PTR_Jump + 5), 1, new uint8[1]{0x90});
 	}
 	else
 	{
-		MemUtils::ReplaceBytes((void*)ptrJumpInsc, 6, origJumpBytes);
+		RESTORE_BYTE_REPLACE(Jump);
 	}
 }

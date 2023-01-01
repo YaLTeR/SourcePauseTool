@@ -31,34 +31,22 @@ protected:
 	// we make a lot of single value replacements and instruction overrides
 	// so let's just just write the bytes ourselves...
 private:
-	uintptr_t ptrTimerFloatFirst = 0;
-	uintptr_t ptrTimerFloatSecond = 0;
-	uint8_t timerFloatRestore[4] = {0x00, 0x00, 0x80, 0x3D}; // 0.0625
-	uint8_t timerFloatWrite[4] = {0x00, 0x00, 0x80, 0xBF};   // -1
 
-	uintptr_t ptrRandInscFirst = 0;
-	uint8_t randFirstRestore[5] = {};
-	uintptr_t ptrRandInscSecond = 0;
-	uint8_t randSecondRestore[5] = {};
-	uintptr_t ptrRandInscThird = 0;
-	uint8_t randThirdRestore[5] = {};
-	uint8_t randWrite[5] = {0xB8, 0x00, 0x00, 0x00, 0x00}; // mov eax,0x0
+	DECL_BYTE_REPLACE(TimerFloatFirst, 4, 0x00, 0x00, 0x80, 0xBF);
+	DECL_BYTE_REPLACE(TimerFloatSecond, 4, 0x00, 0x00, 0x80, 0xBF);
 
-	uintptr_t ptrBobInsc = 0;
-	uint8_t bobWrite[8] = 
-	{
-	    0xF3, 0x0F, 0x5C, 0xC0, // subss xmm0,xmm0
+	DECL_BYTE_REPLACE(RandInscFirst, 5, 0xB8, 0x00, 0x00, 0x00, 0x00);
+	DECL_BYTE_REPLACE(RandInscSecond, 5, 0xB8, 0x00, 0x00, 0x00, 0x00);
+	DECL_BYTE_REPLACE(RandInscThird, 5, 0xB8, 0x00, 0x00, 0x00, 0x00);
+
+	DECL_BYTE_REPLACE(Bob, 8, 
+		0xF3, 0x0F, 0x5C, 0xC0, // subss xmm0,xmm0
 	    0x90, 0x90, 0x90, 0x90, // nop
-	};
-	uint8_t bobRestore[8] = {};
-
-	uintptr_t ptrUpDownBobInsc = 0;
-	uint8_t upDownBobWrite[6] = 
-	{
+	);
+	DECL_BYTE_REPLACE(Alice, 6, // (up down bob)
 	    0xD8, 0xE0,				// fsub st(0),st(0)
 		0x90, 0x90, 0x90, 0x90, // nop
-	};
-	uint8_t upDownBobRestore[6] = {};
+	);
 };
 
 static BMSFlashlightFixFeature spt_bms_flashlight_fix;
@@ -67,53 +55,37 @@ static void BMSFlashLightFixCVarCallback(IConVar* pConVar, const char* pOldValue
 	spt_bms_flashlight_fix.Toggle(((ConVar*)pConVar)->GetBool());
 }
 
-#define DEF(ptrDef, ptr, restore, write) \
-	{ \
-		ptrDef = ptr; \
-		memcpy(restore, (void*)ptrDef, sizeof(write)); \
-	}
-
 bool BMSFlashlightFixFeature::ShouldLoadFeature()
 {
 	if (!utils::DoesGameLookLikeBMS() || utils::DoesGameLookLikeBMSMod() || utils::DoesGameLookLikeBMSLatest())
 		return false;
 
-	void* handle;
-	void* clientStartArg = 0;
-	size_t clientSize = 0;
-	if (!MemUtils::GetModuleInfo(L"client.dll", &handle, &clientStartArg, &clientSize))
-	{
-		//ConWarning("Couldn't retieve client's info...");
-		return false;
-	}
-
-	// TODO: sigscan this so it can work for the other versions as well...
-
-	uintptr_t clientStart = (uintptr_t)clientStartArg;
-
-	ptrTimerFloatFirst = (clientStart + 0x698a64);
-	ptrTimerFloatSecond = (clientStart + 0x178ADE + 6);
-
-	uint floatFirst = *(uint*)ptrTimerFloatFirst;
-	uint floatSecond = *(uint*)ptrTimerFloatSecond;
-	if (clientSize < 0x698a64 || floatFirst != 0x3d800000 || floatSecond != 0x3d800000)
-	{
-		return false;
-	}
-
-	DEF(ptrRandInscFirst, clientStart + 0x1795de, randFirstRestore, randWrite);
-	DEF(ptrRandInscSecond, clientStart + 0x179607, randSecondRestore, randWrite);
-	DEF(ptrRandInscThird, clientStart + 0x179630, randThirdRestore, randWrite);
-
-	DEF(ptrBobInsc, clientStart + 0x179a16, bobRestore, bobWrite);
-	DEF(ptrUpDownBobInsc, clientStart + 0x179ec1, upDownBobRestore, upDownBobWrite);
-
-	sizeof(bobRestore);
 	return true;
 }
 
 void BMSFlashlightFixFeature::InitHooks()
 {
+	// TODO: sigscan this so it can work for the other versions as well...
+	GET_MODULE(client);
+	uintptr_t clientStart = (uintptr_t)clientBase;
+
+	auto ptrTimerFloatFirst = (clientStart + 0x698a64);
+	auto ptrTimerFloatSecond = (clientStart + 0x178ADE + 6);
+	uint floatFirst = *(uint*)ptrTimerFloatFirst;
+	uint floatSecond = *(uint*)ptrTimerFloatSecond;
+	if (floatFirst != 0x3d800000 || floatSecond != 0x3d800000)
+		return;
+
+	INIT_BYTE_REPLACE(TimerFloatFirst, ptrTimerFloatFirst);
+	INIT_BYTE_REPLACE(TimerFloatSecond, ptrTimerFloatSecond);
+
+	INIT_BYTE_REPLACE(RandInscFirst, clientStart + 0x1795de);
+	INIT_BYTE_REPLACE(RandInscSecond, clientStart + 0x179607);
+	INIT_BYTE_REPLACE(RandInscThird, clientStart + 0x179630);
+
+	INIT_BYTE_REPLACE(Bob, clientStart + 0x179a16);
+	INIT_BYTE_REPLACE(Alice, clientStart + 0x179ec1);
+
 	InitConcommandBase(y_spt_bms_flashlight_fix);
 }
 
@@ -121,37 +93,41 @@ void BMSFlashlightFixFeature::LoadFeature() {}
 
 void BMSFlashlightFixFeature::UnloadFeature()
 {
-	Toggle(false);
+	DESTROY_BYTE_REPLACE(TimerFloatFirst);
+	DESTROY_BYTE_REPLACE(TimerFloatSecond);
+
+	DESTROY_BYTE_REPLACE(RandInscFirst);
+	DESTROY_BYTE_REPLACE(RandInscSecond);
+	DESTROY_BYTE_REPLACE(RandInscThird);
+
+	DESTROY_BYTE_REPLACE(Bob);
+	DESTROY_BYTE_REPLACE(Alice);
 }
 
-#define WRITE(ptrDef, write) \
-	{ \
-		MemUtils::ReplaceBytes((void*)ptrDef, sizeof(write), write); \
-	}
 void BMSFlashlightFixFeature::Toggle(bool enabled)
 {
 	if (enabled)
 	{
-		WRITE(ptrTimerFloatFirst, timerFloatWrite);
-		WRITE(ptrTimerFloatSecond, timerFloatWrite);
+		DO_BYTE_REPLACE(TimerFloatFirst);
+		DO_BYTE_REPLACE(TimerFloatSecond);
 
-		WRITE(ptrRandInscFirst, randWrite);
-		WRITE(ptrRandInscSecond, randWrite);
-		WRITE(ptrRandInscThird, randWrite);
+		DO_BYTE_REPLACE(RandInscFirst);
+		DO_BYTE_REPLACE(RandInscSecond);
+		DO_BYTE_REPLACE(RandInscThird);
 
-		WRITE(ptrBobInsc, bobWrite);
-		WRITE(ptrUpDownBobInsc, upDownBobWrite);
+		DO_BYTE_REPLACE(Bob);
+		DO_BYTE_REPLACE(Alice);
 	}
 	else
 	{
-		WRITE(ptrTimerFloatFirst, timerFloatRestore);
-		WRITE(ptrTimerFloatSecond, timerFloatRestore);
+		RESTORE_BYTE_REPLACE(TimerFloatFirst);
+		RESTORE_BYTE_REPLACE(TimerFloatSecond);
 
-		WRITE(ptrRandInscFirst, randFirstRestore);
-		WRITE(ptrRandInscSecond, randSecondRestore);
-		WRITE(ptrRandInscThird, randThirdRestore);
+		RESTORE_BYTE_REPLACE(RandInscFirst);
+		RESTORE_BYTE_REPLACE(RandInscSecond);
+		RESTORE_BYTE_REPLACE(RandInscThird);
 
-		WRITE(ptrBobInsc, bobRestore);
-		WRITE(ptrUpDownBobInsc, upDownBobRestore);
+		RESTORE_BYTE_REPLACE(Bob);
+		RESTORE_BYTE_REPLACE(Alice);
 	}
 }
