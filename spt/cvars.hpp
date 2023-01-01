@@ -27,10 +27,6 @@ extern ConVar y_spt_cam_control;
 extern ConVar y_spt_cam_drive;
 extern ConVar y_spt_cam_path_draw;
 
-#ifdef BMS
-extern ConVar y_spt_bms_flashlight_fix;
-#endif
-
 extern ConVar tas_strafe;
 extern ConVar tas_strafe_type;
 extern ConVar tas_strafe_dir;
@@ -96,6 +92,7 @@ extern ConVar y_spt_hud_oob;
 extern ConVar y_spt_hud_isg;
 extern ConVar y_spt_hud_shadow_info;
 extern ConVar y_spt_hud_portal_placement;
+extern ConVar y_spt_hud_saveloads_showcurindex;
 
 extern ConVar y_spt_ihud;
 extern ConVar y_spt_ihud_grid_size;

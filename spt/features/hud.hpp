@@ -83,8 +83,8 @@ private:
 	DECL_MEMBER_THISCALL(int, ISurface__GetFontTall, vgui::HFont font);
 	DECL_MEMBER_THISCALL(void, ISurface__AddCustomFontFile, const char* fontName, const char* fontFileName);
 
-	std::vector<patterns::MatchedPattern> drawSetTextFontMatches;
-	std::vector<patterns::MatchedPattern> getFontTallMatches;
+	std::vector<patterns::MatchedPattern> MATCHES_ISurface__DrawSetTextFont;
+	std::vector<patterns::MatchedPattern> MATCHES_ISurface__GetFontTall;
 
 	bool isLatest = false;
 #endif	

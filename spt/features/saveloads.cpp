@@ -4,19 +4,25 @@
 #include "signals.hpp"
 #include "convar.hpp"
 #include "..\features\afterticks.hpp"
+#include "hud.hpp"
 #include <format>
 
-CON_COMMAND(y_spt_saveloads, "Enables and begins automated save/load segment creation.\n\n\
-Arguments: y_spt_saveloads <segment name> <start index> <end index> [<ticks to wait>] [<extra commands>].\n \
+CON_COMMAND(y_spt_saveloads, "Begins an automated save/load process.\n\n\
+Arguments: y_spt_saveloads <type> <segment name> <start index> <end index> [<ticks to wait>] [<extra commands>].\n \
+	- <type> is the type of the save/load process, which can be\n\
+		- 0 for full save/load segment creation. Saves and demos for each save/load will be made and named accordingly.\n\
+		- 1 for save/load execution. The tool will only use 1 name for saves, and no demos will be made.\n\
+		- 2 for save/load segment rendering. Saves and demos will be loaded in order according to the specified naming format and then screenshotted.\n\
+		These will determine what set of commands will be executed.\n\
 	- <segment name> is the segment name, which will be used to name the saves and demos (format: <segment name>-<index>)\n\
 	- <start index> is the index from which the saves and demos will be named from.\n\
-	- <end index> is the index up to which SPT will save/load.\n\
-	- OPTIONAL: <ticks to wait> is the number of ticks to wait after a save is loaded before saving again.\n\n\
+	- <end index> is the index up to which SPT will process.\n\
+	- OPTIONAL: <ticks to wait> is the number of ticks to wait after a save is loaded before SPT executes the commands of the corresponding process type.\n\n\
 	- OPTIONAL: <extra commands> is a string containing extra commands to be executed every save/load \n\n\
 Usage: \n\
 	- Enter in the command.\n\
-	- Load the save from which the segment should begin from. The save/load process will begin automatically.\n\
-	- Use \"y_spt_saveloads_stop\" at any time to stop the process. This will also be bound to \"L\"")
+	- Load the save from which the process should begin from. The save/load process will begin automatically.\n\
+	- Use \"y_spt_saveloads_stop\" at any time to stop the process. This will also be bound to \"L\"\n")
 {
 	if (args.ArgC() < 4)
 	{
@@ -24,17 +30,24 @@ Usage: \n\
 		return;	
 	}
 
-	spt_saveloads.Begin(args.Arg(1),
-	                    atoi(args.Arg(2)),
+	spt_saveloads.Begin(atoi(args.Arg(1)),
+	                    args.Arg(2),
 	                    atoi(args.Arg(3)),
-	                    args.ArgC() == 4 ? 0 : atoi(args.Arg(4)),
-						args.ArgC() == 5 ? nullptr : args.Arg(5));
+	                    atoi(args.Arg(4)),
+	                    args.ArgC() == 5 ? 0 : atoi(args.Arg(5)),
+						args.ArgC() == 6 ? nullptr : args.Arg(6));
 }
+
 
 CON_COMMAND(y_spt_saveloads_stop, "Stops the current save/load'ing process.") 
 {
 	spt_saveloads.Stop();
 }
+
+ConVar y_spt_hud_saveloads_showcurindex("y_spt_hud_saveloads_showcurindex",
+                                        "1",
+                                        0,
+                                        "Shows the current save/load index of the current save/load process.\n");
 
 namespace patterns
 {
@@ -55,19 +68,16 @@ bool SaveloadsFeature::ShouldLoadFeature()
 
 void SaveloadsFeature::InitHooks() 
 {
-	AddMatchAllPattern(patterns::Engine__SignOnState,
-	                   "engine",
-	                   "Engine__SignOnState",
-	                   &signOnStateMatches);
+	FIND_PATTERN_ALL(engine, Engine__SignOnState);
 }
 
 
 void SaveloadsFeature::LoadFeature()
 {
-	if (!spt_afterticks.Works || signOnStateMatches.empty())
+	if (!spt_afterticks.Works || MATCHES_Engine__SignOnState.empty() || !FrameSignal.Works)
 		return;
 
-	auto match = signOnStateMatches[0]; 
+	auto match = MATCHES_Engine__SignOnState[0]; 
 	switch (match.ptnIndex)
 	{
 	case 0:
@@ -88,12 +98,42 @@ void SaveloadsFeature::LoadFeature()
 	InitCommand(y_spt_saveloads);
 	InitCommand(y_spt_saveloads_stop);
 
+#ifdef SPT_HUD_ENABLED
+	AddHudCallback(
+	    "SAVELOADS",
+	    [this]()
+	    {
+		    if (execute)
+			    spt_hud.DrawTopHudElement(L"SAVELOADS: %i / %i (%i left)", startIndex, endIndex, endIndex - startIndex);
+	    },
+	    y_spt_hud_saveloads_showcurindex);
+#endif
+
 	FrameSignal.Connect(this, &SaveloadsFeature::Update);
 }
 
 
-void SaveloadsFeature::Begin(const char* segName_, int startIndex_, int endIndex_, int ticksToWait_, const char* extra) 
+void SaveloadsFeature::Begin(int type_,
+							 const char* segName_,
+                             int startIndex_,
+                             int endIndex_,
+                             int ticksToWait_,
+                             const char* extra)
 {
+
+	if (type_ > 2 || type_ < 0)
+	{
+		ConWarning("SAVELOADS: Invalid save/load process type! Not continuing.");
+		return;
+	}
+
+	if (startIndex_ < 0 || endIndex_ < 0 || startIndex_ > endIndex_)
+	{
+		ConWarning("SAVELOADS: Invalid start and/or end index.");
+		return;
+	}
+
+	this->type = type_;
 	this->prefixName.assign(segName_);
 	this->startIndex = startIndex_;
 	this->endIndex = endIndex_;
@@ -103,12 +143,14 @@ void SaveloadsFeature::Begin(const char* segName_, int startIndex_, int endIndex
 	execute = true;
 
 	ConMsg(
-		"\nSave/load process:\n\
+		"------\n\nSAVELOADS: Save/load process:\n\
+	- Type: %i\n\
 	- Segment name: \"%s\"\n\
 	- From index %i to index %i (%i save/loads)\n\
-	- Wait time before save: %i\n\
+	- Wait time before action: %i\n\
 	- Extra commands: \"%s\"\n\n\
-Please load the save from which save/loading should begin.\n",
+Please load the save from which save/loading should begin.\n\n------\n",
+		type_,
 	    segName_,
 	    startIndex_,
 	    endIndex_,
@@ -127,7 +169,7 @@ void SaveloadsFeature::Stop()
 	this->extraCommands.assign("");
 	execute = false;;
 	spt_afterticks.ResetAfterticksQueue();
-	ConMsg("Save/load process stopped.\n");
+	ConMsg("SAVELOADS: Save/load process stopped.\n");
 }
 
 int SaveloadsFeature::GetSignOnState() 
@@ -148,12 +190,30 @@ void SaveloadsFeature::Update()
 		return;
 
 	std::string segName = std::format("{}-{:03d}", prefixName, startIndex);
-	std::string command = std::format(
-		"save {0}; \
-record {0}; _y_spt_afterticks 20 \"echo #SAVE#\"; _y_spt_afterticks 25 \"stop\"; \
-_y_spt_afterticks 30 \"load {0}\"", 
-		segName, 
-		extraCommands);
+	std::string command;
+
+	switch (this->type)
+	{
+	case 0: // normal segment
+		command = std::format("{1}; save {0};\
+record {0}; _y_spt_afterticks 20 \"echo #SAVE#\"; _y_spt_afterticks 25 \"stop\";\
+_y_spt_afterticks 30 \"load {0}\"",
+		    segName,
+		    extraCommands,
+		    prefixName);
+		break;
+	case 1: // normal save/load
+		command =
+		    std::format("{1}; save {2}; _y_spt_afterticks 30 \"load {2}\"", segName, extraCommands, prefixName);
+		break;
+	case 2: // screenshot
+		ticksToWait = MAX(ticksToWait, 20); // else we won't get any screenshots...
+		command = std::format("{1}; screenshot {0}; _y_spt_afterticks 30 \"load {0}\"",
+		                      segName,
+		                      extraCommands,
+		                      prefixName);
+		break;
+	};
 
 	if (ticksToWait > 0)
 	{
@@ -167,12 +227,13 @@ _y_spt_afterticks 30 \"load {0}\"",
 	{
 		EngineConCmd(command.c_str());
 	}
-		
+
+	ConMsg("SAVELOADS: Processed segment %i, working until %i (%i left)\n", startIndex, endIndex, endIndex - startIndex);
 
 	startIndex++;
 	if (startIndex > endIndex)
 	{
 		execute = false;
-		ConMsg("Save/load process finished.\n");
+		ConMsg("SAVELOADS: Save/load process finished.\n");
 	}
 }

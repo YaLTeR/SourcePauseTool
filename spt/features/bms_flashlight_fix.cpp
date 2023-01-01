@@ -28,8 +28,8 @@ protected:
 	virtual void UnloadFeature() override;
 
 	
-	// value replacements and single instruction overrides
-	// we'll just write the bytes ourselves...
+	// we make a lot of single value replacements and instruction overrides
+	// so let's just just write the bytes ourselves...
 private:
 	uintptr_t ptrTimerFloatFirst = 0;
 	uintptr_t ptrTimerFloatSecond = 0;

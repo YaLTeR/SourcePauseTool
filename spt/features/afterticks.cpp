@@ -193,10 +193,7 @@ CON_COMMAND(_y_spt_afterticks_reset, "Reset the afterticks queue.")
 void AfterticksFeature::InitHooks() 
 {
 	FIND_PATTERN(engine, HostRunframe__TargetString);
-	AddMatchAllPattern(patterns::Engine__StringReferences,
-	                   "engine",
-	                   "Engine__StringReferences",
-	                   &stringReferenceMatches);
+	FIND_PATTERN_ALL(engine, Engine__StringReferences);
 }
 
 void AfterticksFeature::LoadFeature()
@@ -208,7 +205,7 @@ void AfterticksFeature::LoadFeature()
 
 	// find host_tickcount pointer
 	{
-		if (!ORIG_HostRunframe__TargetString || stringReferenceMatches.empty())
+		if (!ORIG_HostRunframe__TargetString || MATCHES_Engine__StringReferences.empty())
 			return;
 
 		void* handle = nullptr;
@@ -217,7 +214,7 @@ void AfterticksFeature::LoadFeature()
 		if (!MemUtils::GetModuleInfo(L"engine.dll", &handle, &base, &size))
 			return;
 
-		for (auto match : stringReferenceMatches)
+		for (auto match : MATCHES_Engine__StringReferences)
 		{
 			auto strRefPtr = match.ptr;
 			uintptr_t refLocation = *(uintptr_t*)(strRefPtr + 1);

@@ -44,7 +44,7 @@ private:
 	// we rely on this as it is never reset and is purely driven by the engine
 	uintptr_t ptrHostTickCount;
 	uintptr_t ORIG_HostRunframe__TargetString;
-	std::vector<patterns::MatchedPattern> stringReferenceMatches;
+	std::vector<patterns::MatchedPattern> MATCHES_Engine__StringReferences;
 };
 
 extern AfterticksFeature spt_afterticks;

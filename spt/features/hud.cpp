@@ -96,14 +96,9 @@ void HUDFeature::InitHooks()
 #ifdef BMS
 	isLatest = utils::DoesGameLookLikeBMSLatest();
 
-	AddMatchAllPattern(patterns::ISurface__DrawSetTextFont,
-	                   "vguimatsurface",
-	                   "ISurface__DrawSetTextFont",
-	                   &drawSetTextFontMatches);
-	AddMatchAllPattern(patterns::ISurface__GetFontTall,
-	                   "vguimatsurface",
-	                   "ISurface__GetFontTall",
-	                   &getFontTallMatches);
+	FIND_PATTERN_ALL(vguimatsurface, ISurface__DrawSetTextFont);
+	FIND_PATTERN_ALL(vguimatsurface, ISurface__GetFontTall);
+
 	FIND_PATTERN(vguimatsurface, ISurface__DrawPrintText);
 	FIND_PATTERN(vguimatsurface, ISurface__DrawSetTextPos);
 	FIND_PATTERN(vguimatsurface, ISurface__DrawSetTextColor);
@@ -220,8 +215,8 @@ void HUDFeature::PreHook()
 #ifdef BMS
 
 	if (!ORIG_ISurface__DrawPrintText || !ORIG_ISurface__DrawSetTextColor || !ORIG_ISurface__DrawSetTextPos
-	    || !ORIG_ISurface__DrawSetTexture || !ORIG_ISurface__AddCustomFontFile || drawSetTextFontMatches.empty()
-	    || getFontTallMatches.empty())
+	    || !ORIG_ISurface__DrawSetTexture || !ORIG_ISurface__AddCustomFontFile || MATCHES_ISurface__DrawSetTextFont.empty()
+	    || MATCHES_ISurface__GetFontTall.empty())
 	{
 		loadingSuccessful = false;
 		return;
@@ -240,14 +235,14 @@ void HUDFeature::PreHook()
 
 		if (curPtr == (uintptr_t)ORIG_ISurface__AddCustomFontFile)
 		{
-			for (auto candidate : getFontTallMatches) 
+			for (auto candidate : MATCHES_ISurface__GetFontTall) 
 				if (candidate.ptr == nextPtr)
 					ORIG_ISurface__GetFontTall = (_ISurface__GetFontTall)(candidate.ptr);
 		}
 
 		if (nextPtr == (uintptr_t)ORIG_ISurface__DrawSetTextColor)
 		{
-			for (auto candidate : drawSetTextFontMatches)
+			for (auto candidate : MATCHES_ISurface__DrawSetTextFont)
 				// overloaded function, observation shows declaration order doesn't match actual order...
 				if (candidate.ptr == curPtr || candidate.ptr == prevPtr)
 					ORIG_ISurface__DrawSetTextFont = (_ISurface__DrawSetTextFont)(candidate.ptr);
@@ -278,8 +273,8 @@ void HUDFeature::UnloadFeature()
 	cl_showpos = cl_showfps = nullptr;
 
 #ifdef BMS
-	drawSetTextFontMatches.clear();
-	getFontTallMatches.clear();
+	MATCHES_ISurface__DrawSetTextFont.clear();
+	MATCHES_ISurface__GetFontTall.clear();
 #endif
 
 }
