@@ -15,7 +15,7 @@ struct afterticks_entry_t
 	std::string command;
 };
 
-// This feature enables _y_spt_afterframes
+// This feature enables _y_spt_afterticks
 class AfterticksFeature : public FeatureWrapper<AfterticksFeature>
 {
 public:

@@ -120,14 +120,14 @@ void BMSFlashlightFixFeature::Toggle(bool enabled)
 	}
 	else
 	{
-		RESTORE_BYTE_REPLACE(TimerFloatFirst);
-		RESTORE_BYTE_REPLACE(TimerFloatSecond);
+		UNDO_BYTE_REPLACE(TimerFloatFirst);
+		UNDO_BYTE_REPLACE(TimerFloatSecond);
 
-		RESTORE_BYTE_REPLACE(RandInscFirst);
-		RESTORE_BYTE_REPLACE(RandInscSecond);
-		RESTORE_BYTE_REPLACE(RandInscThird);
+		UNDO_BYTE_REPLACE(RandInscFirst);
+		UNDO_BYTE_REPLACE(RandInscSecond);
+		UNDO_BYTE_REPLACE(RandInscThird);
 
-		RESTORE_BYTE_REPLACE(Bob);
-		RESTORE_BYTE_REPLACE(Alice);
+		UNDO_BYTE_REPLACE(Bob);
+		UNDO_BYTE_REPLACE(Alice);
 	}
 }

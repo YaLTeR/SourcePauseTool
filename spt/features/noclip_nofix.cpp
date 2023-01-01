@@ -11,7 +11,7 @@ ConVar y_spt_noclip_nofix("y_spt_noclip_nofix",
                           "Disables noclip's position fixing.",
                           NoclipNofixCVarCallback);
 
-// Gives the option to disable all extra flashlight movement, including delay, swaying, and bobbing.
+// Gives the option to disable noclip position fixing
 class NoclipNofixFeature : public FeatureWrapper<NoclipNofixFeature>
 {
 public:
@@ -128,6 +128,6 @@ void NoclipNofixFeature::Toggle(bool enabled)
 	}
 	else
 	{
-		RESTORE_BYTE_REPLACE(Jump);
+		UNDO_BYTE_REPLACE(Jump);
 	}
 }

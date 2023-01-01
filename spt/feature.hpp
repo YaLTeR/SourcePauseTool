@@ -52,13 +52,13 @@
 #define DO_BYTE_REPLACE(name)\
 	if (PTR_##name != NULL)\
 		MemUtils::ReplaceBytes((void*)PTR_##name, sizeof(ORIG_BYTES_##name), NEW_BYTES_##name);
-#define RESTORE_BYTE_REPLACE(name)\
+#define UNDO_BYTE_REPLACE(name)\
 	if (PTR_##name != NULL)\
 		MemUtils::ReplaceBytes((void*)PTR_##name, sizeof(ORIG_BYTES_##name), ORIG_BYTES_##name);
 #define DESTROY_BYTE_REPLACE(name)\
 	if (PTR_##name != NULL)\
 	{ \
-		RESTORE_BYTE_REPLACE(name);\
+		UNDO_BYTE_REPLACE(name);\
 		PTR_##name = NULL; \
 		memset((void*)ORIG_BYTES_##name, 0x00, sizeof(ORIG_BYTES_##name));\
 	}

@@ -1192,6 +1192,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClCompile Include="spt\features\overlay.cpp" />
     <ClCompile Include="spt\features\pause.cpp" />
     <ClCompile Include="spt\features\playerio.cpp" />
+    <ClCompile Include="spt\features\portal_nogroundsnap.cpp" />
     <ClCompile Include="spt\features\property_getter.cpp" />
     <ClCompile Include="spt\features\restart.cpp" />
     <ClCompile Include="spt\features\rng.cpp" />

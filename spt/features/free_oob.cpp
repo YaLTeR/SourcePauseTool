@@ -12,7 +12,7 @@ ConVar y_spt_free_oob_movement("y_spt_free_oob_movement",
                               "Disables noclip's position fixing.",
                                FreeOOBCVarCallback);
 
-// Gives the option to disable all extra flashlight movement, including delay, swaying, and bobbing.
+// Gives the option to disable the checks which kills speed while in the void.
 class FreeOobFeature : public FeatureWrapper<FreeOobFeature>
 {
 public:
@@ -64,17 +64,14 @@ void FreeOobFeature::LoadFeature()
 	if (!ORIG_CheckJumpButton || !interfaces::gm)
 		return;
 
-	uintptr_t vftEntry = *(uintptr_t*)interfaces::gm;
-	if (vftEntry == NULL)
-		return;
-
 	GET_MODULE(server);
 
 	// we assume TryPlayerMove is 2 entries below CheckJumpButton in the vftable.
 	uintptr_t cjbPtr = (uintptr_t)ORIG_CheckJumpButton;
-	for (int i = 0; i <= 0x100; i++)
+	for (uintptr_t vftEntry = (uintptr_t)serverBase; vftEntry <= (uintptr_t)serverBase + serverSize; vftEntry++)
 	{
-		auto funcPtr = *(uintptr_t*)(vftEntry + i * 4);
+		auto funcPtr = *(uintptr_t*)vftEntry;
+
 		if (funcPtr != cjbPtr)
 			continue;
 
@@ -93,8 +90,11 @@ void FreeOobFeature::LoadFeature()
 		* we will assume both offsets in the jumps are under 0x10000
 		*/
 		
-		auto funcStart = *(uintptr_t*)(vftEntry + (i + 3) * 4);
-		for (int j = 0; j <= 0x500; j++)
+		auto funcStart = *(uintptr_t*)(vftEntry + 3 * 4);
+		if (funcStart < (uintptr_t)serverBase || funcPtr > (uintptr_t)serverBase + serverSize)
+			continue;
+
+		for (int j = 0; j <= 0x2000; j++)
 		{
 			uintptr_t cur = funcStart + j;
 			if (memcmp((void*)cur, (void*)secondJumpCompare, 5))
@@ -152,7 +152,7 @@ void FreeOobFeature::Toggle(bool enabled)
 	}
 	else
 	{
-		RESTORE_BYTE_REPLACE(FirstJump);
-		RESTORE_BYTE_REPLACE(SecondJump);
+		UNDO_BYTE_REPLACE(FirstJump);
+		UNDO_BYTE_REPLACE(SecondJump);
 	}
 }
