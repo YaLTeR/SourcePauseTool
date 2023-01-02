@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #include "game_detection.hpp"
 #include "rng.hpp"
 #include "tier1/checksum_md5.h"

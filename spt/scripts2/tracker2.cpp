@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #include "tracker2.hpp"
 #include "string_utils.hpp"
 #include "..\features\playerio.hpp"

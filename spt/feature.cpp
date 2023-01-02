@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #include <future>
 #include "convar.hpp"
 #include "feature.hpp"

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #include <Windows.h>
 #include "spt\feature.hpp"
 #include "..\spt-serverplugin.hpp"

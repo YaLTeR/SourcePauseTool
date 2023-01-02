@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #include "datamap_wrapper.hpp"
 
 namespace utils

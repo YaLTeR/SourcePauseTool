@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 
 #include "..\mesh_builder.hpp"
 #include "spt\features\ent_props.hpp"

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #include "..\feature.hpp"
 #include "signals.hpp"
 #include "..\scripts\tester.hpp"

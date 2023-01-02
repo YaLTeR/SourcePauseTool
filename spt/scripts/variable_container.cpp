@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #include "variable_container.hpp"
 #include "..\cvars.hpp"
 #include "dbg.h"
