@@ -6,10 +6,10 @@
 static void BMSFlashLightFixCVarCallback(IConVar* pConVar, const char* pOldValue, float flOldValue);
 
 ConVar y_spt_bms_flashlight_fix("y_spt_bms_flashlight_fix",
-                                "0",
-                                0,
-                                "Disables all extra movement on flashlight.",
-                                BMSFlashLightFixCVarCallback);
+								"0",
+								0,
+								"Disables all extra movement on flashlight.",
+								BMSFlashLightFixCVarCallback);
 
 // Gives the option to disable all extra flashlight movement, including delay, swaying, and bobbing.
 class BMSFlashlightFixFeature : public FeatureWrapper<BMSFlashlightFixFeature>
@@ -41,10 +41,10 @@ private:
 
 	DECL_BYTE_REPLACE(Bob, 8, 
 		0xF3, 0x0F, 0x5C, 0xC0, // subss xmm0,xmm0
-	    0x90, 0x90, 0x90, 0x90, // nop
+		0x90, 0x90, 0x90, 0x90, // nop
 	);
 	DECL_BYTE_REPLACE(Alice, 6, // (up down bob)
-	    0xD8, 0xE0,				// fsub st(0),st(0)
+		0xD8, 0xE0,				// fsub st(0),st(0)
 		0x90, 0x90, 0x90, 0x90, // nop
 	);
 };

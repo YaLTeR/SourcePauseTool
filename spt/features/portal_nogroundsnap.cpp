@@ -13,6 +13,7 @@ ConVar y_spt_portal_no_ground_snap("y_spt_portal_no_ground_snap",
 								  "Disables an additional check in CategorizePosition which causes sticky noclip",
 								   PortalNoGroundSnapCVarCallback);
 
+// Disables an extra check in CategorizePosition which causes sticky noclip
 class PortalNoGroundSnapFeature : public FeatureWrapper<PortalNoGroundSnapFeature>
 {
 public:

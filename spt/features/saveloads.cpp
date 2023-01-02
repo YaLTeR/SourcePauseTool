@@ -10,10 +10,10 @@
 CON_COMMAND(y_spt_saveloads, "Begins an automated save/load process.\n\n\
 Arguments: y_spt_saveloads <type> <segment name> <start index> <end index> [<ticks to wait>] [<extra commands>].\n \
   - <type> is the type of the save/load process, which can be\n\
-    - 0 for full save/load segment creation. Saves and demos for each save/load will be made and named accordingly.\n\
-    - 1 for save/load execution. The tool will only use 1 name for saves, and no demos will be made.\n\
-    - 2 for save/load segment rendering. Saves and demos will be loaded in order according to the specified naming format and then screenshotted.\n\
-    These will determine what set of commands will be executed.\n\
+	- 0 for full save/load segment creation. Saves and demos for each save/load will be made and named accordingly.\n\
+	- 1 for save/load execution. The tool will only use 1 name for saves, and no demos will be made.\n\
+	- 2 for save/load segment rendering. Saves and demos will be loaded in order according to the specified naming format and then screenshotted.\n\
+	These will determine what set of commands will be executed.\n\
   - <segment name> is the segment name, which will be used to name the saves and demos (format: <segment name>-<index>)\n\
   - <start index> is the index from which the saves and demos will be named from.\n\
   - <end index> is the index up to which SPT will process.\n\
@@ -31,10 +31,10 @@ Usage: \n\
 	}
 
 	spt_saveloads.Begin(atoi(args.Arg(1)),
-	                    args.Arg(2),
-	                    atoi(args.Arg(3)),
-	                    atoi(args.Arg(4)),
-	                    args.ArgC() == 5 ? 0 : atoi(args.Arg(5)),
+						args.Arg(2),
+						atoi(args.Arg(3)),
+						atoi(args.Arg(4)),
+						args.ArgC() == 5 ? 0 : atoi(args.Arg(5)),
 						args.ArgC() == 6 ? nullptr : args.Arg(6));
 }
 
@@ -45,9 +45,9 @@ CON_COMMAND(y_spt_saveloads_stop, "Stops the current save/load'ing process.")
 }
 
 ConVar y_spt_hud_saveloads_showcurindex("y_spt_hud_saveloads_showcurindex",
-                                        "1",
-                                        0,
-                                        "Shows the current save/load index of the current save/load process.\n");
+										"1",
+										0,
+										"Shows the current save/load index of the current save/load process.\n");
 
 namespace patterns
 {
@@ -100,13 +100,13 @@ void SaveloadsFeature::LoadFeature()
 
 #ifdef SPT_HUD_ENABLED
 	AddHudCallback(
-	    "SAVELOADS",
-	    [this]()
-	    {
-		    if (execute)
-			    spt_hud.DrawTopHudElement(L"SAVELOADS: %i / %i (%i left)", startIndex, endIndex, endIndex - startIndex);
-	    },
-	    y_spt_hud_saveloads_showcurindex);
+		"SAVELOADS",
+		[this]()
+		{
+			if (execute)
+				spt_hud.DrawTopHudElement(L"SAVELOADS: %i / %i (%i left)", startIndex, endIndex, endIndex - startIndex);
+		},
+		y_spt_hud_saveloads_showcurindex);
 #endif
 
 	FrameSignal.Connect(this, &SaveloadsFeature::Update);
@@ -115,10 +115,10 @@ void SaveloadsFeature::LoadFeature()
 
 void SaveloadsFeature::Begin(int type_,
 							 const char* segName_,
-                             int startIndex_,
-                             int endIndex_,
-                             int ticksToWait_,
-                             const char* extra)
+							 int startIndex_,
+							 int endIndex_,
+							 int ticksToWait_,
+							 const char* extra)
 {
 
 	if (type_ > 2 || type_ < 0)
@@ -151,12 +151,12 @@ void SaveloadsFeature::Begin(int type_,
 	- Extra commands: \"%s\"\n\n\
 Please load the save from which save/loading should begin.\n\n------\n",
 		type_,
-	    segName_,
-	    startIndex_,
-	    endIndex_,
-	    endIndex_ - startIndex_ + 1,
-	    ticksToWait_,
-	    this->extraCommands.c_str());
+		segName_,
+		startIndex_,
+		endIndex_,
+		endIndex_ - startIndex_ + 1,
+		ticksToWait_,
+		this->extraCommands.c_str());
 
 	EngineConCmd("bind L y_spt_saveloads_stop");
 }
@@ -198,20 +198,20 @@ void SaveloadsFeature::Update()
 		command = std::format("{1}; save {0};\
 record {0}; _y_spt_afterticks 20 \"echo #SAVE#\"; _y_spt_afterticks 25 \"stop\";\
 _y_spt_afterticks 30 \"load {0}\"",
-		    segName,
-		    extraCommands,
-		    prefixName);
+			segName,
+			extraCommands,
+			prefixName);
 		break;
 	case 1: // normal save/load
 		command =
-		    std::format("{1}; save {2}; _y_spt_afterticks 30 \"load {2}\"", segName, extraCommands, prefixName);
+			std::format("{1}; save {2}; _y_spt_afterticks 30 \"load {2}\"", segName, extraCommands, prefixName);
 		break;
 	case 2: // screenshot
 		ticksToWait = MAX(ticksToWait, 20); // else we won't get any screenshots...
 		command = std::format("{1}; screenshot {0}; _y_spt_afterticks 30 \"load {0}\"",
-		                      segName,
-		                      extraCommands,
-		                      prefixName);
+							  segName,
+							  extraCommands,
+							  prefixName);
 		break;
 	};
 

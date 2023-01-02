@@ -7,7 +7,7 @@
 struct afterticks_entry_t
 {
 	afterticks_entry_t(long long int ticksLeft, std::string command)
-	    : ticksLeft(ticksLeft), command(std::move(command))
+		: ticksLeft(ticksLeft), command(std::move(command))
 	{
 	}
 	afterticks_entry_t() {}
@@ -15,7 +15,7 @@ struct afterticks_entry_t
 	std::string command;
 };
 
-// This feature enables _y_spt_afterticks
+// Tick-based afterframes
 class AfterticksFeature : public FeatureWrapper<AfterticksFeature>
 {
 public:

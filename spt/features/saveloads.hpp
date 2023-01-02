@@ -1,6 +1,6 @@
 #include "..\feature.hpp"
 
-// Feature description
+// Feature that does automated save/loading operations, such as save/load segment creation or rendering
 class SaveloadsFeature : public FeatureWrapper<SaveloadsFeature>
 {
 public:

@@ -13,18 +13,18 @@ static bool afterticksPaused = false;
 static int afterticksDelay = 0;
 
 ConVar _y_spt_afterticks_await_legacy("_y_spt_afterticks_await_legacy",
-                                       "0",
-                                       FCVAR_TAS_RESET,
-                                       "Set to 1 for backwards compatibility with old scripts.");
+									   "0",
+									   FCVAR_TAS_RESET,
+									   "Set to 1 for backwards compatibility with old scripts.");
 ConVar _y_spt_afterticks_reset_on_server_activate("_y_spt_afterticks_reset_on_server_activate", "1", FCVAR_ARCHIVE);
 
 
 namespace patterns
 {
 	PATTERNS(
-	    HostRunframe__TargetString,
-	    "1",
-	    "5F 48 6F 73 74 5F 52 75 6E 46 72 61 6D 65 20 28 74 6F 70 29 3A 20 20 5F 68 65 61 70 63 68 6B 28 29 20 21 3D 20 5F 48 45 41 50 4F 4B 0A 00");
+		HostRunframe__TargetString,
+		"1",
+		"5F 48 6F 73 74 5F 52 75 6E 46 72 61 6D 65 20 28 74 6F 70 29 3A 20 20 5F 68 65 61 70 63 68 6B 28 29 20 21 3D 20 5F 48 45 41 50 4F 4B 0A 00");
 	PATTERNS(
 		Engine__StringReferences, 
 		"1", 
@@ -158,8 +158,8 @@ CON_COMMAND(_y_spt_afterticks, "Add a command into an afterticks queue. Usage: _
 
 #ifndef OE
 CON_COMMAND(
-    _y_spt_afterticks2,
-    "Add everything after count as a command into the queue. Do not insert the command in quotes. Usage: _y_spt_afterticks2 <count> <command>")
+	_y_spt_afterticks2,
+	"Add everything after count as a command into the queue. Do not insert the command in quotes. Usage: _y_spt_afterticks2 <count> <command>")
 {
 	if (args.ArgC() < 3)
 	{
@@ -179,8 +179,8 @@ CON_COMMAND(
 #endif
 
 CON_COMMAND(
-    _y_spt_afterticks_await_load,
-    "Pause reading from the afterticks queue until the next load or changelevel. Useful for writing scripts spanning multiple maps or save-load segments.")
+	_y_spt_afterticks_await_load,
+	"Pause reading from the afterticks queue until the next load or changelevel. Useful for writing scripts spanning multiple maps or save-load segments.")
 {
 	spt_afterticks.PauseAfterticksQueue();
 }
