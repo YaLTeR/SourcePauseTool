@@ -123,13 +123,13 @@ void SaveloadsFeature::Begin(int type_,
 
 	if (type_ > 2 || type_ < 0)
 	{
-		ConWarning("SAVELOADS: Invalid save/load process type! Not continuing.");
+		ConWarning("SAVELOADS: Invalid save/load process type! Not continuing.\n");
 		return;
 	}
 
 	if (startIndex_ < 0 || endIndex_ < 0 || startIndex_ > endIndex_)
 	{
-		ConWarning("SAVELOADS: Invalid start and/or end index.");
+		ConWarning("SAVELOADS: Invalid start and/or end index.\n");
 		return;
 	}
 
@@ -192,11 +192,16 @@ void SaveloadsFeature::Update()
 	std::string segName = std::format("{}-{:03d}", prefixName, startIndex);
 	std::string command;
 
+	EngineConCmd("unpause");
+	EngineConCmd(extraCommands.c_str());
+
 	switch (this->type)
 	{
 	case 0: // normal segment
-		command = std::format("{1}; save {0};\
-record {0}; _y_spt_afterticks 20 \"echo #SAVE#\"; _y_spt_afterticks 25 \"stop\";\
+
+		EngineConCmd(std::format("record {}", segName).c_str());
+		command = std::format("save {0};\
+_y_spt_afterticks 20 \"echo #SAVE#\"; _y_spt_afterticks 25 \"stop\";\
 _y_spt_afterticks 30 \"load {0}\"",
 			segName,
 			extraCommands,
@@ -204,11 +209,11 @@ _y_spt_afterticks 30 \"load {0}\"",
 		break;
 	case 1: // normal save/load
 		command =
-			std::format("{1}; save {2}; _y_spt_afterticks 30 \"load {2}\"", segName, extraCommands, prefixName);
+			std::format("save {2}; _y_spt_afterticks 30 \"load {2}\"", segName, extraCommands, prefixName);
 		break;
 	case 2: // screenshot
 		ticksToWait = MAX(ticksToWait, 20); // else we won't get any screenshots...
-		command = std::format("{1}; screenshot {0}; _y_spt_afterticks 30 \"load {0}\"",
+		command = std::format("screenshot; {0}; _y_spt_afterticks 30 \"load {0}\"",
 							  segName,
 							  extraCommands,
 							  prefixName);

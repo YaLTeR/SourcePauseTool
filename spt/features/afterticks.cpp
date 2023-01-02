@@ -96,7 +96,7 @@ void AfterticksFeature::OnFrame()
 		if (it->ticksLeft <= 0)
 		{
 			EngineConCmd(it->command.c_str());
-			if (true)
+			if (it->ticksLeft < 0)
 				DevWarning("afterticks: command \"%s\" fired late by %i tick(s)\n",
 					it->command.c_str(), 
 					it->ticksLeft * -1);
