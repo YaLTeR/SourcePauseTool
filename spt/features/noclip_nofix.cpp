@@ -99,14 +99,11 @@ void NoclipNofixFeature::LoadFeature()
 			* meaning the starting point of our jump is shifted up by 1 to that byte.
 			*/
 			jmpDistance = jmpOff + 1;
-			goto success;
+			InitConcommandBase(y_spt_noclip_nofix);
+			return;
 		}
 
 	}
-	return;
-	
-	success:;
-	InitConcommandBase(y_spt_noclip_nofix);
 }
 
 void NoclipNofixFeature::UnloadFeature()

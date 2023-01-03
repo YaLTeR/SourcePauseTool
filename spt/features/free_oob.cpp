@@ -7,9 +7,9 @@
 static void FreeOOBCVarCallback(IConVar* pConVar, const char* pOldValue, float flOldValue);
 
 ConVar y_spt_free_oob_movement("y_spt_free_oob_movement",
-						      "0",
-						       0,
-                              "Disables noclip's position fixing.",
+                               "0",
+                               0,
+                               "Enables free out of bounds movement.",
                                FreeOOBCVarCallback);
 
 // Gives the option to disable the checks which kills speed while in the void.
@@ -21,8 +21,6 @@ public:
 
 protected:
 	virtual bool ShouldLoadFeature() override;
-
-	virtual void InitHooks() override;
 
 	virtual void LoadFeature() override;
 
@@ -38,8 +36,6 @@ private:
 	uint8 firstJumpCompare[2] = {0x0F, 0x85};
 	uint8 secondJumpCompare[5] = {0xF6, 0xC4, 0x44, 0x0F, 0x8A};
 	uintptr_t ptrTryPlayerMove = 0;
-
-	uintptr_t ORIG_CheckJumpButton;
 };
 
 static FreeOobFeature spt_freeoob;
@@ -54,20 +50,15 @@ bool FreeOobFeature::ShouldLoadFeature()
 	return true;
 }
 
-void FreeOobFeature::InitHooks()
-{
-	FIND_PATTERN(server, CheckJumpButton);
-}
-
 void FreeOobFeature::LoadFeature()
 {
-	if (!ORIG_CheckJumpButton || !interfaces::gm)
+	if (!spt_autojump.ptrCheckJumpButton || !interfaces::gm)
 		return;
 
 	GET_MODULE(server);
 
 	// we assume TryPlayerMove is 2 entries below CheckJumpButton in the vftable.
-	uintptr_t cjbPtr = (uintptr_t)ORIG_CheckJumpButton;
+	uintptr_t cjbPtr = (uintptr_t)spt_autojump.ptrCheckJumpButton;
 	for (uintptr_t vftEntry = (uintptr_t)serverBase; vftEntry <= (uintptr_t)serverBase + serverSize; vftEntry++)
 	{
 		auto funcPtr = *(uintptr_t*)vftEntry;
@@ -123,17 +114,13 @@ void FreeOobFeature::LoadFeature()
 				INIT_BYTE_REPLACE(FirstJump, PTR_FirstJump);
 				INIT_BYTE_REPLACE(SecondJump, cur);
 
-				goto success;
+				InitConcommandBase(y_spt_free_oob_movement);
+				return;
 			}
 
 			return;
 		}
 	}
-
-	return;
-
-	success:
-	InitConcommandBase(y_spt_free_oob_movement);
 }
 
 void FreeOobFeature::UnloadFeature()

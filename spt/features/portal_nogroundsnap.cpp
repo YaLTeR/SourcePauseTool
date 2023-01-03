@@ -85,13 +85,9 @@ void PortalNoGroundSnapFeature::LoadFeature()
 			continue;
 
 		INIT_BYTE_REPLACE(Jump, start - i + 2);
-		goto success;
+		InitConcommandBase(y_spt_portal_no_ground_snap);
+		return;
 	}
-
-	return;
-
-	success:
-	InitConcommandBase(y_spt_portal_no_ground_snap);
 }
 
 void PortalNoGroundSnapFeature::UnloadFeature()

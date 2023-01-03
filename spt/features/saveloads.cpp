@@ -114,11 +114,11 @@ void SaveloadsFeature::LoadFeature()
 
 
 void SaveloadsFeature::Begin(int type_,
-							 const char* segName_,
-							 int startIndex_,
-							 int endIndex_,
-							 int ticksToWait_,
-							 const char* extra)
+                             const char* segName_,
+                             int startIndex_,
+                             int endIndex_,
+                             int ticksToWait_,
+                             const char* extra)
 {
 
 	if (type_ > 2 || type_ < 0)

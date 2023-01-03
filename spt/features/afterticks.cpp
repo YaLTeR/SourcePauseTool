@@ -13,9 +13,9 @@ static bool afterticksPaused = false;
 static int afterticksDelay = 0;
 
 ConVar _y_spt_afterticks_await_legacy("_y_spt_afterticks_await_legacy",
-									   "0",
-									   FCVAR_TAS_RESET,
-									   "Set to 1 for backwards compatibility with old scripts.");
+                                      "0",
+                                      FCVAR_TAS_RESET,
+                                      "Set to 1 for backwards compatibility with old scripts.");
 ConVar _y_spt_afterticks_reset_on_server_activate("_y_spt_afterticks_reset_on_server_activate", "1", FCVAR_ARCHIVE);
 
 
@@ -204,69 +204,68 @@ void AfterticksFeature::LoadFeature()
 		return;
 
 	// find host_tickcount pointer
+
+	if (!ORIG_HostRunframe__TargetString || MATCHES_Engine__StringReferences.empty())
+		return;
+
+	GET_MODULE(engine);
+
+	for (auto match : MATCHES_Engine__StringReferences)
 	{
-		if (!ORIG_HostRunframe__TargetString || MATCHES_Engine__StringReferences.empty())
-			return;
+		auto strRefPtr = match.ptr;
+		uintptr_t refLocation = *(uintptr_t*)(strRefPtr + 1);
+		if (refLocation != (uintptr_t)ORIG_HostRunframe__TargetString)
+			continue;
 
-		GET_MODULE(engine);
-
-		for (auto match : MATCHES_Engine__StringReferences)
+		// bytes after the string reference
+		uint8* bytes = (uint8*)strRefPtr;
+		// 0x700 as this function's quite long...
+		for (int i = 0; i <= 0x700; i++)
 		{
-			auto strRefPtr = match.ptr;
-			uintptr_t refLocation = *(uintptr_t*)(strRefPtr + 1);
-			if (refLocation != (uintptr_t)ORIG_HostRunframe__TargetString)
-				continue;
-
-			// bytes after the string reference
-			uint8* bytes = (uint8*)strRefPtr;
-			// 0x700 as this function's quite long...
-			for (int i = 0; i <= 0x700; i++)
+			// this is a jump backwards to the start of the update loop, where
+			// the tick count is incremented.
+			if (bytes[i] == 0x0F && bytes[i + 1] == 0x8C && bytes[i + 5] == 0xFF)
 			{
-				// this is a jump backwards to the start of the update loop, where
-				// the tick count is incremented.
-				if (bytes[i] == 0x0F && bytes[i + 1] == 0x8C && bytes[i + 5] == 0xFF)
-				{
-					int jump = *(int*)(bytes + i + 2);
-					uintptr_t loopStart = (uintptr_t)bytes + jump + i + 6;
-					if (loopStart < (uintptr_t)engineBase)
-						// bogus jump
-						continue; 
+				int jump = *(int*)(bytes + i + 2);
+				uintptr_t loopStart = (uintptr_t)bytes + jump + i + 6;
+				if (loopStart < (uintptr_t)engineBase)
+					// bogus jump
+					continue; 
 
-					uintptr_t loopEnd = (uintptr_t)bytes + i;
-					for (; loopStart <= loopEnd; loopStart++)
+				uintptr_t loopEnd = (uintptr_t)bytes + i;
+				for (; loopStart <= loopEnd; loopStart++)
+				{
+					/*
+					* host_tickcount and host_currentframetick live near each other in memory,
+					* and at the start of the loop are incremented one after another 
+					* so when we find a candidate for host_tickcount, check the following bytes
+					* if we find another pointer point to somewhere near it.
+					*/
+					uintptr_t candidate = *(uintptr_t*)loopStart;
+					if (candidate - (uintptr_t)engineBase > engineSize)
+						continue;
+
+					// xx (xx) [host_tickcount]			INC [host_tickcount]
+					// xx (xx) [host_currentframetick]	INC [host_currentframetick]
+					// inc here could be 1 or 2 bytes long
+					for (int k = 0; k <= 2; k++)
 					{
-						/*
-						* host_tickcount and host_currentframetick live near each other in memory,
-						* and at the start of the loop are incremented one after another 
-						* so when we find a candidate for host_tickcount, check the following bytes
-						* if we find another pointer point to somewhere near it.
-						*/
-						uintptr_t candidate = *(uintptr_t*)loopStart;
-						if (candidate - (uintptr_t)engineBase > engineSize)
+						uintptr_t candidateCurFrameTick = *(uintptr_t*)(loopStart + 4 + k);
+						if (candidateCurFrameTick - (uintptr_t)engineBase > engineSize ||
+							candidateCurFrameTick - candidate > 0x8)
 							continue;
 
-						// xx (xx) [host_tickcount]			INC [host_tickcount]
-						// xx (xx) [host_currentframetick]	INC [host_currentframetick]
-						// inc here could be 1 or 2 bytes long
-						for (int k = 0; k <= 2; k++)
-						{
-							uintptr_t candidateCurFrameTick = *(uintptr_t*)(loopStart + 4 + k);
-							if (candidateCurFrameTick - (uintptr_t)engineBase > engineSize ||
-								candidateCurFrameTick - candidate > 0x8)
-								continue;
-
-							ptrHostTickCount = candidate;
-							goto success;
-						}
+						ptrHostTickCount = candidate;
+						goto success;
 					}
 				}
 			}
 		}
-
-		return;
-
-	success:;
 	}
+
+	return;
+
+	success:
 	
 	InitCommand(_y_spt_afterticks);
 	InitCommand(_y_spt_afterticks_reset);
