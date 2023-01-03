@@ -34,4 +34,5 @@ namespace interfaces
 	extern IVModelInfo* modelInfo;
 	extern IBaseClientDLL* clientInterface;
 	extern IEngineTrace* engineTraceClient;
+	extern IServerPluginHelpers* pluginHelpers;
 } // namespace interfaces

@@ -9,6 +9,7 @@ namespace utils
 	bool DoesGameLookLikeBMSLatest();
 	bool DoesGameLookLikeBMSMod();
 	bool DoesGameLookLikeEstranged();
+	int DateToBuildNumber(const char* date_str);
 	int GetBuildNumber();
 	void StartBuildNumberSearch();
 } // namespace utils

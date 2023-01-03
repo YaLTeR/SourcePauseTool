@@ -61,7 +61,7 @@ protected:
 	virtual void UnloadFeature() override;
 
 private:
-	DECL_HOOK_THISCALL(void, ClientModeShared__OverrideView, CViewSetup* view);
+	DECL_HOOK_THISCALL(void, ClientModeShared__OverrideView, CViewSetup* viewSetup);
 	DECL_HOOK_THISCALL(bool, ClientModeShared__CreateMove, float flInputSampleTime, void* cmd);
 	DECL_HOOK_THISCALL(bool, C_BasePlayer__ShouldDrawLocalPlayer);
 	DECL_HOOK_THISCALL(void, CInput__MouseMove, void* cmd);
@@ -69,7 +69,7 @@ private:
 	DECL_HOOK_THISCALL(bool, C_BasePlayer__ShouldDrawThisPlayer);
 #endif
 
-	void OverrideView(CViewSetup* view);
+	void OverrideView(CViewSetup* viewSetup);
 	void HandleDriveMode(bool active);
 	void HandleInput(bool active);
 	void HandleCinematicMode(bool active);
@@ -353,21 +353,21 @@ void Camera::RefreshTimeOffset()
 	time_offset = interfaces::engine_tool->ClientTime() - spt_demostuff.Demo_GetPlaybackTick() / 66.6666f;
 }
 
-void Camera::OverrideView(CViewSetup* view)
+void Camera::OverrideView(CViewSetup* viewSetup)
 {
 	int control_type = CanOverrideView() ? y_spt_cam_control.GetInt() : 0;
 	if (_y_spt_force_fov.GetBool())
 		current_cam.fov = _y_spt_force_fov.GetFloat();
 	else
-		current_cam.fov = view->fov;
+		current_cam.fov = viewSetup->fov;
 	HandleDriveMode(control_type == 1);
 	HandleCinematicMode(control_type == 2 && spt_demostuff.Demo_IsPlayingBack());
 	if (control_type)
 	{
-		view->origin = current_cam.origin;
-		view->angles = current_cam.angles;
+		viewSetup->origin = current_cam.origin;
+		viewSetup->angles = current_cam.angles;
 	}
-	view->fov = current_cam.fov;
+	viewSetup->fov = current_cam.fov;
 }
 
 void Camera::HandleDriveMode(bool active)
@@ -726,10 +726,10 @@ void Camera::DrawPath()
 	}
 }
 
-HOOK_THISCALL(void, Camera, ClientModeShared__OverrideView, CViewSetup* view)
+HOOK_THISCALL(void, Camera, ClientModeShared__OverrideView, CViewSetup* viewSetup)
 {
-	spt_camera.ORIG_ClientModeShared__OverrideView(thisptr, edx, view);
-	spt_camera.OverrideView(view);
+	spt_camera.ORIG_ClientModeShared__OverrideView(thisptr, edx, viewSetup);
+	spt_camera.OverrideView(viewSetup);
 }
 
 HOOK_THISCALL(bool, Camera, ClientModeShared__CreateMove, float flInputSampleTime, void* cmd)

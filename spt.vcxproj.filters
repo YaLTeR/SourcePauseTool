@@ -323,6 +323,9 @@
       <Filter>spt\features</Filter>
     </ClCompile>
     <ClCompile Include="spt\features\portal_nogroundsnap.cpp">
+          <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\updater.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
   </ItemGroup>
@@ -636,6 +639,36 @@
     <ClInclude Include="spt\features\saveloads.hpp">
       <Filter>spt\features</Filter>
     </ClInclude>
+    <ClInclude Include="thirdparty\curl\include\curl\curl.h">
+      <Filter>thirdparty\curl\include\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\curl\include\curl\curlver.h">
+      <Filter>thirdparty\curl\include\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\curl\include\curl\easy.h">
+      <Filter>thirdparty\curl\include\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\curl\include\curl\mprintf.h">
+      <Filter>thirdparty\curl\include\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\curl\include\curl\multi.h">
+      <Filter>thirdparty\curl\include\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\curl\include\curl\options.h">
+      <Filter>thirdparty\curl\include\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\curl\include\curl\stdcheaders.h">
+      <Filter>thirdparty\curl\include\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\curl\include\curl\system.h">
+      <Filter>thirdparty\curl\include\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\curl\include\curl\typecheck-gcc.h">
+      <Filter>thirdparty\curl\include\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\curl\include\curl\urlapi.h">
+      <Filter>thirdparty\curl\include\curl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">
@@ -699,6 +732,15 @@
     </Filter>
     <Filter Include="spt\features\visualizations\renderer\source files">
       <UniqueIdentifier>{84814768-34cb-4968-8ef2-07312a178bc4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\curl">
+      <UniqueIdentifier>{0cddd3d7-5ca5-4a70-a55f-a23a109c8c61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\curl\include">
+      <UniqueIdentifier>{b505b822-97b9-49a2-a359-fc1f597d8fc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\curl\include\curl">
+      <UniqueIdentifier>{158cf524-86b3-4603-bafe-946db1b9add5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

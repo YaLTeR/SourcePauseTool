@@ -129,12 +129,8 @@ namespace utils
 		return BuildNumber;
 	}
 
-	static int MluggConvertToBuildNumberCode(int match, uint8_t* moduleStart)
+	int DateToBuildNumber(const char* date_str)
 	{
-		const char* wholeString = reinterpret_cast<const char*>(moduleStart) + match;
-		DevMsg("Found date string: %s\n", wholeString);
-		const char* date_str = wholeString + 20;
-
 		const char* months[] = {
 		    "Jan",
 		    "Feb",
@@ -197,7 +193,6 @@ namespace utils
 		if (y % 4 == 0 && m > 1)
 			build_num += 1;
 		build_num -= 35739;
-
 		return build_num;
 	}
 
@@ -228,7 +223,11 @@ namespace utils
 
 				    if (match >= 0)
 				    {
-					    build_num = MluggConvertToBuildNumberCode(match, moduleStart);
+					    const char* wholeString =
+					        reinterpret_cast<const char*>(moduleStart) + match;
+					    DevMsg("Found date string: %s\n", wholeString);
+					    const char* date_str = wholeString + 20;
+					    build_num = DateToBuildNumber(date_str);
 				    }
 				    else
 				    {
