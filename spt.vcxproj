@@ -1454,7 +1454,7 @@
     <ClInclude Include="thirdparty\Signal.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="SPTLib\Windows\minhook\build\VC16\libMinHook.vcxproj">
+    <ProjectReference Include="SPTLib\Windows\minhook\build\VC17\libMinHook.vcxproj">
       <Project>{f142a341-5ee0-442d-a15f-98ae9b48dbae}</Project>
     </ProjectReference>
   </ItemGroup>
