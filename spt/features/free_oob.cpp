@@ -6,11 +6,11 @@
 
 static void FreeOOBCVarCallback(IConVar* pConVar, const char* pOldValue, float flOldValue);
 
-ConVar y_spt_free_oob_movement("y_spt_free_oob_movement",
-                               "0",
-                               0,
-                               "Enables free out of bounds movement.",
-                               FreeOOBCVarCallback);
+ConVar y_spt_free_oob("y_spt_free_oob",
+                      "0",
+                      0,
+                      "Enables free out of bounds (void) movement.",
+                      FreeOOBCVarCallback);
 
 // Gives the option to disable the checks which kills speed while in the void.
 class FreeOobFeature : public FeatureWrapper<FreeOobFeature>
@@ -114,7 +114,7 @@ void FreeOobFeature::LoadFeature()
 				INIT_BYTE_REPLACE(FirstJump, PTR_FirstJump);
 				INIT_BYTE_REPLACE(SecondJump, cur);
 
-				InitConcommandBase(y_spt_free_oob_movement);
+				InitConcommandBase(y_spt_free_oob);
 				return;
 			}
 
