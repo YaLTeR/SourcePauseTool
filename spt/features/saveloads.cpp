@@ -1,4 +1,5 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
+
 #include "saveloads.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "signals.hpp"
