@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #include "test_item2.hpp"
 #include "string_utils.hpp"
 #include "dbg.h"

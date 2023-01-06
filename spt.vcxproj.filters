@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="spt\stdafx.cpp">
-      <Filter>spt</Filter>
-    </ClCompile>
     <ClCompile Include="sptlib\Hooks.cpp">
       <Filter>SPTLib</Filter>
     </ClCompile>
@@ -328,6 +325,9 @@
     <ClCompile Include="spt\features\updater.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
+    <ClCompile Include="spt\utils\stdafx.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -415,9 +415,6 @@
       <Filter>SPTLib</Filter>
     </ClInclude>
     <ClInclude Include="spt\sptlib-wrapper.hpp">
-      <Filter>spt</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\stdafx.hpp">
       <Filter>spt</Filter>
     </ClInclude>
     <ClInclude Include="SPTLib\IHookableDirFilter.hpp">
@@ -668,6 +665,9 @@
     </ClInclude>
     <ClInclude Include="thirdparty\curl\include\curl\urlapi.h">
       <Filter>thirdparty\curl\include\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\stdafx.hpp">
+      <Filter>spt\utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

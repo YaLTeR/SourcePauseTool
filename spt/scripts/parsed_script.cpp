@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #include "parsed_script.hpp"
 #include "..\spt-serverplugin.hpp"
 #include "file.hpp"

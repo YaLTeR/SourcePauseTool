@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #include "tas.hpp"
 #include "..\cvars.hpp"
 #include "command.hpp"

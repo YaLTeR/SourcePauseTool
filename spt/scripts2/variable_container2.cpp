@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #include "srctas_reader2.hpp"
 #include "variable_container2.hpp"
 #include "..\cvars.hpp"

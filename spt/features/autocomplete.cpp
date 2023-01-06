@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #include "..\feature.hpp"
 #include "..\utils\command.hpp"
 #include "..\utils\game_detection.hpp"

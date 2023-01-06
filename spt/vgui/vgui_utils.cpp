@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 
 #include "..\features\generic.hpp"
 #include "interfaces.hpp"

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #include "tracing.hpp"
 #include "ent_utils.hpp"
 #include "game_detection.hpp"

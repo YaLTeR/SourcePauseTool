@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #include "..\feature.hpp"
 #include "convar.hpp"
 #include "..\utils\math.hpp"

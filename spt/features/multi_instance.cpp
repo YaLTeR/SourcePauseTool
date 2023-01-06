@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #ifdef _WIN32
 #include "..\feature.hpp"
 #include <Windows.h>

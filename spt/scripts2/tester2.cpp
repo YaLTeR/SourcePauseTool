@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #include "file.hpp"
 #include "srctas_reader2.hpp"
 #include "tester2.hpp"

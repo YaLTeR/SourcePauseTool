@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #ifdef OE
 #include "..\feature.hpp"
 #include "..\sptlib-wrapper.hpp"
