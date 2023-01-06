@@ -1,5 +1,4 @@
-#include "stdafx.h"
-#include "..\stdafx.hpp"
+#include "stdafx.hpp"
 
 #ifdef OE
 #include "mathlib.h"

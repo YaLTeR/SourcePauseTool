@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 
 #include <SPTLib\memutils.hpp>
 #include <SPTLib\patterns.hpp>

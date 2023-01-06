@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 
 #if defined(SSDK2007) || defined(SSDK2013)
 

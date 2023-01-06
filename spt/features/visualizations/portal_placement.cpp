@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 
 #include "renderer\mesh_renderer.hpp"
 #include "spt\features\tracing.hpp"

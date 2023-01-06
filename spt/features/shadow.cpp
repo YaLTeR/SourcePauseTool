@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 
 #include "shadow.hpp"
 #include "..\utils\game_detection.hpp"

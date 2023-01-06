@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 #include "..\cvars.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "..\strafe\strafestuff.hpp"

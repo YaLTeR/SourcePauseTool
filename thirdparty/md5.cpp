@@ -30,7 +30,7 @@ documentation and/or software.
 
 */
 
-#include "stdafx.h"
+#include "stdafx.hpp"
 
 /* interface header */
 #include "md5.hpp"
