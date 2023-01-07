@@ -1,4 +1,7 @@
 #include "stdafx.hpp"
+
+#ifdef  BMS
+
 #include "..\feature.hpp"
 #include "convar.hpp"
 #include "game_detection.hpp"
@@ -131,3 +134,6 @@ void BMSFlashlightFixFeature::Toggle(bool enabled)
 		UNDO_BYTE_REPLACE(Alice);
 	}
 }
+
+
+#endif //  BMS

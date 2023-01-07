@@ -4,20 +4,17 @@
 #include "autojump.hpp"
 #include "interfaces.hpp"
 
+#ifndef  OE
+
 static void FreeOOBCVarCallback(IConVar* pConVar, const char* pOldValue, float flOldValue);
 
-ConVar y_spt_free_oob("y_spt_free_oob",
-                      "0",
-                      0,
-                      "Enables free out of bounds (void) movement.",
-                      FreeOOBCVarCallback);
+ConVar y_spt_free_oob("y_spt_free_oob", "0", 0, "Enables free out of bounds (void) movement.", FreeOOBCVarCallback);
 
 // Gives the option to disable the checks which kills speed while in the void.
 class FreeOobFeature : public FeatureWrapper<FreeOobFeature>
 {
 public:
 	void Toggle(bool enabled);
-
 
 protected:
 	virtual bool ShouldLoadFeature() override;
@@ -26,7 +23,6 @@ protected:
 
 	virtual void UnloadFeature() override;
 
-	
 	// value replacements and single instruction overrides
 	// we'll just write the bytes ourselves...
 private:
@@ -43,7 +39,6 @@ static void FreeOOBCVarCallback(IConVar* pConVar, const char* pOldValue, float f
 {
 	spt_freeoob.Toggle(((ConVar*)pConVar)->GetBool());
 }
-
 
 bool FreeOobFeature::ShouldLoadFeature()
 {
@@ -80,7 +75,7 @@ void FreeOobFeature::LoadFeature()
 		* 
 		* we will assume both offsets in the jumps are under 0x10000
 		*/
-		
+
 		auto funcStart = *(uintptr_t*)(vftEntry + 3 * 4);
 		if (funcStart < (uintptr_t)serverBase || funcPtr > (uintptr_t)serverBase + serverSize)
 			continue;
@@ -129,7 +124,6 @@ void FreeOobFeature::UnloadFeature()
 	DESTROY_BYTE_REPLACE(SecondJump);
 }
 
-
 void FreeOobFeature::Toggle(bool enabled)
 {
 	if (enabled)
@@ -143,3 +137,5 @@ void FreeOobFeature::Toggle(bool enabled)
 		UNDO_BYTE_REPLACE(SecondJump);
 	}
 }
+#endif // ! OE
+

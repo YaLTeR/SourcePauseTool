@@ -6,6 +6,8 @@
 #include "interfaces.hpp"
 #include "game_detection.hpp"
 
+#ifndef OE
+
 static void PortalNoGroundSnapCVarCallback(IConVar* pConVar, const char* pOldValue, float flOldValue);
 
 ConVar y_spt_portal_no_ground_snap("y_spt_portal_no_ground_snap",
@@ -108,3 +110,5 @@ void PortalNoGroundSnapFeature::Toggle(bool enabled)
 		UNDO_BYTE_REPLACE(Jump);
 	}
 }
+
+#endif

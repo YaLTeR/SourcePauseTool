@@ -4,7 +4,11 @@
 #include "convar.hpp"
 #include "game_detection.hpp"
 
+#ifdef  OE
+static void NoclipNofixCVarCallback(ConVar* pConVar, const char* pOldValue);
+#else
 static void NoclipNofixCVarCallback(IConVar* pConVar, const char* pOldValue, float flOldValue);
+#endif
 
 ConVar y_spt_noclip_nofix("y_spt_noclip_nofix",
 						  "0",
@@ -42,7 +46,12 @@ private:
 };
 
 static NoclipNofixFeature spt_noclipnofix;
+
+#ifdef OE
+static void NoclipNofixCVarCallback(ConVar* pConVar, const char* pOldValue)
+#else
 static void NoclipNofixCVarCallback(IConVar* pConVar, const char* pOldValue, float flOldValue)
+#endif
 {
 	spt_noclipnofix.Toggle(((ConVar*)pConVar)->GetBool());
 }

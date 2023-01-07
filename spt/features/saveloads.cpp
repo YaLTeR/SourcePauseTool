@@ -8,12 +8,14 @@
 #include "hud.hpp"
 #include <format>
 
+static std::vector<const char*> _saveloadTypes = {"segment", "execute", "render"};
+
 CON_COMMAND(y_spt_saveloads, "Begins an automated save/load process.\n\n\
 Arguments: y_spt_saveloads <type> <segment name> <start index> <end index> [<ticks to wait>] [<extra commands>].\n \
   - <type> is the type of the save/load process, which can be\n\
-	- 0 for full save/load segment creation. Saves and demos for each save/load will be made and named accordingly.\n\
-	- 1 for save/load execution. The tool will only use 1 name for saves, and no demos will be made.\n\
-	- 2 for save/load segment rendering. Saves and demos will be loaded in order according to the specified naming format and then screenshotted.\n\
+	- \"segment\" for full save/load segment creation. Saves and demos for each save/load will be made and named accordingly.\n\
+	- \"execute\" for save/load execution. The tool will only use 1 name for saves, and no demos will be made.\n\
+	- \"render\" for save/load segment rendering. Saves and demos will be loaded in order according to the specified naming format and then screenshotted.\n\
 	These will determine what set of commands will be executed.\n\
   - <segment name> is the segment name, which will be used to name the saves and demos (format: <segment name>-<index>)\n\
   - <start index> is the index from which the saves and demos will be named from.\n\
@@ -27,11 +29,27 @@ Usage: \n\
 {
 	if (args.ArgC() < 4)
 	{
-		ConWarning("Incorrect number of arguments! Do \"help y_spt_saveloads\" for information.\n");
+		Warning("SAVELOADS: Incorrect number of arguments! Do \"help y_spt_saveloads\" for information.\n");
 		return;	
 	}
 
-	spt_saveloads.Begin(atoi(args.Arg(1)),
+	int type = -1;
+	for (int i = 0; i < _saveloadTypes.size(); i++)
+	{
+		if (strcmp(args.Arg(1), _saveloadTypes[i]) == 0)
+		{
+			type = i;
+			break;
+		}
+	}
+	 
+	if (type == -1)
+	{
+		type = 0;
+		Warning("SAVELOADS: Invalid save/load process type! Using \"segment\" instead.\n");
+	}
+
+	spt_saveloads.Begin(type,
 						args.Arg(2),
 						atoi(args.Arg(3)),
 						atoi(args.Arg(4)),
@@ -40,7 +58,7 @@ Usage: \n\
 }
 
 
-CON_COMMAND(y_spt_saveloads_stop, "Stops the current save/load'ing process.") 
+CON_COMMAND(y_spt_saveloads_stop, "Stops the current save/loading process.") 
 {
 	spt_saveloads.Stop();
 }
@@ -124,13 +142,13 @@ void SaveloadsFeature::Begin(int type_,
 
 	if (type_ > 2 || type_ < 0)
 	{
-		ConWarning("SAVELOADS: Invalid save/load process type! Not continuing.\n");
+		Warning("SAVELOADS: Invalid save/load process type! Not continuing.\n");
 		return;
 	}
 
 	if (startIndex_ < 0 || endIndex_ < 0 || startIndex_ > endIndex_)
 	{
-		ConWarning("SAVELOADS: Invalid start and/or end index.\n");
+		Warning("SAVELOADS: Invalid start and/or end index.\n");
 		return;
 	}
 
@@ -143,15 +161,15 @@ void SaveloadsFeature::Begin(int type_,
 
 	execute = true;
 
-	ConMsg(
+	Msg(
 		"------\n\nSAVELOADS: Save/load process:\n\
-	- Type: %i\n\
+	- Type: %s\n\
 	- Segment name: \"%s\"\n\
 	- From index %i to index %i (%i save/loads)\n\
 	- Wait time before action: %i\n\
 	- Extra commands: \"%s\"\n\n\
 Please load the save from which save/loading should begin.\n\n------\n",
-		type_,
+	    _saveloadTypes[type_],
 		segName_,
 		startIndex_,
 		endIndex_,
@@ -170,7 +188,7 @@ void SaveloadsFeature::Stop()
 	this->extraCommands.assign("");
 	execute = false;;
 	spt_afterticks.ResetAfterticksQueue();
-	ConMsg("SAVELOADS: Save/load process stopped.\n");
+	Warning("SAVELOADS: Save/load process stopped.\n");
 }
 
 int SaveloadsFeature::GetSignOnState() 
@@ -234,12 +252,15 @@ _y_spt_afterticks 30 \"load {0}\"",
 		EngineConCmd(command.c_str());
 	}
 
-	ConMsg("SAVELOADS: Processed segment %i, working until %i (%i left)\n", startIndex, endIndex, endIndex - startIndex);
+	Warning("SAVELOADS: Processed segment %i, working until %i (%i left)\n",
+	        startIndex,
+	        endIndex,
+	        endIndex - startIndex);
 
 	startIndex++;
 	if (startIndex > endIndex)
 	{
 		execute = false;
-		ConMsg("SAVELOADS: Save/load process finished.\n");
+		Warning("SAVELOADS: Save/load process finished.\n");
 	}
 }
