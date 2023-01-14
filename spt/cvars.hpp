@@ -68,6 +68,7 @@ extern ConVar tas_script_savestates;
 extern ConVar tas_script_onsuccess;
 
 extern ConVar _y_spt_autojump_ensure_legit;
+extern ConVar _y_spt_afterticks_reset_on_server_activate;
 extern ConVar _y_spt_afterframes_reset_on_server_activate;
 extern ConVar _y_spt_anglesetspeed;
 extern ConVar _y_spt_pitchspeed;
@@ -91,6 +92,7 @@ extern ConVar y_spt_hud_oob;
 extern ConVar y_spt_hud_isg;
 extern ConVar y_spt_hud_shadow_info;
 extern ConVar y_spt_hud_portal_placement;
+extern ConVar y_spt_hud_saveloads_showcurindex;
 
 extern ConVar y_spt_ihud;
 extern ConVar y_spt_ihud_grid_size;

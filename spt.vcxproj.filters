@@ -304,6 +304,24 @@
     <ClCompile Include="spt\features\visualizations\portal_placement.cpp">
       <Filter>spt\features\visualizations</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\bms_flashlight_fix.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\afterticks.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\saveloads.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\noclip_nofix.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\free_oob.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\portal_nogroundsnap.cpp">
+          <Filter>spt\features</Filter>
+    </ClCompile>
     <ClCompile Include="spt\features\updater.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
@@ -613,6 +631,12 @@
       <Filter>spt\utils</Filter>
     </ClInclude>
     <ClInclude Include="spt\features\property_getter.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\afterticks.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\saveloads.hpp">
       <Filter>spt\features</Filter>
     </ClInclude>
     <ClInclude Include="thirdparty\curl\include\curl\curl.h">

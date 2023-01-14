@@ -9,6 +9,7 @@ Debug BMS/
 Release OE/
 Release 2013/
 Release BMS/
+builds/
 
 *.sublime-workspace
 

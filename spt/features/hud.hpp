@@ -1,6 +1,5 @@
 #pragma once
 
-#ifndef BMS
 
 #define SPT_HUD_ENABLED
 
@@ -74,10 +73,25 @@ private:
 	DECL_MEMBER_THISCALL(void, CMatSystemSurface__StartDrawing);
 	DECL_MEMBER_THISCALL(void, CMatSystemSurface__FinishDrawing);
 
+#ifdef BMS
+	DECL_MEMBER_THISCALL(void, ISurface__DrawPrintText, const wchar_t* text, int textLen, vgui::FontDrawType_t drawType);
+	DECL_MEMBER_THISCALL(void, ISurface__DrawPrintText_BMSLatest, const wchar_t* text, int textLen, vgui::FontDrawType_t drawType, char unkBoolVal);
+	DECL_MEMBER_THISCALL(void, ISurface__DrawSetTextPos, int x, int y);
+	DECL_MEMBER_THISCALL(void, ISurface__DrawSetTextFont, vgui::HFont font);
+	DECL_MEMBER_THISCALL(void, ISurface__DrawSetTextColor, int r, int g, int b, int a);
+	DECL_MEMBER_THISCALL(void, ISurface__DrawSetTexture, int id);
+	DECL_MEMBER_THISCALL(int, ISurface__GetFontTall, vgui::HFont font);
+	DECL_MEMBER_THISCALL(void, ISurface__AddCustomFontFile, const char* fontName, const char* fontFileName);
+
+	std::vector<patterns::MatchedPattern> MATCHES_ISurface__DrawSetTextFont;
+	std::vector<patterns::MatchedPattern> MATCHES_ISurface__GetFontTall;
+
+	bool isLatest = false;
+#endif	
+
 	void DrawHUD(bool overlay);
 	void vDrawTopHudElement(Color color, const wchar* format, va_list args);
 };
 
 extern HUDFeature spt_hud;
 
-#endif

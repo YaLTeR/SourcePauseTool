@@ -124,6 +124,11 @@ namespace patterns
 	    "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ?? 89 6C 24 ?? 8B EC 83 EC 6C 56 8D 45 ??");
 } // namespace patterns
 
+void AutojumpFeature::PreHook()
+{
+	ptrCheckJumpButton = (uintptr_t)ORIG_CheckJumpButton;
+}
+
 void AutojumpFeature::InitHooks()
 {
 	HOOK_FUNCTION(server, CheckJumpButton);
@@ -199,7 +204,10 @@ void AutojumpFeature::LoadFeature()
 	}
 }
 
-void AutojumpFeature::UnloadFeature() {}
+void AutojumpFeature::UnloadFeature() 
+{
+	ptrCheckJumpButton = NULL;
+}
 
 static Vector old_vel(0.0f, 0.0f, 0.0f);
 

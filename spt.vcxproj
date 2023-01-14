@@ -283,7 +283,9 @@
     </Bscmake>
     <PostBuildEvent>
       <Message />
-      <Command>copy "$(TargetPath)" "D:\Games\Source Unpack\portal\"</Command>
+      <Command>md "$(IntDir)..\builds"
+del "$(IntDir)..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">
@@ -356,7 +358,9 @@
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>copy "$(TargetPath)" "D:\Games\Source Unpack\portal\"</Command>
+      <Command>md "$(IntDir)..\builds"
+del "$(IntDir)..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">
@@ -367,7 +371,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>spt\utils;thirdparty\curl\include;.;SDK\bms\common;SDK\bms\public;SDK\bms\public\tier0;SDK\bms\public\tier1;SDK\bms\game\server;SDK\bms\game\client;SDK\bms\game\shared;SPTLib\Windows\minhook\include;SPTLib\Windows\Minhook\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>BMS;WIN32;_WIN32;_DEBUG;DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;sptONLY;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BMS;WIN32;_WIN32;_DEBUG;DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;sptONLY;_MBCS;SPT_HUD_TEXTONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -429,7 +433,9 @@
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>copy "$(TargetPath)" "D:\Games\Source Unpack\portal\"</Command>
+      <Command>md "$(IntDir)..\builds"
+del "$(IntDir)..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">
@@ -502,7 +508,9 @@
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>copy "$(TargetPath)" "E:\SteamLibrary\steamapps\common\Dark Messiah Might and Magic Single Player\bin\"</Command>
+      <Command>md "$(IntDir)..\builds"
+del "$(IntDir)..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -580,7 +588,9 @@
     </Bscmake>
     <PostBuildEvent>
       <Message />
-      <Command>copy "$(TargetPath)" "D:\Games\Source Unpack\portal\"</Command>
+      <Command>md "$(IntDir)..\builds"
+del "$(IntDir)..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">
@@ -661,7 +671,9 @@
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>copy "$(TargetPath)" "D:\Games\SteamLibrary\steamapps\common\Black Mesa\bms\"</Command>
+      <Command>md "$(IntDir)..\builds"
+del "$(IntDir)..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">
@@ -675,7 +687,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>spt\utils;thirdparty\curl\include;.;SDK\bms\common;SDK\bms\public;SDK\bms\public\tier0;SDK\bms\public\tier1;SDK\bms\game\server;SDK\bms\game\client;SDK\bms\game\shared;SPTLib\Windows\minhook\include;SPTLib\Windows\Minhook\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>BMS;WIN32;_WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;sptONLY;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BMS;WIN32;_WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;sptONLY;_MBCS;SPT_HUD_TEXTONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -742,7 +754,9 @@
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>copy "$(TargetPath)" "D:\Games\SteamLibrary\steamapps\common\Black Mesa\bms\"</Command>
+      <Command>md "$(IntDir)..\builds"
+del "$(IntDir)..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">
@@ -902,7 +916,9 @@
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>copy "$(TargetPath)" "E:\SteamLibrary\steamapps\common\Dark Messiah Might and Magic Single Player\bin\"</Command>
+      <Command>md "$(IntDir)..\builds"
+del "$(IntDir)..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -1158,9 +1174,11 @@
     <ClCompile Include="spt\cvars.cpp" />
     <ClCompile Include="spt\feature.cpp" />
     <ClCompile Include="spt\features\afterframes.cpp" />
+    <ClCompile Include="spt\features\afterticks.cpp" />
     <ClCompile Include="spt\features\aim.cpp" />
     <ClCompile Include="spt\features\autocomplete.cpp" />
     <ClCompile Include="spt\features\autojump.cpp" />
+    <ClCompile Include="spt\features\bms_flashlight_fix.cpp" />
     <ClCompile Include="spt\features\boog.cpp" />
     <ClCompile Include="spt\features\camera.cpp" />
     <ClCompile Include="spt\features\collision_group.cpp" />
@@ -1169,6 +1187,7 @@
     <ClCompile Include="spt\features\dmomm.cpp" />
     <ClCompile Include="spt\features\ent_props.cpp" />
     <ClCompile Include="spt\features\fov.cpp" />
+    <ClCompile Include="spt\features\free_oob.cpp" />
     <ClCompile Include="spt\features\generic.cpp" />
     <ClCompile Include="spt\features\hops_hud.cpp" />
     <ClCompile Include="spt\features\hud.cpp" />
@@ -1177,13 +1196,16 @@
     <ClCompile Include="spt\features\isg.cpp" />
     <ClCompile Include="spt\features\leafvis.cpp" />
     <ClCompile Include="spt\features\multi_instance.cpp" />
+    <ClCompile Include="spt\features\noclip_nofix.cpp" />
     <ClCompile Include="spt\features\nosleep.cpp" />
     <ClCompile Include="spt\features\overlay.cpp" />
     <ClCompile Include="spt\features\pause.cpp" />
     <ClCompile Include="spt\features\playerio.cpp" />
+    <ClCompile Include="spt\features\portal_nogroundsnap.cpp" />
     <ClCompile Include="spt\features\property_getter.cpp" />
     <ClCompile Include="spt\features\restart.cpp" />
     <ClCompile Include="spt\features\rng.cpp" />
+    <ClCompile Include="spt\features\saveloads.cpp" />
     <ClCompile Include="spt\features\shadow.cpp" />
     <ClCompile Include="spt\features\stucksave.cpp" />
     <ClCompile Include="spt\features\tas.cpp" />
@@ -1379,6 +1401,7 @@
     <ClInclude Include="spt\cvars.hpp" />
     <ClInclude Include="spt\feature.hpp" />
     <ClInclude Include="spt\features\afterframes.hpp" />
+    <ClInclude Include="spt\features\afterticks.hpp" />
     <ClInclude Include="spt\features\aim.hpp" />
     <ClInclude Include="spt\features\autojump.hpp" />
     <ClInclude Include="spt\features\demo.hpp" />
@@ -1389,6 +1412,7 @@
     <ClInclude Include="spt\features\playerio.hpp" />
     <ClInclude Include="spt\features\property_getter.hpp" />
     <ClInclude Include="spt\features\rng.hpp" />
+    <ClInclude Include="spt\features\saveloads.hpp" />
     <ClInclude Include="spt\features\shadow.hpp" />
     <ClInclude Include="spt\features\tas.hpp" />
     <ClInclude Include="spt\features\tickrate.hpp" />

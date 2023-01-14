@@ -9,6 +9,7 @@
 #include "mathlib\vector.h"
 #endif
 
+
 // y_spt_autojump
 class AutojumpFeature : public FeatureWrapper<AutojumpFeature>
 {
@@ -18,8 +19,12 @@ public:
 	bool cantJumpNextTime = false;
 	bool insideCheckJumpButton = false;
 
+	uintptr_t ptrCheckJumpButton = NULL;
+
 protected:
 	virtual bool ShouldLoadFeature() override;
+
+	virtual void PreHook() override;
 
 	virtual void InitHooks() override;
 

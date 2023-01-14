@@ -86,6 +86,20 @@ namespace utils
 		return false;
 	}
 
+	bool DoesGameLookLikeBMSLatest() 
+	{
+		if (!DoesGameLookLikeBMS())
+			return false;
+
+		if (g_pCVar)
+		{
+			if (g_pCVar->FindVar("cl_toggle_duck"))
+				return true;
+		}
+
+		return false;
+	}
+
 	bool DoesGameLookLikeEstranged()
 	{
 #ifndef OE

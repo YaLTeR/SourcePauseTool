@@ -11,34 +11,65 @@
 #define DECL_MEMBER_CDECL(type, name, ...) \
 	using _##name = type(__cdecl*)(__VA_ARGS__); \
 	_##name ORIG_##name = nullptr;
-
 #define DECL_HOOK_CDECL(type, name, ...) \
 	DECL_MEMBER_CDECL(type, name, ##__VA_ARGS__) \
 	static type __cdecl HOOKED_##name(__VA_ARGS__)
-
 #define HOOK_CDECL(type, className, name, ...) type __cdecl className::HOOKED_##name(__VA_ARGS__)
-
 #define DECL_MEMBER_THISCALL(type, name, ...) \
 	using _##name = type(__fastcall*)(void* thisptr, int edx, ##__VA_ARGS__); \
 	_##name ORIG_##name = nullptr;
-
 #define DECL_HOOK_THISCALL(type, name, ...) \
 	DECL_MEMBER_THISCALL(type, name, ##__VA_ARGS__) \
 	static type __fastcall HOOKED_##name(void* thisptr, int edx, ##__VA_ARGS__)
 
 #define HOOK_THISCALL(type, className, name, ...) \
 	type __fastcall className::HOOKED_##name(void* thisptr, int edx, ##__VA_ARGS__)
-
 #define ADD_RAW_HOOK(moduleName, name) \
 	AddRawHook(#moduleName, reinterpret_cast<void**>(&ORIG_##name##), reinterpret_cast<void*>(HOOKED_##name##));
-#define FIND_PATTERN(moduleName, name) \
-	AddPatternHook(patterns::##name##, #moduleName, #name, reinterpret_cast<void**>(&ORIG_##name##), nullptr);
 #define HOOK_FUNCTION(moduleName, name) \
 	AddPatternHook(patterns::##name##, \
 	               #moduleName, \
 	               #name, \
 	               reinterpret_cast<void**>(&ORIG_##name##), \
 	               reinterpret_cast<void*>(HOOKED_##name##));
+
+#define FIND_PATTERN(moduleName, name) \
+	AddPatternHook(patterns::##name##, #moduleName, #name, reinterpret_cast<void**>(&ORIG_##name##), nullptr);
+#define FIND_PATTERN_ALL(moduleName, name) \
+	AddMatchAllPattern(patterns::##name##, #moduleName, #name, &MATCHES_##name##);
+
+// direct byte replacements is only needed in very niche applications and quite dangerous, 
+// so all of this should stay as macros and a pain in the arse to use
+
+#define DECL_BYTE_REPLACE(name, size, ...) \
+	uintptr_t PTR_##name = NULL; \
+	byte ORIG_BYTES_##name[size] = {};\
+	byte NEW_BYTES_##name[size] = {##__VA_ARGS__};
+#define INIT_BYTE_REPLACE(name, ptr)\
+	PTR_##name = ptr;\
+	if (ptr != NULL)\
+		memcpy((void*)ORIG_BYTES_##name, (void*)(ptr), sizeof(ORIG_BYTES_##name))
+#define DO_BYTE_REPLACE(name)\
+	if (PTR_##name != NULL)\
+		MemUtils::ReplaceBytes((void*)PTR_##name, sizeof(ORIG_BYTES_##name), NEW_BYTES_##name);
+#define UNDO_BYTE_REPLACE(name)\
+	if (PTR_##name != NULL)\
+		MemUtils::ReplaceBytes((void*)PTR_##name, sizeof(ORIG_BYTES_##name), ORIG_BYTES_##name);
+#define DESTROY_BYTE_REPLACE(name)\
+	if (PTR_##name != NULL)\
+	{ \
+		UNDO_BYTE_REPLACE(name);\
+		PTR_##name = NULL; \
+		memset((void*)ORIG_BYTES_##name, 0x00, sizeof(ORIG_BYTES_##name));\
+	}
+
+#define _MAKE_WSTR(name) L#name
+#define GET_MODULE(name)\
+	void* name##Handle;\
+	void* name##Base;\
+	size_t name##Size = 0;\
+	MemUtils::GetModuleInfo(_MAKE_WSTR(##name.dll), &##name##Handle, &##name##Base, &##name##Size);
+
 #define InitCommand(command) InitConcommandBase(command##_command)
 
 struct VFTableHook
