@@ -25,7 +25,7 @@ Arguments: y_spt_saveloads <type> <segment name> <start index> <end index> [<tic
 Usage: \n\
   - Enter in the command.\n\
   - Load the save from which the process should begin from. The save/load process will begin automatically.\n\
-  - Use \"y_spt_saveloads_stop\" at any time to stop the process. This will also be bound to \"L\"\n")
+  - Use \"y_spt_saveloads_stop\" at any time to stop the process.\n")
 {
 	if (args.ArgC() < 4)
 	{
@@ -168,7 +168,7 @@ void SaveloadsFeature::Begin(int type_,
 	- From index %i to index %i (%i save/loads)\n\
 	- Wait time before action: %i\n\
 	- Extra commands: \"%s\"\n\n\
-Please load the save from which save/loading should begin.\n\n------\n",
+Please load the save from which save/loading should begin.\n",
 	    _saveloadTypes[type_],
 		segName_,
 		startIndex_,
@@ -176,8 +176,8 @@ Please load the save from which save/loading should begin.\n\n------\n",
 		endIndex_ - startIndex_ + 1,
 		ticksToWait_,
 		this->extraCommands.c_str());
-
-	EngineConCmd("bind L y_spt_saveloads_stop");
+	Warning("Use \"y_spt_saveloads_stop\" to stop the process!!! You should bind it to something.\n");
+	Msg("\n------\n");
 }
 
 void SaveloadsFeature::Stop() 
