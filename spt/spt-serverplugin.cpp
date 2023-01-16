@@ -159,7 +159,12 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	interfaces::gm = gameServerFactory(INTERFACENAME_GAMEMOVEMENT, NULL);
 	interfaces::g_pCVar = g_pCVar;
 	interfaces::engine_server = (IVEngineServer*)interfaceFactory(INTERFACEVERSION_VENGINESERVER, NULL);
+#ifdef BMS
+	// black mesa retail uses a higher engine client version than mod, which is what the sdk is actually based on.
+	interfaces::engine_client = (IVEngineClient*)interfaceFactory("VEngineClient015", NULL);
+#else
 	interfaces::engine_client = (IVEngineClient*)interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION, NULL);
+#endif
 	interfaces::debugOverlay = (IVDebugOverlay*)interfaceFactory(VDEBUG_OVERLAY_INTERFACE_VERSION, NULL);
 	interfaces::materialSystem = (IMaterialSystem*)interfaceFactory(MATERIAL_SYSTEM_INTERFACE_VERSION, NULL);
 	interfaces::engine_vgui = (IEngineVGui*)interfaceFactory(VENGINE_VGUI_VERSION, NULL);

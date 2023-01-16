@@ -109,6 +109,9 @@ ConVar y_spt_cam_path_draw("y_spt_cam_path_draw", "0", FCVAR_CHEAT, "Draws the c
 
 ConVar _y_spt_force_fov("_y_spt_force_fov", "0", 0, "Force FOV to some value.");
 
+// black mesa broke cl_mousenable and cl_mouselook so we'll need this...
+ConVar y_spt_mouselook("y_spt_mouselook", "1", 0, "Enables or disables using mouse to look.");
+
 CON_COMMAND(y_spt_cam_setpos, "y_spt_cam_setpos <x> <y> <z> - Sets the camera position. (requires camera drive mode)")
 {
 	if (args.ArgC() != 4)
@@ -789,7 +792,7 @@ HOOK_THISCALL(bool, Camera, C_BasePlayer__ShouldDrawThisPlayer)
 void __fastcall Camera::HOOKED_CInput__MouseMove(void* thisptr, int edx, void* cmd)
 {
 	// Block mouse inputs and stop the game from resetting cursor pos
-	if (spt_camera.CanInput())
+	if (spt_camera.CanInput() || !y_spt_mouselook.GetBool())
 		return;
 	spt_camera.ORIG_CInput__MouseMove(thisptr, edx, cmd);
 }
@@ -811,6 +814,11 @@ void Camera::PreHook()
 
 void Camera::LoadFeature()
 {
+	if (ORIG_CInput__MouseMove)
+	{
+		InitConcommandBase(y_spt_mouselook);
+	}
+
 	if (loadingSuccessful)
 	{
 		InitConcommandBase(y_spt_cam_control);
