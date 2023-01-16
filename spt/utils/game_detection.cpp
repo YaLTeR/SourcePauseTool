@@ -16,7 +16,7 @@ namespace utils
 {
 	bool DoesGameLookLikePortal()
 	{
-#if !defined(BMS) || !defined(OE)
+#ifndef OE
 		if (g_pCVar)
 		{
 			if (g_pCVar->FindCommand("upgrade_portalgun"))
@@ -50,13 +50,11 @@ namespace utils
 
 	bool DoesGameLookLikeHLS()
 	{
-#ifndef BMS
 		if (g_pCVar)
 		{
 			if (g_pCVar->FindVar("hl1_ref_db_distance"))
 				return true;
 		}
-#endif
 
 		return false;
 	}
@@ -74,34 +72,30 @@ namespace utils
 		return false;
 	}
 
-	bool DoesGameLookLikeBMS()
+	bool DoesGameLookLikeBMSRetail()
 	{
-#ifdef BMS
 		if (g_pCVar)
 		{
 			if (g_pCVar->FindVar("bm_announcer"))
 				return true;
 		}
-#endif
 
 		return false;
 	}
 
 	bool DoesGameLookLikeBMSLatest()
 	{
-#ifdef BMS
 		if (g_pCVar)
 		{
 			if (g_pCVar->FindVar("cl_toggle_duck"))
 				return true;
 		}
-#endif
 		return false;
 	}
 
 	bool DoesGameLookLikeEstranged()
 	{
-#if !defined(OE) || !defined(BMS)
+#ifndef OE
 		if (interfaces::engine)
 		{
 			auto game_dir = interfaces::engine->GetGameDirectory();

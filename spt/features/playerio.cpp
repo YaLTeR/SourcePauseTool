@@ -129,7 +129,7 @@ void PlayerIOFeature::PreHook()
 		{
 			offM_pCommands = 180;
 		}
-		else if (index == 7 || index == 8 || utils::DoesGameLookLikeBMS()) // OE & BMS
+		else if (index == 7 || index == 8 || utils::DoesGameLookLikeBMSRetail()) // OE & BMS
 		{
 			offM_pCommands = 244;
 		}

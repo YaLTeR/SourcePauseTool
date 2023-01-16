@@ -5,7 +5,7 @@ namespace utils
 	bool DoesGameLookLikePortal();
 	bool DoesGameLookLikeDMoMM();
 	bool DoesGameLookLikeHLS();
-	bool DoesGameLookLikeBMS();
+	bool DoesGameLookLikeBMSRetail();
 	bool DoesGameLookLikeBMSLatest();
 	bool DoesGameLookLikeBMSMod();
 	bool DoesGameLookLikeEstranged();

@@ -60,7 +60,7 @@ static void BMSFlashLightFixCVarCallback(IConVar* pConVar, const char* pOldValue
 
 bool BMSFlashlightFixFeature::ShouldLoadFeature()
 {
-	if (!utils::DoesGameLookLikeBMS() || utils::DoesGameLookLikeBMSMod() || utils::DoesGameLookLikeBMSLatest())
+	if (!utils::DoesGameLookLikeBMSRetail() || utils::DoesGameLookLikeBMSLatest())
 		return false;
 
 	return true;
