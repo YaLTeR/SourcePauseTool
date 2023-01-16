@@ -16,7 +16,7 @@ namespace utils
 {
 	bool DoesGameLookLikePortal()
 	{
-#ifndef OE
+#if !defined(BMS) || !defined(OE)
 		if (g_pCVar)
 		{
 			if (g_pCVar->FindCommand("upgrade_portalgun"))
@@ -50,59 +50,58 @@ namespace utils
 
 	bool DoesGameLookLikeHLS()
 	{
+#ifndef BMS
 		if (g_pCVar)
 		{
 			if (g_pCVar->FindVar("hl1_ref_db_distance"))
 				return true;
 		}
-
-		return false;
-	}
-
-	bool DoesGameLookLikeBMS()
-	{
-		if (g_pCVar)
-		{
-			if (g_pCVar->FindVar("bm_announcer"))
-				return true;
-		}
+#endif
 
 		return false;
 	}
 
 	bool DoesGameLookLikeBMSMod()
 	{
-		if (DoesGameLookLikeBMS())
-		{
-			return false;
-		}
-
+#ifdef SSDK2007
 		if (g_pCVar)
 		{
-			if (g_pCVar->FindVar("bm_eds_crash"))
+			if (g_pCVar->FindVar("bms_normal_jump_vertical_speed"))
 				return true;
 		}
+#endif
 
 		return false;
 	}
 
-	bool DoesGameLookLikeBMSLatest() 
+	bool DoesGameLookLikeBMS()
 	{
-		if (!DoesGameLookLikeBMS())
-			return false;
+#ifdef BMS
+		if (g_pCVar)
+		{
+			if (g_pCVar->FindVar("bm_announcer"))
+				return true;
+		}
+#endif
 
+		return false;
+	}
+
+	bool DoesGameLookLikeBMSLatest()
+	{
+#ifdef BMS
 		if (g_pCVar)
 		{
 			if (g_pCVar->FindVar("cl_toggle_duck"))
 				return true;
 		}
-
+#endif
 		return false;
 	}
 
 	bool DoesGameLookLikeEstranged()
 	{
-#ifndef OE
+#if !defined(OE) || !defined(BMS)
 		if (interfaces::engine)
 		{
 			auto game_dir = interfaces::engine->GetGameDirectory();
@@ -195,7 +194,6 @@ namespace utils
 		build_num -= 35739;
 		return build_num;
 	}
-
 #ifndef SSDK2013
 	void StartBuildNumberSearch()
 	{
