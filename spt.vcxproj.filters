@@ -328,6 +328,9 @@
     <ClCompile Include="spt\utils\stdafx.cpp">
       <Filter>spt\utils</Filter>
     </ClCompile>
+    <ClCompile Include="hardlock.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">

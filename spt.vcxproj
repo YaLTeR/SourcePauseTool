@@ -922,6 +922,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="hardlock.cpp" />
     <ClCompile Include="sptlib\Hooks.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">sptlib-stdafx.hpp</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">sptlib-stdafx.hpp</PrecompiledHeaderFile>
