@@ -302,6 +302,13 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	// Start build number search for build number specific feature stuff
 	utils::StartBuildNumberSearch();
 	TickSignal.Works = true;
+	LevelInitSignal.Works = true;
+	ServerActivateSignal.Works = true;
+	LevelShutdownSignal.Works = true;
+	OnEdictAllocatedSignal.Works = true;
+	ClientPutInServerSignal.Works = true;
+	ClientDisconnectSignal.Works = true;
+	ClientSettingsChangedSignal.Works = true;
 	Feature::LoadFeatures();
 	Cvar_RegisterSPTCvars();
 
@@ -361,6 +368,48 @@ void CSourcePauseTool::GameFrame(bool simulating)
 {
 	if (simulating)
 		TickSignal();
+}
+
+void CSourcePauseTool::LevelInit(char const* pMapName) 
+{
+	LevelInitSignal(pMapName);
+}
+
+void CSourcePauseTool::ServerActivate(edict_t *pEdictList, int edictCount, int clientMax) 
+{
+	ServerActivateSignal(pEdictList, edictCount, clientMax);
+}
+
+void CSourcePauseTool::LevelShutdown()
+{
+	LevelShutdownSignal();
+}
+
+#ifndef OE
+void CSourcePauseTool::OnEdictAllocated(edict_t* edict)
+{
+	OnEdictAllocatedSignal(edict);
+}
+#endif
+
+void CSourcePauseTool::ClientPutInServer(edict_t* pEntity, char const* playername)
+{
+	ClientPutInServerSignal(pEntity, playername);
+}
+
+void CSourcePauseTool::ClientActive(edict_t* pEntity)
+{
+	ClientActiveSignal(pEntity);
+}
+
+void CSourcePauseTool::ClientDisconnect(edict_t* pEntity) 
+{
+	ClientDisconnectSignal(pEntity);
+}
+
+void CSourcePauseTool::ClientSettingsChanged(edict_t* pEdict)
+{
+	ClientSettingsChangedSignal(pEdict);
 }
 
 // override new/delete operators to use the game's allocator

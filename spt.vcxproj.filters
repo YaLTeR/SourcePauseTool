@@ -320,7 +320,7 @@
       <Filter>spt\features</Filter>
     </ClCompile>
     <ClCompile Include="spt\features\portal_nogroundsnap.cpp">
-          <Filter>spt\features</Filter>
+      <Filter>spt\features</Filter>
     </ClCompile>
     <ClCompile Include="spt\features\updater.cpp">
       <Filter>spt\features</Filter>
@@ -329,6 +329,9 @@
       <Filter>spt\utils</Filter>
     </ClCompile>
     <ClCompile Include="hardlock.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="fastload.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
   </ItemGroup>
