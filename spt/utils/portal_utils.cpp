@@ -176,11 +176,11 @@ void calculateAGOffsetPortal(IClientEntity* enter_portal,
 	new_player_angles = utils::GetPlayerEyeAngles();
 }
 
-void transformThroghPortal(IClientEntity* saveglitch_portal,
-                           const Vector& start_pos,
-                           const QAngle start_angles,
-                           Vector& transformed_origin,
-                           QAngle& transformed_angles)
+void transformThroughPortal(IClientEntity* saveglitch_portal,
+                            const Vector& start_pos,
+                            const QAngle start_angles,
+                            Vector& transformed_origin,
+                            QAngle& transformed_angles)
 {
 	VMatrix matrix;
 	matrix.Identity();
@@ -224,7 +224,7 @@ void calculateOffsetPlayer(IClientEntity* saveglitch_portal, Vector& new_player_
 {
 	const auto& player_origin = utils::GetPlayerEyePosition();
 	const auto& player_angles = utils::GetPlayerEyeAngles();
-	transformThroghPortal(saveglitch_portal, player_origin, player_angles, new_player_origin, new_player_angles);
+	transformThroughPortal(saveglitch_portal, player_origin, player_angles, new_player_origin, new_player_angles);
 }
 
 IClientEntity* getPortal(const char* arg, bool verbose)

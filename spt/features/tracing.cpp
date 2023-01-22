@@ -180,7 +180,7 @@ float Tracing::TraceTransformFirePortal(trace_t& tr,
 	IClientEntity* env = GetEnvironmentPortal();
 	if (env)
 	{
-		transformThroghPortal(env, startPos, startAngles, transformedPos, transformedAngles);
+		transformThroughPortal(env, startPos, startAngles, transformedPos, transformedAngles);
 	}
 	AngleVectors(transformedAngles, &vDirection);
 

@@ -17,11 +17,11 @@ void calculateAGOffsetPortal(IClientEntity* enter_portal,
                              IClientEntity* exit_portal,
                              Vector& new_player_origin,
                              QAngle& new_player_angles);
-void transformThroghPortal(IClientEntity* saveglitch_portal,
-                           const Vector& start_pos,
-                           const QAngle start_angles,
-                           Vector& transformed_origin,
-                           QAngle& transformed_angles);
+void transformThroughPortal(IClientEntity* saveglitch_portal,
+                            const Vector& start_pos,
+                            const QAngle start_angles,
+                            Vector& transformed_origin,
+                            QAngle& transformed_angles);
 void calculateSGPosition(Vector& new_player_origin, QAngle& new_player_angles);
 void calculateOffsetPlayer(IClientEntity* saveglitch_portal, Vector& new_player_origin, QAngle& new_player_angles);
 std::wstring calculateWillAGSG(Vector& new_player_origin, QAngle& new_player_angles);
