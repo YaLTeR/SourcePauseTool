@@ -16,10 +16,11 @@
 #undef min
 #undef max
 
-ConVar y_spt_hud_hops("y_spt_hud_hops", "0", FCVAR_CHEAT, "When set to 1, displays the hop practice HUD.");
-ConVar y_spt_hud_ljstats("y_spt_hud_ljstats", "0", FCVAR_CHEAT, "When set to 1, displays the LJ stats HUD.");
-ConVar y_spt_hud_hops_x("y_spt_hud_hops_x", "-85", FCVAR_CHEAT, "Hops HUD x offset");
-ConVar y_spt_hud_hops_y("y_spt_hud_hops_y", "100", FCVAR_CHEAT, "Hops HUD y offset");
+ConVar y_spt_jhud_hops("y_spt_jhud_hops", "0", FCVAR_CHEAT, "Turns on the hop practice Jump HUD.");
+ConVar y_spt_jhud_ljstats("y_spt_jhud_ljstats", "0", FCVAR_CHEAT, "Turns on the LJ stats Jump HUD.");
+ConVar y_spt_jhud_velocity("y_spt_jhud_velocity", "0", FCVAR_CHEAT, "Turns on the velocity Jump HUD.");
+ConVar y_spt_jhud_x("y_spt_jhud_x", "0", FCVAR_CHEAT, "Jump HUD x offset.");
+ConVar y_spt_jhud_y("y_spt_jhud_y", "100", FCVAR_CHEAT, "Jump HUD y offset.");
 
 namespace ljstats
 {
@@ -127,7 +128,7 @@ namespace ljstats
 
 	void OnJump()
 	{
-		if (!y_spt_hud_ljstats.GetBool() || groundTicks < MIN_GROUND_TICKS)
+		if (!y_spt_jhud_ljstats.GetBool() || groundTicks < MIN_GROUND_TICKS)
 			return;
 
 		groundTicks = 0;
@@ -427,6 +428,11 @@ private:
 	float percentage = 0;
 	float maxVel = 0;
 	float loss = 0;
+
+	// velocity hud
+	float prevHopVel = 0;
+	float hopVel = 0;
+
 	vgui::HFont hopsFont = 0;
 };
 
@@ -439,7 +445,7 @@ bool HopsHud::ShouldLoadFeature()
 
 bool HopsHud::ShouldDraw()
 {
-	return y_spt_hud_hops.GetBool() || y_spt_hud_ljstats.GetBool();
+	return y_spt_jhud_hops.GetBool() || y_spt_jhud_ljstats.GetBool() || y_spt_jhud_velocity.GetBool();
 }
 
 void HopsHud::PrintStrafeCol(std::function<void(const ljstats::SegmentStats&, wchar_t*, int, int)> func,
@@ -490,16 +496,17 @@ void HopsHud::LoadFeature()
 		OngroundSignal.Connect(this, &HopsHud::OnGround);
 		JumpSignal.Connect(this, &HopsHud::Jump);
 
-		InitConcommandBase(y_spt_hud_hops);
-		InitConcommandBase(y_spt_hud_hops_x);
-		InitConcommandBase(y_spt_hud_hops_y);
+		InitConcommandBase(y_spt_jhud_hops);
+		InitConcommandBase(y_spt_jhud_velocity);
+		InitConcommandBase(y_spt_jhud_x);
+		InitConcommandBase(y_spt_jhud_y);
 	}
 
 	if (result && JumpSignal.Works && TickSignal.Works)
 	{
 		JumpSignal.Connect(ljstats::OnJump);
 		TickSignal.Connect(ljstats::OnTick);
-		InitConcommandBase(y_spt_hud_ljstats);
+		InitConcommandBase(y_spt_jhud_ljstats);
 	}
 }
 
@@ -508,9 +515,14 @@ void HopsHud::UnloadFeature() {}
 void HopsHud::DrawHopHud()
 {
 #define DrawBuffer() \
-	surface->DrawSetTextPos(x, y); \
-	surface->DrawPrintText(buffer, wcslen(buffer)); \
-	y += (fontTall + MARGIN);
+	do \
+	{ \
+		int tw, th; \
+		surface->GetTextSize(hopsFont, buffer, tw, th); \
+		surface->DrawSetTextPos(x - tw / 2, y); \
+		surface->DrawPrintText(buffer, wcslen(buffer)); \
+		y += (th + MARGIN); \
+	} while (0)
 
 #define DrawValue(fmt, value) \
 	swprintf_s(buffer, BUFFER_SIZE, fmt, value); \
@@ -521,21 +533,24 @@ void HopsHud::DrawHopHud()
 		return;
 	}
 
+	const Color blue(64, 160, 255, 255);
+	const Color orange(255, 160, 32, 255);
+	const Color white(255, 255, 255, 255);
+
 	auto surface = interfaces::surface;
 	auto renderView = spt_hud.renderView;
 
 	surface->DrawSetTextFont(hopsFont);
-	surface->DrawSetTextColor(255, 255, 255, 255);
+	surface->DrawSetTextColor(white);
 	surface->DrawSetTexture(0);
-	int fontTall = surface->GetFontTall(hopsFont);
 
 	const int MARGIN = 2;
 	const int BUFFER_SIZE = 256;
 	wchar_t buffer[BUFFER_SIZE];
-	int x = renderView->width / 2 + y_spt_hud_hops_x.GetFloat();
-	int y = renderView->height / 2 + y_spt_hud_hops_y.GetFloat();
+	int x = renderView->width / 2 + y_spt_jhud_x.GetFloat();
+	int y = renderView->height / 2 + y_spt_jhud_y.GetFloat();
 
-	if (y_spt_hud_hops.GetBool())
+	if (y_spt_jhud_hops.GetBool())
 	{
 		swprintf_s(buffer, BUFFER_SIZE, L"Timing: %d", displayHop);
 		DrawBuffer();
@@ -547,7 +562,29 @@ void HopsHud::DrawHopHud()
 		DrawBuffer();
 	}
 
-	if (y_spt_hud_ljstats.GetBool())
+	if (y_spt_jhud_velocity.GetBool())
+	{
+		static float prev_vel = 0;
+		float vel = spt_playerio.GetPlayerVelocity().Length2D();
+
+		if (fabs(vel - prev_vel) < 0.01)
+			surface->DrawSetTextColor(white);
+		else if (vel > prev_vel)
+			surface->DrawSetTextColor(blue);
+		else
+			surface->DrawSetTextColor(orange);
+
+		prev_vel = vel;
+
+		swprintf_s(buffer, BUFFER_SIZE, L"%d", (int)vel);
+		DrawBuffer();
+
+		surface->DrawSetTextColor(white);
+		swprintf_s(buffer, BUFFER_SIZE, L"%d(%+d)", (int)hopVel, (int)(hopVel - prevHopVel));
+		DrawBuffer();
+	}
+
+	if (y_spt_jhud_ljstats.GetBool())
 	{
 		// Main stats
 		DrawValue(L"Length: %.3f", ljstats::lastJump.Length());
@@ -560,9 +597,8 @@ void HopsHud::DrawHopHud()
 
 		// Individual strafes
 		surface->DrawSetTextFont(hopsFont);
-		surface->DrawSetTextColor(255, 255, 255, 255);
+		surface->DrawSetTextColor(white);
 		surface->DrawSetTexture(0);
-		fontTall = surface->GetFontTall(hopsFont);
 		int ticks = ljstats::lastJump.TotalTicks();
 		const int COL_WIDTH = 75;
 
@@ -611,11 +647,19 @@ void HopsHud::DrawHopHud()
 
 void HopsHud::Jump()
 {
-	if (!y_spt_hud_hops.GetBool())
+	if (!y_spt_jhud_hops.GetBool() && !y_spt_jhud_velocity.GetBool())
 		return;
 
 	if (sinceLanded == 0)
 		CalculateAbhVel();
+
+	// Don't count very delayed hops
+	if (sinceLanded > 15)
+		prevHopVel = 0;
+	else
+		prevHopVel = hopVel;
+
+	hopVel = spt_playerio.GetPlayerVelocity().Length2D();
 
 	velNotCalced = true;
 	lastHop = sinceLanded;
@@ -623,7 +667,7 @@ void HopsHud::Jump()
 
 void HopsHud::OnGround(bool onground)
 {
-	if (!y_spt_hud_hops.GetBool())
+	if (!y_spt_jhud_hops.GetBool() && !y_spt_jhud_velocity.GetBool())
 		return;
 
 	if (!onground)
