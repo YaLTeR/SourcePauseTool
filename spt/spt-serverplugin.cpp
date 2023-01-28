@@ -64,6 +64,7 @@ namespace interfaces
 	IVModelInfo* modelInfo;
 	IBaseClientDLL* clientInterface;
 	IEngineTrace* engineTraceClient = nullptr;
+	IEngineTrace* engineTraceServer = nullptr;
 	IServerPluginHelpers* pluginHelpers = nullptr;
 } // namespace interfaces
 
@@ -179,6 +180,7 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	interfaces::modelInfo = (IVModelInfo*)interfaceFactory(VMODELINFO_SERVER_INTERFACE_VERSION, NULL);
 	interfaces::clientInterface = (IBaseClientDLL*)clientFactory(CLIENT_DLL_INTERFACE_VERSION, NULL);
 	interfaces::engineTraceClient = (IEngineTrace*)interfaceFactory(INTERFACEVERSION_ENGINETRACE_CLIENT, NULL);
+	interfaces::engineTraceServer = (IEngineTrace*)interfaceFactory(INTERFACEVERSION_ENGINETRACE_SERVER, NULL);
 	interfaces::pluginHelpers =
 	    (IServerPluginHelpers*)interfaceFactory(INTERFACEVERSION_ISERVERPLUGINHELPERS, NULL);
 

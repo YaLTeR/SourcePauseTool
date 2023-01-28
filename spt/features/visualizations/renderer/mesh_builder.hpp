@@ -8,6 +8,13 @@
 #include "mathlib\polyhedron.h"
 
 /*
+* Different game versions have different limits for how big meshes can get. If a dynamic mesh is too big then the
+* game will call Error(), but if your static meshes are too big they simply won't get drawn. Use this for limiting
+* sizes of really large meshes.
+*/
+void GetMaxMeshSize(int& maxVerts, int& maxIndices, bool dynamic);
+
+/*
 * The game uses a CMeshBuilder to create meshes, but we can't use it directly because parts of its implementation
 * are private and/or not in the SDK. Not to worry - Introducing The MeshBuilderPro™! The MeshBuilderPro™ can be
 * used to create meshes made of both faces and lines as well as different colors. The MeshBuilderPro™ also reuses

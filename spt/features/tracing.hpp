@@ -12,6 +12,8 @@
 #endif
 #include "cmodel.h"
 
+class CBaseCombatWeapon;
+
 typedef void(__cdecl* _UTIL_TraceRay)(const Ray_t& ray,
                                       unsigned int mask,
                                       const IHandleEntity* ignore,
@@ -59,7 +61,7 @@ typedef float(__fastcall* _TraceFirePortal)(void* thisptr,
                                             QAngle& qFinalAngles,
                                             int iPlacedBy,
                                             bool bTest);
-typedef void*(__fastcall* _GetActiveWeapon)(void* thisptr);
+typedef CBaseCombatWeapon*(__fastcall* _GetActiveWeapon)(void* thisptr);
 typedef const Vector&(__fastcall* _CGameMovement__GetPlayerMaxs)(void* thisptr, int edx);
 typedef const Vector&(__fastcall* _CGameMovement__GetPlayerMins)(void* thisptr, int edx);
 
@@ -88,7 +90,7 @@ public:
 	                     trace_t& pm);
 
 #ifdef SPT_TRACE_PORTAL_ENABLED
-	void* GetActiveWeapon();
+	CBaseCombatWeapon* GetActiveWeapon();
 	float TraceFirePortal(trace_t& tr, const Vector& startPos, const Vector& vDirection);
 
 	// Transform through portal if in portal enviroment
@@ -99,6 +101,9 @@ public:
 	                               Vector& finalPos,
 	                               QAngle& finalAngles,
 	                               bool isPortal2);
+
+	// returns the server-side filter instance which can be used for TraceFirePortal-like shenanigans
+	class ITraceFilter* GetPortalTraceFilter();
 #endif
 
 protected:

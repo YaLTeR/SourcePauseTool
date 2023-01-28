@@ -11,6 +11,9 @@
 #include "..\sptlib-wrapper.hpp"
 #include "..\strafe\strafestuff.hpp"
 #include "portal_utils.hpp"
+#include "ent_props.hpp"
+
+#include "model_types.h"
 
 #undef min
 #undef max
@@ -126,7 +129,7 @@ void Tracing::TracePlayerBBox(const Vector& start,
 
 #ifdef SPT_TRACE_PORTAL_ENABLED
 
-void* Tracing::GetActiveWeapon()
+CBaseCombatWeapon* Tracing::GetActiveWeapon()
 {
 	auto player = utils::GetServerPlayer();
 	if (!player)
@@ -188,6 +191,100 @@ float Tracing::TraceTransformFirePortal(trace_t& tr,
 
 	return ORIG_TraceFirePortal(
 	    weapon, 0, isPortal2, transformedPos, vDirection, tr, finalPos, finalAngles, PORTAL_PLACED_BY_PLAYER, true);
+}
+
+ITraceFilter* Tracing::GetPortalTraceFilter()
+{
+	struct
+	{
+		int name;
+		int solidType;
+		int modelIndex;
+		int renderMode;
+		int moveType;
+		int collisionGroup;
+	} static offsets;
+
+	static bool offsetsCached = false;
+
+	if (!offsetsCached)
+	{
+		offsets.name = spt_entprops.GetFieldOffset("CBaseEntity", "m_iClassname", true);
+		offsets.solidType = spt_entprops.GetFieldOffset("CBaseEntity", "m_Collision.m_nSolidType", true);
+		offsets.modelIndex = spt_entprops.GetFieldOffset("CBaseEntity", "m_nModelIndex", true);
+		offsets.renderMode = spt_entprops.GetFieldOffset("CBaseEntity", "m_nRenderMode", true);
+		offsets.moveType = spt_entprops.GetFieldOffset("CBaseEntity", "m_MoveType", true);
+		offsets.collisionGroup = spt_entprops.GetFieldOffset("CBaseEntity", "m_CollisionGroup", true);
+
+		for (int i = 0; i < sizeof(offsets) / 4; i++)
+		{
+			if ((reinterpret_cast<int*>(&offsets))[i] == utils::INVALID_DATAMAP_OFFSET)
+			{
+				Assert(0);
+				return nullptr; // should never happen, and I'm assuming all these offsets are valid below
+			}
+		}
+		offsetsCached = true;
+	}
+
+	// if we need to make other filters from scratch we could break this apart into smaller pieces
+	struct PortalGunFilter : CTraceFilter
+	{
+		virtual bool ShouldHitEntity(IHandleEntity* pHandle, int contentsMask)
+		{
+			if (!pHandle)
+				return false;
+			CBaseHandle eHandle = pHandle->GetRefEHandle();
+			if ((eHandle.GetSerialNumber() & ~ENT_ENTRY_MASK) == 0x40000000) // static prop
+				return false;
+			CBaseEntity* pEnt = ((IServerUnknown*)pHandle)->GetBaseEntity();
+
+			// not implementing CTraceFilterTranslateClones - I don't know of any case where portals hit shadow clones
+
+			const char* ignoreList[] = {
+			    "prop_physics",
+			    "func_physbox",
+			    "npc_portal_turret_floor",
+			    "prop_energy_ball",
+			    "npc_security_camera",
+			    "player",
+			    "simple_physics_prop",
+			    "simple_physics_brush",
+			    "prop_ragdoll",
+			    "prop_glados_core",
+			    "updateitem2",
+			};
+
+			// CTraceFilterSimpleClassnameList rules
+			for (int i = 0; i < ARRAYSIZE(ignoreList); i++)
+				if (!strcmp(ignoreList[i], ((string_t*)((uint)pEnt + offsets.name))->ToCStr()))
+					return false;
+
+			SolidType_t solid = *(SolidType_t*)((uint)pEnt + offsets.solidType);
+			short modelIndex = *(short*)((uint)pEnt + offsets.modelIndex);
+			const model_t* pModel = interfaces::modelInfo->GetModel(modelIndex);
+			modtype_t modelType = (modtype_t)interfaces::modelInfo->GetModelType(pModel);
+			RenderMode_t renderMode = (RenderMode_t)(*((uchar*)pEnt + offsets.renderMode));
+			MoveType_t moveType = (MoveType_t)(*((uchar*)pEnt + offsets.moveType));
+			Collision_Group_t collisionGroup = *(Collision_Group_t*)((uint)pEnt + offsets.collisionGroup);
+
+			// StandardFilterRules
+			if (modelType != mod_brush || (solid != SOLID_BSP && solid != SOLID_VPHYSICS))
+				if (!(contentsMask & CONTENTS_MONSTER))
+					return false;
+			if (contentsMask & CONTENTS_WINDOW && renderMode != kRenderNormal)
+				return false;
+			if (!(contentsMask & CONTENTS_MOVEABLE) && moveType == MOVETYPE_PUSH)
+				return false;
+			// CTraceFilterSimple::ShouldHitEntity
+			if (collisionGroup == COLLISION_GROUP_DEBRIS && !(contentsMask & CONTENTS_DEBRIS))
+				return false;
+
+			return true; // CGameRules::ShouldCollide always returns true with COLLISION_GROUP_NONE
+		}
+	} static filterInstance;
+
+	return &filterInstance;
 }
 
 #endif
