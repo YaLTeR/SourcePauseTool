@@ -34,11 +34,6 @@ namespace patterns
 	         "83 3D ?? ?? ?? ?? 01 75 ?? 8B 0D ?? ?? ?? ?? 8B 01 8B ?? ?? FF D2 84 C0 75 ?? C7",
 	         "1910503",
 	         "83 3D ?? ?? ?? ?? 01 75 ?? 8B 0D ?? ?? ?? ?? 8B 01 8B ?? ?? FF D2 84 C0 75 ?? 68");
-	PATTERNS(SetSignonState,
-	         "5135",
-	         "CC 56 8B F1 8B ?? ?? ?? ?? ?? 8B 01 8B 50 ?? FF D2 84 C0 75 ?? 8B",
-	         "1910503",
-	         "CC 55 8B EC 56 8B F1 8B ?? ?? ?? ?? ?? 8B 01 8B 50 ?? FF D2 84");
 	PATTERNS(
 	    Record,
 	    "2707",
@@ -58,8 +53,7 @@ namespace patterns
 
 void DemoStuff::InitHooks()
 {
-	HOOK_FUNCTION(engine, StopRecording);
-	HOOK_FUNCTION(engine, SetSignonState);
+	HOOK_FUNCTION(engine, StopRecording);;
 	HOOK_FUNCTION(engine, CDemoPlayer__StartPlayback);
 	HOOK_FUNCTION(engine, Stop);
 	HOOK_FUNCTION(engine, CDemoFile__ReadConsoleCommand);
@@ -73,9 +67,6 @@ bool DemoStuff::ShouldLoadFeature()
 
 void DemoStuff::PreHook()
 {
-	// Move 1 byte since the pattern starts a byte before the function
-	if (ORIG_SetSignonState)
-		ORIG_SetSignonState = (_SetSignonState)((uint32_t)ORIG_SetSignonState + 1);
 
 	// CDemoRecorder::StopRecording
 	if (ORIG_StopRecording)
@@ -206,7 +197,7 @@ bool DemoStuff::Demo_IsPlaybackPaused() const
 
 bool DemoStuff::Demo_IsAutoRecordingAvailable() const
 {
-	return (ORIG_StopRecording && ORIG_SetSignonState);
+	return (ORIG_StopRecording && SetSignonStateSignal.Works);
 }
 
 bool DemoStuff::Demo_IsDemoPlayerAvailable() const
@@ -248,7 +239,7 @@ HOOK_THISCALL(void, DemoStuff, StopRecording)
 	}
 }
 
-HOOK_THISCALL(void, DemoStuff, SetSignonState, int state)
+void DemoStuff::OnSignonStateSignal(void* thisptr, int edx, int state)
 {
 	// This hook only makes sense if StopRecording is also properly hooked
 	if (spt_demostuff.ORIG_StopRecording && spt_demostuff.isAutoRecordingDemo)
@@ -281,7 +272,6 @@ HOOK_THISCALL(void, DemoStuff, SetSignonState, int state)
 			}
 		}
 	}
-	spt_demostuff.ORIG_SetSignonState(thisptr, edx, state);
 }
 
 HOOK_THISCALL(bool, DemoStuff, CDemoPlayer__StartPlayback, const char* filename, bool as_time_demo)
@@ -359,7 +349,7 @@ void DemoStuff::LoadFeature()
 		FrameSignal.Connect(this, &DemoStuff::OnFrame);
 	}
 
-	if (ORIG_StopRecording && ORIG_SetSignonState)
+	if (ORIG_StopRecording && SetSignonStateSignal.Works)
 	{
 		InitCommand(y_spt_record);
 		InitCommand(y_spt_record_stop);

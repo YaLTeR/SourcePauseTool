@@ -922,7 +922,6 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="fastload.cpp" />
     <ClCompile Include="hardlock.cpp" />
     <ClCompile Include="sptlib\Hooks.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">sptlib-stdafx.hpp</PrecompiledHeaderFile>
@@ -1187,6 +1186,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClCompile Include="spt\features\demo.cpp" />
     <ClCompile Include="spt\features\dmomm.cpp" />
     <ClCompile Include="spt\features\ent_props.cpp" />
+    <ClCompile Include="spt\features\fastload.cpp" />
     <ClCompile Include="spt\features\fov.cpp" />
     <ClCompile Include="spt\features\free_oob.cpp" />
     <ClCompile Include="spt\features\generic.cpp" />

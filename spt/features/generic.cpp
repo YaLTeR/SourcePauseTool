@@ -116,6 +116,13 @@ namespace patterns
 	         "8B 0D ?? ?? ?? ?? 83 EC 08 85 C9 74 10 8B 44 24 0C 84 C0 74 08 8B 11 50 8B 42 78 FF D0 83 3D",
 	         "BMS-Retail-0.9",
 	         "55 8B EC FF 75 08 E8 ?? ?? ?? ?? F7 D8 59 1B C0 F7 D8 48 5D C3 3B 0D ?? ?? ?? ?? 75 02 F3 C3 E9 ?? ?? ?? ?? 51 C7 01 ?? ?? ?? ?? E8 ?? ?? ?? ?? 59 C3");
+	PATTERNS(SetSignonState,
+	         "5135",
+	         "CC 56 8B F1 8B ?? ?? ?? ?? ?? 8B 01 8B 50 ?? FF D2 84 C0 75 ?? 8B",
+	         "1910503",
+	         "CC 55 8B EC 56 8B F1 8B ?? ?? ?? ?? ?? 8B 01 8B 50 ?? FF D2 84",
+			 "BMS-0.9",
+	         "CC 55 8B EC 56 8B F1 8B 0D ?? ?? ?? ?? 8B 01 8B 40 ?? FF D0 84 C0");
 
 } // namespace patterns
 
@@ -128,6 +135,7 @@ void GenericFeature::InitHooks()
 	HOOK_FUNCTION(engine, SV_Frame);
 	HOOK_FUNCTION(client, ControllerMove);
 	FIND_PATTERN(client, CHudDamageIndicator__GetDamagePosition);
+	HOOK_FUNCTION(engine, SetSignonState);
 
 	if (interfaces::gm)
 	{
@@ -204,6 +212,13 @@ void GenericFeature::PreHook()
 		AdjustAngles.Works = true;
 		OngroundSignal.Works = true;
 	}
+
+	// Move 1 byte since the pattern starts a byte before the function
+	if (ORIG_SetSignonState)
+	{
+		ORIG_SetSignonState = (_SetSignonState)((uint32_t)ORIG_SetSignonState + 1);
+		SetSignonStateSignal.Works = true;
+	}
 }
 
 void __stdcall GenericFeature::HOOKED_HudUpdate(bool bActive)
@@ -273,4 +288,12 @@ HOOK_THISCALL(void, GenericFeature, ProcessMovement, void* pPlayer, void* pMove)
 	ProcessMovementPre_Signal(pPlayer, pMove);
 	spt_generic.ORIG_ProcessMovement(thisptr, edx, pPlayer, pMove);
 	ProcessMovementPost_Signal(pPlayer, pMove);
+}
+
+
+HOOK_THISCALL(void, GenericFeature, SetSignonState, int state)
+{
+	spt_generic.signOnState = state;
+	SetSignonStateSignal(thisptr, edx, state);
+	spt_generic.ORIG_SetSignonState(thisptr, edx, state);
 }

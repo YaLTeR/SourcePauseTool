@@ -5,6 +5,7 @@
 #include "signals.hpp"
 #include "convar.hpp"
 #include "..\features\afterticks.hpp"
+#include "generic.hpp"
 #include "hud.hpp"
 #include <format>
 
@@ -68,50 +69,15 @@ ConVar y_spt_hud_saveloads_showcurindex("y_spt_hud_saveloads_showcurindex",
 										0,
 										"Shows the current save/load index of the current save/load process.\n");
 
-namespace patterns
-{
-	PATTERNS(
-		Engine__SignOnState,
-		"OrangeBox-and-older",
-		"80 3D ?? ?? ?? ?? 00 74 06 B8 ?? ?? ?? ?? C3 83 3D ?? ?? ?? ?? 02 B8 ?? ?? ?? ??",
-		"BMS-Retail",
-		"A1 ?? ?? ?? ?? 85 C0 75 ?? B8 ?? ?? ?? ??",
-		"Source-2009-and-Portal-2",
-		"74 ?? 8B 74 87 04 83 7E 18 00 74 2D 8B 0D ?? ?? ?? ?? 8B 49 18");
-};
-
-bool SaveloadsFeature::ShouldLoadFeature() 
+bool SaveloadsFeature::ShouldLoadFeature()
 {
 	return true;
 }
 
-void SaveloadsFeature::InitHooks() 
-{
-	FIND_PATTERN_ALL(engine, Engine__SignOnState);
-}
-
-
 void SaveloadsFeature::LoadFeature()
 {
-	if (!spt_afterticks.Works || MATCHES_Engine__SignOnState.empty() || !FrameSignal.Works)
+	if (!spt_afterticks.Works || !spt_generic.ORIG_SignOnState || !FrameSignal.Works)
 		return;
-
-	auto match = MATCHES_Engine__SignOnState[0]; 
-	switch (match.ptnIndex)
-	{
-	case 0:
-		ORIG_SignOnState = *(uintptr_t*)(match.ptr + 17);
-		break;
-	case 1:
-		ORIG_SignOnState = *(uintptr_t*)(match.ptr + 1);
-		break;
-	case 2:
-		ORIG_SignOnState = **(uintptr_t**)(match.ptr + 14) + 0x70;
-		break;
-	default: 
-		ORIG_SignOnState = NULL;
-		return;
-	}
 
 	//FinishRestoreSignal.Connect(this, &SaveloadsFeature::FinishRestore);
 	InitCommand(y_spt_saveloads);
@@ -130,7 +96,6 @@ void SaveloadsFeature::LoadFeature()
 
 	FrameSignal.Connect(this, &SaveloadsFeature::Update);
 }
-
 
 void SaveloadsFeature::Begin(int type_,
                              const char* segName_,
@@ -191,15 +156,10 @@ void SaveloadsFeature::Stop()
 	Warning("SAVELOADS: Save/load process stopped.\n");
 }
 
-int SaveloadsFeature::GetSignOnState() 
-{
-	return *(int*)ORIG_SignOnState;
-}
-
 void SaveloadsFeature::Update()
 {
 	int last = lastSignOnState;
-	int cur = GetSignOnState();
+	int cur = spt_generic.signOnState;
 	lastSignOnState = cur;
 
 	if (!execute)

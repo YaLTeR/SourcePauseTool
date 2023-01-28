@@ -20,6 +20,7 @@ extern Gallant::Signal1<bool> SV_FrameSignal;
 extern Gallant::Signal2<void*, void*> ProcessMovementPost_Signal;
 extern Gallant::Signal2<void*, void*> ProcessMovementPre_Signal;
 extern Gallant::Signal2<void*, CViewSetup*> RenderViewPre_Signal;
+extern Gallant::Signal3<void*, int, int> SetSignonStateSignal;
 
 // Plugin callbacks
 extern Gallant::Signal0<void> TickSignal;

@@ -331,7 +331,7 @@
     <ClCompile Include="hardlock.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
-    <ClCompile Include="fastload.cpp">
+    <ClCompile Include="spt\features\fastload.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
   </ItemGroup>
