@@ -7,6 +7,7 @@
 #include "interfaces.hpp"
 
 #include "..\mesh_defs_private.hpp"
+#include "spt\utils\game_detection.hpp"
 
 /**************************************** MESH BUILDER INTERNAL ****************************************/
 
@@ -129,6 +130,24 @@ DynamicMesh MeshBuilderPro::CreateDynamicMesh(const MeshCreateFunc& createFunc, 
 	createFunc(builderDelegate);
 	g_meshBuilderInternal.FinalizeCurMesh(params);
 	return {g_meshBuilderInternal.dynamicMeshUnits.size() - 1, g_meshRenderFrameNum};
+}
+
+void GetMaxMeshSize(int& maxVerts, int& maxIndices, bool dynamic)
+{
+	maxVerts = 32768;
+	maxIndices = 32768;
+	if (dynamic)
+		return;
+
+	if (utils::DoesGameLookLikePortal())
+	{
+		if (utils::GetBuildNumber() >= 5135)
+		{
+			maxVerts = 65536;
+			maxIndices = 999'999; // unknown upper limit
+		}
+	}
+	// else unkown, assume a safe lower limit
 }
 
 #endif
