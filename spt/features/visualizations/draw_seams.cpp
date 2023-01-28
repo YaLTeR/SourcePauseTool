@@ -13,6 +13,8 @@
 #include "spt\features\generic.hpp"
 #include "spt\utils\portal_utils.hpp"
 
+#include "spt\utils\interfaces.hpp"
+
 ConVar y_spt_draw_seams("y_spt_draw_seams", "0", FCVAR_CHEAT, "Draws seamshot stuff");
 
 class DrawSeamsFeature : public FeatureWrapper<DrawSeamsFeature>
@@ -20,8 +22,7 @@ class DrawSeamsFeature : public FeatureWrapper<DrawSeamsFeature>
 protected:
 	void LoadFeature() override
 	{
-		if (spt_meshRenderer.signal.Works && spt_tracing.ORIG_TraceFirePortal
-		    && spt_tracing.ORIG_GetActiveWeapon)
+		if (spt_meshRenderer.signal.Works)
 		{
 			InitConcommandBase(y_spt_draw_seams);
 			spt_meshRenderer.signal.Connect(this, &DrawSeamsFeature::OnMeshRenderSignal);
@@ -47,7 +48,10 @@ bool TestSeamshot(const Vector& cameraPos,
 	trace_t seamTrace;
 	Vector dir = seamPos - cameraPos;
 	dir.NormalizeInPlace();
-	spt_tracing.TraceFirePortal(seamTrace, cameraPos, dir);
+
+	Ray_t ray;
+	ray.Init(cameraPos, cameraPos + dir * 999'999'999);
+	interfaces::engineTraceServer->TraceRay(ray, MASK_SHOT_PORTAL, spt_tracing.GetPortalTraceFilter(), &seamTrace);
 
 	if (seamTrace.fraction == 1.0f)
 	{
@@ -125,7 +129,12 @@ void FindClosestPlane(const trace_t& tr, trace_t& out, float maxDistSqr)
 	for (int i = 0; i < 4; i++)
 	{
 		trace_t newEdgeTr;
-		spt_tracing.TraceFirePortal(newEdgeTr, tr.endpos, checkDirs[i]);
+		Ray_t ray;
+		ray.Init(tr.endpos, tr.endpos + checkDirs[i] * 999'999'999);
+		interfaces::engineTraceServer->TraceRay(ray,
+		                                        MASK_SHOT_PORTAL,
+		                                        spt_tracing.GetPortalTraceFilter(),
+		                                        &newEdgeTr);
 
 		if (TraceHit(newEdgeTr, maxDistSqr))
 		{
