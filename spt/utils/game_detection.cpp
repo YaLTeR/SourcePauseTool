@@ -59,7 +59,20 @@ namespace utils
 		return false;
 	}
 
-	bool DoesGameLookLikeBMS()
+	bool DoesGameLookLikeBMSMod()
+	{
+#ifdef SSDK2007
+		if (g_pCVar)
+		{
+			if (g_pCVar->FindVar("bms_normal_jump_vertical_speed"))
+				return true;
+		}
+#endif
+
+		return false;
+	}
+
+	bool DoesGameLookLikeBMSRetail()
 	{
 		if (g_pCVar)
 		{
@@ -70,33 +83,13 @@ namespace utils
 		return false;
 	}
 
-	bool DoesGameLookLikeBMSMod()
+	bool DoesGameLookLikeBMSLatest()
 	{
-		if (DoesGameLookLikeBMS())
-		{
-			return false;
-		}
-
-		if (g_pCVar)
-		{
-			if (g_pCVar->FindVar("bm_eds_crash"))
-				return true;
-		}
-
-		return false;
-	}
-
-	bool DoesGameLookLikeBMSLatest() 
-	{
-		if (!DoesGameLookLikeBMS())
-			return false;
-
 		if (g_pCVar)
 		{
 			if (g_pCVar->FindVar("cl_toggle_duck"))
 				return true;
 		}
-
 		return false;
 	}
 
@@ -195,7 +188,6 @@ namespace utils
 		build_num -= 35739;
 		return build_num;
 	}
-
 #ifndef SSDK2013
 	void StartBuildNumberSearch()
 	{
