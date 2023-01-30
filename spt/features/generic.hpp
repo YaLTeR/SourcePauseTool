@@ -29,10 +29,11 @@ public:
 	_GetClientModeNormal ORIG_GetClientModeNormal = nullptr;
 	_ControllerMove ORIG_ControllerMove = nullptr;
 
+	uintptr_t ORIG_SignOnState;
 	bool shouldPreventNextUnpause = false;
+	int signOnState;
 
 	Vector GetCameraOrigin();
-
 	virtual bool ShouldLoadFeature() override;
 
 protected:
@@ -42,6 +43,7 @@ protected:
 	virtual void PreHook() override;
 
 private:
+	std::vector<patterns::MatchedPattern> MATCHES_Engine__SignOnState;
 	uintptr_t ORIG_CHudDamageIndicator__GetDamagePosition = 0;
 
 	static void __stdcall HOOKED_HudUpdate(bool bActive);
@@ -51,6 +53,7 @@ private:
 	static void __fastcall HOOKED_ControllerMove(void* thisptr, int edx, float frametime, void* cmd);
 	DECL_HOOK_CDECL(void, SV_Frame, bool finalTick);
 	DECL_HOOK_THISCALL(void, ProcessMovement, void* pPlayer, void* pMove);
+	DECL_HOOK_THISCALL(void, SetSignonState, int state);
 };
 
 extern GenericFeature spt_generic;

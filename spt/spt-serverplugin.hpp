@@ -33,15 +33,15 @@ public:
 	virtual void Pause(void){};
 	virtual void UnPause(void){};
 	virtual const char* GetPluginDescription(void);
-	virtual void LevelInit(char const* pMapName){};
-	virtual void ServerActivate(edict_t* pEdictList, int edictCount, int clientMax){};
+	virtual void LevelInit(char const* pMapName);
+	virtual void ServerActivate(edict_t* pEdictList, int edictCount, int clientMax);
 	virtual void GameFrame(bool simulating);
-	virtual void LevelShutdown(void){};
-	virtual void ClientActive(edict_t* pEntity){};
-	virtual void ClientDisconnect(edict_t* pEntity){};
-	virtual void ClientPutInServer(edict_t* pEntity, char const* playername){};
+	virtual void LevelShutdown(void);
+	virtual void ClientActive(edict_t* pEntity);
+	virtual void ClientDisconnect(edict_t* pEntity);
+	virtual void ClientPutInServer(edict_t* pEntity, char const* playername);
 	virtual void SetCommandClient(int index){};
-	virtual void ClientSettingsChanged(edict_t* pEdict){};
+	virtual void ClientSettingsChanged(edict_t* pEdict);
 
 #if defined(OE)
 	virtual PLUGIN_RESULT ClientConnect(bool* bAllowConnect,
@@ -86,7 +86,7 @@ public:
 	                                      const char* pCvarValue){};
 
 	// added with version 3 of the interface.
-	virtual void OnEdictAllocated(edict_t* edict){};
+	virtual void OnEdictAllocated(edict_t* edict);
 	virtual void OnEdictFreed(const edict_t* edict){};
 #endif
 };

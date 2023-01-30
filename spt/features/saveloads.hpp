@@ -9,7 +9,6 @@ public:
 
 protected:
 	virtual bool ShouldLoadFeature() override;
-	virtual void InitHooks() override;
 	virtual void LoadFeature() override;
 	//virtual void UnloadFeature() override;
 
@@ -19,10 +18,6 @@ private:
 	int startIndex;
 	int endIndex;
 	int ticksToWait;
-
-	int GetSignOnState();
-	uintptr_t ORIG_SignOnState;
-	std::vector<patterns::MatchedPattern> MATCHES_Engine__SignOnState;
 	int lastSignOnState;
 
 	std::string extraCommands;

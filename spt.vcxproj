@@ -1185,6 +1185,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClCompile Include="spt\features\demo.cpp" />
     <ClCompile Include="spt\features\dmomm.cpp" />
     <ClCompile Include="spt\features\ent_props.cpp" />
+    <ClCompile Include="spt\features\fastload.cpp" />
     <ClCompile Include="spt\features\fov.cpp" />
     <ClCompile Include="spt\features\free_oob.cpp" />
     <ClCompile Include="spt\features\generic.cpp" />
