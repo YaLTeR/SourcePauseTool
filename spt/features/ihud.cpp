@@ -71,7 +71,7 @@ protected:
 	virtual void UnloadFeature() override;
 
 private:
-	DECL_HOOK_THISCALL(void, DecodeUserCmdFromBuffer, bf_read& buf, int sequence_number);
+	DECL_HOOK_THISCALL(void, DecodeUserCmdFromBuffer, void*, bf_read& buf, int sequence_number);
 	void CreateMove(uintptr_t pCmd);
 	void DrawRectAndCenterTxt(Color buttonColor,
 	                          int x0,
@@ -802,9 +802,9 @@ void InputHud::DrawButton(Button button)
 	                     button.text.c_str());
 }
 
-HOOK_THISCALL(void, InputHud, DecodeUserCmdFromBuffer, bf_read& buf, int sequence_number)
+IMPL_HOOK_THISCALL(InputHud, void, DecodeUserCmdFromBuffer, void*, bf_read& buf, int sequence_number)
 {
-	spt_ihud.ORIG_DecodeUserCmdFromBuffer(thisptr, edx, buf, sequence_number);
+	spt_ihud.ORIG_DecodeUserCmdFromBuffer(thisptr, buf, sequence_number);
 
 	auto m_pCommands =
 	    *reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(thisptr) + spt_playerio.offM_pCommands);

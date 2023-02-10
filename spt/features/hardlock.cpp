@@ -21,7 +21,7 @@ protected:
 	virtual void InitHooks() override;
 
 private:
-	DECL_HOOK_THISCALL(void, BroadcastMessage, INetMessage& msg, IRecipientFilter& filter);
+	DECL_HOOK_THISCALL(void, BroadcastMessage, void*, INetMessage& msg, IRecipientFilter& filter) {}
 };
 
 static HardlockFix hardlock_fix;
@@ -35,7 +35,5 @@ void HardlockFix::InitHooks()
 {
 	HOOK_FUNCTION(engine, BroadcastMessage);
 }
-
-HOOK_THISCALL(void, HardlockFix, BroadcastMessage, INetMessage& msg, IRecipientFilter& filter) {}
 
 #endif

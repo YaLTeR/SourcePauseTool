@@ -61,12 +61,12 @@ protected:
 	virtual void UnloadFeature() override;
 
 private:
-	DECL_HOOK_THISCALL(void, ClientModeShared__OverrideView, CViewSetup* viewSetup);
-	DECL_HOOK_THISCALL(bool, ClientModeShared__CreateMove, float flInputSampleTime, void* cmd);
-	DECL_HOOK_THISCALL(bool, C_BasePlayer__ShouldDrawLocalPlayer);
-	DECL_HOOK_THISCALL(void, CInput__MouseMove, void* cmd);
+	DECL_HOOK_THISCALL(void, ClientModeShared__OverrideView, void*, CViewSetup* viewSetup);
+	DECL_HOOK_THISCALL(bool, ClientModeShared__CreateMove, void*, float flInputSampleTime, void* cmd);
+	DECL_HOOK_THISCALL(bool, C_BasePlayer__ShouldDrawLocalPlayer, void*);
+	DECL_HOOK_THISCALL(void, CInput__MouseMove, void*, void* cmd);
 #if defined(SSDK2013)
-	DECL_HOOK_THISCALL(bool, C_BasePlayer__ShouldDrawThisPlayer);
+	DECL_HOOK_THISCALL(bool, C_BasePlayer__ShouldDrawThisPlayer, void*);
 #endif
 
 	void OverrideView(CViewSetup* viewSetup);
@@ -110,7 +110,11 @@ ConVar y_spt_cam_path_draw("y_spt_cam_path_draw", "0", FCVAR_CHEAT, "Draws the c
 ConVar _y_spt_force_fov("_y_spt_force_fov", "0", 0, "Force FOV to some value.");
 
 // black mesa broke cl_mousenable and cl_mouselook so we'll need this...
-ConVar y_spt_mousemove("y_spt_mousemove", "1", 0, "Enables or disables reacting to mouse movement (for view angle changing or for movement using +strafe).");
+ConVar y_spt_mousemove(
+    "y_spt_mousemove",
+    "1",
+    0,
+    "Enables or disables reacting to mouse movement (for view angle changing or for movement using +strafe).");
 
 CON_COMMAND(y_spt_cam_setpos, "y_spt_cam_setpos <x> <y> <z> - Sets the camera position. (requires camera drive mode)")
 {
@@ -491,7 +495,7 @@ void Camera::HandleInput(bool active)
 	input_active = active;
 }
 
-// Canera path interp code from SourceAutoRecord
+// Camera path interp code from SourceAutoRecord
 // https://github.com/p2sr/SourceAutoRecord/blob/master/src/Features/Camera.cpp
 static float InterpCurve(std::vector<Vector> points, float x, bool is_angles = false)
 {
@@ -729,13 +733,13 @@ void Camera::DrawPath()
 	}
 }
 
-HOOK_THISCALL(void, Camera, ClientModeShared__OverrideView, CViewSetup* viewSetup)
+IMPL_HOOK_THISCALL(Camera, void, ClientModeShared__OverrideView, void*, CViewSetup* viewSetup)
 {
-	spt_camera.ORIG_ClientModeShared__OverrideView(thisptr, edx, viewSetup);
+	spt_camera.ORIG_ClientModeShared__OverrideView(thisptr, viewSetup);
 	spt_camera.OverrideView(viewSetup);
 }
 
-HOOK_THISCALL(bool, Camera, ClientModeShared__CreateMove, float flInputSampleTime, void* cmd)
+IMPL_HOOK_THISCALL(Camera, bool, ClientModeShared__CreateMove, void*, float flInputSampleTime, void* cmd)
 {
 	if (spt_camera.CanInput())
 	{
@@ -746,7 +750,7 @@ HOOK_THISCALL(bool, Camera, ClientModeShared__CreateMove, float flInputSampleTim
 		usercmd->sidemove = 0;
 		usercmd->upmove = 0;
 	}
-	return spt_camera.ORIG_ClientModeShared__CreateMove(thisptr, edx, flInputSampleTime, cmd);
+	return spt_camera.ORIG_ClientModeShared__CreateMove(thisptr, flInputSampleTime, cmd);
 }
 
 static bool ShouldDrawPlayerModel()
@@ -767,17 +771,17 @@ static bool ShouldDrawPlayerModel()
 	return true;
 }
 
-HOOK_THISCALL(bool, Camera, C_BasePlayer__ShouldDrawLocalPlayer)
+IMPL_HOOK_THISCALL(Camera, bool, C_BasePlayer__ShouldDrawLocalPlayer, void*)
 {
 	if (ShouldDrawPlayerModel())
 	{
 		return true;
 	}
-	return spt_camera.ORIG_C_BasePlayer__ShouldDrawLocalPlayer(thisptr, edx);
+	return spt_camera.ORIG_C_BasePlayer__ShouldDrawLocalPlayer(thisptr);
 }
 
 #if defined(SSDK2013)
-HOOK_THISCALL(bool, Camera, C_BasePlayer__ShouldDrawThisPlayer)
+IMPL_HOOK_THISCALL(Camera, bool, C_BasePlayer__ShouldDrawThisPlayer, void*)
 {
 	// ShouldDrawLocalPlayer only decides draw view model or weapon model in steampipe
 	// We need ShouldDrawThisPlayer to make player model draw
@@ -785,16 +789,16 @@ HOOK_THISCALL(bool, Camera, C_BasePlayer__ShouldDrawThisPlayer)
 	{
 		return true;
 	}
-	return spt_camera.ORIG_C_BasePlayer__ShouldDrawThisPlayer(thisptr, edx);
+	return spt_camera.ORIG_C_BasePlayer__ShouldDrawThisPlayer(thisptr);
 }
 #endif
 
-void __fastcall Camera::HOOKED_CInput__MouseMove(void* thisptr, int edx, void* cmd)
+IMPL_HOOK_THISCALL(Camera, void, CInput__MouseMove, void*, void* cmd)
 {
 	// Block mouse inputs and stop the game from resetting cursor pos
 	if (spt_camera.CanInput() || !y_spt_mousemove.GetBool())
 		return;
-	spt_camera.ORIG_CInput__MouseMove(thisptr, edx, cmd);
+	spt_camera.ORIG_CInput__MouseMove(thisptr, cmd);
 }
 
 bool Camera::ShouldLoadFeature()

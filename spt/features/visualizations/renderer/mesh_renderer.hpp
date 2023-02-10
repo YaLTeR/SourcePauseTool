@@ -107,15 +107,20 @@ private:
 	} viewInfo;
 
 	DECL_MEMBER_CDECL(void, OnRenderStart);
-	DECL_HOOK_THISCALL(void, CRendering3dView__DrawOpaqueRenderables, int param);
-	DECL_HOOK_THISCALL(void, CRendering3dView__DrawTranslucentRenderables, bool bInSkybox, bool bShadowDepth);
+	DECL_HOOK_THISCALL(void, CRendering3dView__DrawOpaqueRenderables, CRendering3dView*, int param);
+
+	DECL_HOOK_THISCALL(void,
+	                   CRendering3dView__DrawTranslucentRenderables,
+	                   CRendering3dView*,
+	                   bool bInSkybox,
+	                   bool bShadowDepth);
 
 	bool Works() const;
 	void FrameCleanup();
 	void OnRenderViewPre_Signal(void* thisptr, CViewSetup* cameraView);
 	void SetupViewInfo(CRendering3dView* rendering3dView);
-	void OnDrawOpaques(void* renderingView);
-	void OnDrawTranslucents(void* renderingView);
+	void OnDrawOpaques(CRendering3dView* renderingView);
+	void OnDrawTranslucents(CRendering3dView* renderingView);
 };
 
 inline MeshRendererFeature spt_meshRenderer;

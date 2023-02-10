@@ -8,22 +8,46 @@
 #include "SPTLib\memutils.hpp"
 #include "convar.hpp"
 
-#define DECL_MEMBER_CDECL(type, name, ...) \
-	using _##name = type(__cdecl*)(__VA_ARGS__); \
-	_##name ORIG_##name = nullptr;
-#define DECL_HOOK_CDECL(type, name, ...) \
-	DECL_MEMBER_CDECL(type, name, ##__VA_ARGS__) \
-	static type __cdecl HOOKED_##name(__VA_ARGS__)
-#define HOOK_CDECL(type, className, name, ...) type __cdecl className::HOOKED_##name(__VA_ARGS__)
-#define DECL_MEMBER_THISCALL(type, name, ...) \
-	using _##name = type(__fastcall*)(void* thisptr, int edx, ##__VA_ARGS__); \
-	_##name ORIG_##name = nullptr;
-#define DECL_HOOK_THISCALL(type, name, ...) \
-	DECL_MEMBER_THISCALL(type, name, ##__VA_ARGS__) \
-	static type __fastcall HOOKED_##name(void* thisptr, int edx, ##__VA_ARGS__)
+// cdecl convention
 
-#define HOOK_THISCALL(type, className, name, ...) \
-	type __fastcall className::HOOKED_##name(void* thisptr, int edx, ##__VA_ARGS__)
+#define DECL_MEMBER_CDECL(retType, name, ...) \
+	using _##name = retType(__cdecl*)(__VA_ARGS__); \
+	_##name ORIG_##name = nullptr;
+
+#define DECL_HOOK_CDECL(retType, name, ...) \
+	DECL_MEMBER_CDECL(retType, name, ##__VA_ARGS__) \
+	static retType __cdecl HOOKED_##name(__VA_ARGS__)
+
+#define IMPL_HOOK_CDECL(owner, retType, name, ...) retType __cdecl owner::HOOKED_##name(__VA_ARGS__)
+
+// thiscall convention - msvc doesn't allow a static function to be thiscall, we make the ORIG function __thiscall
+// & the static __fastcall with a hidden edx param (the callee is allowed to clobber edx)
+
+#define DECL_MEMBER_THISCALL(retType, name, thisType, ...) \
+	using _##name = retType(__thiscall*)(thisType thisptr, ##__VA_ARGS__); \
+	_##name ORIG_##name = nullptr;
+
+#define DECL_HOOK_THISCALL(retType, name, thisType, ...) \
+	DECL_MEMBER_THISCALL(retType, name, thisType, ##__VA_ARGS__) \
+	static retType __fastcall HOOKED_##name(thisType thisptr, int _edx, ##__VA_ARGS__)
+
+#define IMPL_HOOK_THISCALL(owner, retType, name, thisType, ...) \
+	retType __fastcall owner::HOOKED_##name(thisType thisptr, int _edx, ##__VA_ARGS__)
+
+// fastcall convention
+
+#define DECL_MEMBER_FASTCALL(retType, name, ...) \
+	using _##name = retType(__fastcall*)(__VA_ARGS__); \
+	_##name ORIG_##name = nullptr;
+
+#define DECL_HOOK_FASTCALL(retType, name, ...) \
+	DECL_MEMBER_CDECL(retType, name, ##__VA_ARGS__) \
+	static retType __fastcall HOOKED_##name(__VA_ARGS__)
+
+#define IMPL_HOOK_FASTCALL(owner, retType, name, ...) retType __fastcall owner::HOOKED_##name(__VA_ARGS__)
+
+// misc
+
 #define ADD_RAW_HOOK(moduleName, name) \
 	AddRawHook(#moduleName, reinterpret_cast<void**>(&ORIG_##name##), reinterpret_cast<void*>(HOOKED_##name##));
 #define HOOK_FUNCTION(moduleName, name) \

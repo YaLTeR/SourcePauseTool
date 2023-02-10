@@ -26,7 +26,7 @@ namespace patterns
 class TASRecordFeature : public FeatureWrapper<TASRecordFeature>
 {
 public:
-	DECL_HOOK_THISCALL(bool, CCommandBuffer__DequeueNextCommand);
+	DECL_HOOK_THISCALL(bool, CCommandBuffer__DequeueNextCommand, CCommandBuffer*);
 
 	bool recording = false;
 	int currentTick = 0;
@@ -313,14 +313,13 @@ void TASRecordFeature::LoadFeature()
 
 void TASRecordFeature::UnloadFeature() {}
 
-HOOK_THISCALL(bool, TASRecordFeature, CCommandBuffer__DequeueNextCommand)
+IMPL_HOOK_THISCALL(TASRecordFeature, bool, CCommandBuffer__DequeueNextCommand, CCommandBuffer*)
 {
-	bool rval = spt_tas_record.ORIG_CCommandBuffer__DequeueNextCommand(thisptr, edx);
+	bool rval = spt_tas_record.ORIG_CCommandBuffer__DequeueNextCommand(thisptr);
 
 	if (spt_tas_record.recording && rval)
 	{
-		CCommandBuffer* ptr = reinterpret_cast<CCommandBuffer*>(thisptr);
-		CCommand& cmd = const_cast<CCommand&>(ptr->GetCommand());
+		CCommand& cmd = const_cast<CCommand&>(thisptr->GetCommand());
 		if (IsRecordable(cmd))
 		{
 			RemoveKeycodes(cmd);

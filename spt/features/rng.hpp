@@ -20,9 +20,9 @@ protected:
 private:
 	DECL_HOOK_CDECL(void, SetPredictionRandomSeed, void* usercmd);
 #ifdef OE
-	DECL_HOOK_THISCALL(void, CBasePlayer__InitVCollision);
+	DECL_HOOK_THISCALL(void, CBasePlayer__InitVCollision, void*);
 #else
-	DECL_HOOK_THISCALL(void, CBasePlayer__InitVCollision, const Vector& vecAbsOrigin, const Vector& vecAbsVelocity);
+	DECL_HOOK_THISCALL(void, CBasePlayer__InitVCollision, void*, const Vector& vecAbsOrigin, const Vector& vecAbsVelocity);
 #endif
 
 	uint32_t* IVP_RAND_SEED = nullptr;

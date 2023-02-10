@@ -16,7 +16,7 @@ Gallant::Signal1<bool> SV_FrameSignal;
 Gallant::Signal2<void*, void*> ProcessMovementPost_Signal;
 Gallant::Signal2<void*, void*> ProcessMovementPre_Signal;
 Gallant::Signal2<void*, CViewSetup*> RenderViewPre_Signal;
-Gallant::Signal3<void*, int, int> SetSignonStateSignal;
+Gallant::Signal2<void*, int> SetSignonStateSignal;
 
 
 // Plugin callbacks

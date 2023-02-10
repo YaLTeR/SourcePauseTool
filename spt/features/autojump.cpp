@@ -204,14 +204,14 @@ void AutojumpFeature::LoadFeature()
 	}
 }
 
-void AutojumpFeature::UnloadFeature() 
+void AutojumpFeature::UnloadFeature()
 {
 	ptrCheckJumpButton = NULL;
 }
 
 static Vector old_vel(0.0f, 0.0f, 0.0f);
 
-HOOK_THISCALL(bool, AutojumpFeature, CheckJumpButton)
+IMPL_HOOK_THISCALL(AutojumpFeature, bool, CheckJumpButton, void*)
 {
 	const int IN_JUMP = (1 << 1);
 
@@ -243,7 +243,7 @@ HOOK_THISCALL(bool, AutojumpFeature, CheckJumpButton)
 
 	spt_autojump.insideCheckJumpButton = true;
 	old_vel = mv->m_vecVelocity;
-	bool rv = spt_autojump.ORIG_CheckJumpButton(thisptr, edx); // This function can only change the jump bit.
+	bool rv = spt_autojump.ORIG_CheckJumpButton(thisptr); // This function can only change the jump bit.
 	spt_autojump.insideCheckJumpButton = false;
 
 	if (y_spt_autojump.GetBool())
@@ -276,7 +276,7 @@ HOOK_THISCALL(bool, AutojumpFeature, CheckJumpButton)
 	return rv;
 }
 
-HOOK_THISCALL(bool, AutojumpFeature, CheckJumpButton_client)
+IMPL_HOOK_THISCALL(AutojumpFeature, bool, CheckJumpButton_client, void*)
 {
 	/*
 	Not sure if this gets called at all from the client dll, but
@@ -302,7 +302,7 @@ HOOK_THISCALL(bool, AutojumpFeature, CheckJumpButton_client)
 	spt_autojump.client_cantJumpNextTime = false;
 
 	spt_autojump.client_insideCheckJumpButton = true;
-	bool rv = spt_autojump.ORIG_CheckJumpButton_client(thisptr, edx); // This function can only change the jump bit.
+	bool rv = spt_autojump.ORIG_CheckJumpButton_client(thisptr); // This function can only change the jump bit.
 	spt_autojump.client_insideCheckJumpButton = false;
 
 	if (y_spt_autojump.GetBool())
@@ -327,7 +327,7 @@ HOOK_THISCALL(bool, AutojumpFeature, CheckJumpButton_client)
 	return rv;
 }
 
-HOOK_THISCALL(void, AutojumpFeature, FinishGravity)
+IMPL_HOOK_THISCALL(AutojumpFeature, void, FinishGravity, void*)
 {
 	if (spt_autojump.insideCheckJumpButton && y_spt_jumpboost.GetBool())
 	{
@@ -375,14 +375,14 @@ HOOK_THISCALL(void, AutojumpFeature, FinishGravity)
 		// </stolen from gamemovement.cpp>
 	}
 
-	return spt_autojump.ORIG_FinishGravity(thisptr, edx);
+	return spt_autojump.ORIG_FinishGravity(thisptr);
 }
 
-HOOK_THISCALL(void, AutojumpFeature, CPortalGameMovement__AirMove)
+IMPL_HOOK_THISCALL(AutojumpFeature, void, CPortalGameMovement__AirMove, void*)
 {
 	if (y_spt_aircontrol.GetBool())
 	{
-		return spt_autojump.ORIG_CGameMovement__AirMove(thisptr, edx);
+		return spt_autojump.ORIG_CGameMovement__AirMove(thisptr);
 	}
-	return spt_autojump.ORIG_CPortalGameMovement__AirMove(thisptr, edx);
+	return spt_autojump.ORIG_CPortalGameMovement__AirMove(thisptr);
 }

@@ -138,19 +138,24 @@ std::optional<uint> MeshRendererFeature::CurrentPortalRenderDepth() const
 	return (**g_pPortalRender).m_iViewRecursionLevel;
 }
 
-HOOK_THISCALL(void, MeshRendererFeature, CRendering3dView__DrawOpaqueRenderables, int param)
+IMPL_HOOK_THISCALL(MeshRendererFeature, void, CRendering3dView__DrawOpaqueRenderables, CRendering3dView*, int param)
 {
 	// HACK - param is a bool in SSDK2007 and enum in SSDK2013
 	// render order shouldn't matter here
-	spt_meshRenderer.ORIG_CRendering3dView__DrawOpaqueRenderables(thisptr, 0, param);
+	spt_meshRenderer.ORIG_CRendering3dView__DrawOpaqueRenderables(thisptr, param);
 	if (spt_meshRenderer.Works())
 		spt_meshRenderer.OnDrawOpaques(thisptr);
 }
 
-HOOK_THISCALL(void, MeshRendererFeature, CRendering3dView__DrawTranslucentRenderables, bool inSkybox, bool shadowDepth)
+IMPL_HOOK_THISCALL(MeshRendererFeature,
+                   void,
+                   CRendering3dView__DrawTranslucentRenderables,
+                   CRendering3dView*,
+                   bool inSkybox,
+                   bool shadowDepth)
 {
 	// render order matters here, render our stuff on top of other translucents
-	spt_meshRenderer.ORIG_CRendering3dView__DrawTranslucentRenderables(thisptr, 0, inSkybox, shadowDepth);
+	spt_meshRenderer.ORIG_CRendering3dView__DrawTranslucentRenderables(thisptr, inSkybox, shadowDepth);
 	if (spt_meshRenderer.Works())
 		spt_meshRenderer.OnDrawTranslucents(thisptr);
 }
@@ -362,10 +367,10 @@ void MeshRendererFeature::SetupViewInfo(CRendering3dView* rendering3dView)
 	viewInfo.frustum = *(VPlane**)(viewInfo.viewSetup + 1); // inward facing
 }
 
-void MeshRendererFeature::OnDrawOpaques(void* renderingView)
+void MeshRendererFeature::OnDrawOpaques(CRendering3dView* renderingView)
 {
 	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
-	SetupViewInfo((CRendering3dView*)renderingView);
+	SetupViewInfo(renderingView);
 	MeshUnitWrapper::cachedCamMatValid = false;
 
 	for (auto& meshInternal : g_meshUnitWrappers)
@@ -397,10 +402,10 @@ void MeshRendererFeature::OnDrawOpaques(void* renderingView)
 	}
 }
 
-void MeshRendererFeature::OnDrawTranslucents(void* renderingView)
+void MeshRendererFeature::OnDrawTranslucents(CRendering3dView* renderingView)
 {
 	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
-	SetupViewInfo((CRendering3dView*)renderingView);
+	SetupViewInfo(renderingView);
 
 	static std::vector<MeshUnitWrapper*> showDebugMeshFor;
 	static std::vector<std::pair<MeshUnitWrapper*, bool>> sortedTranslucents; // <mesh_ptr, is_face_component>

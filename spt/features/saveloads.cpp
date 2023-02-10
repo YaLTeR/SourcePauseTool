@@ -35,7 +35,7 @@ Usage: \n\
 	}
 
 	int type = -1;
-	for (int i = 0; i < _saveloadTypes.size(); i++)
+	for (int i = 0; i < (int)_saveloadTypes.size(); i++)
 	{
 		if (strcmp(args.Arg(1), _saveloadTypes[i]) == 0)
 		{
