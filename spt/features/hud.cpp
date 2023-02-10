@@ -110,7 +110,7 @@ void HUDFeature::InitHooks()
 }
 
 #ifdef BMS
-#define CALL(func_name, ...) ORIG_ISurface__##func_name(interfaces::surface, 0, __VA_ARGS__); 
+#define CALL(func_name, ...) ORIG_ISurface__##func_name(interfaces::surface, __VA_ARGS__); 
 #else
 #define CALL(func_name, ...) interfaces::surface->##func_name(__VA_ARGS__);
 #endif
@@ -288,7 +288,7 @@ void HUDFeature::DrawHUD(bool overlay)
 		return;
 
 #ifndef OE
-	ORIG_CMatSystemSurface__StartDrawing(interfaces::surface, 0);
+	ORIG_CMatSystemSurface__StartDrawing(interfaces::surface);
 #endif
 
 	try
@@ -333,11 +333,11 @@ void HUDFeature::DrawHUD(bool overlay)
 	}
 
 #ifndef OE
-	ORIG_CMatSystemSurface__FinishDrawing(interfaces::surface, 0);
+	ORIG_CMatSystemSurface__FinishDrawing(interfaces::surface);
 #endif
 }
 
-HOOK_THISCALL(void, HUDFeature, CEngineVGui__Paint, PaintMode_t mode)
+IMPL_HOOK_THISCALL(HUDFeature, void, CEngineVGui__Paint, void*, PaintMode_t mode)
 {
 	if (spt_hud.loadingSuccessful && mode & PAINT_INGAMEPANELS)
 	{
@@ -364,7 +364,7 @@ HOOK_THISCALL(void, HUDFeature, CEngineVGui__Paint, PaintMode_t mode)
 		spt_hud.DrawHUD(false);
 #endif
 	}
-	spt_hud.ORIG_CEngineVGui__Paint(thisptr, edx, mode);
+	spt_hud.ORIG_CEngineVGui__Paint(thisptr, mode);
 }
 
 HudCallback::HudCallback(std::string key, std::function<void()> draw, std::function<bool()> shouldDraw, bool overlay)

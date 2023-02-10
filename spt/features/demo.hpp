@@ -35,9 +35,9 @@ private:
 	int m_bRecording_Offset = 0;
 	bool isAutoRecordingDemo = false;
 
-	DECL_HOOK_THISCALL(void, StopRecording);
-	DECL_HOOK_THISCALL(bool, CDemoPlayer__StartPlayback, const char* filename, bool as_time_demo);
-	DECL_HOOK_THISCALL(const char*, CDemoFile__ReadConsoleCommand);
+	DECL_HOOK_THISCALL(void, StopRecording, void*);
+	DECL_HOOK_THISCALL(bool, CDemoPlayer__StartPlayback, void*, const char* filename, bool as_time_demo);
+	DECL_HOOK_THISCALL(const char*, CDemoFile__ReadConsoleCommand, void*);
 	uintptr_t ORIG_Record = 0;
 	void OnFrame();
 	void OnSignonStateSignal(void* thisptr, int edx, int state);

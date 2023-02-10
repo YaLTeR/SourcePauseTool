@@ -18,7 +18,7 @@ protected:
 	virtual void UnloadFeature() override;
 
 private:
-	DECL_HOOK_THISCALL(void, CInputSystem__SleepUntilInput, int nMaxSleepTimeMS);
+	DECL_HOOK_THISCALL(void, CInputSystem__SleepUntilInput, void*, int nMaxSleepTimeMS);
 };
 
 static NoSleepFeature spt_nosleep;
@@ -52,9 +52,9 @@ void NoSleepFeature::LoadFeature()
 
 void NoSleepFeature::UnloadFeature() {}
 
-HOOK_THISCALL(void, NoSleepFeature, CInputSystem__SleepUntilInput, int nMaxSleepTimeMS)
+IMPL_HOOK_THISCALL(NoSleepFeature, void, CInputSystem__SleepUntilInput, void*, int nMaxSleepTimeMS)
 {
 	if (y_spt_focus_nosleep.GetBool())
 		nMaxSleepTimeMS = 0;
-	spt_nosleep.ORIG_CInputSystem__SleepUntilInput(thisptr, edx, nMaxSleepTimeMS);
+	spt_nosleep.ORIG_CInputSystem__SleepUntilInput(thisptr, nMaxSleepTimeMS);
 }

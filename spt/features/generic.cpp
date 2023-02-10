@@ -277,23 +277,23 @@ void __fastcall GenericFeature::HOOKED_ControllerMove(void* thisptr, int edx, fl
 	}
 }
 
-HOOK_CDECL(void, GenericFeature, SV_Frame, bool finalTick)
+IMPL_HOOK_CDECL(GenericFeature, void, SV_Frame, bool finalTick)
 {
 	SV_FrameSignal(finalTick);
 	spt_generic.ORIG_SV_Frame(finalTick);
 }
 
-HOOK_THISCALL(void, GenericFeature, ProcessMovement, void* pPlayer, void* pMove)
+IMPL_HOOK_THISCALL(GenericFeature, void, ProcessMovement, void*, void* pPlayer, void* pMove)
 {
 	ProcessMovementPre_Signal(pPlayer, pMove);
-	spt_generic.ORIG_ProcessMovement(thisptr, edx, pPlayer, pMove);
+	spt_generic.ORIG_ProcessMovement(thisptr, pPlayer, pMove);
 	ProcessMovementPost_Signal(pPlayer, pMove);
 }
 
 
-HOOK_THISCALL(void, GenericFeature, SetSignonState, int state)
+IMPL_HOOK_THISCALL(GenericFeature, void, SetSignonState, void*, int state)
 {
 	spt_generic.signOnState = state;
-	SetSignonStateSignal(thisptr, edx, state);
-	spt_generic.ORIG_SetSignonState(thisptr, edx, state);
+	SetSignonStateSignal(thisptr, state);
+	spt_generic.ORIG_SetSignonState(thisptr, state);
 }

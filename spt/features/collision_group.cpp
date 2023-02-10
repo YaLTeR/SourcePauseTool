@@ -18,7 +18,7 @@ namespace patterns
 class CollisionGroup : public FeatureWrapper<CollisionGroup>
 {
 public:
-	DECL_MEMBER_THISCALL(void, SetCollisionGroup, int collisionGroup);
+	DECL_MEMBER_THISCALL(void, SetCollisionGroup, void*, int collisionGroup);
 protected:
 	virtual bool ShouldLoadFeature() override
 	{
@@ -51,7 +51,7 @@ CON_COMMAND_F(y_spt_set_collision_group, "Set player's collision group\nUsually:
 	auto playerPtr = utils::GetServerPlayer();
 	int collide = atoi(args.Arg(1));
 
-	spt_collisiongroup.ORIG_SetCollisionGroup(playerPtr, 0, collide);
+	spt_collisiongroup.ORIG_SetCollisionGroup(playerPtr, collide);
 }
 
 void CollisionGroup::LoadFeature()

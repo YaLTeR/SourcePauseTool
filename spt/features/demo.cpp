@@ -217,11 +217,11 @@ void DemoStuff::StopAutorecord()
 	spt_demostuff.currentAutoRecordDemoNumber = 1;
 }
 
-HOOK_THISCALL(void, DemoStuff, StopRecording)
+IMPL_HOOK_THISCALL(DemoStuff, void, StopRecording, void*)
 { // This hook will get called twice per loaded save (in most games/versions, at least, according to SAR people), once with m_bLoadgame being false and the next one being true
 	if (!spt_demostuff.isAutoRecordingDemo)
 	{
-		spt_demostuff.ORIG_StopRecording(thisptr, edx);
+		spt_demostuff.ORIG_StopRecording(thisptr);
 		spt_demostuff.StopAutorecord();
 		return;
 	}
@@ -230,7 +230,7 @@ HOOK_THISCALL(void, DemoStuff, StopRecording)
 	int* pM_nDemoNumber = (int*)((uint32_t)thisptr + spt_demostuff.m_nDemoNumber_Offset);
 
 	// This will set m_nDemoNumber to 0 and m_bRecording to false
-	spt_demostuff.ORIG_StopRecording(thisptr, edx);
+	spt_demostuff.ORIG_StopRecording(thisptr);
 
 	if (spt_demostuff.isAutoRecordingDemo)
 	{
@@ -274,21 +274,21 @@ void DemoStuff::OnSignonStateSignal(void* thisptr, int edx, int state)
 	}
 }
 
-HOOK_THISCALL(bool, DemoStuff, CDemoPlayer__StartPlayback, const char* filename, bool as_time_demo)
+IMPL_HOOK_THISCALL(DemoStuff, bool, CDemoPlayer__StartPlayback, void*, const char* filename, bool as_time_demo)
 {
 	DemoStartPlaybackSignal();
-	return spt_demostuff.ORIG_CDemoPlayer__StartPlayback(thisptr, edx, filename, as_time_demo);
+	return spt_demostuff.ORIG_CDemoPlayer__StartPlayback(thisptr, filename, as_time_demo);
 }
 
-HOOK_THISCALL(const char*, DemoStuff, CDemoFile__ReadConsoleCommand)
+IMPL_HOOK_THISCALL(DemoStuff, const char*, CDemoFile__ReadConsoleCommand, void*)
 {
-	const char* cmd = spt_demostuff.ORIG_CDemoFile__ReadConsoleCommand(thisptr, edx);
+	const char* cmd = spt_demostuff.ORIG_CDemoFile__ReadConsoleCommand(thisptr);
 	if (y_spt_demo_block_cmd.GetBool())
 		return "";
 	return cmd;
 }
 
-HOOK_CDECL(void, DemoStuff, Stop)
+IMPL_HOOK_CDECL(DemoStuff, void, Stop)
 {
 	if (spt_demostuff.ORIG_Stop)
 	{

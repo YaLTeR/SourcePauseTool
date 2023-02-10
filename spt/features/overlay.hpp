@@ -19,15 +19,24 @@ enum SkyboxVisibility_t;
 // Overlay hook stuff, could combine with overlay renderer as well
 class Overlay : public FeatureWrapper<Overlay>
 {
-
 public:
 	bool renderingOverlay = false;
 	// these point to the call stack, only valid while we're in RenderView()
 	CViewSetup* mainView = nullptr;
 	CViewSetup* overlayView = nullptr;
 
-	DECL_HOOK_THISCALL(void, CViewRender__RenderView, CViewSetup* cameraView, int nClearFlags, int whatToDraw);
-	DECL_HOOK_THISCALL(void, CViewRender__RenderView_4044, CViewSetup* cameraView, bool drawViewmodel);
+	DECL_HOOK_THISCALL(void,
+	                   CViewRender__RenderView,
+	                   void*,
+	                   CViewSetup* cameraView,
+	                   int nClearFlags,
+	                   int whatToDraw);
+
+	DECL_HOOK_THISCALL(void,
+	                   CViewRender__RenderView_4044,
+	                   void*,
+	                   CViewSetup* cameraView,
+	                   bool drawViewmodel);
 
 protected:
 	virtual void InitHooks() override;

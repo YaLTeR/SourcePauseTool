@@ -38,7 +38,7 @@ std::unique_ptr<Vector> CreateCollideFeature::CreateCollideMesh(const CPhysColli
 		return nullptr;
 	}
 	Vector* outVerts;
-	outNumTris = spt_collideToMesh.ORIG_CPhysicsCollision__CreateDebugMesh(nullptr, 0, pCollide, &outVerts) / 3;
+	outNumTris = spt_collideToMesh.ORIG_CPhysicsCollision__CreateDebugMesh(nullptr, pCollide, &outVerts) / 3;
 	return std::unique_ptr<Vector>(outVerts);
 }
 

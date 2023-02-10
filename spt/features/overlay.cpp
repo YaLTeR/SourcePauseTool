@@ -141,13 +141,18 @@ void Overlay::LoadFeature()
 #endif
 }
 
-HOOK_THISCALL(void, Overlay, CViewRender__RenderView, CViewSetup* cameraView, int nClearFlags, int whatToDraw)
+IMPL_HOOK_THISCALL(Overlay,
+                   void,
+                   CViewRender__RenderView,
+                   void*,
+                   CViewSetup* cameraView,
+                   int nClearFlags,
+                   int whatToDraw)
 {
-
 #ifdef SPT_HUD_TEXTONLY
 
 	spt_hud.renderView = cameraView;
-	spt_overlay.ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
+	spt_overlay.ORIG_CViewRender__RenderView(thisptr, cameraView, nClearFlags, whatToDraw);
 
 #else
 
@@ -194,7 +199,7 @@ HOOK_THISCALL(void, Overlay, CViewRender__RenderView, CViewSetup* cameraView, in
 	else
 		ovr.mainView = cameraView;
 
-	ovr.ORIG_CViewRender__RenderView(thisptr, edx, cameraView, nClearFlags, whatToDraw);
+	ovr.ORIG_CViewRender__RenderView(thisptr, cameraView, nClearFlags, whatToDraw);
 	callDepth--;
 	if (callDepth == 1)
 		ovr.renderingOverlay = false;
@@ -202,12 +207,11 @@ HOOK_THISCALL(void, Overlay, CViewRender__RenderView, CViewSetup* cameraView, in
 #endif
 }
 
-HOOK_THISCALL(void, Overlay, CViewRender__RenderView_4044, CViewSetup* cameraView, bool drawViewmodel)
+IMPL_HOOK_THISCALL(Overlay, void, CViewRender__RenderView_4044, void*, CViewSetup* cameraView, bool drawViewmodel)
 {
 	spt_hud.renderView = cameraView;
-	spt_overlay.ORIG_CViewRender__RenderView_4044(thisptr, edx, cameraView, drawViewmodel);
+	spt_overlay.ORIG_CViewRender__RenderView_4044(thisptr, cameraView, drawViewmodel);
 }
-
 
 #ifndef SPT_HUD_TEXTONLY
 

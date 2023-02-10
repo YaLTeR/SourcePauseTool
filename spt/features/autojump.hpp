@@ -33,11 +33,11 @@ protected:
 	virtual void UnloadFeature() override;
 
 private:
-	DECL_HOOK_THISCALL(bool, CheckJumpButton);
-	DECL_HOOK_THISCALL(bool, CheckJumpButton_client);
-	DECL_HOOK_THISCALL(void, FinishGravity);
-	DECL_HOOK_THISCALL(void, CPortalGameMovement__AirMove);
-	DECL_MEMBER_THISCALL(void, CGameMovement__AirMove);
+	DECL_HOOK_THISCALL(bool, CheckJumpButton, void*);
+	DECL_HOOK_THISCALL(bool, CheckJumpButton_client, void*);
+	DECL_HOOK_THISCALL(void, FinishGravity, void*);
+	DECL_HOOK_THISCALL(void, CPortalGameMovement__AirMove, void*);
+	DECL_MEMBER_THISCALL(void, CGameMovement__AirMove, void*);
 
 	bool client_cantJumpNextTime = false;
 	bool client_insideCheckJumpButton = false;

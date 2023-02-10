@@ -187,7 +187,11 @@ private:
 	inline static bool cachedOffset = false;
 	inline static int cached_phys_obj_off;
 
-	DECL_MEMBER_THISCALL(int, CPhysicsCollision__CreateDebugMesh, const CPhysCollide* pCollide, Vector** outVerts);
+	DECL_MEMBER_THISCALL(int,
+	                     CPhysicsCollision__CreateDebugMesh,
+	                     class IPhysicsCollision*,
+	                     const CPhysCollide* pCollide,
+	                     Vector** outVerts);
 };
 
 inline CreateCollideFeature spt_collideToMesh;

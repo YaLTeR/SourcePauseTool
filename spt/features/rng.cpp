@@ -78,7 +78,7 @@ void RNGStuff::LoadFeature()
 
 void RNGStuff::UnloadFeature() {}
 
-HOOK_CDECL(void, RNGStuff, SetPredictionRandomSeed, void* usercmd)
+IMPL_HOOK_CDECL(RNGStuff, void, SetPredictionRandomSeed, void* usercmd)
 {
 	CUserCmd* ptr = reinterpret_cast<CUserCmd*>(usercmd);
 	if (ptr)
@@ -90,13 +90,18 @@ HOOK_CDECL(void, RNGStuff, SetPredictionRandomSeed, void* usercmd)
 }
 
 #ifdef OE
-HOOK_THISCALL(void, RNGStuff, CBasePlayer__InitVCollision)
+IMPL_HOOK_THISCALL(RNGStuff, void, CBasePlayer__InitVCollision, void*)
 {
-	spt_rng.ORIG_CBasePlayer__InitVCollision(thisptr, edx);
+	spt_rng.ORIG_CBasePlayer__InitVCollision(thisptr);
 #else
-HOOK_THISCALL(void, RNGStuff, CBasePlayer__InitVCollision, const Vector& vecAbsOrigin, const Vector& vecAbsVelocity)
+IMPL_HOOK_THISCALL(RNGStuff,
+                   void,
+                   CBasePlayer__InitVCollision,
+                   void*,
+                   const Vector& vecAbsOrigin,
+                   const Vector& vecAbsVelocity)
 {
-	spt_rng.ORIG_CBasePlayer__InitVCollision(thisptr, edx, vecAbsOrigin, vecAbsVelocity);
+	spt_rng.ORIG_CBasePlayer__InitVCollision(thisptr, vecAbsOrigin, vecAbsVelocity);
 #endif
 	// set the seed before any vphys sim happens, don't use GetInt() since that's casted from a float
 	if (y_spt_set_ivp_seed_on_load.GetString()[0] != '\0')

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #define SPT_HUD_ENABLED
 
 #include <functional>
@@ -69,29 +68,41 @@ private:
 	ConVar* cl_showpos = nullptr;
 	ConVar* cl_showfps = nullptr;
 
-	DECL_HOOK_THISCALL(void, CEngineVGui__Paint, PaintMode_t mode);
-	DECL_MEMBER_THISCALL(void, CMatSystemSurface__StartDrawing);
-	DECL_MEMBER_THISCALL(void, CMatSystemSurface__FinishDrawing);
+	DECL_HOOK_THISCALL(void, CEngineVGui__Paint, void*, PaintMode_t mode);
+	DECL_MEMBER_THISCALL(void, CMatSystemSurface__StartDrawing, void*);
+	DECL_MEMBER_THISCALL(void, CMatSystemSurface__FinishDrawing, void*);
 
 #ifdef BMS
-	DECL_MEMBER_THISCALL(void, ISurface__DrawPrintText, const wchar_t* text, int textLen, vgui::FontDrawType_t drawType);
-	DECL_MEMBER_THISCALL(void, ISurface__DrawPrintText_BMSLatest, const wchar_t* text, int textLen, vgui::FontDrawType_t drawType, char unkBoolVal);
-	DECL_MEMBER_THISCALL(void, ISurface__DrawSetTextPos, int x, int y);
-	DECL_MEMBER_THISCALL(void, ISurface__DrawSetTextFont, vgui::HFont font);
-	DECL_MEMBER_THISCALL(void, ISurface__DrawSetTextColor, int r, int g, int b, int a);
-	DECL_MEMBER_THISCALL(void, ISurface__DrawSetTexture, int id);
-	DECL_MEMBER_THISCALL(int, ISurface__GetFontTall, vgui::HFont font);
-	DECL_MEMBER_THISCALL(void, ISurface__AddCustomFontFile, const char* fontName, const char* fontFileName);
+	DECL_MEMBER_THISCALL(void,
+	                     ISurface__DrawPrintText,
+	                     void*,
+	                     const wchar_t* text,
+	                     int textLen,
+	                     vgui::FontDrawType_t drawType);
+
+	DECL_MEMBER_THISCALL(void,
+	                     ISurface__DrawPrintText_BMSLatest,
+	                     void*,
+	                     const wchar_t* text,
+	                     int textLen,
+	                     vgui::FontDrawType_t drawType,
+	                     char unkBoolVal);
+
+	DECL_MEMBER_THISCALL(void, ISurface__DrawSetTextPos, void*, int x, int y);
+	DECL_MEMBER_THISCALL(void, ISurface__DrawSetTextFont, void*, vgui::HFont font);
+	DECL_MEMBER_THISCALL(void, ISurface__DrawSetTextColor, void*, int r, int g, int b, int a);
+	DECL_MEMBER_THISCALL(void, ISurface__DrawSetTexture, void*, int id);
+	DECL_MEMBER_THISCALL(int, ISurface__GetFontTall, void*, vgui::HFont font);
+	DECL_MEMBER_THISCALL(void, ISurface__AddCustomFontFile, void*, const char* fontName, const char* fontFileName);
 
 	std::vector<patterns::MatchedPattern> MATCHES_ISurface__DrawSetTextFont;
 	std::vector<patterns::MatchedPattern> MATCHES_ISurface__GetFontTall;
 
 	bool isLatest = false;
-#endif	
+#endif
 
 	void DrawHUD(bool overlay);
 	void vDrawTopHudElement(Color color, const wchar* format, va_list args);
 };
 
 extern HUDFeature spt_hud;
-
