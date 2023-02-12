@@ -10,6 +10,7 @@
 #include "spt\utils\interfaces.hpp"
 #include "spt\utils\signals.hpp"
 #include "spt\cvars.hpp"
+#include "visualizations/renderer/mesh_renderer.hpp"
 
 #include "usercmd.h"
 #include "view_shared.h"
@@ -17,6 +18,15 @@
 #include <chrono>
 #include <sstream>
 #include <map>
+
+#define CAM_FORWARD (1 << 0)
+#define CAM_BACK (1 << 1)
+#define CAM_MOVELEFT (1 << 2)
+#define CAM_MOVERIGHT (1 << 3)
+#define CAM_MOVEUP (1 << 4)
+#define CAM_MOVEDOWN (1 << 5)
+#define CAM_DUCK (1 << 6)
+#define CAM_SPEED (1 << 7)
 
 // Camera stuff
 class Camera : public FeatureWrapper<Camera>
@@ -46,12 +56,13 @@ public:
 			return s.str();
 		}
 	};
-	CameraInfo current_cam;
+	CameraInfo currentCam;
 	std::map<int, CameraInfo> keyframes;
 
 	bool CanOverrideView() const;
 	bool CanInput() const;
 	void RecomputeInterpPath();
+	static CameraInfo GetCurrentView();
 
 protected:
 	virtual bool ShouldLoadFeature() override;
@@ -62,9 +73,22 @@ protected:
 
 private:
 	DECL_HOOK_THISCALL(void, ClientModeShared__OverrideView, void*, CViewSetup* viewSetup);
-	DECL_HOOK_THISCALL(bool, ClientModeShared__CreateMove, void*, float flInputSampleTime, void* cmd);
 	DECL_HOOK_THISCALL(bool, C_BasePlayer__ShouldDrawLocalPlayer, void*);
 	DECL_HOOK_THISCALL(void, CInput__MouseMove, void*, void* cmd);
+	DECL_HOOK_THISCALL(void,
+	                   CInputSystem__PostButtonPressedEvent,
+	                   void*,
+	                   InputEventType_t nType,
+	                   int nTick,
+	                   ButtonCode_t scanCode,
+	                   ButtonCode_t virtualCode);
+	DECL_HOOK_THISCALL(void,
+	                   CInputSystem__PostButtonReleasedEvent,
+	                   void*,
+	                   InputEventType_t nType,
+	                   int nTick,
+	                   ButtonCode_t scanCode,
+	                   ButtonCode_t virtualCode);
 #if defined(SSDK2013)
 	DECL_HOOK_THISCALL(bool, C_BasePlayer__ShouldDrawThisPlayer, void*);
 #endif
@@ -72,20 +96,28 @@ private:
 	void OverrideView(CViewSetup* viewSetup);
 	void HandleDriveMode(bool active);
 	void HandleInput(bool active);
+	bool ProcessInputKey(ButtonCode_t keyCode, bool state);
 	void HandleCinematicMode(bool active);
 	static std::vector<Vector> CameraInfoToPoints(float* x, CameraInfo* y, CameraInfoParameter param);
 	CameraInfo InterpPath(float time);
-	void GetCurrentView();
-	void RefreshTimeOffset();
-	void DrawPath();
+	void RequestTimeOffsetRefresh();
+
+#ifdef SPT_MESH_RENDERING_ENABLED
+	void OnMeshRenderSignal(MeshRendererDelegate& mr);
+	StaticMesh interpPathMesh;
+	std::vector<CameraInfo> interpPathCache;
+#endif
 
 	bool loadingSuccessful = false;
 
-	int old_cursor[2] = {0, 0};
-	float time_offset = 0.0f;
-	std::vector<CameraInfo> interp_path_cache;
+	bool timeOffsetRefreshRequested = true;
+	int screenHeight = 0;
+	int screenWidth = 0;
+	int oldCursor[2] = {0, 0};
+	float timeOffset = 0.0f;
+	uint32_t keyBits = 0;
 
-	const ConVar* sensitivity;
+	ConVar* sensitivity = nullptr;
 };
 
 Camera spt_camera;
@@ -105,6 +137,14 @@ ConVar y_spt_cam_control(
     "    Camera is controlled by predefined path.\n"
     "    See commands y_spt_cam_path_");
 ConVar y_spt_cam_drive("y_spt_cam_drive", "1", FCVAR_CHEAT, "Enables or disables camera drive mode in-game.");
+ConVar y_spt_cam_drive_speed("y_spt_cam_drive_speed", "200", 0, "Speed for moving in camera drive mode");
+ConVar y_spt_cam_path_interp("y_spt_cam_path_interp",
+                             "1",
+                             0,
+                             "Sets interpolation type between keyframes for cinematic camera.\n"
+                             "0 = Linear interpolation\n"
+                             "1 = Cubic spline\n"
+                             "2 = Piecewise Cubic Hermite Interpolating Polynomial (PCHIP)");
 ConVar y_spt_cam_path_draw("y_spt_cam_path_draw", "0", FCVAR_CHEAT, "Draws the current camera path.");
 
 ConVar _y_spt_force_fov("_y_spt_force_fov", "0", 0, "Force FOV to some value.");
@@ -123,7 +163,7 @@ CON_COMMAND(y_spt_cam_setpos, "y_spt_cam_setpos <x> <y> <z> - Sets the camera po
 		Msg("Usage: y_spt_cam_setpos <x> <y> <z>\n");
 		return;
 	}
-	if (!y_spt_cam_control.GetInt() == 1 || !spt_camera.CanOverrideView())
+	if (y_spt_cam_control.GetInt() != 1 || !spt_camera.CanOverrideView())
 	{
 		Msg("Requires camera drive mode.\n");
 		return;
@@ -133,7 +173,7 @@ CON_COMMAND(y_spt_cam_setpos, "y_spt_cam_setpos <x> <y> <z> - Sets the camera po
 	{
 		pos[i] = atof(args.Arg(i + 1));
 	}
-	spt_camera.current_cam.origin = pos;
+	spt_camera.currentCam.origin = pos;
 }
 
 CON_COMMAND(y_spt_cam_setang,
@@ -144,7 +184,7 @@ CON_COMMAND(y_spt_cam_setang,
 		Msg("Usage: y_spt_cam_setang <pitch> <yaw> [roll]\n");
 		return;
 	}
-	if (!y_spt_cam_control.GetInt() == 1 || !spt_camera.CanOverrideView())
+	if (y_spt_cam_control.GetInt() != 1 || !spt_camera.CanOverrideView())
 	{
 		Msg("Requires camera drive mode.\n");
 		return;
@@ -154,29 +194,40 @@ CON_COMMAND(y_spt_cam_setang,
 	{
 		ang[i] = atof(args.Arg(i + 1));
 	}
-	spt_camera.current_cam.angles = ang;
+	spt_camera.currentCam.angles = ang;
 }
 
 CON_COMMAND(y_spt_cam_path_setkf,
             "y_spt_cam_path_setkf [frame] [x] [y] [z] [yaw] [pitch] [roll] [fov]- Sets a camera path keyframe.")
 {
-	if (!spt_demostuff.Demo_IsPlayingBack())
-	{
-		Msg("Cinematic mode requires demo playback.\n");
-		return;
-	}
 	int argc = args.ArgC();
 	Camera::CameraInfo info;
 	int tick;
 	if (argc == 1)
 	{
+		if (!spt_demostuff.Demo_IsPlayingBack())
+		{
+			Msg("Set keyframe with no arguments requires demo playback.\n");
+			return;
+		}
 		tick = spt_demostuff.Demo_GetPlaybackTick();
-		info = spt_camera.current_cam;
+
+		switch (y_spt_cam_control.GetInt())
+		{
+		case 1:
+			info = spt_camera.currentCam;
+			break;
+		case 2:
+			Msg("Cannot set keyframe in Cinematic mode.");
+			return;
+		default:
+			info = Camera::GetCurrentView();
+		}
 	}
 	else if (argc == 9)
 	{
 		tick = atoi(args.Arg(1));
-		float nums[7];
+		float nums[7] = {0};
 		for (int i = 0; i < args.ArgC() - 2; i++)
 		{
 			nums[i] = std::stof(args.Arg(i + 2));
@@ -252,11 +303,7 @@ CON_COMMAND_F_COMPLETION(y_spt_cam_path_rmkf,
 		Msg("Usage: y_spt_cam_path_rmkf <tick>\n");
 		return;
 	}
-	if (!spt_demostuff.Demo_IsPlayingBack())
-	{
-		Msg("Cinematic mode requires demo playback.\n");
-		return;
-	}
+
 	int tick = atoi(args.Arg(1));
 	bool removed = spt_camera.keyframes.erase(tick);
 	if (removed)
@@ -270,11 +317,6 @@ CON_COMMAND_F_COMPLETION(y_spt_cam_path_rmkf,
 
 CON_COMMAND(y_spt_cam_path_clear, "y_spt_cam_path_clear - Removes all keyframes.")
 {
-	if (!spt_demostuff.Demo_IsPlayingBack())
-	{
-		Msg("Cinematic mode requires demo playback.\n");
-		return;
-	}
 	spt_camera.keyframes.clear();
 	spt_camera.RecomputeInterpPath();
 	Msg("Removed all keyframes.\n");
@@ -298,6 +340,16 @@ namespace patterns
 	         "55 8B EC E8 ?? ?? ?? ?? 85 C0 75 ?? B0 01 5D C2 08 00 8B 4D ?? 8B 10",
 	         "7197370",
 	         "55 8B EC E8 ?? ?? ?? ?? 8B C8 85 C9 75 ?? B0 01 5D C2 08 00 8B 01");
+	PATTERNS(CInputSystem__PostButtonPressedEvent,
+	         "5135",
+	         "8B D1 0F B6 42 ??",
+	         "7197370",
+	         "55 8B EC 83 EC 18 53 8B 5D ?? BA 01 00 00 00");
+	PATTERNS(CInputSystem__PostButtonReleasedEvent,
+	         "5135",
+	         "8B 54 24 ?? 56 8B F1 0F B6 46 ??",
+	         "7197370",
+	         "55 8B EC 83 EC 14 BA 01 00 00 00");
 	PATTERNS(
 	    C_BasePlayer__ShouldDrawLocalPlayer,
 	    "5135",
@@ -319,9 +371,10 @@ namespace patterns
 void Camera::InitHooks()
 {
 	HOOK_FUNCTION(client, ClientModeShared__OverrideView);
-	HOOK_FUNCTION(client, ClientModeShared__CreateMove);
 	HOOK_FUNCTION(client, CInput__MouseMove);
 	HOOK_FUNCTION(client, C_BasePlayer__ShouldDrawLocalPlayer);
+	HOOK_FUNCTION(inputsystem, CInputSystem__PostButtonPressedEvent);
+	HOOK_FUNCTION(inputsystem, CInputSystem__PostButtonReleasedEvent);
 #if defined(SSDK2013)
 	// This function only exist in steampipe
 	HOOK_FUNCTION(client, C_BasePlayer__ShouldDrawThisPlayer);
@@ -340,49 +393,62 @@ bool Camera::CanInput() const
 	// If playing demo automatically enables input and need right click to drive
 	if (!CanOverrideView() || y_spt_cam_control.GetInt() != 1)
 		return false;
-	bool can_input;
+	bool canInput;
 	if (spt_demostuff.Demo_IsPlayingBack())
-		can_input = interfaces::inputSystem->IsButtonDown(MOUSE_RIGHT);
+		canInput = interfaces::inputSystem->IsButtonDown(MOUSE_RIGHT);
 	else
-		can_input = y_spt_cam_drive.GetBool();
-	return can_input && !interfaces::engine_vgui->IsGameUIVisible();
+		canInput = y_spt_cam_drive.GetBool();
+	return canInput && !interfaces::engine_vgui->IsGameUIVisible();
 }
 
-void Camera::GetCurrentView()
+Camera::CameraInfo Camera::GetCurrentView()
 {
-	current_cam.origin = spt_playerio.GetPlayerEyePos();
+	CameraInfo info;
+	info.origin = spt_playerio.GetPlayerEyePos();
 	QAngle ang = utils::GetPlayerEyeAngles();
-	current_cam.angles = QAngle(ang.x, ang.y, 0);
+	info.angles = QAngle(ang.x, ang.y, 0);
+	info.fov = spt_camera.currentCam.fov;
+	return info;
 }
 
-void Camera::RefreshTimeOffset()
+void Camera::RequestTimeOffsetRefresh()
 {
-	time_offset = interfaces::engine_tool->ClientTime() - spt_demostuff.Demo_GetPlaybackTick() / 66.6666f;
+	timeOffsetRefreshRequested = true;
 }
 
 void Camera::OverrideView(CViewSetup* viewSetup)
 {
-	int control_type = CanOverrideView() ? y_spt_cam_control.GetInt() : 0;
-	if (_y_spt_force_fov.GetBool())
-		current_cam.fov = _y_spt_force_fov.GetFloat();
-	else
-		current_cam.fov = viewSetup->fov;
-	HandleDriveMode(control_type == 1);
-	HandleCinematicMode(control_type == 2 && spt_demostuff.Demo_IsPlayingBack());
-	if (control_type)
+	static int prevInterpType = y_spt_cam_path_interp.GetInt();
+	if (prevInterpType != y_spt_cam_path_interp.GetInt())
 	{
-		viewSetup->origin = current_cam.origin;
-		viewSetup->angles = current_cam.angles;
+		RecomputeInterpPath();
+		prevInterpType = y_spt_cam_path_interp.GetInt();
 	}
-	viewSetup->fov = current_cam.fov;
+
+	screenWidth = viewSetup->width;
+	screenHeight = viewSetup->height;
+
+	int controlType = CanOverrideView() ? y_spt_cam_control.GetInt() : 0;
+	if (_y_spt_force_fov.GetBool())
+		currentCam.fov = _y_spt_force_fov.GetFloat();
+	else
+		currentCam.fov = viewSetup->fov;
+	HandleDriveMode(controlType == 1);
+	HandleCinematicMode(controlType == 2 && spt_demostuff.Demo_IsPlayingBack());
+	if (controlType == 1 || controlType == 2)
+	{
+		viewSetup->origin = currentCam.origin;
+		viewSetup->angles = currentCam.angles;
+	}
+	viewSetup->fov = currentCam.fov;
 }
 
 void Camera::HandleDriveMode(bool active)
 {
-	static bool drive_active = false;
-	if (drive_active ^ active)
+	static bool driveActive = false;
+	if (driveActive ^ active)
 	{
-		if (drive_active && !active)
+		if (driveActive && !active)
 		{
 			// On drive mode end
 			HandleInput(false);
@@ -390,68 +456,105 @@ void Camera::HandleDriveMode(bool active)
 		else
 		{
 			// On drive mode start
-			GetCurrentView();
+			currentCam = GetCurrentView();
 		}
 	}
 	HandleInput(active && CanInput());
-	drive_active = active;
+	driveActive = active;
 }
 
-static bool isBindDown(const char* bind)
+static ButtonCode_t bindToButtonCode(const char* bind)
 {
 	const char* key = interfaces::engine_client->Key_LookupBinding(bind);
-	if (key)
+	if (!key)
+		return BUTTON_CODE_INVALID;
+	return interfaces::inputSystem->StringToButtonCode(key);
+}
+
+static const char* const binds[] =
+    {"+forward", "+back", "+moveleft", "+moveright", "+moveup", "+movedown", "+duck", "+speed"};
+
+// Sets the keyBits to state.
+// Returns false if the key isn't used by cam control
+bool Camera::ProcessInputKey(ButtonCode_t keyCode, bool state)
+{
+	for (int i = 0; i < sizeof(binds) / sizeof(char*); i++)
 	{
-		ButtonCode_t code = interfaces::inputSystem->StringToButtonCode(key);
-		return interfaces::inputSystem->IsButtonDown(code);
+		ButtonCode_t code = bindToButtonCode(binds[i]);
+		if (code == BUTTON_CODE_INVALID)
+			continue;
+		if (code == keyCode)
+		{
+			if (state)
+				keyBits |= (1 << i);
+			else
+				keyBits &= ~(1 << i);
+			return true;
+		}
 	}
 	return false;
 }
 
 void Camera::HandleInput(bool active)
 {
-	static bool input_active = false;
+	static bool inputActive = false;
 
-	static std::chrono::time_point<std::chrono::steady_clock> last_frame;
+	static std::chrono::time_point<std::chrono::steady_clock> lastFrame;
 
-	if (input_active ^ active)
+	if (inputActive ^ active)
 	{
-		if (input_active && !active)
+		if (inputActive && !active)
 		{
 			// On input mode end
-			interfaces::vgui_input->SetCursorPos(old_cursor[0], old_cursor[1]);
+			interfaces::vgui_input->SetCursorPos(oldCursor[0], oldCursor[1]);
 		}
 		else
 		{
 			// On input mode start
-			last_frame = std::chrono::steady_clock::now();
-			interfaces::vgui_input->GetCursorPos(old_cursor[0], old_cursor[1]);
+			lastFrame = std::chrono::steady_clock::now();
+			interfaces::vgui_input->GetCursorPos(oldCursor[0], oldCursor[1]);
+
+			// - current hold keys and tranfer them to keyBits
+			keyBits = 0;
+			for (int i = 0; i < sizeof(binds) / sizeof(char*); i++)
+			{
+				ButtonCode_t code = bindToButtonCode(binds[i]);
+				if (code == BUTTON_CODE_INVALID)
+					continue;
+				if (interfaces::inputSystem->IsButtonDown(code))
+				{
+					char buf[32] = {0};
+					snprintf(buf, sizeof(buf), "-%s %d", &binds[i][1], code);
+					interfaces::engine->ClientCmd(buf);
+					keyBits |= (1 << i);
+				}
+			}
 		}
 	}
 
 	if (active)
 	{
 		auto now = std::chrono::steady_clock::now();
-		float real_frame_time =
-		    std::chrono::duration_cast<std::chrono::duration<float>>(now - last_frame).count();
-		last_frame = now;
+		float realFrameTime = std::chrono::duration_cast<std::chrono::duration<float>>(now - lastFrame).count();
+		lastFrame = now;
 
-		float frame_time = real_frame_time;
+		float frameTime = realFrameTime;
 		Vector movement(0.0f, 0.0f, 0.0f);
 
-		float move_speed = isBindDown("+speed") ? 525.0f : (isBindDown("+duck") ? 60.0 : 175.0f);
+		float moveSpeed = y_spt_cam_drive_speed.GetFloat()
+		                  * ((keyBits & CAM_SPEED) ? 3.0f : ((keyBits & CAM_DUCK) ? 0.5f : 1.0f));
 
-		if (isBindDown("+forward"))
+		if (keyBits & CAM_FORWARD)
 			movement.x += 1.0f;
-		if (isBindDown("+back"))
+		if (keyBits & CAM_BACK)
 			movement.x -= 1.0f;
-		if (isBindDown("+moveleft"))
+		if (keyBits & CAM_MOVELEFT)
 			movement.y -= 1.0f;
-		if (isBindDown("+moveright"))
+		if (keyBits & CAM_MOVERIGHT)
 			movement.y += 1.0f;
-		if (isBindDown("+moveup"))
+		if (keyBits & CAM_MOVEUP)
 			movement.z += 1.0f;
-		if (isBindDown("+movedown"))
+		if (keyBits & CAM_MOVEDOWN)
 			movement.z -= 1.0f;
 
 		int mx, my;
@@ -459,17 +562,17 @@ void Camera::HandleInput(bool active)
 
 		interfaces::vgui_input->GetCursorPos(mx, my);
 
-		dx = mx - old_cursor[0];
-		dy = my - old_cursor[1];
+		dx = mx - oldCursor[0];
+		dy = my - oldCursor[1];
 
-		interfaces::vgui_input->SetCursorPos(old_cursor[0], old_cursor[1]);
+		interfaces::vgui_input->SetCursorPos(oldCursor[0], oldCursor[1]);
 
 		// Convert to pitch/yaw
 		float pitch = (float)dy * 0.022f * sensitivity->GetFloat();
 		float yaw = -(float)dx * 0.022f * sensitivity->GetFloat();
 
 		// Apply mouse
-		QAngle angles = current_cam.angles;
+		QAngle angles = currentCam.angles;
 		angles.x += pitch;
 		angles.x = clamp(angles.x, -89.0f, 89.0f);
 		angles.y += yaw;
@@ -477,22 +580,22 @@ void Camera::HandleInput(bool active)
 			angles.y -= 360.0f;
 		else if (angles.y < -180.0f)
 			angles.y += 360.0f;
-		current_cam.angles = angles;
+		currentCam.angles = angles;
 
 		// Now apply forward, side, up
 
 		Vector fwd, side, up;
 
-		AngleVectors(angles, &fwd, &side, &up);
+		AngleVectors(currentCam.angles, &fwd, &side, &up);
 
 		VectorNormalize(movement);
-		movement *= move_speed * frame_time;
+		movement *= moveSpeed * frameTime;
 
-		current_cam.origin += fwd * movement.x;
-		current_cam.origin += side * movement.y;
-		current_cam.origin += up * movement.z;
+		currentCam.origin += fwd * movement.x;
+		currentCam.origin += side * movement.y;
+		currentCam.origin += up * movement.z;
 	}
-	input_active = active;
+	inputActive = active;
 }
 
 // Camera path interp code from SourceAutoRecord
@@ -509,13 +612,13 @@ static float InterpCurve(std::vector<Vector> points, float x, bool is_angles = f
 
 	if (is_angles)
 	{
-		float old_y = 0;
+		float oldY = 0;
 		for (int i = 0; i < 4; i++)
 		{
-			float ang_diff = points[i].y - old_y;
-			ang_diff += (ang_diff > 180) ? -360 : (ang_diff < -180) ? 360 : 0;
-			points[i].y = old_y += ang_diff;
-			old_y = points[i].y;
+			float angDiff = points[i].y - oldY;
+			angDiff += (angDiff > 180) ? -360 : (angDiff < -180) ? 360 : 0;
+			points[i].y = oldY += angDiff;
+			oldY = points[i].y;
 		}
 	}
 
@@ -526,15 +629,66 @@ static float InterpCurve(std::vector<Vector> points, float x, bool is_angles = f
 
 	float t = (x - points[PREV].x) / (points[NEXT].x - points[PREV].x);
 
-	float t2 = t * t, t3 = t * t * t;
-	float x0 = (points[FIRST].x - points[PREV].x) / (points[NEXT].x - points[PREV].x);
-	float x1 = 0, x2 = 1;
-	float x3 = (points[LAST].x - points[PREV].x) / (points[NEXT].x - points[PREV].x);
-	float m1 = ((points[NEXT].y - points[PREV].y) / (x2 - x1) + (points[PREV].y - points[FIRST].y) / (x1 - x0)) / 2;
-	float m2 = ((points[LAST].y - points[NEXT].y) / (x3 - x2) + (points[NEXT].y - points[PREV].y) / (x2 - x1)) / 2;
+	switch (y_spt_cam_path_interp.GetInt())
+	{
+	case 1:
+	{
+		// Cubic spline
+		float t2 = t * t, t3 = t * t * t;
+		float x0 = (points[FIRST].x - points[PREV].x) / (points[NEXT].x - points[PREV].x);
+		float x1 = 0, x2 = 1;
+		float x3 = (points[LAST].x - points[PREV].x) / (points[NEXT].x - points[PREV].x);
+		float m1 =
+		    ((points[NEXT].y - points[PREV].y) / (x2 - x1) + (points[PREV].y - points[FIRST].y) / (x1 - x0))
+		    / 2;
+		float m2 =
+		    ((points[LAST].y - points[NEXT].y) / (x3 - x2) + (points[NEXT].y - points[PREV].y) / (x2 - x1)) / 2;
 
-	return (2 * t3 - 3 * t2 + 1) * points[PREV].y + (t3 - 2 * t2 + t) * m1 + (-2 * t3 + 3 * t2) * points[NEXT].y
-	       + (t3 - t2) * m2;
+		return (2 * t3 - 3 * t2 + 1) * points[PREV].y + (t3 - 2 * t2 + t) * m1
+		       + (-2 * t3 + 3 * t2) * points[NEXT].y + (t3 - t2) * m2;
+	}
+
+	case 2:
+	{
+		// PCHIP
+		float ds[4];
+		float hl = 0, dl = 0;
+		for (int i = 0; i < 3; i++)
+		{
+			float hr = points[i + 1].x - points[i].x;
+			float dr = (points[i + 1].y - points[i].y) / hr;
+
+			if (i == 0 || dl * dr < 0.0f || dl == 0.0f || dr == 0.0f)
+			{
+				ds[i] = 0;
+			}
+			else
+			{
+				float wl = 2 * hl + hr;
+				float wr = hl + 2 * hr;
+				ds[i] = (wl + wr) / (wl / dl + wr / dr);
+			}
+
+			hl = hr;
+			dl = dr;
+		}
+
+		float h = points[NEXT].x - points[PREV].x;
+
+		float t1 = (points[NEXT].x - x) / h;
+		float t2 = (x - points[PREV].x) / h;
+
+		float f1 = points[PREV].y * (3.0f * t1 * t1 - 2.0f * t1 * t1 * t1);
+		float f2 = points[NEXT].y * (3.0f * t2 * t2 - 2.0f * t2 * t2 * t2);
+		float f3 = ds[PREV] * h * (t1 * t1 * t1 - t1 * t1);
+		float f4 = ds[NEXT] * h * (t2 * t2 * t2 - t2 * t2);
+
+		return f1 + f2 - f3 + f4;
+	}
+	default:
+		// Linear interp.
+		return points[PREV].y + (points[NEXT].y - points[PREV].y) * t;
+	}
 }
 
 std::vector<Vector> Camera::CameraInfoToPoints(float* x, CameraInfo* y, CameraInfoParameter param)
@@ -585,28 +739,28 @@ Camera::CameraInfo Camera::InterpPath(float time)
 	};
 
 	// reading 4 frames closest to time
-	float frame_time = time * 66.6666f;
+	float frameTime = time / 0.015f;
 	int frames[4] = {INT_MIN, INT_MIN, INT_MAX, INT_MAX};
 	for (auto const& state : keyframes)
 	{
-		int state_time = state.first;
-		if (frame_time - state_time >= 0 && frame_time - state_time < frame_time - frames[PREV])
+		int stateTime = state.first;
+		if (frameTime - stateTime >= 0 && frameTime - stateTime < frameTime - frames[PREV])
 		{
 			frames[FIRST] = frames[PREV];
-			frames[PREV] = state_time;
+			frames[PREV] = stateTime;
 		}
-		if (state_time - frame_time >= 0 && state_time - frame_time < frames[NEXT] - frame_time)
+		if (stateTime - frameTime >= 0 && stateTime - frameTime < frames[NEXT] - frameTime)
 		{
 			frames[LAST] = frames[NEXT];
-			frames[NEXT] = state_time;
+			frames[NEXT] = stateTime;
 		}
-		if (state_time > frames[FIRST] && state_time < frames[PREV])
+		if (stateTime > frames[FIRST] && stateTime < frames[PREV])
 		{
-			frames[FIRST] = state_time;
+			frames[FIRST] = stateTime;
 		}
-		if (state_time > frames[NEXT] && state_time < frames[LAST])
+		if (stateTime > frames[NEXT] && stateTime < frames[LAST])
 		{
-			frames[LAST] = state_time;
+			frames[LAST] = stateTime;
 		}
 	}
 
@@ -648,13 +802,13 @@ Camera::CameraInfo Camera::InterpPath(float time)
 
 	// interpolating each parameter
 	CameraInfo interp;
-	interp.origin.x = InterpCurve(CameraInfoToPoints(x, y, ORIGIN_X), frame_time);
-	interp.origin.y = InterpCurve(CameraInfoToPoints(x, y, ORIGIN_Y), frame_time);
-	interp.origin.z = InterpCurve(CameraInfoToPoints(x, y, ORIGIN_Z), frame_time);
-	interp.angles.x = InterpCurve(CameraInfoToPoints(x, y, ANGLES_X), frame_time, true);
-	interp.angles.y = InterpCurve(CameraInfoToPoints(x, y, ANGLES_Y), frame_time, true);
-	interp.angles.z = InterpCurve(CameraInfoToPoints(x, y, ANGLES_Z), frame_time, true);
-	interp.fov = InterpCurve(CameraInfoToPoints(x, y, FOV), frame_time);
+	interp.origin.x = InterpCurve(CameraInfoToPoints(x, y, ORIGIN_X), frameTime);
+	interp.origin.y = InterpCurve(CameraInfoToPoints(x, y, ORIGIN_Y), frameTime);
+	interp.origin.z = InterpCurve(CameraInfoToPoints(x, y, ORIGIN_Z), frameTime);
+	interp.angles.x = InterpCurve(CameraInfoToPoints(x, y, ANGLES_X), frameTime, true);
+	interp.angles.y = InterpCurve(CameraInfoToPoints(x, y, ANGLES_Y), frameTime, true);
+	interp.angles.z = InterpCurve(CameraInfoToPoints(x, y, ANGLES_Z), frameTime, true);
+	interp.fov = InterpCurve(CameraInfoToPoints(x, y, FOV), frameTime);
 
 	return interp;
 }
@@ -665,73 +819,112 @@ void Camera::HandleCinematicMode(bool active)
 		return;
 	if (!keyframes.size())
 		return;
-	float current_time = interfaces::engine_tool->ClientTime() - time_offset;
-	current_cam = InterpPath(current_time);
+
+	if (timeOffsetRefreshRequested)
+	{
+		timeOffset = interfaces::engine_tool->ClientTime() - spt_demostuff.Demo_GetPlaybackTick() * 0.015f;
+		timeOffsetRefreshRequested = false;
+	}
+
+	float currentTime = interfaces::engine_tool->ClientTime() - timeOffset;
+	currentCam = InterpPath(currentTime);
+}
+
+#ifdef SPT_MESH_RENDERING_ENABLED
+
+void Camera::OnMeshRenderSignal(MeshRendererDelegate& mr)
+{
+	if (!y_spt_cam_path_draw.GetBool() || !spt_demostuff.Demo_IsPlayingBack())
+		return;
+
+	if (!interpPathCache.size())
+		return;
+
+	if (!interpPathMesh.Valid())
+	{
+		const color32 pathColor{255, 255, 255, 255};
+		const color32 keyframeColor{0, 255, 0, 255};
+		const float radius = 16;
+		interpPathMesh = spt_meshBuilder.CreateStaticMesh(
+		    [&](MeshBuilderDelegate& mb)
+		    {
+			    CameraInfo prev = interpPathCache[0];
+			    int start = keyframes.begin()->first;
+			    for (size_t i = 0; i < interpPathCache.size(); i++)
+			    {
+				    const CameraInfo& current = interpPathCache[i];
+				    mb.AddLine(current.origin, prev.origin, pathColor);
+
+				    if (keyframes.find(start + i) != keyframes.end())
+				    {
+					    float fov = clamp(current.fov, 1, 179);
+
+					    Vector forward, right, up;
+					    AngleVectors(current.angles, &forward, &right, &up);
+
+					    Vector pos(current.origin.x, current.origin.y, current.origin.z);
+
+					    float a = sin(fov * M_PI / 360.0) * radius;
+					    float b = a;
+
+					    float aspectRatio =
+					        screenWidth ? (float)screenHeight / (float)screenWidth : 1.0;
+
+					    b *= aspectRatio;
+
+					    Vector vLU = pos + radius * forward - a * right + b * up;
+					    Vector vRU = pos + radius * forward + a * right + b * up;
+					    Vector vLD = pos + radius * forward - a * right - b * up;
+					    Vector vRD = pos + radius * forward + a * right - b * up;
+					    Vector vMU = vLU + (vRU - vLU) / 2;
+					    Vector vMUU = vMU + 0.5 * b * up;
+
+					    mb.AddLine(pos, vLD, keyframeColor);
+					    mb.AddLine(pos, vRD, keyframeColor);
+					    mb.AddLine(pos, vLU, keyframeColor);
+					    mb.AddLine(pos, vRU, keyframeColor);
+					    mb.AddLine(vLD, vRD, keyframeColor);
+					    mb.AddLine(vRD, vRU, keyframeColor);
+					    mb.AddLine(vRU, vLU, keyframeColor);
+					    mb.AddLine(vLU, vLD, keyframeColor);
+					    mb.AddLine(vLU, vMUU, keyframeColor);
+					    mb.AddLine(vRU, vMUU, keyframeColor);
+				    }
+				    prev = current;
+			    }
+		    },
+		    {ZTEST_LINES});
+	}
+	if (interfaces::debugOverlay)
+	{
+		for (auto& frame : keyframes)
+		{
+			interfaces::debugOverlay->AddTextOverlay(frame.second.origin,
+			                                         NDEBUG_PERSIST_TILL_NEXT_SERVER,
+			                                         "[%d]",
+			                                         frame.first);
+		}
+	}
+	mr.DrawMesh(interpPathMesh);
 }
 
 void Camera::RecomputeInterpPath()
 {
-	interp_path_cache.clear();
+	interpPathCache.clear();
+	interpPathMesh.Destroy();
 	if (!keyframes.size())
 		return;
 	int start = keyframes.begin()->first;
 	int end = keyframes.rbegin()->first;
 	for (int i = start; i <= end; i++)
 	{
-		interp_path_cache.push_back(InterpPath(i / 66.6666f));
+		interpPathCache.push_back(InterpPath(i * 0.015f));
 	}
 }
 
-void Camera::DrawPath()
-{
-	if (!y_spt_cam_path_draw.GetBool() || !spt_demostuff.Demo_IsPlayingBack())
-		return;
-	if (!interp_path_cache.size())
-		return;
-	auto last = interp_path_cache[0];
-	int start = keyframes.begin()->first;
-
-#ifdef OE
-#define NDEBUG_PERSIST_TILL_NEXT_SERVER 0.01023f
+#else
+void Camera::RecomputeInterpPath() {}
 #endif
-
-	for (size_t i = 0; i < interp_path_cache.size(); i++)
-	{
-		auto current = interp_path_cache[i];
-		Vector forward;
-		AngleVectors(current.angles, &forward);
-		interfaces::debugOverlay->AddLineOverlay(current.origin,
-		                                         last.origin,
-		                                         255,
-		                                         255,
-		                                         255,
-		                                         false,
-		                                         NDEBUG_PERSIST_TILL_NEXT_SERVER);
-		if (keyframes.find(start + i) != keyframes.end())
-		{
-			interfaces::debugOverlay->AddLineOverlay(current.origin,
-			                                         current.origin + forward * 50.0f,
-			                                         0,
-			                                         255,
-			                                         0,
-			                                         false,
-			                                         NDEBUG_PERSIST_TILL_NEXT_SERVER);
-			interfaces::debugOverlay->AddTextOverlay(current.origin,
-			                                         NDEBUG_PERSIST_TILL_NEXT_SERVER,
-			                                         "[%d]",
-			                                         start + i);
-		}
-		else
-			interfaces::debugOverlay->AddLineOverlay(current.origin,
-			                                         current.origin + forward * 25.0f,
-			                                         255,
-			                                         255,
-			                                         0,
-			                                         false,
-			                                         NDEBUG_PERSIST_TILL_NEXT_SERVER);
-		last = current;
-	}
-}
 
 IMPL_HOOK_THISCALL(Camera, void, ClientModeShared__OverrideView, void*, CViewSetup* viewSetup)
 {
@@ -739,27 +932,14 @@ IMPL_HOOK_THISCALL(Camera, void, ClientModeShared__OverrideView, void*, CViewSet
 	spt_camera.OverrideView(viewSetup);
 }
 
-IMPL_HOOK_THISCALL(Camera, bool, ClientModeShared__CreateMove, void*, float flInputSampleTime, void* cmd)
-{
-	if (spt_camera.CanInput())
-	{
-		// Block all inputs
-		auto usercmd = reinterpret_cast<CUserCmd*>(cmd);
-		usercmd->buttons = 0;
-		usercmd->forwardmove = 0;
-		usercmd->sidemove = 0;
-		usercmd->upmove = 0;
-	}
-	return spt_camera.ORIG_ClientModeShared__CreateMove(thisptr, flInputSampleTime, cmd);
-}
-
 static bool ShouldDrawPlayerModel()
 {
-	if (!spt_camera.CanOverrideView() || !y_spt_cam_control.GetBool())
+	int controlType = y_spt_cam_control.GetInt();
+	if (!spt_camera.CanOverrideView() || (controlType != 1 && controlType != 2))
 		return false;
 
 #ifdef SPT_OVERLAY_ENABLED
-	// Don't draw playe rmodel in overlay
+	// Don't draw player model in overlay
 	if (_y_spt_overlay.GetBool())
 	{
 		bool renderingOverlay = spt_overlay.renderingOverlay;
@@ -778,6 +958,37 @@ IMPL_HOOK_THISCALL(Camera, bool, C_BasePlayer__ShouldDrawLocalPlayer, void*)
 		return true;
 	}
 	return spt_camera.ORIG_C_BasePlayer__ShouldDrawLocalPlayer(thisptr);
+}
+
+IMPL_HOOK_THISCALL(Camera,
+                   void,
+                   CInputSystem__PostButtonPressedEvent,
+                   void*,
+                   InputEventType_t nType,
+                   int nTick,
+                   ButtonCode_t scanCode,
+                   ButtonCode_t virtualCode)
+{
+	if (spt_camera.CanInput() && spt_camera.ProcessInputKey(scanCode, true))
+		return;
+
+	return spt_camera.ORIG_CInputSystem__PostButtonPressedEvent(thisptr, nType, nTick, scanCode, virtualCode);
+}
+
+IMPL_HOOK_THISCALL(Camera,
+                   void,
+                   CInputSystem__PostButtonReleasedEvent,
+                   void*,
+                   InputEventType_t nType,
+                   int nTick,
+                   ButtonCode_t scanCode,
+                   ButtonCode_t virtualCode)
+{
+	if (spt_camera.CanInput())
+		spt_camera.ProcessInputKey(scanCode, false);
+
+	// Still call the original function so key won't get stuck.
+	return spt_camera.ORIG_CInputSystem__PostButtonReleasedEvent(thisptr, nType, nTick, scanCode, virtualCode);
 }
 
 #if defined(SSDK2013)
@@ -809,8 +1020,9 @@ bool Camera::ShouldLoadFeature()
 
 void Camera::PreHook()
 {
-	loadingSuccessful = ORIG_ClientModeShared__OverrideView && ORIG_ClientModeShared__CreateMove
-	                    && ORIG_CInput__MouseMove && ORIG_C_BasePlayer__ShouldDrawLocalPlayer;
+	loadingSuccessful = ORIG_ClientModeShared__OverrideView && ORIG_CInput__MouseMove
+	                    && ORIG_C_BasePlayer__ShouldDrawLocalPlayer && ORIG_CInputSystem__PostButtonPressedEvent
+	                    && ORIG_CInputSystem__PostButtonReleasedEvent;
 #if defined(SSDK2013)
 	loadingSuccessful &= !!ORIG_C_BasePlayer__ShouldDrawThisPlayer;
 #endif
@@ -827,6 +1039,7 @@ void Camera::LoadFeature()
 	{
 		InitConcommandBase(y_spt_cam_control);
 		InitConcommandBase(y_spt_cam_drive);
+		InitConcommandBase(y_spt_cam_drive_speed);
 		InitConcommandBase(_y_spt_force_fov);
 		InitCommand(y_spt_cam_setpos);
 		InitCommand(y_spt_cam_setang);
@@ -834,17 +1047,21 @@ void Camera::LoadFeature()
 		if (spt_demostuff.Demo_IsDemoPlayerAvailable() && DemoStartPlaybackSignal.Works
 		    && interfaces::engine_tool)
 		{
-			DemoStartPlaybackSignal.Connect(this, &Camera::RefreshTimeOffset);
+			DemoStartPlaybackSignal.Connect(this, &Camera::RequestTimeOffsetRefresh);
+			InitConcommandBase(y_spt_cam_path_interp);
 			InitCommand(y_spt_cam_path_setkf);
 			InitCommand(y_spt_cam_path_showkfs);
 			InitCommand(y_spt_cam_path_getkfs);
 			InitCommand(y_spt_cam_path_rmkf);
 			InitCommand(y_spt_cam_path_clear);
-			if (interfaces::debugOverlay && FrameSignal.Works)
+
+#ifdef SPT_MESH_RENDERING_ENABLED
+			if (spt_meshRenderer.signal.Works)
 			{
-				FrameSignal.Connect(this, &Camera::DrawPath);
+				spt_meshRenderer.signal.Connect(this, &Camera::OnMeshRenderSignal);
 				InitConcommandBase(y_spt_cam_path_draw);
 			}
+#endif
 		}
 
 		sensitivity = interfaces::g_pCVar->FindVar("sensitivity");

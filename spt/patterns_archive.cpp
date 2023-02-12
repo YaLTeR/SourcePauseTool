@@ -39,7 +39,7 @@ namespace patterns
 	    "BMS-0.9",
 	    "55 8B EC 8B 0D ?? ?? ?? ?? 56 8B 75 ?? 56 8B 01 8B 40 ?? FF D0 84 C0 75 ?? 56 68 ?? ?? ?? ?? FF 15 ?? ?? ?? ?? 83 C4 08 5E 5D C3");
 
-		// Search for "FinishedMapLoad", one of two references to address
+	// Search for "FinishedMapLoad", one of two references to address
 	PATTERNS(CL_FullyConnected,
 	         "BMS-0.9",
 	         "55 8B EC 81 EC 14 04 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 ?? 56 68",
@@ -54,13 +54,13 @@ namespace patterns
 	         "80 3D ?? ?? ?? ?? 00 0F 85 ?? ?? ?? ?? E8 ?? ?? ?? ?? 6A 00 8B C8 8B 10 FF 92",
 	         "7671541",
 	         "80 3D ?? ?? ?? ?? 00 0F 85 ?? ?? ?? ?? E8 ?? ?? ?? ?? 6A 00 8B C8 8B 10 FF 92");
-		// Search for "Disconnect: %s\n", func below string
+	// Search for "Disconnect: %s\n", func below string
 	PATTERNS(Host_Disconnect,
 	         "BMS-0.9",
 	         "55 8B EC 80 3D ?? ?? ?? ?? 00 75 ?? FF 75 ?? B9 ?? ?? ?? ?? FF 75 ?? E8",
 	         "5135",
 	         "80 3D ?? ?? ?? ?? 00 75 ?? 8B 44 24 ?? 50 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 6A 00 E8");
-		// Search for "Only the server may changelevel\n"
+	// Search for "Only the server may changelevel\n"
 	PATTERNS(Host_Changelevel,
 	         "BMS-0.9",
 	         "55 8B EC 81 EC 7C 03 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 ?? 83 3D ?? ?? ?? ?? 02");
@@ -121,6 +121,13 @@ namespace patterns
 	         "55 8B EC 56 FF 75 ?? 8B F1 8D 8E ?? ?? ?? ??");
 	PATTERNS(CDebugViewRender__Draw2DDebuggingInfo, "5135", "A1 ?? ?? ?? ?? 81 EC 9C 00 00 00");
 	PATTERNS(DecodeUserCmdFromBuffer, "dmomm", "81 EC BC 00 00 00 56 8B F1 8D 4C 24 ?? E8 ?? ?? ?? ?? 8D 44 24 ??");
+	PATTERNS(ClientModeShared__CreateMove,
+	         "5135",
+	         "E8 ?? ?? ?? ?? 85 C0 75 ?? B0 01 C2 08 00 8B 4C 24 ?? D9 44 24 ?? 8B 10",
+	         "1910503",
+	         "55 8B EC E8 ?? ?? ?? ?? 85 C0 75 ?? B0 01 5D C2 08 00 8B 4D ?? 8B 10",
+	         "7197370",
+	         "55 8B EC E8 ?? ?? ?? ?? 8B C8 85 C9 75 ?? B0 01 5D C2 08 00 8B 01");
 
 	/****************************** SERVER ******************************/
 
@@ -191,7 +198,7 @@ namespace patterns
 	         "83 EC 0C 56 8B F1 8B 56 ?? D9 82 ?? ?? ?? ?? 8D 8A ?? ?? ?? ??");
 
 	/****************************** VPHYSICS ******************************/
-	
+
 	PATTERNS(CPhysicsObject__GetPosition,
 	         "5135",
 	         "8B 49 08 81 EC 80 00 00 00 8D 04 24 50 E8 ?? ?? ?? ?? 8B 84 24 84 00 00 00 85 C0",
@@ -199,7 +206,6 @@ namespace patterns
 	         "55 8B EC 8B 49 08 81 EC 80 00 00 00 8D 45 80 50 E8 ?? ?? ?? ?? 8B 45 08 85 C0",
 	         "7462488",
 	         "55 8B EC 8B 49 ?? 8D 45 ?? 81 EC 80 00 00 00 50 E8 ?? ?? ?? ?? 8B 45 ??");
-
 
 	/****************************** DATACACHE ******************************/
 
