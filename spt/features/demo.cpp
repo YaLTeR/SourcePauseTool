@@ -45,7 +45,7 @@ namespace patterns
 	PATTERNS(
 	    CDemoPlayer__StartPlayback,
 	    "5135",
-	    "83 EC 08 56 8B F1 8B 86 ?? ?? ?? ?? 8B 90 ?? ?? ?? ?? 8D 8E ?? ?? ?? ?? 57 FF D2",
+	    "53 55 56 57 8B F1 E8 ?? ?? ?? ?? 8B 3D ?? ?? ?? ??",
 	    "7197370",
 	    "55 8B EC 53 56 57 8B F9 C6 87 ?? ?? ?? ?? 01 E8 ?? ?? ?? ?? 8B 35 ?? ?? ?? ?? 68 ?? ?? ?? ?? 6A 00 C7 05 ?? ?? ?? ?? FF FF FF FF");
 	PATTERNS(CDemoFile__ReadConsoleCommand, "5135", "68 00 04 00 00 68 ?? ?? ?? ?? E8 ?? ?? ?? ?? B8 ?? ?? ?? ??");
@@ -53,7 +53,7 @@ namespace patterns
 
 void DemoStuff::InitHooks()
 {
-	HOOK_FUNCTION(engine, StopRecording);;
+	HOOK_FUNCTION(engine, StopRecording);
 	HOOK_FUNCTION(engine, CDemoPlayer__StartPlayback);
 	HOOK_FUNCTION(engine, Stop);
 	HOOK_FUNCTION(engine, CDemoFile__ReadConsoleCommand);
@@ -67,7 +67,6 @@ bool DemoStuff::ShouldLoadFeature()
 
 void DemoStuff::PreHook()
 {
-
 	// CDemoRecorder::StopRecording
 	if (ORIG_StopRecording)
 	{
@@ -149,7 +148,7 @@ void DemoStuff::PreHook()
 			Warning(
 			    "Record pattern had no matching clause for catching the demoplayer. y_spt_pause_demo_on_tick unavailable.\n");
 
-		DevMsg("Found demoplayer at %p, record is at %p.\n", pDemoplayer, ORIG_Record);
+		DevMsg("Found demoplayer at %p, record is at %p.\n", pDemoplayer, (void*)ORIG_Record);
 
 		if (ORIG_CDemoPlayer__StartPlayback)
 			DemoStartPlaybackSignal.Works = true;
@@ -276,8 +275,9 @@ void DemoStuff::OnSignonStateSignal(void* thisptr, int edx, int state)
 
 IMPL_HOOK_THISCALL(DemoStuff, bool, CDemoPlayer__StartPlayback, void*, const char* filename, bool as_time_demo)
 {
+	bool result = spt_demostuff.ORIG_CDemoPlayer__StartPlayback(thisptr, filename, as_time_demo);
 	DemoStartPlaybackSignal();
-	return spt_demostuff.ORIG_CDemoPlayer__StartPlayback(thisptr, filename, as_time_demo);
+	return result;
 }
 
 IMPL_HOOK_THISCALL(DemoStuff, const char*, CDemoFile__ReadConsoleCommand, void*)
