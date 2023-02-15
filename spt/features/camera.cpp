@@ -892,8 +892,7 @@ void Camera::OnMeshRenderSignal(MeshRendererDelegate& mr)
 				    }
 				    prev = current;
 			    }
-		    },
-		    {ZTEST_LINES});
+		    });
 	}
 	if (interfaces::debugOverlay)
 	{

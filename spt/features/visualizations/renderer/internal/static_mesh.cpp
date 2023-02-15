@@ -1,8 +1,16 @@
 #include "stdafx.hpp"
 
-#include "..\mesh_defs_private.hpp"
+#include "internal_defs.hpp"
+#include "mesh_builder_internal.hpp"
 
 #ifdef SPT_MESH_RENDERING_ENABLED
+
+/*
+* A StaticMesh is what we give to the user as a wrapper of a StaticMeshUnit - it's just a shared pointer but we
+* also keep a linked list through all static meshes so that we can destroy them when we do tas_restart. This is so
+* that you can have StaticMesh objects as static variables and not have to worry about cleaning them up when
+* features unload. If necessary, the same idea could be abstracted for other types of objects (like ConVarRefs).
+*/
 
 StaticMesh* StaticMesh::first = nullptr;
 
@@ -25,7 +33,8 @@ StaticMesh::StaticMesh(StaticMesh&& other) : meshPtr(std::move(other.meshPtr)), 
 	other.prev = other.next = nullptr;
 }
 
-StaticMesh::StaticMesh(MeshUnit* mesh) : meshPtr(std::shared_ptr<MeshUnit>(mesh)), prev(nullptr), next(nullptr)
+StaticMesh::StaticMesh(StaticMeshUnit* mesh)
+    : meshPtr(std::shared_ptr<StaticMeshUnit>(mesh)), prev(nullptr), next(nullptr)
 {
 	AttachToFront();
 }
@@ -79,10 +88,15 @@ void StaticMesh::Destroy()
 	prev = next = nullptr;
 }
 
-void StaticMesh::DestroyAll()
+int StaticMesh::DestroyAll()
 {
+	int count = 0;
 	while (first)
+	{
 		first->Destroy();
+		count++;
+	}
+	return count;
 }
 
 #endif

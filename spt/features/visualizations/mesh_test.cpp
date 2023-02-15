@@ -4,6 +4,9 @@
 
 #ifdef SPT_MESH_RENDERING_ENABLED
 
+#include <clocale>
+#include <chrono>
+
 #include "spt\utils\math.hpp"
 #include "spt\feature.hpp"
 #include "spt\utils\signals.hpp"
@@ -20,14 +23,22 @@ static std::vector<class BaseMeshRenderTest*> tests;
 
 class BaseMeshRenderTest
 {
-protected:
-	BaseMeshRenderTest()
+public:
+	const Vector testPos;
+	const char* name;
+
+	explicit BaseMeshRenderTest(const Vector& pos, const char* name) : testPos(pos), name(name)
 	{
 		tests.push_back(this);
 	}
 
-public:
 	virtual void TestFunc(MeshRendererDelegate& mr) = 0;
+
+	virtual void DrawName(MeshRendererDelegate& mr)
+	{
+		if (interfaces::debugOverlay)
+			interfaces::debugOverlay->AddTextOverlay(testPos + Vector{0, 0, 150}, 0, name);
+	}
 };
 
 class MeshTestFeature : public FeatureWrapper<MeshTestFeature>
@@ -54,7 +65,10 @@ protected:
 		if (!y_spt_draw_mesh_examples.GetBool())
 			return;
 		for (auto testCase : tests)
+		{
+			testCase->DrawName(mr);
 			testCase->TestFunc(mr);
+		}
 	}
 
 public:
@@ -62,62 +76,54 @@ public:
 	float timeSinceLast = -666;
 };
 
-MeshTestFeature testFeature;
+static MeshTestFeature testFeature;
 
-// creates a new struct in a new namespace inheriting from the base test and implements the TestFunc
-#define BEGIN_TEST_CASE(desc, position) \
-	namespace CONCATENATE(_Test, __COUNTER__) \
+#define _TEST_CASE(name, position, counter) \
+	struct CONCATENATE(_Test, counter) : BaseMeshRenderTest \
 	{ \
-		class _Test : BaseMeshRenderTest \
-		{ \
-			const Vector testPos = position; \
-			virtual void TestFunc(MeshRendererDelegate& mr) override; \
-		}; \
-		static _Test _inst; \
-		void _Test::TestFunc(MeshRendererDelegate& mr) \
-		{ \
-			if (interfaces::debugOverlay) \
-				interfaces::debugOverlay->AddTextOverlay(testPos + Vector{0, 0, 150}, 0, desc);
+		using BaseMeshRenderTest::BaseMeshRenderTest; \
+		virtual void TestFunc(MeshRendererDelegate& mr) override; \
+	} static CONCATENATE(_inst, counter){position, name}; \
+	void CONCATENATE(_Test, counter)::TestFunc(MeshRendererDelegate& mr)
 
-#define END_TEST_CASE() \
-	} \
-	}
+#define TEST_CASE(name, position) _TEST_CASE(name, position, __COUNTER__)
 
-BEGIN_TEST_CASE("AddLine()", Vector(0, 0, 0))
-RENDER_DYNAMIC(mr, mb.AddLine(testPos + Vector(-70, -70, -80), testPos + Vector(70, 70, 80), {255, 0, 255, 100}););
-END_TEST_CASE()
+TEST_CASE("AddLine()", Vector(0, 0, 0))
+{
+	RENDER_DYNAMIC(mr,
+	               mb.AddLine(testPos + Vector(-70, -70, -80),
+	                          testPos + Vector(70, 70, 80),
+	                          {{255, 0, 255, 100}}););
+}
 
 const Vector lineTestVerts[] = {{0, 0, 80}, {-70, 70, 80}, {-70, 70, -80}, {0, 0, -80}, {70, 70, -80}, {70, 70, 80}};
 const int numLineTestVerts = sizeof(lineTestVerts) / sizeof(Vector);
 
-BEGIN_TEST_CASE("AddLines()", Vector(200, 0, 0))
+TEST_CASE("AddLines()", Vector(200, 0, 0))
 {
 	Vector v[numLineTestVerts];
 	for (int i = 0; i < numLineTestVerts; i++)
 		v[i] = lineTestVerts[i] + testPos;
-	RENDER_DYNAMIC(mr, mb.AddLines(v, numLineTestVerts / 2, {255, 120, 120, 255}););
+	RENDER_DYNAMIC(mr, mb.AddLines(v, numLineTestVerts / 2, {{255, 120, 120, 255}}););
 }
-END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddLineStrip(loop=false)", Vector(400, 0, 0))
+TEST_CASE("AddLineStrip(loop=false)", Vector(400, 0, 0))
 {
 	Vector v[numLineTestVerts];
 	for (int i = 0; i < numLineTestVerts; i++)
 		v[i] = lineTestVerts[i] + testPos;
-	RENDER_DYNAMIC(mr, mb.AddLineStrip(v, numLineTestVerts, false, {120, 255, 120, 255}););
+	RENDER_DYNAMIC(mr, mb.AddLineStrip(v, numLineTestVerts, false, {{120, 255, 120, 255}}););
 }
-END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddLineStrip(loop=true)", Vector(600, 0, 0))
+TEST_CASE("AddLineStrip(loop=true)", Vector(600, 0, 0))
 {
 	Vector v[numLineTestVerts];
 	for (int i = 0; i < numLineTestVerts; i++)
 		v[i] = lineTestVerts[i] + testPos;
-	RENDER_DYNAMIC(mr, mb.AddLineStrip(v, numLineTestVerts, true, {120, 120, 255, 255}););
+	RENDER_DYNAMIC(mr, mb.AddLineStrip(v, numLineTestVerts, true, {{120, 120, 255, 255}}););
 }
-END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddPolygon()", Vector(800, 0, 0))
+TEST_CASE("AddPolygon()", Vector(800, 0, 0))
 {
 	// clang-format off
 	Vector v1[] = {testPos + Vector{-70, -70, 80}, testPos + Vector{0, 70, 80}, testPos + Vector{70, -70, 80}};
@@ -127,31 +133,25 @@ BEGIN_TEST_CASE("AddPolygon()", Vector(800, 0, 0))
 
 	// Add top to bottom and check if they get sorted properly:
 	// looking through the top you should see mostly green (not yellow) and not be able to see the bottom wireframe
-	RENDER_DYNAMIC(mr, mb.AddPolygon(v1, sizeof(v1) / sizeof(Vector), {{50, 255, 50, 220}, {255, 50, 255, 255}}););
-	RENDER_DYNAMIC(mr, mb.AddPolygon(v2, sizeof(v2) / sizeof(Vector), MeshColor::Outline({255, 50, 50, 100})););
-	RENDER_DYNAMIC(mr, mb.AddPolygon(v3, sizeof(v3) / sizeof(Vector), {{150, 150, 150, 255}, {0, 0, 255, 250}}););
+	RENDER_DYNAMIC(mr, mb.AddPolygon(v1, ARRAYSIZE(v1), {{50, 255, 50, 220}, {255, 50, 255, 255}}););
+	RENDER_DYNAMIC(mr, mb.AddPolygon(v2, ARRAYSIZE(v2), {C_OUTLINE(255, 50, 50, 100)}););
+	RENDER_DYNAMIC(mr, mb.AddPolygon(v3, ARRAYSIZE(v3), {{150, 150, 150, 255}, {0, 0, 255, 250}}););
 }
-END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddCircle()", Vector(1000, 0, 0))
+TEST_CASE("AddCircle()", Vector(1000, 0, 0))
 {
 	Vector dir(4, 2, 13);
 	QAngle ang;
 	VectorAngles(dir, ang);
-	for (int i = 10; i >= 0; i--) // draw backwards and check for sorting
+	for (int i = 10; i >= 0; i--)
 	{
-		RENDER_DYNAMIC(
-		    mr,
-		    {
-			    mb.AddCircle(testPos + Vector(-20, 0, -30) + dir * i,
-			                 ang,
-			                 20 + 8 * i,
-			                 3 * (i + 1),
-			                 MeshColor::Outline({(byte)(250 - i * 20), 200, (byte)(i * 20), 50}));
-		    },
-		    ZTEST_FACES | ZTEST_LINES,
-		    CullType::Default,
-		    TranslucentSortType::AABB_Center); // test that this works with y_spt_draw_mesh_debug
+		RENDER_DYNAMIC(mr, {
+			mb.AddCircle(testPos + Vector(-20, 0, -30) + dir * i,
+			             ang,
+			             20 + 8 * i,
+			             3 * (i + 1),
+			             {C_OUTLINE((byte)(250 - i * 20), 200, (byte)(i * 20), 50)});
+		});
 	}
 	// jwst tribute
 	RENDER_DYNAMIC(mr, {
@@ -166,14 +166,13 @@ BEGIN_TEST_CASE("AddCircle()", Vector(1000, 0, 0))
 			{
 				Vector pos = center + Vector(s, 0, c) * 50 * (.025 * (j - jMax) + 1);
 				QAngle ang(0, 90, 30);
-				mb.AddCircle(pos, ang, 2 + j * 24.5 / jMax, 6, MeshColor::Wire({200, 255, 0, 255}));
+				mb.AddCircle(pos, ang, 2 + j * 24.5 / jMax, 6, {C_WIRE(200, 255, 0, 255)});
 			}
 		}
 	});
 }
-END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddTris()", Vector(1200, 0, 0))
+TEST_CASE("AddTris()", Vector(1200, 0, 0))
 {
 	float c30, s30;
 	SinCos(DEG2RAD(30), &s30, &c30);
@@ -189,12 +188,10 @@ BEGIN_TEST_CASE("AddTris()", Vector(1200, 0, 0))
 	Vector vNew[numVerts];
 	for (int i = 0; i < numVerts; i++)
 		vNew[i] = v[i] + testPos;
-	RENDER_DYNAMIC(mr, mb.AddTris(vNew, numVerts / 3, MeshColor::Outline({50, 150, 200, 30}));
-	               , ZTEST_FACES | ZTEST_LINES, CullType::Reverse);
+	RENDER_DYNAMIC(mr, mb.AddTris(vNew, numVerts / 3, {C_OUTLINE(50, 150, 200, 30)}););
 }
-END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddQuad()", Vector(1400, 0, 0))
+TEST_CASE("AddQuad()", Vector(1400, 0, 0))
 {
 	// naive game of life implementation - alternate between two boards
 
@@ -244,7 +241,7 @@ BEGIN_TEST_CASE("AddQuad()", Vector(1400, 0, 0))
 				numUpdated += curCell != newBoard[curCellIdx];
 			}
 		}
-		if (numUpdated < 10) // naive check to speed up simulation
+		if (numUpdated < 10 && minigameTick + 2 <= maxMinigameTicks) // naive check to speed up simulation
 			minigameTick += 2;
 	}
 	mr.DrawMesh(spt_meshBuilder.CreateDynamicMesh(
@@ -268,7 +265,7 @@ BEGIN_TEST_CASE("AddQuad()", Vector(1400, 0, 0))
 				               tileCorner + Vector(0, tileSize, 0),
 				               tileCorner + Vector(tileSize, tileSize, 0),
 				               tileCorner + Vector(tileSize, 0, 0),
-				               {cLerp, {150, 150, 150, 255}});
+				               {cLerp, {150, 150, 150, 255}, true, true, WD_BOTH});
 			    }
 		    }
 		    // outline board
@@ -276,138 +273,112 @@ BEGIN_TEST_CASE("AddQuad()", Vector(1400, 0, 0))
 		               boardCorner + Vector(0, tileSize * size, 0),
 		               boardCorner + Vector(tileSize * size, tileSize * size, 0),
 		               boardCorner + Vector(tileSize * size, 0, 0),
-		               MeshColor::Wire({50, 50, 50, 255}));
-	    },
-	    {ZTEST_FACES | ZTEST_LINES, CullType::ShowBoth})); // test culling
+		               {C_WIRE(50, 50, 50, 255)});
+	    }));
 }
-END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddBox()", Vector(1600, 0, 0))
+TEST_CASE("AddBox()", Vector(1600, 0, 0))
 {
 	const Vector mins(-16, -16, 0);
 	const Vector maxs(16, 16, 72);
 	const Vector minsInner = mins * 0.7;
 	const Vector maxsInner = {16 * .7, 16 * .7, 72};
 	RENDER_DYNAMIC(mr, {
-		mb.AddBox(testPos, minsInner, maxsInner, vec3_angle, MeshColor::Outline({255, 0, 0, 100}));
-		mb.AddBox(testPos, mins, maxs, vec3_angle, MeshColor::Wire({255, 100, 0, 255}));
-		mb.AddBox(testPos, mins, maxs, {0, 0, 20}, MeshColor::Outline({255, 255, 0, 16}));
+		mb.AddBox(testPos, minsInner, maxsInner, vec3_angle, {C_OUTLINE(255, 0, 0, 100)});
+		mb.AddBox(testPos, mins, maxs, vec3_angle, {C_WIRE(255, 100, 0, 255)});
+		mb.AddBox(testPos, mins, maxs, {0, 0, 20}, {C_OUTLINE(255, 255, 0, 16)});
 	});
 }
-END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddSphere()", Vector(1800, 0, 0))
+TEST_CASE("AddSphere()", Vector(1800, 0, 0))
 {
-	RENDER_DYNAMIC(mr, mb.AddSphere(testPos + Vector(0, 100, 20), 50, 8, MeshColor::Face({150, 100, 255, 50})););
-	RENDER_DYNAMIC(mr, mb.AddSphere(testPos + Vector(60, 0, 20), 50, 4, MeshColor::Outline({0, 200, 200, 50})););
+	RENDER_DYNAMIC(mr, mb.AddSphere(testPos + Vector(0, 100, 20), 50, 8, {C_FACE(150, 100, 255, 50)}););
+	RENDER_DYNAMIC(mr, mb.AddSphere(testPos + Vector(60, 0, 20), 50, 4, {C_OUTLINE(0, 200, 200, 50)}););
 	RENDER_DYNAMIC(mr, mb.AddSphere(testPos + Vector(-60, 0, 20), 50, 9, {{20, 50, 80, 255}, {180, 99, 30, 255}}););
 }
-END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddSweptBox()", Vector(2000, 0, 0))
+TEST_CASE("AddSweptBox()", Vector(2000, 0, 0))
 {
 	/*
 	* The sweep may be drawn differently if it has a zero component in any of the axes and
 	* the index math for swept boxes is very non-trivial, so check all possible combinations
 	* of the components of the sweep being 0. Also check cases where the sweep is small -
 	* the may lead to weird cases where the sweep may overlap the start/end in unexpected ways.
-	* 
-	* Since there's just so many swept boxes, I'll actually make them all static cuz mah poor fps :(
 	*/
 
-	static std::vector<StaticMesh> boxes;
+	SweptBoxColor color{C_OUTLINE(0, 255, 0, 20), C_OUTLINE(150, 150, 150, 20), C_OUTLINE(255, 0, 0, 20)};
+	const Vector mins(-5, -7, -9);
+	const Vector maxs(7, 9, 11);
+	const float sweepMags[] = {10, 25}; // test small and large sweeps
+	const float xOffs[] = {-50, 50};
+	const float ySpacing = 90;
 
-	if (boxes.size() == 0 || !boxes[0].Valid())
 	{
-		// create all
-		boxes.clear();
+		// no sweep
+		Vector start = testPos + Vector(0, 0, 60);
+		RENDER_DYNAMIC(mr, mb.AddSweptBox(start, start + Vector(0.001), mins, maxs, color););
+	}
 
-		MeshColor cStart = MeshColor::Outline({0, 255, 0, 20});
-		MeshColor cEnd = MeshColor::Outline({255, 0, 0, 20});
-		MeshColor cSweep = MeshColor::Outline({150, 150, 150, 20});
-		const Vector mins(-5, -7, -9);
-		const Vector maxs(7, 9, 11);
-		const float sweepMags[] = {10, 25}; // test small and large sweeps
-		const float xOffs[] = {-50, 50};
-		const float ySpacing = 90;
-
+	for (int i = 0; i < 2; i++)
+	{
+		// test all (24!!!) edge cases
+		int yOff = 0;
+		for (int excludeAxIdx = 0; excludeAxIdx < 3; excludeAxIdx++)
 		{
-			// no sweep
-			Vector start = testPos + Vector(0, 0, 60);
-			boxes.push_back(
-			    MB_STATIC(mb.AddSweptBox(start, start + Vector(0.001), mins, maxs, cStart, cEnd, cSweep);));
-		}
-
-		for (int i = 0; i < 2; i++)
-		{
-			// test all (24!!!) edge cases
-			int yOff = 0;
-			for (int excludeAxIdx = 0; excludeAxIdx < 3; excludeAxIdx++)
-			{
-				int axIdx0 = (excludeAxIdx + 1) % 3;
-				int axIdx1 = (excludeAxIdx + 2) % 3;
-				for (int ax0 = 0; ax0 < 2; ax0++)
-				{
-					for (int ax1 = 0; ax1 < 2; ax1++)
-					{
-						for (int j = 0; j < 2; j++)
-						{
-							Vector start = testPos + Vector(xOffs[i], ++yOff * ySpacing, 0);
-							Vector off;
-							off[excludeAxIdx] = 0;
-							off[axIdx0] = (ax0 - .5) * (j ? 1 : .2);
-							off[axIdx1] = (ax1 - .5) * (j ? .2 : 1);
-							VectorNormalize(off);
-							Vector end = start + off * sweepMags[i];
-							boxes.push_back(MB_STATIC(mb.AddSweptBox(
-							    start, end, mins, maxs, cStart, cEnd, cSweep);));
-						}
-					}
-				}
-			}
-			// test all corner cases
-			yOff = 0;
+			int axIdx0 = (excludeAxIdx + 1) % 3;
+			int axIdx1 = (excludeAxIdx + 2) % 3;
 			for (int ax0 = 0; ax0 < 2; ax0++)
 			{
 				for (int ax1 = 0; ax1 < 2; ax1++)
 				{
-					for (int ax2 = 0; ax2 < 2; ax2++)
+					for (int j = 0; j < 2; j++)
 					{
-						Vector start = testPos + Vector(xOffs[i], ++yOff * ySpacing, 60);
-						Vector off(ax0 - .5, ax1 - .5, ax2 - .5);
+						Vector start = testPos + Vector(xOffs[i], ++yOff * ySpacing, 0);
+						Vector off;
+						off[excludeAxIdx] = 0;
+						off[axIdx0] = (ax0 - .5) * (j ? 1 : .2);
+						off[axIdx1] = (ax1 - .5) * (j ? .2 : 1);
 						VectorNormalize(off);
 						Vector end = start + off * sweepMags[i];
-						boxes.push_back(MB_STATIC(
-						    mb.AddSweptBox(start, end, mins, maxs, cStart, cEnd, cSweep);));
+						RENDER_DYNAMIC(mr, mb.AddSweptBox(start, end, mins, maxs, color););
 					}
 				}
 			}
-			// test all face cases
-			yOff = 0;
-			for (int ax = 0; ax < 3; ax++)
+		}
+		// test all corner cases
+		yOff = 0;
+		for (int ax0 = 0; ax0 < 2; ax0++)
+		{
+			for (int ax1 = 0; ax1 < 2; ax1++)
 			{
-				for (int reflect = 0; reflect < 2; reflect++)
+				for (int ax2 = 0; ax2 < 2; ax2++)
 				{
-					Vector start = testPos + Vector(xOffs[i], ++yOff * ySpacing, 120);
-					Vector off(0);
-					off[ax] = reflect - .5;
+					Vector start = testPos + Vector(xOffs[i], ++yOff * ySpacing, 60);
+					Vector off(ax0 - .5, ax1 - .5, ax2 - .5);
 					VectorNormalize(off);
 					Vector end = start + off * sweepMags[i];
-					boxes.push_back(
-					    MB_STATIC(mb.AddSweptBox(start, end, mins, maxs, cStart, cEnd, cSweep);));
+					RENDER_DYNAMIC(mr, mb.AddSweptBox(start, end, mins, maxs, color););
 				}
 			}
 		}
-	}
-	for (auto& staticMesh : boxes)
-	{
-		Assert(staticMesh.Valid());
-		mr.DrawMesh(staticMesh);
+		// test all face cases
+		yOff = 0;
+		for (int ax = 0; ax < 3; ax++)
+		{
+			for (int reflect = 0; reflect < 2; reflect++)
+			{
+				Vector start = testPos + Vector(xOffs[i], ++yOff * ySpacing, 120);
+				Vector off(0);
+				off[ax] = reflect - .5;
+				VectorNormalize(off);
+				Vector end = start + off * sweepMags[i];
+				RENDER_DYNAMIC(mr, mb.AddSweptBox(start, end, mins, maxs, color););
+			}
+		}
 	}
 }
-END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddCone()", Vector(2200, 0, 0))
+TEST_CASE("AddCone()", Vector(2200, 0, 0))
 {
 	{
 		const Vector org = testPos + Vector(-50, 0, 0);
@@ -415,7 +386,7 @@ BEGIN_TEST_CASE("AddCone()", Vector(2200, 0, 0))
 		QAngle ang;
 		VectorAngles(tipOff, ang);
 		float h = tipOff.Length();
-		RENDER_DYNAMIC(mr, mb.AddCone(org, ang, h, 20, 20, false, MeshColor::Outline({255, 255, 50, 20})););
+		RENDER_DYNAMIC(mr, mb.AddCone(org, ang, h, 20, 20, false, {C_OUTLINE(255, 255, 50, 20)}););
 	}
 	{
 		const Vector org = testPos + Vector(50, 0, 0);
@@ -423,55 +394,50 @@ BEGIN_TEST_CASE("AddCone()", Vector(2200, 0, 0))
 		QAngle ang;
 		VectorAngles(tipOff, ang);
 		float h = tipOff.Length();
-		RENDER_DYNAMIC(mr, mb.AddCone(org, ang, h, 20, 5, true, MeshColor::Outline({255, 50, 50, 20})););
+		RENDER_DYNAMIC(mr, mb.AddCone(org, ang, h, 20, 5, true, {C_OUTLINE(255, 50, 50, 20)}););
 	}
 }
-END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddCylinder()", Vector(2400, 0, 0))
+TEST_CASE("AddCylinder()", Vector(2400, 0, 0))
 {
 	RENDER_DYNAMIC(mr, {
-		mb.AddCylinder(testPos, vec3_angle, 20, 10, 5, true, true, MeshColor::Outline({255, 150, 0, 40}));
+		mb.AddCylinder(testPos, {0, 0, 0}, 20, 10, 5, true, true, {C_OUTLINE(255, 150, 0, 40)});
 	});
 	Vector org = testPos + Vector(0, 100, 0);
 	RENDER_DYNAMIC(mr, {
-		mb.AddCylinder(org, {0, 180, 0}, 20, 10, 10, false, true, MeshColor::Outline({255, 100, 0, 30}));
+		mb.AddCylinder(org, {0, 180, 0}, 20, 10, 10, false, true, {C_OUTLINE(255, 100, 0, 30)});
 	});
 	org += Vector(0, 100, 0);
 	RENDER_DYNAMIC(mr, {
-		mb.AddCylinder(org, {-80, 90, 0}, 20, 10, 15, true, false, MeshColor::Outline({255, 50, 0, 20}));
+		mb.AddCylinder(org, {-80, 90, 0}, 20, 10, 15, true, false, {C_OUTLINE(255, 50, 0, 20)});
 	});
 }
-END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddArrow3D()", Vector(2600, 0, 0))
+TEST_CASE("AddArrow3D()", Vector(2600, 0, 0))
 {
 	const Vector target = testPos + Vector(0, 100, 50);
-	RENDER_DYNAMIC(mr, mb.AddCross(target, 7, {255, 0, 0, 255}););
+	RENDER_DYNAMIC(mr, mb.AddCross(target, 7, {{255, 0, 0, 255}}););
 	for (int i = 0; i < 4; i++)
 	{
 		for (int k = 0; k < 3; k++)
 		{
-			Vector org = testPos + Vector((i - 1.5) * 25, k * 75, k * 30);
-			unsigned char g = (unsigned char)(1.f / (1 + org.DistToSqr(target) / 2000) * 255);
-			unsigned char b = (unsigned char)(1.f / (1 + org.DistToSqr(target) / 3000) * 255);
-			RENDER_DYNAMIC(mr, {
-				mb.AddArrow3D(org, target, 15, 1.5, 7, 3, 7, MeshColor::Outline({100, g, b, 20}));
-			});
+			Vector start = testPos + Vector((i - 1.5) * 25, k * 75, k * 30);
+			unsigned char g = (unsigned char)(1.f / (1 + start.DistToSqr(target) / 2000) * 255);
+			unsigned char b = (unsigned char)(1.f / (1 + start.DistToSqr(target) / 3000) * 255);
+			RENDER_DYNAMIC(mr,
+			               { mb.AddArrow3D(start, target, 15, 1.5, 7, 3, 7, {C_OUTLINE(99, g, b, 20)}); });
 		}
 	}
 }
-END_TEST_CASE()
 
-BEGIN_TEST_CASE("Timmy", Vector(0, -300, 0))
+TEST_CASE("Timmy", Vector(0, -300, 0))
 {
 	static StaticMesh timmyMesh;
 	if (!timmyMesh.Valid())
 	{
 		const Vector mins = {-20, -20, -20};
-		const MeshColor c = {{100, 100, 255, 255}, {255, 0, 255, 255}};
-		const QAngle a = vec3_angle;
-		timmyMesh = MB_STATIC(mb.AddBox(vec3_origin, mins, -mins, a, c););
+		timmyMesh = MB_STATIC(
+		    mb.AddBox(vec3_origin, mins, -mins, vec3_angle, {{100, 100, 255, 255}, {255, 0, 255, 255}}););
 	}
 
 	static QAngle ang(0, 0, 0);
@@ -487,95 +453,89 @@ BEGIN_TEST_CASE("Timmy", Vector(0, -300, 0))
 		            SetScaleMatrix(scale, infoOut.mat);
 		            AngleMatrix(ang, testPos, tmpMat);
 		            MatrixMultiply(tmpMat, infoOut.mat, infoOut.mat);
-		            infoOut.faces.colorModulate.a = (sin(testFeature.time) + 1) / 2.f * 255;
+		            infoOut.colorModulate.a = (sin(testFeature.time) + 1) / 2.f * 255;
 		            // timmy will be more yellow through portals
-		            if (infoIn.portalRenderDepth.value_or(0) >= 1)
-			            infoOut.faces.colorModulate.b = 0;
+		            if (infoIn.portalRenderDepth >= 1)
+			            infoOut.colorModulate.b = 0;
 		            // timmy will be more green on the overlay
 		            if (infoIn.inOverlayView)
-			            infoOut.faces.colorModulate.r = 0;
+			            infoOut.colorModulate.r = 0;
 	            });
 }
-END_TEST_CASE()
 
-BEGIN_TEST_CASE("Lorenz Attractor", Vector(200, -300, 0))
+TEST_CASE("Lorenz Attractor", Vector(200, -300, 0))
 {
-	// Intellisense doesn't do shit when you're in a macro, so I'm not gonna use RENDER_DYNAMIC_CALLBACK for something so big.
-	// Also, clang-format does literally the most stupid thing possible sometimes and using these macros makes it better.
+	// keep the last 2500 positions and draw them every frame
+	static std::vector<Vector> verts = {{1, 1, 1}};
+	const size_t maxVerts = 2500;
+	static size_t lastIdx = 0;
+	// viridis colormap from python pyplot, the colors are linearly interpolated between these
+	static std::vector<color32> colors = {{253, 231, 37, 255},
+	                                      {94, 201, 98, 200},
+	                                      {33, 145, 140, 150},
+	                                      {59, 82, 139, 100},
+	                                      {68, 1, 84, 0}};
+	const float sigma = 10, beta = 8.f / 3, rho = 28, timestep = 0.007;
 
-#define MB_CREATE_BEGIN spt_meshBuilder.CreateDynamicMesh([&](MeshBuilderDelegate & mb)
-#define MB_CREATE_END )
+	const float secPerStep = 0.004;
+	static float remainder = 0;
+	remainder += testFeature.timeSinceLast;
 
-	mr.DrawMesh(
-	    MB_CREATE_BEGIN {
-		    // keep the last 2500 positions and draw them every frame
-		    static std::vector<Vector> verts = {{1, 1, 1}};
-		    const size_t maxVerts = 2500;
-		    static size_t lastIdx = 0;
-		    // viridis colormap from python pyplot
-		    static std::vector<color32> colors = {{253, 231, 37, 255},
-		                                          {94, 201, 98, 200},
-		                                          {33, 145, 140, 150},
-		                                          {59, 82, 139, 100},
-		                                          {68, 1, 84, 0}};
-		    const float sigma = 10, beta = 8.f / 3, rho = 28, timestep = 0.007;
+	// calc next positions
+	while (remainder >= secPerStep)
+	{
+		remainder -= secPerStep;
+		Vector& vPrev = verts[lastIdx++]; // most recent point
+		Vector delta{
+		    sigma * (vPrev.y - vPrev.x),
+		    vPrev.x * (rho - vPrev.z) - vPrev.y,
+		    vPrev.x * vPrev.y - beta * vPrev.z,
+		};
+		Vector vNext = vPrev + delta * timestep; // next point
 
-		    const float secPerStep = 0.004;
-		    static float remainder = 0;
-		    remainder += testFeature.timeSinceLast;
+		if (verts.size() < maxVerts)
+			verts.push_back(vNext);
+		else
+			verts[lastIdx %= maxVerts] = vNext;
+	}
 
-		    while (remainder >= secPerStep)
-		    {
-			    remainder -= secPerStep;
-			    // calc next position
-			    Vector& vPrev = verts[lastIdx++];
-			    Vector delta(sigma * (vPrev.y - vPrev.x),
-			                 vPrev.x * (rho - vPrev.z) - vPrev.y,
-			                 vPrev.x * vPrev.y - beta * vPrev.z);
-			    Vector vNext = vPrev + delta * timestep;
-
-			    if (verts.size() < maxVerts)
-				    verts.push_back(vNext);
-			    else
-				    verts[lastIdx %= maxVerts] = vNext;
-		    }
-
-		    // draw line segments between each point
-		    Vector* prev = 0;
-		    for (size_t i = 0; i < verts.size(); i++)
-		    {
-			    size_t idx = (maxVerts + lastIdx - i) % maxVerts;
-			    Vector* cur = &verts[idx];
-			    if (i > 0)
-			    {
-				    // figure out which colors to lerp between
-				    float colorIdx = (float)i / ((float)maxVerts / (colors.size() - 1));
-				    color32 cLerp = color32RgbLerp(colors[Floor2Int(colorIdx)],
-				                                   colors[Ceil2Int(colorIdx)],
-				                                   colorIdx - Floor2Int(colorIdx));
-				    mb.AddLine(*prev, *cur, cLerp);
-			    }
-			    prev = cur;
-		    }
-		    // put ball at most recent position (draw last so it draws on top)
-		    mb.AddSphere(verts[lastIdx], 0.6, 2, MeshColor::Face({200, 255, 200, 255}));
-	    } MB_CREATE_END,
-	    [this](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
-	    {
-		    // the Lorenz Attractor chills near the origin and is quite small, so scale it up and put at test case pos
-		    SetScaleMatrix(3, infoOut.mat);
-		    PositionMatrix(testPos, infoOut.mat);
-	    });
-
-#undef MB_CREATE_BEGIN
-#undef MB_CREATE_END
+	mr.DrawMesh(spt_meshBuilder.CreateDynamicMesh(
+	                [&](MeshBuilderDelegate& mb)
+	                {
+		                // draw line segments between each point
+		                // TODO this is something that can be optimized if we expose the internal buffers
+		                Vector* prev = nullptr;
+		                for (size_t i = 0; i < verts.size(); i++)
+		                {
+			                // draw from most to last recent
+			                size_t idx = (maxVerts + lastIdx - i) % maxVerts;
+			                Vector* cur = &verts[idx];
+			                if (i > 0)
+			                {
+				                // figure out which two colors to lerp between
+				                float colorIdx = (float)i / ((float)maxVerts / (colors.size() - 1));
+				                color32 cLerp = color32RgbLerp(colors[Floor2Int(colorIdx)],
+				                                               colors[Ceil2Int(colorIdx)],
+				                                               colorIdx - Floor2Int(colorIdx));
+				                mb.AddLine(*prev, *cur, cLerp);
+			                }
+			                prev = cur;
+		                }
+		                // put ball at most recent position (draw last so it draws on top)
+		                mb.AddSphere(verts[lastIdx], 0.6, 2, {C_FACE(200, 255, 200, 255)});
+	                }),
+	            [this](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+	            {
+		            // the Lorenz Attractor chills near the origin and is quite small, so scale it up and put at test case pos
+		            SetScaleMatrix(3, infoOut.mat);
+		            PositionMatrix(testPos, infoOut.mat);
+	            });
 }
-END_TEST_CASE()
 
-BEGIN_TEST_CASE("Reusing static/dynamic meshes", Vector(400, -300, 0))
+TEST_CASE("Reusing static/dynamic meshes", Vector(400, -300, 0))
 {
 	// returns a create func given a color
-	auto coloredCreateFunc = [](const MeshColor& c) {
+	auto coloredCreateFunc = [](const ShapeColor& c) {
 		return [&](MeshBuilderDelegate& mb) {
 			mb.AddBox(vec3_origin, {-10, -10, 0}, {10, 10, 50}, vec3_angle, c);
 		};
@@ -584,11 +544,10 @@ BEGIN_TEST_CASE("Reusing static/dynamic meshes", Vector(400, -300, 0))
 	// create once
 	static StaticMesh staticMesh;
 	if (!staticMesh.Valid())
-		staticMesh = spt_meshBuilder.CreateStaticMesh(coloredCreateFunc(MeshColor::Outline({0, 0, 255, 20})));
+		staticMesh = spt_meshBuilder.CreateStaticMesh(coloredCreateFunc({C_OUTLINE(0, 0, 255, 20)}));
 
 	// recreate every frame
-	DynamicMesh dynamicMesh =
-	    spt_meshBuilder.CreateDynamicMesh(coloredCreateFunc(MeshColor::Outline({255, 0, 0, 20})));
+	DynamicMesh dynamicMesh = spt_meshBuilder.CreateDynamicMesh(coloredCreateFunc({C_OUTLINE(255, 0, 0, 20)}));
 
 	for (int i = 0; i < 20; i++)
 	{
@@ -605,9 +564,8 @@ BEGIN_TEST_CASE("Reusing static/dynamic meshes", Vector(400, -300, 0))
 			mr.DrawMesh(dynamicMesh, callbackFunc);
 	}
 }
-END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddCPolyhedron", Vector(600, -300, 0))
+TEST_CASE("AddCPolyhedron", Vector(600, -300, 0))
 {
 	static std::vector<VPlane> planes;
 	planes.clear();
@@ -644,38 +602,145 @@ BEGIN_TEST_CASE("AddCPolyhedron", Vector(600, -300, 0))
 	CPolyhedron* polyhedron = GeneratePolyhedronFromPlanes((float*)planes.data(), planes.size(), 0.0001f, true);
 
 	mr.DrawMesh(spt_meshBuilder.CreateDynamicMesh(
-	                [&](MeshBuilderDelegate& mb) {
-		                mb.AddCPolyhedron(polyhedron, MeshColor::Outline({200, 150, 50, 20}));
-	                }),
+	                [&](MeshBuilderDelegate& mb) { mb.AddCPolyhedron(polyhedron, {C_OUTLINE(200, 150, 50, 20)}); }),
 	            [this](auto&, CallbackInfoOut& infoOut) { MatrixSetColumn(testPos, 3, infoOut.mat); });
 
 	polyhedron->Release();
 }
-END_TEST_CASE()
 
-BEGIN_TEST_CASE("AddEllipse()", Vector(800, -300, 0))
+TEST_CASE("AddEllipse()", Vector(800, -300, 0))
 {
 	Vector dir(4, 2, 13);
 	QAngle ang;
 	VectorAngles(dir, ang);
 	float radius = 100.0f;
-	for (float i = 8.0; i >= 2.0f; i -= 0.5f) // draw backwards and check for sorting
+	for (float i = 8.0; i >= 2.0f; i -= 0.5f)
 	{
-		RENDER_DYNAMIC(
-		    mr,
-		    {
-			    mb.AddEllipse(testPos + Vector(-20, 0, -30) + dir * i,
-			                  ang,
-			                  radius / i,
-			                  radius / (10 - i),
-			                  32,
-			                  MeshColor::Outline({(byte)(250 - i * 40), 200, (byte)(i * 40), 50}));
-		    },
-		    ZTEST_FACES | ZTEST_LINES,
-		    CullType::Default,
-		    TranslucentSortType::AABB_Center); // test that this works with y_spt_draw_mesh_debug
+		// let's make these guys not ztest
+		RENDER_DYNAMIC(mr, {
+			mb.AddEllipse(testPos + Vector(-20, 0, -30) + dir * i,
+			              ang,
+			              radius / i,
+			              radius / (10 - i),
+			              32,
+			              {C_OUTLINE((byte)(250 - i * 40), 200, (byte)(i * 40), 50), false, false});
+		});
 	}
 }
-END_TEST_CASE()
+
+// this is just to ensure I don't rely on meshes not being empty
+TEST_CASE("Empty meshes", Vector(1000, -300, 0))
+{
+	static StaticMesh staticMesh;
+	if (!staticMesh.Valid())
+		staticMesh = spt_meshBuilder.CreateStaticMesh([](auto&) {});
+	DynamicMesh dynamicMesh = spt_meshBuilder.CreateDynamicMesh([](auto&) {});
+	mr.DrawMesh(staticMesh);
+	mr.DrawMesh(dynamicMesh);
+}
+
+TEST_CASE("Testing winding direction", Vector(1200, -300, 0))
+{
+	/*
+	* The purpose of this test is twofold:
+	* - test all 3 winding directions for all primitives
+	* - test that the index math is correct when the indices don't start at 0
+	* It's not strictly necessary to test all mesh builder functions because internally some defer to others,
+	* e.g. AddTri() & AddTris() both defer to _AddTris().
+	*/
+
+	mr.DrawMesh(spt_meshBuilder.CreateDynamicMesh(
+	    [this](MeshBuilderDelegate& mb)
+	    {
+		    ShapeColor colors[] = {
+		        {C_OUTLINE(0, 255, 0, 20), true, true, WD_CW},
+		        {C_OUTLINE(255, 0, 0, 20), true, true, WD_CCW},
+		        {C_OUTLINE(255, 255, 0, 20), true, true, WD_BOTH},
+		    };
+
+		    const float ySpacing = -40;
+		    const float shapeRadius = fabs(ySpacing) / 3.f;
+
+		    for (int i = 0; i < 3; i++)
+		    {
+			    ShapeColor color = colors[i];
+			    Vector pos = testPos;
+			    pos.x += (i - 1) * 50;
+
+			    mb.AddTri(pos, pos + Vector{20, -20, 0}, pos + Vector{-20, -20, 0}, color);
+
+			    pos.y += ySpacing;
+
+			    mb.AddQuad(pos + Vector{-10, 10, 0},
+			               pos + Vector{10, 10, 0},
+			               pos + Vector{10, -10, 0},
+			               pos + Vector{-10, -10, 0},
+			               color);
+
+			    pos.y += ySpacing;
+
+			    mb.AddCircle(pos, QAngle{-90, 0, 0}, shapeRadius, 17, color);
+
+			    pos.y += ySpacing;
+
+			    const Vector extents{10, 10, 10};
+			    mb.AddBox(pos, -extents, extents, vec3_angle, color);
+
+			    pos.y += ySpacing;
+
+			    mb.AddSphere(pos, shapeRadius, 1, color);
+
+			    pos.y += ySpacing;
+
+			    mb.AddCone(pos, QAngle{-90, 0, 0}, 30, shapeRadius, 4, true, color);
+
+			    pos.y += ySpacing;
+
+			    mb.AddCylinder(pos, QAngle{-90, 0, 0}, 30, shapeRadius, 6, true, true, color);
+
+			    pos.y += ySpacing;
+
+			    mb.AddArrow3D(pos, pos + Vector{0, 0, 1}, 30, 2, 6, 4, 8, color);
+
+			    pos.y += ySpacing;
+
+			    const float f3 = FastRSqrt(3);
+			    VMatrix translateMat{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+			    translateMat.SetTranslation(pos);
+			    std::array<VPlane, 4> polyPlanes{
+			        VPlane{{f3, f3, f3}, shapeRadius / 2},
+			        VPlane{{-f3, -f3, f3}, shapeRadius / 2},
+			        VPlane{{f3, -f3, -f3}, shapeRadius / 2},
+			        VPlane{{-f3, f3, -f3}, shapeRadius / 2},
+			    };
+			    for (VPlane& plane : polyPlanes)
+				    plane = translateMat * plane;
+			    CPolyhedron* poly = GeneratePolyhedronFromPlanes((float*)polyPlanes.data(), 4, 0, true);
+			    mb.AddCPolyhedron(poly, color);
+			    poly->Release();
+
+			    pos.y += ySpacing;
+
+			    // test main swept box types
+
+			    SweptBoxColor sbColor{{C_OUTLINE(255, 255, 255, 20)},
+			                          color,
+			                          {C_OUTLINE(100, 100, 100, 20)}};
+			    Vector mins{-5, -5, -5};
+			    Vector maxs{5, 5, 5};
+			    mb.AddSweptBox(pos, pos, mins, maxs, sbColor);
+			    pos.y += ySpacing;
+			    mb.AddSweptBox(pos, pos + Vector{5, 0, 0}, mins, maxs, sbColor);
+			    pos.y += ySpacing;
+			    mb.AddSweptBox(pos, pos + Vector{15, 0, 0}, mins, maxs, sbColor);
+			    pos.y += ySpacing;
+			    mb.AddSweptBox(pos, pos + Vector{5, 5, 0}, mins, maxs, sbColor);
+			    pos.y += ySpacing;
+			    mb.AddSweptBox(pos, pos + Vector{15, 15, 0}, mins, maxs, sbColor);
+			    pos.y += ySpacing;
+			    mb.AddSweptBox(pos, pos + Vector{15, 15, 15}, mins, maxs, sbColor);
+		    }
+	    }));
+}
 
 #endif

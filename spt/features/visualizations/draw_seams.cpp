@@ -12,7 +12,6 @@
 #include "spt\sptlib-wrapper.hpp"
 #include "spt\features\generic.hpp"
 #include "spt\utils\portal_utils.hpp"
-
 #include "spt\utils\interfaces.hpp"
 
 ConVar y_spt_draw_seams("y_spt_draw_seams", "0", FCVAR_CHEAT, "Draws seamshot stuff");
@@ -204,19 +203,26 @@ void DrawSeamsFeature::OnMeshRenderSignal(MeshRendererDelegate& mr)
 		    const color32 red{255, 0, 0, 255};
 		    const color32 green{0, 255, 0, 255};
 
-		    mb.AddLine(edgeTr.endpos - edge * uiScale, edgeTr.endpos + edge * uiScale, seamshot ? green : red);
+		    mb.AddLine(edgeTr.endpos - edge * uiScale,
+		               edgeTr.endpos + edge * uiScale,
+		               {seamshot ? green : red, false});
 		    // Lines in the direction of the planes
-		    mb.AddLine(edgeTr.endpos, edgeTr.endpos + edgeTr.plane.normal * uiScale, test1 ? green : red);
-		    mb.AddLine(edgeTr.endpos, edgeTr.endpos + tr.plane.normal * uiScale, test2 ? green : red);
+		    mb.AddLine(edgeTr.endpos,
+		               edgeTr.endpos + edgeTr.plane.normal * uiScale,
+		               {test1 ? green : red, false});
+		    mb.AddLine(edgeTr.endpos, edgeTr.endpos + tr.plane.normal * uiScale, {test2 ? green : red, false});
 		    if (seamshot)
 		    {
 			    // Seamshot triangle
 			    Vector midPoint = edgeTr.endpos + (edgeTr.plane.normal + tr.plane.normal) * uiScale / 2.f;
-			    mb.AddLine(midPoint, edgeTr.endpos + edgeTr.plane.normal * uiScale, test1 ? green : red);
-			    mb.AddLine(midPoint, edgeTr.endpos + tr.plane.normal * uiScale, test2 ? green : red);
+			    mb.AddLine(midPoint,
+			               edgeTr.endpos + edgeTr.plane.normal * uiScale,
+			               {test1 ? green : red, false});
+			    mb.AddLine(midPoint,
+			               edgeTr.endpos + tr.plane.normal * uiScale,
+			               {test2 ? green : red, false});
 		    }
-	    },
-	    {ZTEST_NONE}));
+	    }));
 }
 
 #endif

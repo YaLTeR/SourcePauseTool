@@ -66,6 +66,7 @@ namespace interfaces
 	IEngineTrace* engineTraceClient = nullptr;
 	IEngineTrace* engineTraceServer = nullptr;
 	IServerPluginHelpers* pluginHelpers = nullptr;
+	IPhysicsCollision* physicsCollision = nullptr;
 } // namespace interfaces
 
 ConVar* _viewmodel_fov = nullptr;
@@ -183,6 +184,7 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	interfaces::engineTraceServer = (IEngineTrace*)interfaceFactory(INTERFACEVERSION_ENGINETRACE_SERVER, NULL);
 	interfaces::pluginHelpers =
 	    (IServerPluginHelpers*)interfaceFactory(INTERFACEVERSION_ISERVERPLUGINHELPERS, NULL);
+	interfaces::physicsCollision = (IPhysicsCollision*)interfaceFactory(VPHYSICS_COLLISION_INTERFACE_VERSION, NULL);
 
 	if (interfaces::gm)
 	{
@@ -329,7 +331,7 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	return true;
 }
 
-extern "C" IMAGE_DOS_HEADER __ImageBase; 
+extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 void CSourcePauseTool::Unload(void)
 {
@@ -340,7 +342,7 @@ void CSourcePauseTool::Unload(void)
 		return;
 	}
 
-	#ifdef SSDK2007
+#ifdef SSDK2007
 	// Replace the plugin handler with the real handle right before the engine tries to unload.
 	// This allows it to actually do so.
 	// In newer branches (after 3420) this is redundant but doesn't do any harm.
@@ -356,7 +358,7 @@ void CSourcePauseTool::Unload(void)
 			break;
 		}
 	}
-	#endif
+#endif
 
 	Cvar_UnregisterSPTCvars();
 	DisconnectTier1Libraries();
@@ -376,12 +378,12 @@ void CSourcePauseTool::GameFrame(bool simulating)
 		TickSignal();
 }
 
-void CSourcePauseTool::LevelInit(char const* pMapName) 
+void CSourcePauseTool::LevelInit(char const* pMapName)
 {
 	LevelInitSignal(pMapName);
 }
 
-void CSourcePauseTool::ServerActivate(edict_t *pEdictList, int edictCount, int clientMax) 
+void CSourcePauseTool::ServerActivate(edict_t* pEdictList, int edictCount, int clientMax)
 {
 	ServerActivateSignal(pEdictList, edictCount, clientMax);
 }
@@ -408,7 +410,7 @@ void CSourcePauseTool::ClientActive(edict_t* pEntity)
 	ClientActiveSignal(pEntity);
 }
 
-void CSourcePauseTool::ClientDisconnect(edict_t* pEntity) 
+void CSourcePauseTool::ClientDisconnect(edict_t* pEntity)
 {
 	ClientDisconnectSignal(pEntity);
 }
