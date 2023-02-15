@@ -14,96 +14,109 @@
 
 namespace utils
 {
+
+	/*
+	* Attention to any DoesGameLookLike() callers: it is possible to call these functions too early! If you call
+	* them from a static constructor they will (probably) all return false because g_pCVar & friends have not been
+	* initialized yet. Once they have the result will be cached.
+	*/
+
 	bool DoesGameLookLikePortal()
 	{
+		// not sure if the cmd + game dir check is necessary, just copying how this function used to work
+		static bool cachedGameDir = false, cachedCmd = false, result = false;
+
+		if (!cachedCmd && g_pCVar)
+		{
 #ifndef OE
-		if (g_pCVar)
-		{
-			if (g_pCVar->FindCommand("upgrade_portalgun"))
-				return true;
-
-			return false;
-		}
-
-		if (interfaces::engine)
-		{
-			auto game_dir = interfaces::engine->GetGameDirectory();
-			return (GetFileName(Convert(game_dir)) == L"portal");
-		}
+			result = g_pCVar->FindCommand("upgrade_portalgun");
+			cachedCmd = true;
 #endif
+		}
 
-		return false;
+		if (cachedCmd)
+			return result; // trust the cmd result more than the game directory
+
+		if (!cachedGameDir && interfaces::engine)
+		{
+#ifndef OE
+			auto game_dir = interfaces::engine->GetGameDirectory();
+			result = (GetFileName(Convert(game_dir)) == L"portal");
+			cachedGameDir = true;
+#endif
+		}
+		return result;
 	}
 
 	bool DoesGameLookLikeDMoMM()
 	{
-#ifdef OE
-		if (g_pCVar)
+		static bool cached = false, result = false;
+		if (!cached && g_pCVar)
 		{
-			if (g_pCVar->FindVar("mm_xana_fov"))
-				return true;
+			result = g_pCVar->FindVar("mm_xana_fov");
+			cached = true;
 		}
-#endif
-
-		return false;
+		return result;
 	}
 
 	bool DoesGameLookLikeHLS()
 	{
-		if (g_pCVar)
+		static bool cached = false, result = false;
+		if (!cached && g_pCVar)
 		{
-			if (g_pCVar->FindVar("hl1_ref_db_distance"))
-				return true;
+			result = g_pCVar->FindVar("hl1_ref_db_distance");
+			cached = true;
 		}
-
-		return false;
+		return result;
 	}
 
 	bool DoesGameLookLikeBMSMod()
 	{
-#ifdef SSDK2007
-		if (g_pCVar)
+		static bool cached = false, result = false;
+		if (!cached && g_pCVar)
 		{
-			if (g_pCVar->FindVar("bms_normal_jump_vertical_speed"))
-				return true;
-		}
+#ifdef SSDK2007
+			result = g_pCVar->FindVar("bms_normal_jump_vertical_speed");
+			cached = true;
 #endif
-
-		return false;
+		}
+		return result;
 	}
 
 	bool DoesGameLookLikeBMSRetail()
 	{
-		if (g_pCVar)
+		static bool cached = false, result = false;
+		if (!cached && g_pCVar)
 		{
-			if (g_pCVar->FindVar("bm_announcer"))
-				return true;
+			result = g_pCVar->FindVar("bm_announcer");
+			cached = true;
 		}
-
-		return false;
+		return result;
 	}
 
 	bool DoesGameLookLikeBMSLatest()
 	{
-		if (g_pCVar)
+		static bool cached = false, result = false;
+		if (!cached && g_pCVar)
 		{
-			if (g_pCVar->FindVar("cl_toggle_duck"))
-				return true;
+			result = g_pCVar->FindVar("cl_toggle_duck");
+			cached = true;
 		}
-		return false;
+		return result;
 	}
 
 	bool DoesGameLookLikeEstranged()
 	{
-#ifndef OE
-		if (interfaces::engine)
+		static bool cached = false, result = false;
+		if (!cached && interfaces::engine)
 		{
+#ifndef OE
 			auto game_dir = interfaces::engine->GetGameDirectory();
-			return (GetFileName(Convert(game_dir)) == L"estrangedact1");
-		}
+			result = (GetFileName(Convert(game_dir)) == L"estrangedact1");
+			cached = true;
 #endif
-
-		return false;
+		}
+		return result;
 	}
 
 	static std::future<int> BuildResult;
