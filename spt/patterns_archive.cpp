@@ -207,6 +207,14 @@ namespace patterns
 	         "7462488",
 	         "55 8B EC 8B 49 ?? 8D 45 ?? 81 EC 80 00 00 00 50 E8 ?? ?? ?? ?? 8B 45 ??");
 
+	PATTERNS(CPhysicsCollision__CreateDebugMesh,
+	         "5135",
+	         "83 EC 10 8B 4C 24 14 8B 01 8B 40 08 55 56 57 33 ED 8D 54 24 10 52",
+	         "1910503",
+	         "55 8B EC 83 EC 14 8B 4D 08 8B 01 8B 40 08 53 56 57 33 DB 8D 55 EC",
+	         "7462488",
+	         "55 8B EC 83 EC 18 8B 4D ?? 8D 55 ??");
+
 	/****************************** DATACACHE ******************************/
 
 	PATTERNS(CMDLCache__BeginMapLoad, "BMS-0.9", "55 8B EC 83 EC 08 53 56 8B F1 57 89 75");

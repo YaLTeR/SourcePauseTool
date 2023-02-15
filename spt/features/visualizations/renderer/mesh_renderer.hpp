@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mesh_defs_public.hpp"
+#include "mesh_defs.hpp"
 
 #ifdef SPT_MESH_RENDERING_ENABLED
 
@@ -17,7 +17,7 @@
 /*
 * cvs               - camera info for current view
 * meshPosInfo       - position info about the mesh the callback is for
-* portalRenderDepth - no value if not available, 0 if looking directly at mesh, 1 if looking through a
+* portalRenderDepth - -1 if not available, 0 if looking directly at mesh, 1 if looking through a
 *                     portal, 2 if looking through two portals, etc.
 * inOverlayView     - is the current view on an overlay (set to spt_overlay.renderingOverlay)
 */
@@ -25,7 +25,7 @@ struct CallbackInfoIn
 {
 	const CViewSetup& cvs;
 	const MeshPositionInfo& meshPosInfo;
-	std::optional<uint> portalRenderDepth;
+	int portalRenderDepth;
 	bool inOverlayView;
 };
 
@@ -34,18 +34,12 @@ struct CallbackInfoIn
 * colorModulate - a "multiplier" to change the color/alpha of the entire mesh, relatively slow
 *                 e.g. 128 means multiply existing value by 0.5
 * skipRender    - conditionally enable rendering on a per-view basis (e.g. only on overlays)
-* 
-* You can specify different values for the line/face components of your mesh.
 */
 struct CallbackInfoOut
 {
 	matrix3x4_t mat = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}, {0, 0, 0}};
-
-	struct
-	{
-		color32 colorModulate{255, 255, 255, 255};
-		bool skipRender = false;
-	} faces, lines;
+	color32 colorModulate{255, 255, 255, 255};
+	bool skipRender = false;
 };
 
 /*
@@ -61,7 +55,7 @@ typedef std::function<void(const CallbackInfoIn& infoIn, CallbackInfoOut& infoOu
 
 // Simple macro for a dynamic mesh with no callback. Intellisense sucks huge dong for lambdas in this macro, so
 // maybe avoid using it if you are doing something long and complicated.
-#define RENDER_DYNAMIC(rdrDelegate, createFunc, ...) (rdrDelegate).DrawMesh(MB_DYNAMIC(createFunc, __VA_ARGS__))
+#define RENDER_DYNAMIC(rdrDelegate, createFunc) (rdrDelegate).DrawMesh(MB_DYNAMIC(createFunc))
 
 class MeshRendererDelegate
 {
@@ -70,7 +64,7 @@ public:
 	void DrawMesh(const StaticMesh& mesh, const RenderCallback& callback = nullptr);
 
 private:
-	friend class MeshRendererFeature;
+	friend struct MeshRendererInternal;
 	MeshRendererDelegate() = default;
 	MeshRendererDelegate(MeshRendererDelegate&) = delete;
 };
@@ -86,10 +80,11 @@ private:
 	struct CPortalRender** g_pPortalRender = nullptr;
 
 public:
-	// Works() method valid during or after PreHook()
+	// Works() method valid during or after LoadFeature()
 	Gallant::Signal1<MeshRendererDelegate&> signal;
 
-	std::optional<uint> CurrentPortalRenderDepth() const;
+	// returns -1 if not available
+	int CurrentPortalRenderDepth() const;
 
 protected:
 	bool ShouldLoadFeature() override;
@@ -99,13 +94,6 @@ protected:
 	void UnloadFeature() override;
 
 private:
-	struct
-	{
-		CRendering3dView* rendering3dView;
-		CViewSetup* viewSetup;
-		VPlane* frustum;
-	} viewInfo;
-
 	DECL_MEMBER_CDECL(void, OnRenderStart);
 	DECL_HOOK_THISCALL(void, CRendering3dView__DrawOpaqueRenderables, CRendering3dView*, int param);
 
@@ -114,13 +102,6 @@ private:
 	                   CRendering3dView*,
 	                   bool bInSkybox,
 	                   bool bShadowDepth);
-
-	bool Works() const;
-	void FrameCleanup();
-	void OnRenderViewPre_Signal(void* thisptr, CViewSetup* cameraView);
-	void SetupViewInfo(CRendering3dView* rendering3dView);
-	void OnDrawOpaques(CRendering3dView* renderingView);
-	void OnDrawTranslucents(CRendering3dView* renderingView);
 };
 
 inline MeshRendererFeature spt_meshRenderer;

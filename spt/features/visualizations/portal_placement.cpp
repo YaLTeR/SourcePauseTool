@@ -279,13 +279,13 @@ static void DrawPortal(MeshBuilderDelegate& mb, const PortalPlacement::Placement
 		portalColor = col;
 	}
 
-	MeshColor facePortalColor = MeshColor::Face(portalColor);
+	ShapeColor facePortalColor{C_FACE(portalColor), false};
 	mb.AddEllipse(info.finalPos, info.finalAngles, PORTAL_HALF_WIDTH, PORTAL_HALF_HEIGHT, 32, facePortalColor);
 
 	if (y_spt_draw_pp_bbox.GetBool())
 	{
 		const Vector portalMaxs(1, PORTAL_HALF_WIDTH, PORTAL_HALF_HEIGHT);
-		MeshColor outlinePortalColor(noDrawColor, portalColor);
+		ShapeColor outlinePortalColor{C_WIRE(portalColor), false};
 		mb.AddBox(info.finalPos, -portalMaxs, portalMaxs, info.finalAngles, outlinePortalColor);
 	}
 }
@@ -310,16 +310,15 @@ void PortalPlacement::OnMeshRenderSignal(MeshRendererDelegate& mr)
 
 		// draw the unmerged points as dynamic meshes
 
-		int maxVerts, maxIndices;
+		size_t maxVerts, maxIndices;
 		GetMaxMeshSize(maxVerts, maxIndices, true);
-		const int maxCubesPerMesh = MIN(maxIndices / 36, maxVerts / 16);
+		const int maxCubesPerMesh = MIN(maxIndices / 36, maxVerts / 8);
 
 		for (size_t start = 0; start < ppGrid.unmergedPts.size(); start += maxCubesPerMesh)
 		{
 			mr.DrawMesh(spt_meshBuilder.CreateDynamicMesh(
 			    [this, start, maxCubesPerMesh](MeshBuilderDelegate& mb)
-			    { AddUnmergedGridPointsToBuilder(mb, start, start + maxCubesPerMesh); },
-			    {ZTEST_NONE}));
+			    { AddUnmergedGridPointsToBuilder(mb, start, start + maxCubesPerMesh); }));
 		}
 	}
 
@@ -349,8 +348,7 @@ void PortalPlacement::OnMeshRenderSignal(MeshRendererDelegate& mr)
 
 		    if (y_spt_draw_pp_blue.GetBool())
 			    DrawPortal(mb, p1, blueColor);
-	    },
-	    {ZTEST_NONE}));
+	    }));
 }
 
 void PortalPlacement::RunPpGridIteration(MeshRendererDelegate& mr)
@@ -367,9 +365,9 @@ void PortalPlacement::RunPpGridIteration(MeshRendererDelegate& mr)
 	matrix3x4_t playerRotMat;
 	AngleMatrix(ppGrid.camAng, playerRotMat);
 
-	int maxVerts, maxIndices;
+	size_t maxVerts, maxIndices;
 	GetMaxMeshSize(maxVerts, maxIndices, false);
-	const size_t maxCubesPerMesh = MIN(maxIndices / 36, maxVerts / 16);
+	const size_t maxCubesPerMesh = MIN(maxIndices / 36, maxVerts / 8);
 
 	int gridWidth = ppGrid.gridWidth;
 	int numGridPts = gridWidth * gridWidth;
@@ -453,10 +451,8 @@ void PortalPlacement::RunPpGridIteration(MeshRendererDelegate& mr)
 
 		if (ppGrid.unmergedPts.size() >= maxCubesPerMesh || ppGrid.gridIdx >= numGridPts)
 		{
-			ppGrid.meshes.emplace_back(
-			    spt_meshBuilder.CreateStaticMesh([this](MeshBuilderDelegate& mb)
-			                                     { AddUnmergedGridPointsToBuilder(mb); },
-			                                     {ZTEST_NONE}));
+			ppGrid.meshes.emplace_back(spt_meshBuilder.CreateStaticMesh(
+			    [this](MeshBuilderDelegate& mb) { AddUnmergedGridPointsToBuilder(mb); }));
 			ppGrid.unmergedPts.clear();
 		}
 
@@ -477,7 +473,7 @@ void PortalPlacement::AddUnmergedGridPointsToBuilder(MeshBuilderDelegate& mb, si
 {
 	if (ppGrid.gridWidth == 1)
 	{
-		mb.AddSphere(ppGrid.unmergedPts[0].first, 3, 0, MeshColor::Face(ppGrid.unmergedPts[0].second));
+		mb.AddSphere(ppGrid.unmergedPts[0].first, 3, 0, {C_FACE(ppGrid.unmergedPts[0].second), false});
 	}
 	else
 	{
@@ -486,7 +482,7 @@ void PortalPlacement::AddUnmergedGridPointsToBuilder(MeshBuilderDelegate& mb, si
 		{
 			auto& ppGridPt = ppGrid.unmergedPts[i];
 			float rad = MIN(3, ratio * ppGridPt.first.DistTo(ppGrid.camPos));
-			mb.AddSphere(ppGridPt.first, rad, 0, MeshColor::Face(ppGridPt.second));
+			mb.AddSphere(ppGridPt.first, rad, 0, {C_FACE(ppGridPt.second), false});
 		}
 	}
 }

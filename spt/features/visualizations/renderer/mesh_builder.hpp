@@ -1,18 +1,89 @@
 #pragma once
 
-#include "mesh_defs_public.hpp"
+#include "mesh_defs.hpp"
 #include "spt\feature.hpp"
 
 #ifdef SPT_MESH_RENDERING_ENABLED
 
 #include "mathlib\polyhedron.h"
 
-/*
-* Different game versions have different limits for how big meshes can get. If a dynamic mesh is too big then the
-* game will call Error(), but if your static meshes are too big they simply won't get drawn. Use this for limiting
-* sizes of really large meshes.
-*/
-void GetMaxMeshSize(int& maxVerts, int& maxIndices, bool dynamic);
+#include "internal\ref_mgr.hpp"
+
+struct LineColor
+{
+	color32 lineColor;
+	bool zTestLines;
+
+	LineColor() = default;
+
+	LineColor(color32 color, bool zTest = true) : lineColor(color), zTestLines(zTest) {}
+};
+
+struct ShapeColor
+{
+	color32 faceColor, lineColor;
+	bool zTestFaces, zTestLines;
+	WindingDir wd;
+
+	ShapeColor() = default;
+
+	ShapeColor(color32 faceColor,
+	           color32 lineColor,
+	           bool zTestFaces = true,
+	           bool zTestLines = true,
+	           WindingDir wd = WD_CW)
+	    : faceColor(faceColor), lineColor(lineColor), zTestFaces(zTestFaces), zTestLines(zTestLines), wd(wd)
+	{
+	}
+};
+
+struct SweptBoxColor
+{
+	ShapeColor cStart, cSweep, cEnd;
+
+	SweptBoxColor() = default;
+
+	SweptBoxColor(ShapeColor cStart, ShapeColor cSweep, ShapeColor cEnd)
+	    : cStart(cStart), cSweep(cSweep), cEnd(cEnd)
+	{
+	}
+
+	// clang-format off
+
+	SweptBoxColor(color32 startFaceColor, color32 startLineColor,
+	              color32 sweepFaceColor, color32 sweepLineColor,
+	              color32 endFaceColor, color32 endLineColor,
+	              bool zTestStart = true, bool zTestSweep = true, bool zTestEnd = true,
+	              WindingDir wdStart = WD_CW, WindingDir wdSweep = WD_CW, WindingDir wdEnd = WD_CW)
+	    : cStart(startFaceColor, startLineColor, zTestStart, wdStart)
+	    , cSweep(sweepFaceColor, sweepLineColor, zTestSweep, wdSweep)
+	    , cEnd(endFaceColor, endLineColor, zTestEnd, wdEnd)
+	{
+	}
+
+	// clang-format on
+};
+
+// these macros can be used for ShapeColor & SweptBoxColor, e.g. ShapeColor{C_OUTLINE(255, 255, 255, 20)}
+
+#define _COLOR(...) (color32{__VA_ARGS__})
+
+#define C_FACE(...) _COLOR(__VA_ARGS__), _COLOR(0, 0, 0, 0)
+#define C_WIRE(...) _COLOR(0, 0, 0, 0), _COLOR(__VA_ARGS__)
+#define C_OUTLINE(...) \
+	_COLOR(__VA_ARGS__), _COLOR(_COLOR(__VA_ARGS__).r, _COLOR(__VA_ARGS__).g, _COLOR(__VA_ARGS__).b, 255)
+
+// very basic color lerp for very basic needs
+inline color32 color32RgbLerp(color32 a, color32 b, float f)
+{
+	f = clamp(f, 0, 1);
+	return {
+	    RoundFloatToByte(a.r * (1 - f) + b.r * f),
+	    RoundFloatToByte(a.g * (1 - f) + b.g * f),
+	    RoundFloatToByte(a.b * (1 - f) + b.b * f),
+	    RoundFloatToByte(a.a * (1 - f) + b.a * f),
+	};
+}
 
 /*
 * The game uses a CMeshBuilder to create meshes, but we can't use it directly because parts of its implementation
@@ -44,73 +115,64 @@ class MeshBuilderDelegate
 {
 public:
 	// a single line segment
-	void AddLine(const Vector& v1, const Vector& v2, const color32& c);
+	void AddLine(const Vector& v1, const Vector& v2, LineColor c);
 
 	// points is a pair-wise array of separate line segments
-	void AddLines(const Vector* points, int numSegments, const color32& c);
+	void AddLines(const Vector* points, int nSegments, LineColor c);
 
 	// points is an array of points connected by lines
-	void AddLineStrip(const Vector* points, int numPoints, bool loop, const color32& c);
+	void AddLineStrip(const Vector* points, int nPoints, bool loop, LineColor c);
 
 	// simple position indicator
-	void AddCross(const Vector& pos, float radius, const color32& c);
+	void AddCross(const Vector& pos, float radius, LineColor c);
 
-	// a single triangle oriented clockwise
-	void AddTri(const Vector& v1, const Vector& v2, const Vector& v3, const MeshColor& c);
+	void AddTri(const Vector& v1, const Vector& v2, const Vector& v3, ShapeColor c);
 
-	// verts is a 3-pair-wise clockwise oriented array of points
-	void AddTris(const Vector* verts, int numFaces, const MeshColor& c);
+	// verts is a 3-pair-wise array of points
+	void AddTris(const Vector* verts, int nFaces, ShapeColor c);
 
-	// a single quad oriented clockwise
-	void AddQuad(const Vector& v1, const Vector& v2, const Vector& v3, const Vector& v4, const MeshColor& c);
+	void AddQuad(const Vector& v1, const Vector& v2, const Vector& v3, const Vector& v4, ShapeColor c);
 
-	// verts is a 4-pair-wise clockwise oriented array of points
-	void AddQuads(const Vector* verts, int numFaces, const MeshColor& c);
+	// verts is a 4-pair-wise array of points
+	void AddQuads(const Vector* verts, int nFaces, ShapeColor c);
 
-	// verts is a clockwise oriented array of points, polygon is assumed to be simple convex
-	void AddPolygon(const Vector* verts, int numVerts, const MeshColor& c);
+	// verts is a array of points, polygon is assumed to be simple & convex
+	void AddPolygon(const Vector* verts, int nVerts, ShapeColor c);
 
 	// 'pos' is the circle center, an 'ang' of <0,0,0> means the circle normal points towards x+
-	void AddCircle(const Vector& pos, const QAngle& ang, float radius, int numPoints, const MeshColor& c);
+	void AddCircle(const Vector& pos, const QAngle& ang, float radius, int nPoints, ShapeColor c);
 
-	void AddEllipse(const Vector& pos,
-	                const QAngle& ang,
-	                float radiusA,
-	                float radiusB,
-	                int numPoints,
-	                const MeshColor& c);
+	void AddEllipse(const Vector& pos, const QAngle& ang, float radiusA, float radiusB, int nPoints, ShapeColor c);
 
-	void AddBox(const Vector& pos, const Vector& mins, const Vector& maxs, const QAngle& ang, const MeshColor& c);
+	void AddBox(const Vector& pos, const Vector& mins, const Vector& maxs, const QAngle& ang, ShapeColor c);
 
-	// numSubdivisions >= 0, 0 subdivsions is just a cube :)
-	void AddSphere(const Vector& pos, float radius, int numSubdivisions, const MeshColor& c);
+	// nSubdivisions >= 0, 0 subdivsions is just a cube :)
+	void AddSphere(const Vector& pos, float radius, int nSubdivisions, ShapeColor c);
 
 	void AddSweptBox(const Vector& start,
 	                 const Vector& end,
 	                 const Vector& mins,
 	                 const Vector& maxs,
-	                 const MeshColor& cStart,
-	                 const MeshColor& cEnd,
-	                 const MeshColor& cSweep);
+	                 const SweptBoxColor& c);
 
 	// 'pos' is at the center of the cone base, an 'ang' of <0,0,0> means the cone tip will point towards x+
 	void AddCone(const Vector& pos,
 	             const QAngle& ang,
 	             float height,
 	             float radius,
-	             int numCirclePoints,
+	             int nCirclePoints,
 	             bool drawBase,
-	             const MeshColor& c);
+	             ShapeColor c);
 
 	// 'pos' is at the center of the base, an ang of <0,0,0> means the normals are facing x+/x- for top/base
 	void AddCylinder(const Vector& pos,
 	                 const QAngle& ang,
 	                 float height,
 	                 float radius,
-	                 int numCirclePoints,
+	                 int nCirclePoints,
 	                 bool drawCap1,
 	                 bool drawCap2,
-	                 const MeshColor& c);
+	                 ShapeColor c);
 
 	// a 3D arrow with its tail base at 'pos' pointing towards 'target'
 	void AddArrow3D(const Vector& pos,
@@ -119,23 +181,33 @@ public:
 	                float tailRadius,
 	                float tipHeight,
 	                float tipRadius,
-	                int numCirclePoints,
-	                const MeshColor& c);
+	                int nCirclePoints,
+	                ShapeColor c);
 
-	void AddCPolyhedron(const CPolyhedron* polyhedron, const MeshColor& c);
+	void AddCPolyhedron(const CPolyhedron* polyhedron, ShapeColor c);
 
 private:
-	friend class MeshBuilderPro;
-	// internal construction helper methods
-
-	void _AddFaceTriangleStripIndices(size_t vIdx1, size_t vIdx2, size_t numVerts, bool loop, bool mirror = false);
-	void _AddFacePolygonIndices(size_t vertsIdx, int numVerts, bool reverse);
-	void _AddLineStripIndices(size_t vertsIdx, int numVerts, bool loop);
-	void _AddSubdivCube(int numSubdivisions, const MeshColor& c);
-	Vector* _CreateEllipseVerts(const Vector& pos, const QAngle& ang, float radiusA, float radiusB, int numPoints);
-
 	MeshBuilderDelegate() = default;
 	MeshBuilderDelegate(MeshBuilderDelegate&) = delete;
+
+	friend class MeshBuilderPro;
+
+	// internal construction helper methods
+
+	// clang-format off
+
+	void _AddLine(const Vector& v1, const Vector& v2, color32 c, struct MeshVertData& vd);
+	void _AddLineStrip(const Vector* points, int nPoints, bool loop, color32 c, struct MeshVertData& vd);
+	void _AddTris(const Vector* verts, int nFaces, ShapeColor c, struct MeshVertData& vdf, struct MeshVertData& vdl);
+	void _AddPolygon(const Vector* verts, int nVerts, ShapeColor c, struct MeshVertData& vdf, struct MeshVertData& vdl);
+	void _AddFaceTriangleStripIndices(struct MeshVertData& vdf, size_t vIdx1, size_t vIdx2, size_t nVerts, bool loop, bool mirror, WindingDir wd);
+	void _AddFacePolygonIndices(struct MeshVertData& vdf, size_t vertsIdx, int nVerts, WindingDir wd);
+	void _AddLineStripIndices(struct MeshVertData& vdl, size_t vertsIdx, int nVerts, bool loop);
+	void _AddSubdivCube(int nSubdivisions, ShapeColor c, struct MeshVertData& vdf, struct MeshVertData& vdl);
+	void _AddUnitCube(ShapeColor c, struct MeshVertData& vdf, struct MeshVertData& vdl);
+	Vector* _CreateEllipseVerts(const Vector& pos, const QAngle& ang, float radiusA, float radiusB, int nPoints);
+
+	// clang-format on
 };
 
 typedef std::function<void(MeshBuilderDelegate& mb)> MeshCreateFunc;
@@ -145,53 +217,13 @@ typedef std::function<void(MeshBuilderDelegate& mb)> MeshCreateFunc;
 class MeshBuilderPro
 {
 public:
-	DynamicMesh CreateDynamicMesh(const MeshCreateFunc& createFunc, const CreateMeshParams& params = {});
-	StaticMesh CreateStaticMesh(const MeshCreateFunc& createFunc, const CreateMeshParams& params = {});
+	DynamicMesh CreateDynamicMesh(const MeshCreateFunc& createFunc);
+	StaticMesh CreateStaticMesh(const MeshCreateFunc& createFunc);
 };
 
 inline MeshBuilderPro spt_meshBuilder;
 
-#define MB_DYNAMIC(func, ...) spt_meshBuilder.CreateDynamicMesh([&](MeshBuilderDelegate& mb) { func }, {__VA_ARGS__})
-#define MB_STATIC(func, ...) spt_meshBuilder.CreateStaticMesh([&](MeshBuilderDelegate& mb) { func }, {__VA_ARGS__})
+#define MB_DYNAMIC(func) spt_meshBuilder.CreateDynamicMesh([&](MeshBuilderDelegate& mb) { func })
+#define MB_STATIC(func) spt_meshBuilder.CreateStaticMesh([&](MeshBuilderDelegate& mb) { func })
 
 #endif
-
-class CPhysCollide;
-class IPhysicsObject;
-class CBaseEntity;
-
-// collide stuff - returned mesh is an array of tris, consider caching and/or using static meshes
-class CreateCollideFeature : public FeatureWrapper<CreateCollideFeature>
-{
-public:
-	// the verts don't contain pos/rot info, so they'll be at the origin
-	std::unique_ptr<Vector> CreateCollideMesh(const CPhysCollide* pCollide, int& outNumTris);
-
-	// you'll need to transform the verts by applying a matrix you can create with pPhysObj->GetPosition()
-	std::unique_ptr<Vector> CreatePhysObjMesh(const IPhysicsObject* pPhysObj, int& outNumTris);
-
-	// you'll need to transform the verts like described above
-	std::unique_ptr<Vector> CreateEntMesh(const CBaseEntity* pEnt, int& outNumTris);
-
-	// can be used after InitHooks()
-	static IPhysicsObject* GetPhysObj(const CBaseEntity* pEnt);
-
-	// can be used (after InitHooks()) to check if the above functions do anything
-	bool Works();
-
-protected:
-	void InitHooks() override;
-	void UnloadFeature() override;
-
-private:
-	inline static bool cachedOffset = false;
-	inline static int cached_phys_obj_off;
-
-	DECL_MEMBER_THISCALL(int,
-	                     CPhysicsCollision__CreateDebugMesh,
-	                     class IPhysicsCollision*,
-	                     const CPhysCollide* pCollide,
-	                     Vector** outVerts);
-};
-
-inline CreateCollideFeature spt_collideToMesh;
