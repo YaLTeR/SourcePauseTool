@@ -640,77 +640,139 @@ CON_COMMAND(_y_spt_getangles, "Gets the view angles of the player.")
 	Warning("View Angle (x, y, z): %f %f %f\n", va.x, va.y, va.z);
 }
 
-const wchar* FLAGS[] = {L"FL_ONGROUND",
-                        L"FL_DUCKING",
-                        L"FL_WATERJUMP",
-                        L"FL_ONTRAIN",
-                        L"FL_INRAIN",
-                        L"FL_FROZEN",
-                        L"FL_ATCONTROLS",
-                        L"FL_CLIENT",
-                        L"FL_FAKECLIENT",
-                        L"FL_INWATER",
-                        L"FL_FLY",
-                        L"FL_SWIM",
-                        L"FL_CONVEYOR",
-                        L"FL_NPC",
-                        L"FL_GODMODE",
-                        L"FL_NOTARGET",
-                        L"FL_AIMTARGET",
-                        L"FL_PARTIALGROUND",
-                        L"FL_STATICPROP",
-                        L"FL_GRAPHED",
-                        L"FL_GRENADE",
-                        L"FL_STEPMOVEMENT",
-                        L"FL_DONTTOUCH",
-                        L"FL_BASEVELOCITY",
-                        L"FL_WORLDBRUSH",
-                        L"FL_OBJECT",
-                        L"FL_KILLME",
-                        L"FL_ONFIRE",
-                        L"FL_DISSOLVING",
-                        L"FL_TRANSRAGDOLL",
-                        L"FL_UNBLOCKABLE_BY_PLAYER"};
+#ifdef SPT_HUD_ENABLED
 
-const wchar* MOVETYPE_FLAGS[] = {L"MOVETYPE_NONE",
-                                 L"MOVETYPE_ISOMETRIC",
-                                 L"MOVETYPE_WALK",
-                                 L"MOVETYPE_STEP",
-                                 L"MOVETYPE_FLY",
-                                 L"MOVETYPE_FLYGRAVITY",
-                                 L"MOVETYPE_VPHYSICS",
-                                 L"MOVETYPE_PUSH",
-                                 L"MOVETYPE_NOCLIP",
-                                 L"MOVETYPE_LADDER",
-                                 L"MOVETYPE_OBSERVER",
-                                 L"MOVETYPE_CUSTOM"};
+static uint32_t hud_flags_filter = 0xffffffff;
 
-const wchar* MOVECOLLIDE_FLAGS[] = {L"MOVECOLLIDE_DEFAULT",
-                                    L"MOVECOLLIDE_FLY_BOUNCE",
-                                    L"MOVECOLLIDE_FLY_CUSTOM",
-                                    L"MOVECOLLIDE_FLY_SLIDE"};
+CON_COMMAND(y_spt_hud_flags_filter, "Sets the filter for y_spt_hud_flags.")
+{
+	// char version of flags
+	const char* flags[] = {
+	    "ONGROUND",
+	    "DUCKING",
+	    "WATERJUMP",
+	    "ONTRAIN",
+	    "INRAIN",
+	    "FROZEN",
+	    "ATCONTROLS",
+	    "CLIENT",
+	    "FAKECLIENT",
+	    "INWATER",
+	    "FLY",
+	    "SWIM",
+	    "CONVEYOR",
+	    "NPC",
+	    "GODMODE",
+	    "NOTARGET",
+	    "AIMTARGET",
+	    "PARTIALGROUND",
+	    "STATICPROP",
+	    "GRAPHED",
+	    "GRENADE",
+	    "STEPMOVEMENT",
+	    "DONTTOUCH",
+	    "BASEVELOCITY",
+	    "WORLDBRUSH",
+	    "OBJECT",
+	    "KILLME",
+	    "ONFIRE",
+	    "DISSOLVING",
+	    "TRANSRAGDOLL",
+	    "UNBLOCKABLE_BY_PLAYER",
+	};
 
-const wchar* COLLISION_GROUPS[] = {L"COLLISION_GROUP_NONE",
-                                   L"COLLISION_GROUP_DEBRIS",
-                                   L"COLLISION_GROUP_DEBRIS_TRIGGER",
-                                   L"COLLISION_GROUP_INTERACTIVE_DEBRIS",
-                                   L"COLLISION_GROUP_INTERACTIVE",
-                                   L"COLLISION_GROUP_PLAYER",
-                                   L"COLLISION_GROUP_BREAKABLE_GLASS,",
-                                   L"COLLISION_GROUP_VEHICLE",
-                                   L"COLLISION_GROUP_PLAYER_MOVEMENT",
-                                   L"COLLISION_GROUP_NPC",
-                                   L"COLLISION_GROUP_IN_VEHICLE",
-                                   L"COLLISION_GROUP_WEAPON",
-                                   L"COLLISION_GROUP_VEHICLE_CLIP",
-                                   L"COLLISION_GROUP_PROJECTILE",
-                                   L"COLLISION_GROUP_DOOR_BLOCKER",
-                                   L"COLLISION_GROUP_PASSABLE_DOOR",
-                                   L"COLLISION_GROUP_DISSOLVING",
-                                   L"COLLISION_GROUP_PUSHAWAY",
-                                   L"COLLISION_GROUP_NPC_ACTOR",
-                                   L"COLLISION_GROUP_NPC_SCRIPTED",
-                                   L"LAST_SHARED_COLLISION_GROUP"};
+	if (args.ArgC() < 2)
+	{
+		Msg("Flags filter resets.\n");
+		hud_flags_filter = 0xffffffff;
+		Msg("All flags:\n");
+		for (int i = 0; i < ARRAYSIZE(flags); i++)
+		{
+			Msg("    %s\n", flags[i]);
+		}
+		return;
+	}
+
+	hud_flags_filter = 0;
+	for (int i = 1; i < args.ArgC(); i++)
+	{
+		bool found = false;
+		for (int j = 0; j < ARRAYSIZE(flags); j++)
+		{
+			if (Q_strcasecmp(flags[j], args.Arg(i)) == 0)
+			{
+				hud_flags_filter |= (1 << j);
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+			Msg("Unknown flag: %s\n", args.Arg(i));
+	}
+}
+
+static const wchar* FLAGS[] = {
+    L"FL_ONGROUND",
+    L"FL_DUCKING",
+    L"FL_WATERJUMP",
+    L"FL_ONTRAIN",
+    L"FL_INRAIN",
+    L"FL_FROZEN",
+    L"FL_ATCONTROLS",
+    L"FL_CLIENT",
+    L"FL_FAKECLIENT",
+    L"FL_INWATER",
+    L"FL_FLY",
+    L"FL_SWIM",
+    L"FL_CONVEYOR",
+    L"FL_NPC",
+    L"FL_GODMODE",
+    L"FL_NOTARGET",
+    L"FL_AIMTARGET",
+    L"FL_PARTIALGROUND",
+    L"FL_STATICPROP",
+    L"FL_GRAPHED",
+    L"FL_GRENADE",
+    L"FL_STEPMOVEMENT",
+    L"FL_DONTTOUCH",
+    L"FL_BASEVELOCITY",
+    L"FL_WORLDBRUSH",
+    L"FL_OBJECT",
+    L"FL_KILLME",
+    L"FL_ONFIRE",
+    L"FL_DISSOLVING",
+    L"FL_TRANSRAGDOLL",
+    L"FL_UNBLOCKABLE_BY_PLAYER",
+};
+
+static const wchar* MOVETYPE_FLAGS[] = {
+    L"NONE",
+    L"ISOMETRIC",
+    L"WALK",
+    L"STEP",
+    L"FLY",
+    L"FLYGRAVITY",
+    L"VPHYSICS",
+    L"PUSH",
+    L"NOCLIP",
+    L"LADDER",
+    L"OBSERVER",
+    L"CUSTOM",
+};
+
+static const wchar* MOVECOLLIDE_FLAGS[] = {
+    L"DEFAULT",
+    L"FLY_BOUNCE",
+    L"FLY_CUSTOM",
+    L"FLY_SLIDE",
+};
+
+static const wchar* COLLISION_GROUPS[] = {
+    L"NONE",          L"DEBRIS",           L"DEBRIS_TRIGGER", L"INTERACTIVE_DEBRIS", L"INTERACTIVE",
+    L"PLAYER",        L"BREAKABLE_GLASS,", L"VEHICLE",        L"PLAYER_MOVEMENT",    L"NPC",
+    L"IN_VEHICLE",    L"WEAPON",           L"VEHICLE_CLIP",   L"PROJECTILE",         L"DOOR_BLOCKER",
+    L"PASSABLE_DOOR", L"DISSOLVING",       L"PUSHAWAY",       L"NPC_ACTOR",          L"NPC_SCRIPTED",
+};
 
 #define DRAW_FLAGS(name, namesArray, flags, mutuallyExclusive) \
 	{ \
@@ -727,8 +789,12 @@ const wchar* COLLISION_GROUPS[] = {L"COLLISION_GROUP_NONE",
 		             fontTall); \
 	}
 
-#ifdef SPT_HUD_ENABLED
-void DrawFlagsHud(bool mutuallyExclusiveFlags, const wchar* hudName, const wchar** nameArray, uint count, uint flags)
+void DrawFlagsHud(const wchar* hudName,
+                  const wchar** nameArray,
+                  uint count,
+                  uint flags,
+                  bool mutuallyExclusiveFlags = true,
+                  uint32_t filter = 0)
 {
 	uint mask = (1 << count) - 1;
 	for (uint u = 0; u < count; ++u)
@@ -739,7 +805,7 @@ void DrawFlagsHud(bool mutuallyExclusiveFlags, const wchar* hudName, const wchar
 			{
 				spt_hud.DrawTopHudElement(L"%s: %s", hudName, nameArray[u]);
 			}
-			else if (!mutuallyExclusiveFlags)
+			else if (!mutuallyExclusiveFlags && (filter & (1 << u)))
 			{
 				spt_hud.DrawTopHudElement(L"%s: %d", nameArray[u], (flags & (1 << u)) != 0);
 			}
@@ -874,14 +940,17 @@ void PlayerIOFeature::LoadFeature()
 
 	if (m_fFlags.Found())
 	{
-		AddHudCallback(
+		bool hasHudFlags = AddHudCallback(
 		    "fl_",
 		    [this]()
 		    {
 			    int flags = spt_playerio.m_fFlags.GetValue();
-			    DrawFlagsHud(false, NULL, FLAGS, ARRAYSIZE(FLAGS), flags);
+			    DrawFlagsHud(NULL, FLAGS, ARRAYSIZE(FLAGS), flags, false, hud_flags_filter);
 		    },
 		    y_spt_hud_flags);
+
+		if (hasHudFlags)
+			InitCommand(y_spt_hud_flags_filter);
 	}
 
 	if (m_MoveType.Found())
@@ -891,7 +960,7 @@ void PlayerIOFeature::LoadFeature()
 		    [this]()
 		    {
 			    int flags = spt_playerio.m_MoveType.GetValue();
-			    DrawFlagsHud(true, L"Move type", MOVETYPE_FLAGS, ARRAYSIZE(MOVETYPE_FLAGS), flags);
+			    DrawFlagsHud(L"Move type", MOVETYPE_FLAGS, ARRAYSIZE(MOVETYPE_FLAGS), flags);
 		    },
 		    y_spt_hud_moveflags);
 	}
@@ -903,11 +972,7 @@ void PlayerIOFeature::LoadFeature()
 		    [this]()
 		    {
 			    int flags = spt_playerio.m_CollisionGroup.GetValue();
-			    DrawFlagsHud(true,
-			                 L"Collision group",
-			                 COLLISION_GROUPS,
-			                 ARRAYSIZE(COLLISION_GROUPS),
-			                 flags);
+			    DrawFlagsHud(L"Collision group", COLLISION_GROUPS, ARRAYSIZE(COLLISION_GROUPS), flags);
 		    },
 		    y_spt_hud_collisionflags);
 	}
@@ -919,7 +984,7 @@ void PlayerIOFeature::LoadFeature()
 		    [this]()
 		    {
 			    int flags = spt_playerio.m_MoveCollide.GetValue();
-			    DrawFlagsHud(true, L"Move collide", MOVECOLLIDE_FLAGS, ARRAYSIZE(MOVECOLLIDE_FLAGS), flags);
+			    DrawFlagsHud(L"Move collide", MOVECOLLIDE_FLAGS, ARRAYSIZE(MOVECOLLIDE_FLAGS), flags);
 		    },
 		    y_spt_hud_movecollideflags);
 	}
