@@ -40,7 +40,7 @@ private:
 	DECL_HOOK_THISCALL(const char*, CDemoFile__ReadConsoleCommand, void*);
 	uintptr_t ORIG_Record = 0;
 	void OnFrame();
-	void OnSignonStateSignal(void* thisptr, int edx, int state);
+	void OnSignonStateSignal(void* thisptr, int state);
 };
 
 extern DemoStuff spt_demostuff;

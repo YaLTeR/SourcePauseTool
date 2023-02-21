@@ -238,7 +238,7 @@ IMPL_HOOK_THISCALL(DemoStuff, void, StopRecording, void*)
 	}
 }
 
-void DemoStuff::OnSignonStateSignal(void* thisptr, int edx, int state)
+void DemoStuff::OnSignonStateSignal(void* thisptr, int state)
 {
 	// This hook only makes sense if StopRecording is also properly hooked
 	if (spt_demostuff.ORIG_StopRecording && spt_demostuff.isAutoRecordingDemo)
@@ -353,6 +353,7 @@ void DemoStuff::LoadFeature()
 	{
 		InitCommand(y_spt_record);
 		InitCommand(y_spt_record_stop);
+		SetSignonStateSignal.Connect(this, &DemoStuff::OnSignonStateSignal);
 	}
 
 	if (ORIG_CDemoFile__ReadConsoleCommand)
