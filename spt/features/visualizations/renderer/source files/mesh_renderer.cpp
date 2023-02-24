@@ -469,7 +469,7 @@ void MeshRendererFeature::OnDrawTranslucents(CRendering3dView* renderingView)
 
 		          // ah shoot these are both part of the same unit (so the camDist is the same), just pick one
 		          if (&unitA == &unitB)
-			          return a.second;
+			          return a.second < b.second;
 
 		          return a.first->camDistSqr > b.first->camDistSqr;
 	          });
