@@ -7,6 +7,7 @@
 #include "spt\features\playerio.hpp"
 #include "spt\features\overlay.hpp"
 #include "spt\utils\command.hpp"
+#include "spt\utils\ent_utils.hpp"
 #include "spt\utils\interfaces.hpp"
 #include "spt\utils\signals.hpp"
 #include "spt\cvars.hpp"
@@ -42,6 +43,14 @@ public:
 		ANGLES_Z,
 		FOV
 	};
+
+	struct DriveEntInfo
+	{
+		int entIndex = 0;
+		Vector posOffsets = Vector();
+		QAngle angOffsets = QAngle();
+	};
+
 	struct CameraInfo
 	{
 		Vector origin = Vector();
@@ -56,13 +65,18 @@ public:
 			return s.str();
 		}
 	};
+
+	// Original player camera
+	CameraInfo playerCam;
+	// Player camera after override
 	CameraInfo currentCam;
+
+	DriveEntInfo driveEntInfo;
 	std::map<int, CameraInfo> keyframes;
 
 	bool CanOverrideView() const;
 	bool CanInput() const;
 	void RecomputeInterpPath();
-	static CameraInfo GetCurrentView();
 
 protected:
 	virtual bool ShouldLoadFeature() override;
@@ -92,10 +106,11 @@ private:
 #if defined(SSDK2013)
 	DECL_HOOK_THISCALL(bool, C_BasePlayer__ShouldDrawThisPlayer, void*);
 #endif
-
+	bool ShouldDrawPlayerModel();
 	void OverrideView(CViewSetup* viewSetup);
 	void HandleDriveMode(bool active);
 	void HandleInput(bool active);
+	void HandleDriveEntityMode(bool active);
 	bool ProcessInputKey(ButtonCode_t keyCode, bool state);
 	void HandleCinematicMode(bool active);
 	static std::vector<Vector> CameraInfoToPoints(float* x, CameraInfo* y, CameraInfoParameter param);
@@ -111,6 +126,7 @@ private:
 	bool loadingSuccessful = false;
 
 	bool timeOffsetRefreshRequested = true;
+	bool driveEntExists = false;
 	int screenHeight = 0;
 	int screenWidth = 0;
 	int oldCursor[2] = {0, 0};
@@ -126,7 +142,7 @@ ConVar y_spt_cam_control(
     "y_spt_cam_control",
     "0",
     FCVAR_CHEAT,
-    "y_spt_cam_control <type> - Changes the camera control type.\n"
+    "Changes the camera control type.\n"
     "0 = Default\n"
     "1 = Drive mode\n"
     "    Camera is separated and can be controlled by user input.\n"
@@ -135,9 +151,11 @@ ConVar y_spt_cam_control(
     "    Demo playback: Hold right mouse button to enable drive mode.\n"
     "2 = Cinematic mode\n"
     "    Camera is controlled by predefined path.\n"
-    "    See commands y_spt_cam_path_");
+    "    See commands y_spt_cam_path_\n"
+    "3 = Entity drive mode\n"
+    "    Sets the camera position to an entity. Use y_spt_cam_drive_ent to set the entity.");
 ConVar y_spt_cam_drive("y_spt_cam_drive", "1", FCVAR_CHEAT, "Enables or disables camera drive mode in-game.");
-ConVar y_spt_cam_drive_speed("y_spt_cam_drive_speed", "200", 0, "Speed for moving in camera drive mode");
+ConVar y_spt_cam_drive_speed("y_spt_cam_drive_speed", "200", 0, "Speed for moving in camera drive mode.");
 ConVar y_spt_cam_path_interp("y_spt_cam_path_interp",
                              "1",
                              0,
@@ -156,11 +174,11 @@ ConVar y_spt_mousemove(
     0,
     "Enables or disables reacting to mouse movement (for view angle changing or for movement using +strafe).");
 
-CON_COMMAND(y_spt_cam_setpos, "y_spt_cam_setpos <x> <y> <z> - Sets the camera position. (requires camera drive mode)")
+CON_COMMAND(y_spt_cam_setpos, "Sets the camera position. (requires camera drive mode)")
 {
 	if (args.ArgC() != 4)
 	{
-		Msg("Usage: y_spt_cam_setpos <x> <y> <z>\n");
+		Msg("Usage: %s <x> <y> <z>\n", args.Arg(0));
 		return;
 	}
 	if (y_spt_cam_control.GetInt() != 1 || !spt_camera.CanOverrideView())
@@ -176,12 +194,11 @@ CON_COMMAND(y_spt_cam_setpos, "y_spt_cam_setpos <x> <y> <z> - Sets the camera po
 	spt_camera.currentCam.origin = pos;
 }
 
-CON_COMMAND(y_spt_cam_setang,
-            "y_spt_cam_setang <pitch> <yaw> [roll] - Sets the camera angles. (requires camera drive mode)")
+CON_COMMAND(y_spt_cam_setang, "Sets the camera angles. (requires camera drive mode)")
 {
 	if (args.ArgC() != 3 && args.ArgC() != 4)
 	{
-		Msg("Usage: y_spt_cam_setang <pitch> <yaw> [roll]\n");
+		Msg("Usage: %s <pitch> <yaw> [roll]\n", args.Arg(0));
 		return;
 	}
 	if (y_spt_cam_control.GetInt() != 1 || !spt_camera.CanOverrideView())
@@ -197,8 +214,7 @@ CON_COMMAND(y_spt_cam_setang,
 	spt_camera.currentCam.angles = ang;
 }
 
-CON_COMMAND(y_spt_cam_path_setkf,
-            "y_spt_cam_path_setkf [frame] [x] [y] [z] [yaw] [pitch] [roll] [fov]- Sets a camera path keyframe.")
+CON_COMMAND(y_spt_cam_path_setkf, "Sets a camera path keyframe.")
 {
 	int argc = args.ArgC();
 	Camera::CameraInfo info;
@@ -221,7 +237,7 @@ CON_COMMAND(y_spt_cam_path_setkf,
 			Msg("Cannot set keyframe in Cinematic mode.");
 			return;
 		default:
-			info = Camera::GetCurrentView();
+			info = spt_camera.currentCam;
 		}
 	}
 	else if (argc == 9)
@@ -242,7 +258,7 @@ CON_COMMAND(y_spt_cam_path_setkf,
 	}
 	else
 	{
-		Msg("Usage: y_spt_cam_path_setkf [frame] [x] [y] [z] [yaw] [pitch] [roll] [fov]\n");
+		Msg("Usage: %s [frame] [x] [y] [z] [yaw] [pitch] [roll] [fov]\n", args.Arg(0));
 		return;
 	}
 	spt_camera.keyframes[tick] = info;
@@ -250,7 +266,7 @@ CON_COMMAND(y_spt_cam_path_setkf,
 	spt_camera.RecomputeInterpPath();
 }
 
-CON_COMMAND(y_spt_cam_path_showkfs, "y_spt_cam_path_showkfs - Prints all keyframes.")
+CON_COMMAND(y_spt_cam_path_showkfs, "Prints all keyframes.")
 {
 	for (const auto& kv : spt_camera.keyframes)
 	{
@@ -258,7 +274,7 @@ CON_COMMAND(y_spt_cam_path_showkfs, "y_spt_cam_path_showkfs - Prints all keyfram
 	}
 }
 
-CON_COMMAND(y_spt_cam_path_getkfs, "y_spt_cam_path_getkfs - Prints all keyframes in commands.")
+CON_COMMAND(y_spt_cam_path_getkfs, "Prints all keyframes in commands.")
 {
 	for (const auto& kv : spt_camera.keyframes)
 	{
@@ -277,7 +293,7 @@ CON_COMMAND(y_spt_cam_path_getkfs, "y_spt_cam_path_getkfs - Prints all keyframes
 
 #ifdef SSDK2013
 // autocomplete crashes on stemapipe :((
-CON_COMMAND(y_spt_cam_path_rmkf, "y_spt_cam_path_rmkf <tick> - Removes a keyframe.")
+CON_COMMAND(y_spt_cam_path_rmkf, "Removes a keyframe.")
 #else
 static int y_spt_cam_path_rmkf_CompletionFunc(
     const char* partial,
@@ -292,15 +308,12 @@ static int y_spt_cam_path_rmkf_CompletionFunc(
 	return y_spt_cam_path_rmkf_Complete.AutoCompletionFunc(partial, commands);
 }
 
-CON_COMMAND_F_COMPLETION(y_spt_cam_path_rmkf,
-                         "y_spt_cam_path_rmkf <tick> - Removes a keyframe.",
-                         0,
-                         y_spt_cam_path_rmkf_CompletionFunc)
+CON_COMMAND_F_COMPLETION(y_spt_cam_path_rmkf, "Removes a keyframe.", 0, y_spt_cam_path_rmkf_CompletionFunc)
 #endif
 {
 	if (args.ArgC() != 2)
 	{
-		Msg("Usage: y_spt_cam_path_rmkf <tick>\n");
+		Msg("Usage: %s <tick>\n", args.Arg(0));
 		return;
 	}
 
@@ -315,11 +328,35 @@ CON_COMMAND_F_COMPLETION(y_spt_cam_path_rmkf,
 		Msg("Keyframe at frame %d does not exist.\n", tick);
 }
 
-CON_COMMAND(y_spt_cam_path_clear, "y_spt_cam_path_clear - Removes all keyframes.")
+CON_COMMAND(y_spt_cam_path_clear, "Removes all keyframes.")
 {
 	spt_camera.keyframes.clear();
 	spt_camera.RecomputeInterpPath();
 	Msg("Removed all keyframes.\n");
+}
+
+CON_COMMAND(y_spt_cam_drive_ent, "Sets the drive entity index with relative position and angle offsets.")
+{
+	int argVal = args.ArgC();
+
+	if (argVal != 2 && argVal != 5 && argVal != 8)
+	{
+		Msg("Usage: %s <index> [position] [angles]\n", args.Arg(0));
+		return;
+	}
+	spt_camera.driveEntInfo.entIndex = atoi(args.Arg(1));
+
+	if (argVal >= 5)
+		spt_camera.driveEntInfo.posOffsets =
+		    Vector(std::stof(args.Arg(2)), std::stof(args.Arg(3)), std::stof(args.Arg(4)));
+	else
+		spt_camera.driveEntInfo.posOffsets = Vector(0);
+
+	if (argVal == 8)
+		spt_camera.driveEntInfo.angOffsets =
+		    QAngle(std::stof(args.Arg(5)), std::stof(args.Arg(6)), std::stof(args.Arg(7)));
+	else
+		spt_camera.driveEntInfo.angOffsets = QAngle(0, 0, 0);
 }
 
 namespace patterns
@@ -333,13 +370,6 @@ namespace patterns
 	         "55 8B EC 83 EC 58 E8 ?? ?? ?? ?? 85 C0 0F 84 ?? ?? ?? ?? 8B 10 56 8B 75 ?? 8B C8",
 	         "7197370",
 	         "55 8B EC 83 EC 58 E8 ?? ?? ?? ?? 85 C0 0F 84 ?? ?? ?? ?? 8B 10 8B C8 56");
-	PATTERNS(ClientModeShared__CreateMove,
-	         "5135",
-	         "E8 ?? ?? ?? ?? 85 C0 75 ?? B0 01 C2 08 00 8B 4C 24 ?? D9 44 24 ?? 8B 10",
-	         "1910503",
-	         "55 8B EC E8 ?? ?? ?? ?? 85 C0 75 ?? B0 01 5D C2 08 00 8B 4D ?? 8B 10",
-	         "7197370",
-	         "55 8B EC E8 ?? ?? ?? ?? 8B C8 85 C9 75 ?? B0 01 5D C2 08 00 8B 01");
 	PATTERNS(CInputSystem__PostButtonPressedEvent,
 	         "5135",
 	         "8B D1 0F B6 42 ??",
@@ -401,16 +431,6 @@ bool Camera::CanInput() const
 	return canInput && !interfaces::engine_vgui->IsGameUIVisible();
 }
 
-Camera::CameraInfo Camera::GetCurrentView()
-{
-	CameraInfo info;
-	info.origin = spt_playerio.GetPlayerEyePos();
-	QAngle ang = utils::GetPlayerEyeAngles();
-	info.angles = QAngle(ang.x, ang.y, 0);
-	info.fov = spt_camera.currentCam.fov;
-	return info;
-}
-
 void Camera::RequestTimeOffsetRefresh()
 {
 	timeOffsetRefreshRequested = true;
@@ -418,6 +438,15 @@ void Camera::RequestTimeOffsetRefresh()
 
 void Camera::OverrideView(CViewSetup* viewSetup)
 {
+	if (_y_spt_force_fov.GetBool())
+	{
+		viewSetup->fov = currentCam.fov = _y_spt_force_fov.GetFloat();
+	}
+
+	playerCam.origin = viewSetup->origin;
+	playerCam.angles = viewSetup->angles;
+	playerCam.fov = viewSetup->fov;
+
 	static int prevInterpType = y_spt_cam_path_interp.GetInt();
 	if (prevInterpType != y_spt_cam_path_interp.GetInt())
 	{
@@ -429,18 +458,21 @@ void Camera::OverrideView(CViewSetup* viewSetup)
 	screenHeight = viewSetup->height;
 
 	int controlType = CanOverrideView() ? y_spt_cam_control.GetInt() : 0;
-	if (_y_spt_force_fov.GetBool())
-		currentCam.fov = _y_spt_force_fov.GetFloat();
-	else
-		currentCam.fov = viewSetup->fov;
+
 	HandleDriveMode(controlType == 1);
 	HandleCinematicMode(controlType == 2 && spt_demostuff.Demo_IsPlayingBack());
-	if (controlType == 1 || controlType == 2)
+	HandleDriveEntityMode(controlType == 3);
+
+	viewSetup->fov = currentCam.fov;
+	if (controlType >= 1 && controlType <= 3)
 	{
 		viewSetup->origin = currentCam.origin;
 		viewSetup->angles = currentCam.angles;
 	}
-	viewSetup->fov = currentCam.fov;
+	else
+	{
+		currentCam = playerCam;
+	}
 }
 
 void Camera::HandleDriveMode(bool active)
@@ -456,7 +488,7 @@ void Camera::HandleDriveMode(bool active)
 		else
 		{
 			// On drive mode start
-			currentCam = GetCurrentView();
+			currentCam.angles.z = 0;
 		}
 	}
 	HandleInput(active && CanInput());
@@ -568,8 +600,9 @@ void Camera::HandleInput(bool active)
 		interfaces::vgui_input->SetCursorPos(oldCursor[0], oldCursor[1]);
 
 		// Convert to pitch/yaw
-		float pitch = (float)dy * 0.022f * sensitivity->GetFloat();
-		float yaw = -(float)dx * 0.022f * sensitivity->GetFloat();
+		float sens = sensitivity ? sensitivity->GetFloat() : 3.0f;
+		float pitch = (float)dy * 0.022f * sens;
+		float yaw = -(float)dx * 0.022f * sens;
 
 		// Apply mouse
 		QAngle angles = currentCam.angles;
@@ -596,6 +629,32 @@ void Camera::HandleInput(bool active)
 		currentCam.origin += up * movement.z;
 	}
 	inputActive = active;
+}
+
+void Camera::HandleDriveEntityMode(bool active)
+{
+	if (!active)
+		return;
+
+	IClientEntity* ent = utils::GetClientEntity(driveEntInfo.entIndex);
+	driveEntExists = !!(ent);
+	if (!driveEntExists)
+	{
+		currentCam = playerCam;
+		return;
+	}
+
+	const QAngle& entAngles = ent->GetAbsAngles();
+	Vector forward, right, up;
+	AngleVectors(entAngles, &forward, &right, &up);
+	currentCam.origin = ent->GetAbsOrigin() + driveEntInfo.posOffsets.x * forward
+	                    - driveEntInfo.posOffsets.y * right + driveEntInfo.posOffsets.z * up;
+
+	matrix3x4_t rotateMatrix;
+	AngleMatrix(entAngles, rotateMatrix);
+	QAngle localAng = TransformAnglesToLocalSpace(entAngles, rotateMatrix);
+	localAng += driveEntInfo.angOffsets;
+	currentCam.angles = TransformAnglesToWorldSpace(localAng, rotateMatrix);
 }
 
 // Camera path interp code from SourceAutoRecord
@@ -925,16 +984,13 @@ void Camera::RecomputeInterpPath()
 void Camera::RecomputeInterpPath() {}
 #endif
 
-IMPL_HOOK_THISCALL(Camera, void, ClientModeShared__OverrideView, void*, CViewSetup* viewSetup)
-{
-	spt_camera.ORIG_ClientModeShared__OverrideView(thisptr, viewSetup);
-	spt_camera.OverrideView(viewSetup);
-}
-
-static bool ShouldDrawPlayerModel()
+bool Camera::ShouldDrawPlayerModel()
 {
 	int controlType = y_spt_cam_control.GetInt();
-	if (!spt_camera.CanOverrideView() || (controlType != 1 && controlType != 2))
+	if (!CanOverrideView())
+		return false;
+
+	if (controlType != 1 && controlType != 2 && !(controlType == 3 && driveEntExists))
 		return false;
 
 #ifdef SPT_OVERLAY_ENABLED
@@ -950,14 +1006,33 @@ static bool ShouldDrawPlayerModel()
 	return true;
 }
 
+IMPL_HOOK_THISCALL(Camera, void, ClientModeShared__OverrideView, void*, CViewSetup* viewSetup)
+{
+	spt_camera.ORIG_ClientModeShared__OverrideView(thisptr, viewSetup);
+	spt_camera.OverrideView(viewSetup);
+}
+
 IMPL_HOOK_THISCALL(Camera, bool, C_BasePlayer__ShouldDrawLocalPlayer, void*)
 {
-	if (ShouldDrawPlayerModel())
+	if (spt_camera.ShouldDrawPlayerModel())
 	{
 		return true;
 	}
 	return spt_camera.ORIG_C_BasePlayer__ShouldDrawLocalPlayer(thisptr);
 }
+
+#if defined(SSDK2013)
+IMPL_HOOK_THISCALL(Camera, bool, C_BasePlayer__ShouldDrawThisPlayer, void*)
+{
+	// ShouldDrawLocalPlayer only decides draw view model or weapon model in steampipe
+	// We need ShouldDrawThisPlayer to make player model draw
+	if (spt_camera.ShouldDrawPlayerModel())
+	{
+		return true;
+	}
+	return spt_camera.ORIG_C_BasePlayer__ShouldDrawThisPlayer(thisptr);
+}
+#endif
 
 IMPL_HOOK_THISCALL(Camera,
                    void,
@@ -989,19 +1064,6 @@ IMPL_HOOK_THISCALL(Camera,
 	// Still call the original function so key won't get stuck.
 	return spt_camera.ORIG_CInputSystem__PostButtonReleasedEvent(thisptr, nType, nTick, scanCode, virtualCode);
 }
-
-#if defined(SSDK2013)
-IMPL_HOOK_THISCALL(Camera, bool, C_BasePlayer__ShouldDrawThisPlayer, void*)
-{
-	// ShouldDrawLocalPlayer only decides draw view model or weapon model in steampipe
-	// We need ShouldDrawThisPlayer to make player model draw
-	if (ShouldDrawPlayerModel())
-	{
-		return true;
-	}
-	return spt_camera.ORIG_C_BasePlayer__ShouldDrawThisPlayer(thisptr);
-}
-#endif
 
 IMPL_HOOK_THISCALL(Camera, void, CInput__MouseMove, void*, void* cmd)
 {
@@ -1040,6 +1102,7 @@ void Camera::LoadFeature()
 		InitConcommandBase(y_spt_cam_drive);
 		InitConcommandBase(y_spt_cam_drive_speed);
 		InitConcommandBase(_y_spt_force_fov);
+		InitCommand(y_spt_cam_drive_ent);
 		InitCommand(y_spt_cam_setpos);
 		InitCommand(y_spt_cam_setang);
 
