@@ -15,7 +15,7 @@ class PauseFeature : public FeatureWrapper<PauseFeature>
 public:
 protected:
 	virtual void InitHooks() override;
-
+	virtual void PreHook() override;
 	virtual void LoadFeature() override;
 
 private:
@@ -53,13 +53,10 @@ void PauseFeature::InitHooks()
 	FIND_PATTERN(engine, SpawnPlayer);
 }
 
-void PauseFeature::LoadFeature()
+void PauseFeature::PreHook()
 {
 	pM_bLoadgame = nullptr;
 	pGameServer = nullptr;
-	SV_ActivateServerSignal.Connect(this, &PauseFeature::SV_ActivateServer);
-	SetPausedSignal.Connect(this, &PauseFeature::SetPaused);
-	FinishRestoreSignal.Connect(this, &PauseFeature::FinishRestore);
 
 	if (ORIG_SpawnPlayer)
 	{
@@ -101,7 +98,8 @@ void PauseFeature::LoadFeature()
 		switch (ptnNumber)
 		{
 		case 3: // 2707
-			pGameServer = (*(void**)((int)spt_generic.ORIG_SV_ActivateServer + 223));
+			// TODO: check if HL2 2707 has offset 223, because HLS 2707 (and other OE versions) got 222
+			pGameServer = (*(void**)((int)spt_generic.ORIG_SV_ActivateServer + 222));
 			break;
 		}
 
@@ -109,6 +107,13 @@ void PauseFeature::LoadFeature()
 		DevMsg("pGameServer is %p.\n", pGameServer);
 #endif
 	}
+}
+
+void PauseFeature::LoadFeature()
+{
+	SV_ActivateServerSignal.Connect(this, &PauseFeature::SV_ActivateServer);
+	SetPausedSignal.Connect(this, &PauseFeature::SetPaused);
+	FinishRestoreSignal.Connect(this, &PauseFeature::FinishRestore);
 
 	bool pause1_works = spt_generic.ORIG_FinishRestore;
 	bool pause2_works = ORIG_SpawnPlayer && spt_generic.ORIG_SV_ActivateServer;
