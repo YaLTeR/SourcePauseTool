@@ -1,33 +1,30 @@
 #include "stdafx.hpp"
-#include "..\feature.hpp"
-#include "convar.hpp"
-#include "..\utils\math.hpp"
-#include "..\utils\command.hpp"
-#include "interfaces.hpp"
+
+#include <algorithm>
 #include <string>
 
-class CvarStuff : public FeatureWrapper<CvarStuff>
+#include "cvar.hpp"
+#include "..\utils\convar.hpp"
+#include "..\utils\math.hpp"
+#include "interfaces.hpp"
+
+namespace patterns
 {
-public:
-	void UpdateCommandList();
-	std::vector<std::string> dev_cvars;
+	PATTERNS(RebuildCompletionList, "4044", "B8 ?? ?? ?? ?? E8 ?? ?? ?? ?? 53 55 56")
+}
 
-protected:
-	virtual void LoadFeature() override;
-};
-
-static CvarStuff spt_cvarstuff;
+CvarStuff spt_cvarstuff;
 
 #ifdef SSDK2013
 CON_COMMAND(y_spt_cvar, "CVar manipulation.")
 #else
-static int y_spt_cvar_CompletionFunc(const char* partial,
-                                     char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+static int DevCvarCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 {
-	AutoCompleteList y_spt_cvar_Complete("y_spt_cvar", spt_cvarstuff.dev_cvars);
-	return y_spt_cvar_Complete.AutoCompletionFunc(partial, commands);
+	AutoCompleteList devCvarComplete(spt_cvarstuff.dev_cvars);
+	return devCvarComplete.AutoCompletionFunc(partial, commands);
 }
-CON_COMMAND_F_COMPLETION(y_spt_cvar, "CVar manipulation.", 0, y_spt_cvar_CompletionFunc)
+
+CON_COMMAND_F_COMPLETION(y_spt_cvar, "CVar manipulation.", 0, DevCvarCompletionFunc)
 #endif
 {
 	if (!g_pCVar)
@@ -35,7 +32,7 @@ CON_COMMAND_F_COMPLETION(y_spt_cvar, "CVar manipulation.", 0, y_spt_cvar_Complet
 
 	if (args.ArgC() < 2)
 	{
-		Msg("Usage: y_spt_cvar <name> [value]\n");
+		Msg("Usage: spt_cvar <name> [value]\n");
 		return;
 	}
 
@@ -80,7 +77,7 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 
 	if (args.ArgC() != 4)
 	{
-		Msg("Usage: y_spt_cvar_random <name> <min> <max>\n");
+		Msg("Usage: spt_cvar_random <name> <min> <max>\n");
 		return;
 	}
 
@@ -103,16 +100,10 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 #ifdef SSDK2013
 CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of the argument string.")
 #else
-static int y_spt_cvar2_CompletionFunc(const char* partial,
-                                      char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
-{
-	AutoCompleteList y_spt_cvar2_Complete("y_spt_cvar2", spt_cvarstuff.dev_cvars);
-	return y_spt_cvar2_Complete.AutoCompletionFunc(partial, commands);
-}
 CON_COMMAND_F_COMPLETION(y_spt_cvar2,
                          "CVar manipulation, sets the CVar value to the rest of the argument string.",
                          0,
-                         y_spt_cvar2_CompletionFunc)
+                         DevCvarCompletionFunc)
 #endif
 {
 	if (!g_pCVar)
@@ -120,7 +111,7 @@ CON_COMMAND_F_COMPLETION(y_spt_cvar2,
 
 	if (args.ArgC() < 2)
 	{
-		Msg("Usage: y_spt_cvar <name> [value]\n");
+		Msg("Usage: spt_cvar <name> [value]\n");
 		return;
 	}
 
@@ -166,7 +157,35 @@ CON_COMMAND(y_spt_dev_cvars, "Prints all developer/hidden CVars.")
 		Msg("%s\n", name.c_str());
 	}
 }
+#else
+IMPL_HOOK_THISCALL(CvarStuff, void, RebuildCompletionList, void*, const char* text)
+{
+	spt_cvarstuff.ORIG_RebuildCompletionList(thisptr, text);
+	if (!spt_cvarstuff.m_CompletionListOffset)
+		return;
+	CUtlVector<CompletionItem*>* m_CompletionList = (CUtlVector<CompletionItem*>*)((uint32_t)thisptr + spt_cvarstuff.m_CompletionListOffset);
+	for (int i = 0; i < m_CompletionList->Count(); i++)
+	{
+		ConCommandBase* command = m_CompletionList->Element(i)->m_pCommand;
+		// Check if FCVAR_HIDDEN is set to avoid traversing the vector everytime
+		// Decrement i to compensate for the new list size
+		auto& hv = spt_cvarstuff.hidden_cvars;
+		if (command && command->IsBitSet(FCVAR_HIDDEN) && std::find(hv.begin(), hv.end(), command) != hv.end())
+			m_CompletionList->Remove(i--);
+	}
+}
 
+void CvarStuff::InitHooks()
+{
+	HOOK_FUNCTION(gameui, RebuildCompletionList);
+}
+
+void CvarStuff::PreHook()
+{
+	if (ORIG_RebuildCompletionList)
+		m_CompletionListOffset = *(int*)((uint32_t)ORIG_RebuildCompletionList + 81);
+	DevWarning("m_CompletionListOffset %d\n", m_CompletionListOffset);
+}
 #endif
 
 void CvarStuff::LoadFeature()

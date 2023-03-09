@@ -6,7 +6,7 @@
 #include "spt\features\demo.hpp"
 #include "spt\features\playerio.hpp"
 #include "spt\features\overlay.hpp"
-#include "spt\utils\command.hpp"
+#include "spt\utils\convar.hpp"
 #include "spt\utils\ent_utils.hpp"
 #include "spt\utils\interfaces.hpp"
 #include "spt\utils\signals.hpp"
@@ -295,16 +295,14 @@ CON_COMMAND(y_spt_cam_path_getkfs, "Prints all keyframes in commands.")
 // autocomplete crashes on stemapipe :((
 CON_COMMAND(y_spt_cam_path_rmkf, "Removes a keyframe.")
 #else
-static int y_spt_cam_path_rmkf_CompletionFunc(
-    const char* partial,
-    char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+static int y_spt_cam_path_rmkf_CompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 {
 	std::vector<std::string> completion;
 	for (const auto& kv : spt_camera.keyframes)
 	{
 		completion.push_back(std::to_string(kv.first));
 	}
-	AutoCompleteList y_spt_cam_path_rmkf_Complete("y_spt_cam_path_rmkf", completion);
+	AutoCompleteList y_spt_cam_path_rmkf_Complete(completion);
 	return y_spt_cam_path_rmkf_Complete.AutoCompletionFunc(partial, commands);
 }
 

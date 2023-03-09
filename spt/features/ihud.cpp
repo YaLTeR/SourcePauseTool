@@ -7,7 +7,7 @@
 #include "spt\feature.hpp"
 #include "spt\features\playerio.hpp"
 #include "spt\features\property_getter.hpp"
-#include "spt\utils\command.hpp"
+#include "spt\utils\convar.hpp"
 #include "spt\utils\interfaces.hpp"
 #include "spt\utils\signals.hpp"
 

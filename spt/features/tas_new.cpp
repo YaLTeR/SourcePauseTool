@@ -1,6 +1,5 @@
 #include "stdafx.hpp"
 #include "convar.hpp"
-#include "command.hpp"
 #include "signals.hpp"
 #include "..\feature.hpp"
 #include "..\scripts2\srctas_reader2.hpp"

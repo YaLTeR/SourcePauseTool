@@ -1336,7 +1336,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="spt\strafe\strafestuff.cpp" />
-    <ClCompile Include="spt\utils\command.cpp" />
+    <ClCompile Include="spt\utils\convar.cpp" />
     <ClCompile Include="spt\utils\datamap_wrapper.cpp" />
     <ClCompile Include="spt\utils\ent_utils.cpp" />
     <ClCompile Include="spt\utils\file.cpp" />
@@ -1357,6 +1357,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClCompile Include="spt\utils\string_utils.cpp" />
     <ClCompile Include="spt\vgui\vgui_utils.cpp" />
     <ClCompile Include="thirdparty\md5.cpp" />
+    <ClCompile Include="thirdparty\x86.c" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib" />
@@ -1403,6 +1404,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClInclude Include="spt\features\afterticks.hpp" />
     <ClInclude Include="spt\features\aim.hpp" />
     <ClInclude Include="spt\features\autojump.hpp" />
+    <ClInclude Include="spt\features\cvar.hpp" />
     <ClInclude Include="spt\features\demo.hpp" />
     <ClInclude Include="spt\features\ent_props.hpp" />
     <ClInclude Include="spt\features\generic.hpp" />
@@ -1451,7 +1453,6 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClInclude Include="spt\sptlib-wrapper.hpp" />
     <ClInclude Include="spt\strafe\strafestuff.hpp" />
     <ClInclude Include="spt\strafe\strafe_utils.hpp" />
-    <ClInclude Include="spt\utils\command.hpp" />
     <ClInclude Include="spt\utils\convar.hpp" />
     <ClInclude Include="spt\utils\custom_interfaces.hpp" />
     <ClInclude Include="spt\utils\datamap_wrapper.hpp" />
@@ -1482,6 +1483,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClInclude Include="thirdparty\kmp-cpp.hpp" />
     <ClInclude Include="thirdparty\md5.hpp" />
     <ClInclude Include="thirdparty\Signal.h" />
+    <ClInclude Include="thirdparty\x86.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="SPTLib\Windows\minhook\build\VC17\libMinHook.vcxproj">
