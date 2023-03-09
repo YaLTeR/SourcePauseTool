@@ -1,7 +1,7 @@
 #include "stdafx.hpp"
 #include "tas.hpp"
 #include "..\cvars.hpp"
-#include "command.hpp"
+#include "convar.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "..\strafe\strafestuff.hpp"
 #include "..\scripts\srctas_reader.hpp"

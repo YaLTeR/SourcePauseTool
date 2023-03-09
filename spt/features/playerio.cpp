@@ -13,7 +13,7 @@
 #include "tas.hpp"
 #include "property_getter.hpp"
 #include "spt\utils\portal_utils.hpp"
-#include "spt\utils\command.hpp"
+#include "spt\utils\convar.hpp"
 #include "..\strafe\strafestuff.hpp"
 
 #ifdef SSDK2007

@@ -1,6 +1,6 @@
 #include "stdafx.hpp"
 #include "..\feature.hpp"
-#include "..\utils\command.hpp"
+#include "..\utils\convar.hpp"
 #include "..\utils\game_detection.hpp"
 #include "interfaces.hpp"
 
@@ -28,9 +28,9 @@ private:
 
 static AutocompleteFeature spt_autocomplete;
 
-DECLARE_AUTOCOMPLETIONFILE_FUNCTION(playdemo, "", ".dem");
-DECLARE_AUTOCOMPLETIONFILE_FUNCTION(load, "save", ".sav");
-DECLARE_AUTOCOMPLETIONFILE_FUNCTION(exec, "cfg", ".cfg");
+DEFINE_AUTOCOMPLETIONFILE_FUNCTION(playdemo, "", ".dem");
+DEFINE_AUTOCOMPLETIONFILE_FUNCTION(load, "save", ".sav");
+DEFINE_AUTOCOMPLETIONFILE_FUNCTION(exec, "cfg", ".cfg");
 
 bool AutocompleteFeature::ShouldLoadFeature()
 {

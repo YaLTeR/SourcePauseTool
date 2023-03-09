@@ -9,7 +9,7 @@
 #include <future>
 
 #ifdef SSDK2013
-#include "command.hpp"
+#include "convar.hpp"
 #endif
 
 namespace utils

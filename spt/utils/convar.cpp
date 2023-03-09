@@ -1,5 +1,6 @@
 #include "stdafx.hpp"
-#include "command.hpp"
+
+#include "convar.hpp"
 #include "file.hpp"
 
 #ifdef OE
@@ -8,32 +9,30 @@
 
 namespace fs = std::filesystem;
 
-AutoCompleteList::AutoCompleteList(const char* command) : command(command) {}
-AutoCompleteList::AutoCompleteList(const char* command, std::vector<std::string> completions)
-    : command(command), completions(completions)
-{
-}
+AutoCompleteList::AutoCompleteList() {}
+AutoCompleteList::AutoCompleteList(std::vector<std::string> completions) : completions(completions) {}
 
-int AutoCompleteList::AutoCompletionFunc(const char* partial,
-                                         char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
-{
-	return AutoCompleteSuggest(partial, commands);
-}
-
-int AutoCompleteList::AutoCompleteSuggest(const char* partial,
-                                          char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+int AutoCompleteList::AutoCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 {
 	bool hasDoubleQuote;
 	auto subStrings = SplitPartial(partial, hasDoubleQuote);
+	return AutoCompleteSuggest(subStrings.first, subStrings.second, hasDoubleQuote, commands);
+}
+
+int AutoCompleteList::AutoCompleteSuggest(const std::string& suggestionBase,
+                                          const std::string& incompleteArgument,
+                                          bool hasDoubleQuote,
+                                          char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
 	int count = 0;
 	for (auto& item : completions)
 	{
 		if (count == COMMAND_COMPLETION_MAXITEMS)
 			break;
-		if (item.find(subStrings.second) == 0)
+		if (item.find(incompleteArgument) == 0)
 		{
-			std::string completion = subStrings.first + item;
-			if (shouldCompleteDoubleQuote && hasDoubleQuote)
+			std::string completion = suggestionBase + item;
+			if (hasDoubleQuote)
 				completion += '"';
 			std::strncpy(commands[count], completion.c_str(), COMMAND_COMPLETION_ITEM_LENGTH);
 			commands[count][COMMAND_COMPLETION_ITEM_LENGTH - 1] = '\0';
@@ -46,21 +45,17 @@ int AutoCompleteList::AutoCompleteSuggest(const char* partial,
 std::pair<std::string, std::string> AutoCompleteList::SplitPartial(const char* partial, bool& hasDoubleQuote)
 {
 	std::string s(partial);
-	size_t pos = strlen(command) + 1;
+	size_t pos = s.find(" ") + 1;
 	hasDoubleQuote = partial[pos] == '"';
 	if (hasDoubleQuote)
 		pos++;
 	return {s.substr(0, pos), s.substr(pos)};
 }
 
-FileAutoCompleteList::FileAutoCompleteList(const char* command, const char* subDirectory, const char* extension)
-    : AutoCompleteList(command), subDirectory(subDirectory), extension(extension)
-{
-	shouldCompleteDoubleQuote = false;
-}
+FileAutoCompleteList::FileAutoCompleteList(const char* subDirectory, const char* extension)
+    : AutoCompleteList(), subDirectory(subDirectory), extension(extension) {}
 
-int FileAutoCompleteList::AutoCompletionFunc(const char* partial,
-                                             char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+int FileAutoCompleteList::AutoCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 {
 	bool hasDoubleQuote;
 	auto subStrings = SplitPartial(partial, hasDoubleQuote);
@@ -83,8 +78,6 @@ int FileAutoCompleteList::AutoCompletionFunc(const char* partial,
 
 	bool shouldUpdate = (dir != prevPath || subStrings.second == "");
 	prevPath = dir;
-	bool doubleQuoteChanged = prevHasDoubleQuote != hasDoubleQuote;
-	prevHasDoubleQuote = hasDoubleQuote;
 
 	if (shouldUpdate)
 	{
@@ -104,18 +97,7 @@ int FileAutoCompleteList::AutoCompletionFunc(const char* partial,
 			}
 		}
 	}
-	if (shouldUpdate || doubleQuoteChanged)
-	{
-		for (auto& item : completions)
-		{
-			char end = item.back();
-			if (hasDoubleQuote && end != '"' && end != '/')
-				item += '"';
-			else if (end == '"')
-				item.pop_back();
-		}
-	}
-	return AutoCompleteSuggest(partial, commands);
+	return AutoCompleteSuggest(subStrings.first, subStrings.second, hasDoubleQuote, commands);
 }
 
 #ifdef OE
