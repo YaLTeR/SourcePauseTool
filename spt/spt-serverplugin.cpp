@@ -83,6 +83,10 @@ ConVar* _sv_maxvelocity = nullptr;
 ConVar* _sv_bounce = nullptr;
 ConVar* _sv_cheats = nullptr;
 
+extern ConVar tas_force_airaccelerate;
+extern ConVar tas_force_wishspeed_cap;
+extern ConVar tas_reset_surface_friction;
+
 // useful helper func
 inline bool FStrEq(const char* sz1, const char* sz2)
 {

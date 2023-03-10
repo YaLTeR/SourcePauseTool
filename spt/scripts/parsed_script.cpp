@@ -2,10 +2,11 @@
 #include "parsed_script.hpp"
 #include "..\spt-serverplugin.hpp"
 #include "file.hpp"
-#include "..\cvars.hpp"
 #include "..\features\demo.hpp"
 #include "framebulk_handler.hpp"
 #include "thirdparty\md5.hpp"
+
+extern ConVar tas_script_savestates;
 
 namespace scripts
 {
