@@ -39,6 +39,14 @@ ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement
 ConVar y_spt_hud_velocity("y_spt_hud_velocity", "0", FCVAR_CHEAT, "Turns on the velocity hud.\n");
 ConVar y_spt_hud_velocity_angles("y_spt_hud_velocity_angles", "0", FCVAR_CHEAT, "Display velocity Euler angles.");
 
+extern ConVar tas_force_airaccelerate;
+extern ConVar tas_force_onground;
+extern ConVar tas_force_wishspeed_cap;
+extern ConVar tas_reset_surface_friction;
+extern ConVar tas_strafe_jumptype;
+extern ConVar tas_strafe_use_tracing;
+extern ConVar tas_strafe_version;
+
 namespace patterns
 {
 	PATTERNS(

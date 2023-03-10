@@ -11,10 +11,11 @@
 #include "interfaces.hpp"
 #include "tier0\basetypes.h"
 #include "..\vgui\vgui_utils.hpp"
-#include "..\cvars.hpp"
 #include "string_utils.hpp"
 
 ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT, "When set to 1, displays SPT HUD on the left.\n");
+
+extern ConVar _y_spt_overlay;
 
 HUDFeature spt_hud;
 

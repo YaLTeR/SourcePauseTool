@@ -5,13 +5,14 @@
 #include "convar.hpp"
 #include "math.hpp"
 #include "ent_utils.hpp"
-#include "..\cvars.hpp"
 #include "spt/sptlib-wrapper.hpp"
 #include "..\features\rng.hpp"
 #include "..\spt-serverplugin.hpp"
 
 #undef max
 #undef min
+
+extern ConVar tas_strafe_vectorial_offset;
 
 namespace aim
 {

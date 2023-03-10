@@ -8,7 +8,6 @@
 
 #include "ent_utils.hpp"
 #include "..\features\property_getter.hpp"
-#include "..\cvars.hpp"
 #include "cdll_int.h"
 #include "client_class.h"
 #include "edict.h"
@@ -18,6 +17,8 @@
 #include "tier2\tier2.h"
 #include "interfaces.hpp"
 #include "..\features\ent_props.hpp"
+
+extern ConVar _y_spt_overlay_portal;
 
 // From /game/shared/portal/prop_portal_shared.cpp
 void UpdatePortalTransformationMatrix(const matrix3x4_t& localToWorld,

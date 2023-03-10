@@ -1,6 +1,5 @@
 #include "stdafx.hpp"
 #include "tas.hpp"
-#include "..\cvars.hpp"
 #include "convar.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "..\strafe\strafestuff.hpp"
@@ -139,6 +138,8 @@ ConVar tas_script_printvars("tas_script_printvars",
 ConVar tas_script_savestates("tas_script_savestates", "1", 0, "Enables/disables savestates in .srctas scripts.\n");
 ConVar tas_script_onsuccess("tas_script_onsuccess", "", 0, "Commands to be executed when a search concludes.\n");
 ConVar y_spt_hud_script_length("y_spt_hud_script_progress", "0", FCVAR_CHEAT, "Turns on the script progress hud.\n");
+
+extern ConVar tas_anglespeed;
 
 TASFeature spt_tas;
 

@@ -6,7 +6,6 @@
 #include "convar.hpp"
 #include "dbg.h"
 #include "signals.hpp"
-#include "..\cvars.hpp"
 #include "game_detection.hpp"
 
 #ifdef OE
@@ -25,6 +24,8 @@ ConVar y_spt_jumpboost("y_spt_jumpboost",
                        "2 = OE movement mechanic.\n"
                        "3 = No jumpboost. (multiplayer mode movement)");
 ConVar y_spt_aircontrol("y_spt_aircontrol", "0", FCVAR_CHEAT, "Enables HL2 air control.");
+
+extern ConVar tas_log;
 
 namespace patterns
 {

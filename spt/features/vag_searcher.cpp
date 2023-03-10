@@ -9,13 +9,15 @@
 #include "spt\utils\interfaces.hpp"
 #include "spt\utils\game_detection.hpp"
 #include "spt\utils\signals.hpp"
-#include "spt\cvars.hpp"
 #include "spt\sptlib-wrapper.hpp"
 
 #include "icliententity.h"
 
 extern IClientEntity* getPortal(const char* arg, bool verbose);
 extern IClientEntity* GetLinkedPortal(IClientEntity* portal);
+
+extern ConVar y_spt_prevent_vag_crash;
+extern ConVar _y_spt_overlay_portal;
 
 // VAG tester
 class VagSearcher : public FeatureWrapper<VagSearcher>

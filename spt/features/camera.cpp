@@ -174,6 +174,9 @@ ConVar y_spt_mousemove(
     0,
     "Enables or disables reacting to mouse movement (for view angle changing or for movement using +strafe).");
 
+extern ConVar _y_spt_overlay;
+extern ConVar _y_spt_overlay_swap;
+
 CON_COMMAND(y_spt_cam_setpos, "Sets the camera position. (requires camera drive mode)")
 {
 	if (args.ArgC() != 4)

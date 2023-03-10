@@ -10,11 +10,14 @@
 #include "interfaces.hpp"
 #include "math.hpp"
 #include "string_utils.hpp"
-#include "..\cvars.hpp"
 #include "..\features\tickrate.hpp"
 #include "framebulk_handler.hpp"
 #include "..\features\afterframes.hpp"
 #include "..\features\demo.hpp"
+
+
+extern ConVar y_spt_gamedir;
+extern ConVar tas_script_onsuccess;
 
 namespace scripts
 {

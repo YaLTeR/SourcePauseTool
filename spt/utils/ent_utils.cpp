@@ -7,7 +7,6 @@
 #include <sstream>
 #include <vector>
 
-#include "..\cvars.hpp"
 #include "spt\utils\portal_utils.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "..\strafe\strafestuff.hpp"
@@ -30,6 +29,8 @@
 #define GAME_DLL
 #include "cbase.h"
 #endif
+
+extern ConVar y_spt_piwsave;
 
 namespace utils
 {

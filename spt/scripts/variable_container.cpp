@@ -1,8 +1,9 @@
 #include "stdafx.hpp"
 #include "variable_container.hpp"
-#include "..\cvars.hpp"
 #include "dbg.h"
 #include "srctas_reader.hpp"
+
+extern ConVar tas_script_printvars;
 
 namespace scripts
 {

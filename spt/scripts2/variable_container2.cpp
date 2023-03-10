@@ -1,8 +1,9 @@
 #include "stdafx.hpp"
 #include "srctas_reader2.hpp"
 #include "variable_container2.hpp"
-#include "..\cvars.hpp"
 #include "dbg.h"
+
+extern ConVar tas_script_printvars;
 
 namespace scripts2
 {
