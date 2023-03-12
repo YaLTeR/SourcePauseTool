@@ -17,7 +17,7 @@ ConVar y_spt_piwsave("y_spt_piwsave", "", FCVAR_TAS_RESET, "Automatically saves 
 
 typedef int(__fastcall* _CheckStuck)(void* thisptr, int edx);
 
-// Implements saving when the player gets stuck, enabled with y_spt_stucksave
+// Implements saving when the player gets stuck, enabled with spt_stucksave
 class Stucksave : public FeatureWrapper<Stucksave>
 {
 public:

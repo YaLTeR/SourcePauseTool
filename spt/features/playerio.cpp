@@ -525,12 +525,11 @@ static const std::map<std::string, int> buttonCodeMap = {
 CON_COMMAND_DOWN(
     y_spt_spam,
     "Enables key spam.\n"
-    "Usage: +y_spt_spam <key>\n"
     "keys: attack, jump, duck, forward, back, use, left, right, moveleft, moveright, attack2, reload, speed, walk, zoom")
 {
 	if (args.ArgC() < 2)
 	{
-		Msg("Usage: +y_spt_spam <key>\n"
+		Msg("Usage: +spt_spam <key>\n"
 		    "keys: attack, jump, duck, forward, back, use, left, right, moveleft, moveright, attack2, reload, speed, walk, zoom\n");
 		return;
 	}
@@ -556,7 +555,7 @@ CON_COMMAND_UP(y_spt_spam, "Disables key spam.")
 		spt_playerio.DisableSpam(buttonCodeIter->second);
 }
 
-CON_COMMAND_DOWN(y_spt_duckspam, "Enables the duckspam. (Outdated, use +y_spt_spam instead)")
+CON_COMMAND_DOWN(y_spt_duckspam, "Enables the duckspam. (Outdated, use +spt_spam instead)")
 {
 	spt_playerio.EnableSpam(1 << 2); // IN_DUCK
 }
@@ -644,7 +643,7 @@ CON_COMMAND(_y_spt_getangles, "Gets the view angles of the player.")
 
 static uint32_t hud_flags_filter = 0xffffffff;
 
-CON_COMMAND(y_spt_hud_flags_filter, "Sets the filter for y_spt_hud_flags.")
+CON_COMMAND(y_spt_hud_flags_filter, "Sets the filter for spt_hud_flags.")
 {
 	// char version of flags
 	const char* flags[] = {

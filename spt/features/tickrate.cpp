@@ -42,7 +42,7 @@ void TickrateMod::SetTickrate(float tickrate)
 
 void TickrateMod::UnloadFeature() {}
 
-CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [tickrate]")
+CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate")
 {
 	switch (args.ArgC())
 	{
@@ -55,7 +55,7 @@ CON_COMMAND(_y_spt_tickrate, "Get or set the tickrate. Usage: _y_spt_tickrate [t
 		break;
 
 	default:
-		Msg("Usage: _y_spt_tickrate [tickrate]\n");
+		Msg("Usage: spt_tickrate [tickrate]\n");
 	}
 }
 

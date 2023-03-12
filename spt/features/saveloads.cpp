@@ -10,27 +10,28 @@
 #include <format>
 
 static std::vector<const char*> _saveloadTypes = {"segment", "execute", "render"};
+static const char saveloads_usage[] =
+    "Arguments: spt_saveloads <type> <segment name> <start index> <end index> [<ticks to wait>] [<extra commands>].\n"
+    "  - <type> is the type of the save/load process, which can be\n"
+    "	- \"segment\" for full save/load segment creation. Saves and demos for each save/load will be made and named accordingly.\n"
+    "	- \"execute\" for save/load execution. The tool will only use 1 name for saves, and no demos will be made.\n"
+    "	- \"render\" for save/load segment rendering. Saves and demos will be loaded in order according to the specified naming format and then screenshotted.\n"
+    "	These will determine what set of commands will be executed.\n"
+    "  - <segment name> is the segment name, which will be used to name the saves and demos (format: <segment name>-<index>)\n"
+    "  - <start index> is the index from which the saves and demos will be named from.\n"
+    "  - <end index> is the index up to which SPT will process.\n"
+    "  - OPTIONAL: <ticks to wait> is the number of ticks to wait after a save is loaded before SPT executes the commands of the corresponding process type.\n\n"
+    "  - OPTIONAL: <extra commands> is a string containing extra commands to be executed every save/load \n\n"
+    "Usage: \n"
+    "  - Enter in the command.\n"
+    "  - Load the save from which the process should begin from. The save/load process will begin automatically.\n"
+    "  - Use \"spt_saveloads_stop\" at any time to stop the process.";
 
-CON_COMMAND(y_spt_saveloads, "Begins an automated save/load process.\n\n\
-Arguments: y_spt_saveloads <type> <segment name> <start index> <end index> [<ticks to wait>] [<extra commands>].\n \
-  - <type> is the type of the save/load process, which can be\n\
-	- \"segment\" for full save/load segment creation. Saves and demos for each save/load will be made and named accordingly.\n\
-	- \"execute\" for save/load execution. The tool will only use 1 name for saves, and no demos will be made.\n\
-	- \"render\" for save/load segment rendering. Saves and demos will be loaded in order according to the specified naming format and then screenshotted.\n\
-	These will determine what set of commands will be executed.\n\
-  - <segment name> is the segment name, which will be used to name the saves and demos (format: <segment name>-<index>)\n\
-  - <start index> is the index from which the saves and demos will be named from.\n\
-  - <end index> is the index up to which SPT will process.\n\
-  - OPTIONAL: <ticks to wait> is the number of ticks to wait after a save is loaded before SPT executes the commands of the corresponding process type.\n\n\
-  - OPTIONAL: <extra commands> is a string containing extra commands to be executed every save/load \n\n\
-Usage: \n\
-  - Enter in the command.\n\
-  - Load the save from which the process should begin from. The save/load process will begin automatically.\n\
-  - Use \"y_spt_saveloads_stop\" at any time to stop the process.\n")
+CON_COMMAND(y_spt_saveloads, "Begins an automated save/load process")
 {
 	if (args.ArgC() < 4)
 	{
-		Warning("SAVELOADS: Incorrect number of arguments! Do \"help y_spt_saveloads\" for information.\n");
+		Msg("%s\n", saveloads_usage);
 		return;	
 	}
 
@@ -141,7 +142,7 @@ Please load the save from which save/loading should begin.\n",
 		endIndex_ - startIndex_ + 1,
 		ticksToWait_,
 		this->extraCommands.c_str());
-	Warning("Use \"y_spt_saveloads_stop\" to stop the process!!! You should bind it to something.\n");
+	Warning("Use \"spt_saveloads_stop\" to stop the process!!! You should bind it to something.\n");
 	Msg("\n------\n");
 }
 
@@ -180,19 +181,19 @@ void SaveloadsFeature::Update()
 
 		EngineConCmd(std::format("record {}", segName).c_str());
 		command = std::format("save {0};\
-_y_spt_afterticks 20 \"echo #SAVE#\"; _y_spt_afterticks 25 \"stop\";\
-_y_spt_afterticks 30 \"load {0}\"",
+spt_afterticks 20 \"echo #SAVE#\"; spt_afterticks 25 \"stop\";\
+spt_afterticks 30 \"load {0}\"",
 			segName,
 			extraCommands,
 			prefixName);
 		break;
 	case 1: // normal save/load
 		command =
-			std::format("save {2}; _y_spt_afterticks 30 \"load {2}\"", segName, extraCommands, prefixName);
+			std::format("save {2}; spt_afterticks 30 \"load {2}\"", segName, extraCommands, prefixName);
 		break;
 	case 2: // screenshot
 		ticksToWait = MAX(ticksToWait, 20); // else we won't get any screenshots...
-		command = std::format("screenshot; {0}; _y_spt_afterticks 30 \"load {0}\"",
+		command = std::format("screenshot; {0}; spt_afterticks 30 \"load {0}\"",
 							  segName,
 							  extraCommands,
 							  prefixName);

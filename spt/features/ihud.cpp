@@ -119,11 +119,11 @@ static const std::string font = FONT_Trebuchet20;
 
 CON_COMMAND(
     y_spt_ihud_modify,
-    "y_spt_ihud_modify <element|all> <param> <value> - Modifies parameters in given element.\nParams: enabled, text, font, x, y, width, height, background, highlight, textcolor, texthighlight.")
+    "Modifies parameters in given element.\nParams: enabled, text, font, x, y, width, height, background, highlight, textcolor, texthighlight.")
 {
 	if (args.ArgC() != 4)
 	{
-		Msg("Usage: y_spt_ihud_modify <element|all> <param> <value>\n");
+		Msg("Usage: spt_ihud_modify <element|all> <param> <value>\n");
 		return;
 	}
 	const char* errorMsg =
@@ -162,7 +162,7 @@ CON_COMMAND_AUTOCOMPLETE(y_spt_ihud_preset,
 {
 	if (args.ArgC() != 2)
 	{
-		Msg("Usage: y_spt_ihud_preset <preset>\nPresets: normal, normal_mouse, tas.\n");
+		Msg("Usage: spt_ihud_preset <preset>\nPresets: normal, normal_mouse, tas.\n");
 	}
 	const char* preset = args.Arg(1);
 	if (std::strcmp(preset, "normal") == 0)
@@ -302,11 +302,11 @@ CON_COMMAND_AUTOCOMPLETE(y_spt_ihud_preset,
 }
 
 #ifndef OE
-CON_COMMAND(y_spt_ihud_add_key, "y_spt_ihud_add_key <key> - Add custom key to ihud.")
+CON_COMMAND(y_spt_ihud_add_key, "Add custom key to ihud.")
 {
 	if (args.ArgC() != 2)
 	{
-		Msg("Usage: y_spt_ihud_add_key <key>\n");
+		Msg("Usage: spt_ihud_add_key <key>\n");
 		return;
 	}
 	spt_ihud.AddCustomKey(args.Arg(1));

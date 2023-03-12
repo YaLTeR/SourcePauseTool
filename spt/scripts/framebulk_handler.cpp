@@ -66,34 +66,34 @@ namespace scripts
 
 		if (frameBulkInfo.ContainsFlag(STRAFE, "s"))
 		{
-			frameBulkInfo.AddCommand("tas_strafe 1");
+			frameBulkInfo.AddCommand("spt_tas_strafe 1");
 
 			if (!frameBulkInfo.IsInt(JUMP_TYPE) || !frameBulkInfo.IsInt(STRAFE_TYPE))
 				throw std::exception("Jump type or strafe type was not an integer");
 
-			frameBulkInfo.AddCommand("tas_strafe_jumptype " + frameBulkInfo[JUMP_TYPE]);
-			frameBulkInfo.AddCommand("tas_strafe_type " + frameBulkInfo[STRAFE_TYPE]);
+			frameBulkInfo.AddCommand("spt_tas_strafe_jumptype " + frameBulkInfo[JUMP_TYPE]);
+			frameBulkInfo.AddCommand("spt_tas_strafe_type " + frameBulkInfo[STRAFE_TYPE]);
 		}
 		else
-			frameBulkInfo.AddCommand("tas_strafe 0");
+			frameBulkInfo.AddCommand("spt_tas_strafe 0");
 
 		if (frameBulkInfo.ContainsFlag(AUTOJUMP, "j"))
-			frameBulkInfo.AddCommand("y_spt_autojump 1");
+			frameBulkInfo.AddCommand("spt_autojump 1");
 		else
-			frameBulkInfo.AddCommand("y_spt_autojump 0");
+			frameBulkInfo.AddCommand("spt_autojump 0");
 
-		frameBulkInfo.AddPlusMinusCmd("y_spt_spam duck", frameBulkInfo.ContainsFlag(DUCKSPAM, "d"));
-		frameBulkInfo.AddPlusMinusCmd("y_spt_spam use", frameBulkInfo.ContainsFlag(USESPAM, "u"));
+		frameBulkInfo.AddPlusMinusCmd("spt_spam duck", frameBulkInfo.ContainsFlag(DUCKSPAM, "d"));
+		frameBulkInfo.AddPlusMinusCmd("spt_spam use", frameBulkInfo.ContainsFlag(USESPAM, "u"));
 
 		if (frameBulkInfo.ContainsFlag(JUMPBUG, "b"))
-			frameBulkInfo.AddCommand("tas_strafe_autojb 1");
+			frameBulkInfo.AddCommand("spt_tas_strafe_autojb 1");
 		else
-			frameBulkInfo.AddCommand("tas_strafe_autojb 0");
+			frameBulkInfo.AddCommand("spt_tas_strafe_autojb 0");
 
 		if (frameBulkInfo.ContainsFlag(LGAGST, "l"))
-			frameBulkInfo.AddCommand("tas_strafe_lgagst 1");
+			frameBulkInfo.AddCommand("spt_tas_strafe_lgagst 1");
 		else
-			frameBulkInfo.AddCommand("tas_strafe_lgagst 0");
+			frameBulkInfo.AddCommand("spt_tas_strafe_lgagst 0");
 
 #pragma warning(push)
 #pragma warning(disable : 4390)
@@ -152,15 +152,15 @@ namespace scripts
 		if (frameBulkInfo.IsFloat(YAW_KEY))
 		{
 			if (frameBulkInfo.ContainsFlag(STRAFE, "s"))
-				frameBulkInfo.AddCommand("tas_strafe_yaw " + frameBulkInfo[YAW_KEY]);
+				frameBulkInfo.AddCommand("spt_tas_strafe_yaw " + frameBulkInfo[YAW_KEY]);
 			else
-				frameBulkInfo.AddCommand("_y_spt_setyaw " + frameBulkInfo[YAW_KEY]);
+				frameBulkInfo.AddCommand("spt_setyaw " + frameBulkInfo[YAW_KEY]);
 		}
 		else if (frameBulkInfo[YAW_KEY] != EMPTY_FIELD)
 			throw std::exception("Unable to parse the yaw angle");
 
 		if (frameBulkInfo.IsFloat(PITCH_KEY))
-			frameBulkInfo.AddCommand("_y_spt_setpitch " + frameBulkInfo[PITCH_KEY]);
+			frameBulkInfo.AddCommand("spt_setpitch " + frameBulkInfo[PITCH_KEY]);
 		else if (frameBulkInfo[PITCH_KEY] != EMPTY_FIELD)
 			throw std::exception("Unable to parse the pitch angle");
 	}

@@ -97,7 +97,7 @@ CON_COMMAND(tas_experimental_record_save, "Save recording to .srctas.")
 {
 	if (args.ArgC() <= 1)
 	{
-		Msg("Usage: tas_record_save <filepath>\n");
+		Msg("Usage: spt_tas_experimental_record_save <filepath>\n");
 	}
 	else
 	{
@@ -186,7 +186,7 @@ static void ProcessMovement_Hook(void* pPlayer, void* pMove)
 		{
 			*pitch_result.ptr = '\0';
 			*yaw_result.ptr = '\0';
-			int retval = sprintf_s(CMD_BUFFER, "_y_spt_setangles %s %s", pitch, yaw);
+			int retval = sprintf_s(CMD_BUFFER, "spt_setangles %s %s", pitch, yaw);
 
 			if (retval > 0)
 			{

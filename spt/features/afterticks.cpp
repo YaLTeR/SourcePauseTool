@@ -12,11 +12,11 @@ static std::vector<afterticks_entry_t> afterticksQueue;
 static bool afterticksPaused = false;
 static int afterticksDelay = 0;
 
-ConVar _y_spt_afterticks_await_legacy("_y_spt_afterticks_await_legacy",
+ConVar _y_spt_afterticks_await_legacy("spt_afterticks_await_legacy",
                                       "0",
                                       FCVAR_TAS_RESET,
                                       "Set to 1 for backwards compatibility with old scripts.");
-ConVar _y_spt_afterticks_reset_on_server_activate("_y_spt_afterticks_reset_on_server_activate", "1", FCVAR_ARCHIVE);
+ConVar _y_spt_afterticks_reset_on_server_activate("spt_afterticks_reset_on_server_activate", "1", FCVAR_ARCHIVE);
 
 
 namespace patterns
@@ -126,11 +126,11 @@ void AfterticksFeature::SetPaused(void* thisptr, bool paused)
 		ResumeAfterticksQueue();
 }
 
-CON_COMMAND(_y_spt_afterticks_wait, "Delays the afterticks queue. Usage: _y_spt_afterticks_wait <delay>")
+CON_COMMAND(_y_spt_afterticks_wait, "Delays the afterticks queue")
 {
 	if (args.ArgC() != 2)
 	{
-		Msg("Usage: _y_spt_afterticks_wait <delay>\n");
+		Msg("Usage: spt_afterticks_wait <delay>\n");
 		return;
 	}
 
@@ -139,11 +139,11 @@ CON_COMMAND(_y_spt_afterticks_wait, "Delays the afterticks queue. Usage: _y_spt_
 	spt_afterticks.DelayAfterticksQueue(delay);
 }
 
-CON_COMMAND(_y_spt_afterticks, "Add a command into an afterticks queue. Usage: _y_spt_afterticks <count> <command>")
+CON_COMMAND(_y_spt_afterticks, "Add a command into an afterticks queue")
 {
 	if (args.ArgC() != 3)
 	{
-		Msg("Usage: _y_spt_afterticks <count> <command>\n");
+		Msg("Usage: spt_afterticks <count> <command>\n");
 		return;
 	}
 
@@ -157,13 +157,12 @@ CON_COMMAND(_y_spt_afterticks, "Add a command into an afterticks queue. Usage: _
 }
 
 #ifndef OE
-CON_COMMAND(
-	_y_spt_afterticks2,
-	"Add everything after count as a command into the queue. Do not insert the command in quotes. Usage: _y_spt_afterticks2 <count> <command>")
+CON_COMMAND(_y_spt_afterticks2,
+            "Add everything after count as a command into the queue. Do not insert the command in quotes")
 {
 	if (args.ArgC() < 3)
 	{
-		Msg("Usage: _y_spt_afterticks2 <count> <command>\n");
+		Msg("Usage: spt_afterticks2 <count> <command>\n");
 		return;
 	}
 
@@ -292,12 +291,12 @@ void AfterticksFeature::LoadFeature()
 		if (!SetPausedSignal.Works)
 		{
 			_y_spt_afterticks_await_legacy.SetValue(1);
-			Warning("_y_spt_afterticks_await_legacy 0 has no effect.\n");
+			Warning("spt_afterticks_await_legacy 0 has no effect.\n");
 		}
 		else if (!FinishRestoreSignal.Works)
 		{
 			_y_spt_afterticks_await_legacy.SetValue(0);
-			Warning("_y_spt_afterticks_await_legacy 1 has no effect.\n");
+			Warning("spt_afterticks_await_legacy 1 has no effect.\n");
 		}
 	}
 

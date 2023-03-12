@@ -147,13 +147,13 @@ ConVar y_spt_cam_control(
     "1 = Drive mode\n"
     "    Camera is separated and can be controlled by user input.\n"
     "    Use +forward, +back, +moveright, +moveleft, +moveup, +movedown, +duck, +speed keys to drive camera.\n"
-    "    In-game: Requires sv_cheats 1. Set y_spt_cam_drive 1 to enable drive mode.\n"
+    "    In-game: Requires sv_cheats 1. Set spt_cam_drive 1 to enable drive mode.\n"
     "    Demo playback: Hold right mouse button to enable drive mode.\n"
     "2 = Cinematic mode\n"
     "    Camera is controlled by predefined path.\n"
-    "    See commands y_spt_cam_path_\n"
+    "    See commands spt_cam_path_\n"
     "3 = Entity drive mode\n"
-    "    Sets the camera position to an entity. Use y_spt_cam_drive_ent to set the entity.");
+    "    Sets the camera position to an entity. Use spt_cam_drive_ent to set the entity.");
 ConVar y_spt_cam_drive("y_spt_cam_drive", "1", FCVAR_CHEAT, "Enables or disables camera drive mode in-game.");
 ConVar y_spt_cam_drive_speed("y_spt_cam_drive_speed", "200", 0, "Speed for moving in camera drive mode.");
 ConVar y_spt_cam_path_interp("y_spt_cam_path_interp",
@@ -417,7 +417,7 @@ bool Camera::CanOverrideView() const
 
 bool Camera::CanInput() const
 {
-	// Is in drive mode and y_spt_cam_drive
+	// Is in drive mode and spt_cam_drive
 	// If playing demo automatically enables input and need right click to drive
 	if (!CanOverrideView() || y_spt_cam_control.GetInt() != 1)
 		return false;

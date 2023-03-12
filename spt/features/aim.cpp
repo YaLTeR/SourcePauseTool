@@ -13,13 +13,13 @@ ConVar _y_spt_anglesetspeed(
     "_y_spt_anglesetspeed",
     "360",
     FCVAR_TAS_RESET,
-    "Determines how fast the view angle can move per tick while doing _y_spt_setyaw/_y_spt_setpitch.\n");
+    "Determines how fast the view angle can move per tick while doing spt_setyaw/spt_setpitch.\n");
 ConVar _y_spt_pitchspeed("_y_spt_pitchspeed", "0", FCVAR_TAS_RESET);
 ConVar _y_spt_yawspeed("_y_spt_yawspeed", "0", FCVAR_TAS_RESET);
 ConVar tas_anglespeed("tas_anglespeed",
                       "5",
                       FCVAR_CHEAT,
-                      "Determines the speed of angle changes when using tas_aim or when TAS strafing\n");
+                      "Determines the speed of angle changes when using spt_tas_aim or when TAS strafing\n");
 
 AimFeature spt_aim;
 
@@ -59,7 +59,7 @@ void AimFeature::HandleAiming(float* va, bool& yawChanged, const Strafe::StrafeI
 
 	float oldYaw = va[YAW];
 
-	// Use tas_aim stuff for tas_strafe_version >= 4
+	// Use spt_tas_aim stuff for spt_tas_strafe_version >= 4
 	if (input.Version >= 4 && input.Version <= 5)
 	{
 		spt_aim.viewState.UpdateView(va[PITCH], va[YAW], input);
@@ -91,7 +91,7 @@ void AimFeature::HandleAiming(float* va, bool& yawChanged, const Strafe::StrafeI
 	}
 
 	// We only want to do this in case yaw didn't change, bug fix from earlier that resulted in a fight to the death
-	// between _y_spt_setyaw and tas_strafe_vectorial
+	// between spt_setyaw and spt_tas_strafe_vectorial
 	if (input.Version >= 6 && !yawChanged)
 	{
 		spt_aim.viewState.UpdateView(va[PITCH], va[YAW], input);
@@ -134,7 +134,7 @@ void AimFeature::SetJump()
 	viewState.SetJump();
 }
 
-CON_COMMAND(tas_aim_reset, "Resets tas_aim state")
+CON_COMMAND(tas_aim_reset, "Resets spt_tas_aim state")
 {
 	spt_aim.viewState.state = aim::ViewState::AimState::NO_AIM;
 	spt_aim.viewState.ticksLeft = 0;
@@ -142,11 +142,11 @@ CON_COMMAND(tas_aim_reset, "Resets tas_aim state")
 	spt_aim.viewState.jumpedLastTick = false;
 }
 
-CON_COMMAND(tas_aim, "Aims at a angle.")
+CON_COMMAND(tas_aim, "Aims at an angle")
 {
 	if (args.ArgC() < 3)
 	{
-		Msg("Usage: tas_aim <pitch> <yaw> [ticks] [cone]\nWeapon cones(in degrees):\n\t- AR2: 3\n\t- Pistol & SMG: 5\n");
+		Msg("Usage: spt_tas_aim <pitch> <yaw> [ticks] [cone]\nWeapon cones(in degrees):\n\t- AR2: 3\n\t- Pistol & SMG: 5\n");
 		return;
 	}
 
@@ -169,7 +169,7 @@ CON_COMMAND(tas_aim, "Aims at a angle.")
 		if (!utils::playerEntityAvailable())
 		{
 			Warning(
-			    "Trying to apply nospread while map not loaded in! Wait until map is loaded before issuing tas_aim with spread cone set.\n");
+			    "Trying to apply nospread while map not loaded in! Wait until map is loaded before issuing spt_tas_aim with spread cone set.\n");
 			return;
 		}
 
@@ -208,12 +208,12 @@ CON_COMMAND(tas_aim, "Aims at a angle.")
 	}
 }
 
-CON_COMMAND(tas_aim_pos, "Aims at a position. Usage: tas_aim_pos <x> <y> <z> [ticks]")
+CON_COMMAND(tas_aim_pos, "Aims at a position")
 {
 	int argc = args.ArgC();
 	if (argc != 4 && argc != 5)
 	{
-		Msg("Usage: tas_aim_pos <x> <y> <z> [ticks]\n");
+		Msg("Usage: spt_tas_aim_pos <x> <y> <z> [ticks]\n");
 		return;
 	}
 
@@ -235,13 +235,12 @@ CON_COMMAND(tas_aim_pos, "Aims at a position. Usage: tas_aim_pos <x> <y> <z> [ti
 	}
 }
 
-CON_COMMAND(tas_aim_ent,
-            "Aim at the absolute origin of a entity with offsets (optional). Usage: tas_aim_ent <id> [x y z] [ticks]")
+CON_COMMAND(tas_aim_ent, "Aim at the absolute origin of a entity with offsets (optional)")
 {
 	int argc = args.ArgC();
 	if (argc != 2 && argc != 3 && argc != 5 && argc != 6)
 	{
-		Msg("Usage: tas_aim_ent <id> [x y z] [ticks]\n");
+		Msg("Usage: spt_tas_aim_ent <id> [x y z] [ticks]\n");
 		return;
 	}
 
@@ -270,22 +269,22 @@ CON_COMMAND(tas_aim_ent,
 	}
 }
 
-CON_COMMAND(_y_spt_setpitch, "Sets the pitch. Usage: _y_spt_setpitch <pitch>")
+CON_COMMAND(_y_spt_setpitch, "Sets the pitch")
 {
 	if (args.ArgC() != 2)
 	{
-		Msg("Usage: _y_spt_setpitch <pitch>\n");
+		Msg("Usage: spt_setpitch <pitch>\n");
 		return;
 	}
 
 	spt_aim.SetPitch(atof(args.Arg(1)));
 }
 
-CON_COMMAND(_y_spt_setyaw, "Sets the yaw. Usage: _y_spt_setyaw <yaw>")
+CON_COMMAND(_y_spt_setyaw, "Sets the yaw")
 {
 	if (args.ArgC() != 2)
 	{
-		Msg("Usage: _y_spt_setyaw <yaw>\n");
+		Msg("Usage: spt_setyaw <yaw>\n");
 		return;
 	}
 
@@ -297,11 +296,11 @@ CON_COMMAND(_y_spt_resetpitchyaw, "Resets pitch/yaw commands.")
 	spt_aim.ResetPitchYawCommands();
 }
 
-CON_COMMAND(_y_spt_setangles, "Sets the angles. Usage: _y_spt_setangles <pitch> <yaw>")
+CON_COMMAND(_y_spt_setangles, "Sets the angles")
 {
 	if (args.ArgC() != 3)
 	{
-		Msg("Usage: _y_spt_setangles <pitch> <yaw>\n");
+		Msg("Usage: spt_setangles <pitch> <yaw>\n");
 		return;
 	}
 

@@ -9,7 +9,7 @@ ConVar y_spt_pause("y_spt_pause", "0", FCVAR_ARCHIVE);
 
 extern ConVar tas_pause;
 
-// y_spt_pause stuff
+// spt_pause stuff
 class PauseFeature : public FeatureWrapper<PauseFeature>
 {
 public:
@@ -121,18 +121,18 @@ void PauseFeature::LoadFeature()
 
 	if (!pause_works)
 	{
-		Warning("y_spt_pause has no effect.\n");
+		Warning("spt_pause has no effect.\n");
 	}
 	else
 	{
 		if (!pause1_works)
 		{
-			Warning("y_spt_pause 1 has no effect.\n");
+			Warning("spt_pause 1 has no effect.\n");
 		}
 
 		if (!pause2_works)
 		{
-			Warning("y_spt_pause 2 has no effect.\n");
+			Warning("spt_pause 2 has no effect.\n");
 		}
 
 		InitConcommandBase(y_spt_pause);

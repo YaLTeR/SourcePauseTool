@@ -15,7 +15,7 @@ ConVar y_spt_prevent_vag_crash(
     FCVAR_CHEAT | FCVAR_DONTRECORD,
     "Prevents the game from crashing from too many recursive teleports (useful when searching for vertical angle glitches).\n");
 
-// y_spt_prevent_vag_crash
+// spt_prevent_vag_crash
 class VAG : public FeatureWrapper<VAG>
 {
 public:

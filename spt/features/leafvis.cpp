@@ -8,7 +8,7 @@ namespace patterns
 	         "74 ?? 39 35 ?? ?? ?? ?? 0F 84 ?? ?? ?? ??");
 }
 
-ConVar y_spt_draw_leaf("y_spt_leafvis_index",
+ConVar y_spt_leafvis_index("y_spt_leafvis_index",
                        "0",
                        FCVAR_CHEAT,
                        "Choose which BSP leaf mat_leafvis will use. Requires mat_leafvis to be set\n");
@@ -35,12 +35,12 @@ void LeafVisFeature::InitHooks()
 void LeafVisFeature::LoadFeature()
 {
 	if (ORIG_MiddleOfLeafVisBuild != nullptr)
-		InitConcommandBase(y_spt_draw_leaf);
+		InitConcommandBase(y_spt_leafvis_index);
 }
 
 static __forceinline int GetLeafIndex()
 {
-	return y_spt_draw_leaf.GetInt();
+	return y_spt_leafvis_index.GetInt();
 }
 
 #pragma warning(push)
@@ -61,7 +61,7 @@ __declspec(naked) void LeafVisFeature::HOOKED_MiddleOfLeafVisBuild()
 	GetLeafIndex();
 	__asm {
 		cmp eax, 0;
-		cmova esi, eax; // override leafIndex in LeafVisBuild if y_spt_draw_leaf > 0
+		cmova esi, eax; // override leafIndex in LeafVisBuild if spt_leafvis_index > 0
 		popfd;
 		pop eax;
 		jmp spt_leafvis.ORIG_MiddleOfLeafVisBuild;

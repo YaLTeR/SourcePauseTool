@@ -193,7 +193,7 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	else
 	{
 		DevWarning("SPT: Could not find IGameMovement.\n");
-		DevWarning("SPT: ProcessMovement logging with tas_log is unavailable.\n");
+		DevWarning("SPT: ProcessMovement logging with spt_tas_log is unavailable.\n");
 	}
 
 	if (g_pCVar)
@@ -243,15 +243,15 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	if (!interfaces::engine)
 	{
 		DevWarning("SPT: Failed to get the IVEngineClient interface.\n");
-		Warning("SPT: y_spt_afterframes has no effect.\n");
-		Warning("SPT: _y_spt_setpitch and _y_spt_setyaw have no effect.\n");
-		Warning("SPT: _y_spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
-		Warning("SPT: y_spt_stucksave has no effect.\n");
+		Warning("SPT: spt_afterframes has no effect.\n");
+		Warning("SPT: spt_setpitch and _y_spt_setyaw have no effect.\n");
+		Warning("SPT: spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
+		Warning("SPT: spt_stucksave has no effect.\n");
 	}
 
 	if (utils::DoesGameLookLikePortal())
 	{
-		DevMsg("SPT: This game looks like portal. Setting the tas_* cvars appropriately.\n");
+		DevMsg("SPT: This game looks like portal. Setting the spt_tas_* cvars appropriately.\n");
 
 		tas_force_airaccelerate.SetValue(15);
 		tas_force_wishspeed_cap.SetValue(60);

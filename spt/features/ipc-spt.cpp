@@ -194,11 +194,11 @@ namespace ipc
 } // namespace ipc
 
 #if !defined(OE)
-CON_COMMAND(y_spt_ipc_ent, "y_spt_ipc_ent <entity index> - Outputs entity data to IPC client.\n")
+CON_COMMAND(y_spt_ipc_ent, "Outputs entity data to IPC client.\n")
 {
 	if (args.ArgC() < 2)
 	{
-		Msg("Usage: y_spt_ipc_ent <entity index>\n");
+		Msg("Usage: spt_ipc_ent <entity index>\n");
 		return;
 	}
 	else if (!ipc::IsActive())
@@ -227,13 +227,11 @@ CON_COMMAND(y_spt_ipc_ent, "y_spt_ipc_ent <entity index> - Outputs entity data t
 #endif
 
 #if !defined(OE)
-CON_COMMAND(
-    y_spt_ipc_properties,
-    "y_spt_ipc_properties <entity index> <property1> <property2> ... - Outputs entity properties to IPC client.\n")
+CON_COMMAND(y_spt_ipc_properties, "Outputs entity properties to IPC client.\n")
 {
 	if (args.ArgC() < 2)
 	{
-		Msg("Usage: y_spt_ipc_properties <entity index> <property1> <property2> ...\n");
+		Msg("Usage: spt_ipc_properties <entity index> <property1> <property2> ...\n");
 		return;
 	}
 	else if (!ipc::IsActive())
@@ -275,12 +273,11 @@ CON_COMMAND(
 }
 #endif
 
-CON_COMMAND(y_spt_ipc_echo,
-            "y_spt_ipc_echo <text> - Sends a text message to IPC client. Don't insert fancy characters into this.\n")
+CON_COMMAND(y_spt_ipc_echo, "Sends a text message to IPC client. Don't insert fancy characters into this.\n")
 {
 	if (args.ArgC() < 2)
 	{
-		Msg("Usage: y_spt_ipc_echo <text>\n");
+		Msg("Usage: spt_ipc_echo <text>\n");
 		return;
 	}
 	else if (!ipc::IsActive())

@@ -82,7 +82,7 @@ public:
 	{
 		std::vector<StaticMesh> meshes;
 		std::vector<std::pair<Vector, color32>> unmergedPts;
-		int flags; // NOT the same as y_spt_draw_pp_grid_type
+		int flags; // NOT the same as spt_draw_pp_grid_type
 		Vector camPos;
 		QAngle camAng;
 		int gridWidth = 0;
@@ -491,7 +491,7 @@ bool PortalPlacement::ShouldLoadFeature()
 {
 	if (!utils::DoesGameLookLikePortal())
 		return false;
-	// can't use a static ConVarRef cuz that'll be invalidated on every tas_restart
+	// can't use a static ConVarRef cuz that'll be invalidated on every spt_tas_restart_game
 	sv_portal_placement_never_fail = g_pCVar->FindVar("sv_portal_placement_never_fail");
 	return !!sv_portal_placement_never_fail;
 }

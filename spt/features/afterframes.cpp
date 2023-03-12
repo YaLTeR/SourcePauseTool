@@ -104,11 +104,11 @@ void AfterframesFeature::SetPaused(void* thisptr, bool paused)
 		ResumeAfterframesQueue();
 }
 
-CON_COMMAND(_y_spt_afterframes_wait, "Delays the afterframes queue. Usage: _y_spt_afterframes_wait <delay>")
+CON_COMMAND(_y_spt_afterframes_wait, "Delays the afterframes queue")
 {
 	if (args.ArgC() != 2)
 	{
-		Msg("Usage: _y_spt_afterframes_wait <delay>\n");
+		Msg("Usage: spt_afterframes_wait <delay>\n");
 		return;
 	}
 
@@ -117,11 +117,11 @@ CON_COMMAND(_y_spt_afterframes_wait, "Delays the afterframes queue. Usage: _y_sp
 	spt_afterframes.DelayAfterframesQueue(delay);
 }
 
-CON_COMMAND(_y_spt_afterframes, "Add a command into an afterframes queue. Usage: _y_spt_afterframes <count> <command>")
+CON_COMMAND(_y_spt_afterframes, "Add a command into an afterframes queue")
 {
 	if (args.ArgC() != 3)
 	{
-		Msg("Usage: _y_spt_afterframes <count> <command>\n");
+		Msg("Usage: spt_afterframes <count> <command>\n");
 		return;
 	}
 
@@ -137,11 +137,11 @@ CON_COMMAND(_y_spt_afterframes, "Add a command into an afterframes queue. Usage:
 #ifndef OE
 CON_COMMAND(
     _y_spt_afterframes2,
-    "Add everything after count as a command into the queue. Do not insert the command in quotes. Usage: _y_spt_afterframes2 <count> <command>")
+    "Add everything after count as a command into the queue. Do not insert the command in quotes")
 {
 	if (args.ArgC() < 3)
 	{
-		Msg("Usage: _y_spt_afterframes2 <count> <command>\n");
+		Msg("Usage: spt_afterframes2 <count> <command>\n");
 		return;
 	}
 
@@ -197,12 +197,12 @@ void AfterframesFeature::LoadFeature()
 			if (!SetPausedSignal.Works)
 			{
 				_y_spt_afterframes_await_legacy.SetValue(1);
-				Warning("_y_spt_afterframes_await_legacy 0 has no effect.\n");
+				Warning("spt_afterframes_await_legacy 0 has no effect.\n");
 			}
 			else if (!FinishRestoreSignal.Works)
 			{
 				_y_spt_afterframes_await_legacy.SetValue(0);
-				Warning("_y_spt_afterframes_await_legacy 1 has no effect.\n");
+				Warning("spt_afterframes_await_legacy 1 has no effect.\n");
 			}
 		}
 	}

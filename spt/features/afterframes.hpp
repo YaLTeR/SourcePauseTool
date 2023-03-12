@@ -14,7 +14,7 @@ struct afterframes_entry_t
 	std::string command;
 };
 
-// This feature enables _y_spt_afterframes
+// This feature enables spt_afterframes
 class AfterframesFeature : public FeatureWrapper<AfterframesFeature>
 {
 public:

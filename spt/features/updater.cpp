@@ -91,17 +91,17 @@ CON_COMMAND(y_spt_check_update, "Check the release information of spt.")
 		Msg("Ahead of latest release version.\n");
 		break;
 	case Updater::UPDATER_OUTDATED:
-		Msg("Found newer version. Update with `y_spt_update`, or download at '%s'\n",
+		Msg("Found newer version. Update with `spt_update`, or download at '%s'\n",
 		    spt_updater.release.url.c_str());
 		break;
 	}
 }
 
-CON_COMMAND(y_spt_update, "Check and install available update for spt. Usage: y_spt_update [force]")
+CON_COMMAND(y_spt_update, "Check and install available update for spt")
 {
 	if (args.ArgC() > 2)
 	{
-		Msg("Usage: y_spt_update [force]\n");
+		Msg("Usage: spt_update [force]\n");
 		return;
 	}
 	bool force = false;
@@ -122,7 +122,7 @@ CON_COMMAND(y_spt_update, "Check and install available update for spt. Usage: y_
 	else if (res == Updater::UPDATER_AHEAD)
 	{
 		Msg("Ahead of latest release version.\n");
-		Msg("Use `y_spt_update force` to install the latest release version.\n");
+		Msg("Use `spt_update force` to install the latest release version.\n");
 	}
 }
 

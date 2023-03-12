@@ -338,9 +338,13 @@ static QAngle firstAngle;
 static Vector firstPos;
 static bool firstInvocation = true;
 
-CON_COMMAND(
-    y_spt_find_seam_shot,
-    "y_spt_find_seam_shot [<pitch1> <yaw1> <pitch2> <yaw2> <epsilon>] - tries to find a seam shot on a \"line\" between viewangles (pitch1; yaw1) and (pitch2; yaw2) with binary search. Decreasing epsilon will result in more viewangles checked. A default value is 0.00001. If no arguments are given, first invocation selects the first point, second invocation selects the second point and searches between them.")
+static const char find_seam_shot_help[] =
+    "Usage: spt_find_seam_shot <pitch1> <yaw1> <pitch2> <yaw2> <epsilon>\n" \
+    "Tries to find a seam shot on a \"line\" between viewangles (pitch1; yaw1) and (pitch2; yaw2) with binary search. " \
+    "Decreasing epsilon will result in more viewangles checked. A default value is 0.00001. " \
+    "If no arguments are given, first invocation selects the first point, second invocation selects the second point and searches between them.";
+
+CON_COMMAND(y_spt_find_seam_shot, find_seam_shot_help)
 {
 	auto player = utils::GetServerPlayer();
 	if (!player)
@@ -385,7 +389,7 @@ CON_COMMAND(
 	{
 		if (args.ArgC() != 5 && args.ArgC() != 6)
 		{
-			Msg("Usage: y_spt_find_seam_shot <pitch1> <yaw1> <pitch2> <yaw2> <epsilon> - tries to find a seam shot on a \"line\" between viewangles (pitch1; yaw1) and (pitch2; yaw2) with binary search. Decreasing epsilon will result in more viewangles checked. A default value is 0.00001. If no arguments are given, first invocation selects the first point, second invocation selects the second point and searches between them.\n");
+			Msg("%s\n", find_seam_shot_help);
 			return;
 		}
 
@@ -439,10 +443,10 @@ CON_COMMAND(
 void Tracing::LoadFeature()
 {
 	if (!ORIG_UTIL_TraceRay)
-		Warning("tas_strafe_version 1 not available\n");
+		Warning("spt_tas_strafe_version 1 not available\n");
 
 	if (!CanTracePlayerBBox())
-		Warning("tas_strafe_version 2 not available\n");
+		Warning("spt_tas_strafe_version 2 not available\n");
 
 #ifdef SPT_TRACE_PORTAL_ENABLED
 	if (utils::DoesGameLookLikePortal() && ORIG_TraceFirePortal)
