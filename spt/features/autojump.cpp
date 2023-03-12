@@ -189,7 +189,7 @@ void AutojumpFeature::LoadFeature()
 	}
 	else
 	{
-		Warning("y_spt_autojump has no effect.\n");
+		Warning("spt_autojump has no effect.\n");
 	}
 
 	if (ORIG_FinishGravity)

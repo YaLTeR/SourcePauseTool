@@ -45,9 +45,9 @@ namespace scripts
 		fileName = script;
 		CommonExecuteScript(false);
 
-		spt_afterframes.AddAfterFramesEntry(afterframes_entry_t(0, "y_spt_cvar fps_max 0; mat_norendering 1"));
+		spt_afterframes.AddAfterFramesEntry(afterframes_entry_t(0, "spt_cvar fps_max 0; mat_norendering 1"));
 		tickTime = spt_tickrate.GetTickrate();
-		snprintf(buffer, ARRAYSIZE(buffer), "y_spt_cvar fps_max %.6f; mat_norendering 0", 1 / tickTime);
+		snprintf(buffer, ARRAYSIZE(buffer), "spt_cvar fps_max %.6f; mat_norendering 0", 1 / tickTime);
 		int resumeTick = GetCurrentScriptLength() - resumeTicks;
 		spt_afterframes.AddAfterFramesEntry(afterframes_entry_t(resumeTick, buffer));
 	}
@@ -92,7 +92,7 @@ namespace scripts
 #if OE
 			const char* dir = y_spt_gamedir.GetString();
 			if (dir == NULL || dir[0] == '\0')
-				Msg("WARNING: Trying to load a script file without setting the game directory with y_spt_gamedir in old engine!\n");
+				Msg("WARNING: Trying to load a script file without setting the game directory with spt_gamedir in old engine!\n");
 #endif
 
 			std::string gameDir = GetGameDir();
@@ -198,7 +198,7 @@ namespace scripts
 
 		if (spt_demostuff.Demo_IsAutoRecordingAvailable())
 		{
-			currentScript.AddAfterFramesEntry(demoDelay, "y_spt_record " + demoName);
+			currentScript.AddAfterFramesEntry(demoDelay, "spt_record " + demoName);
 		}
 		else
 		{

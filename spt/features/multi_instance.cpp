@@ -18,7 +18,7 @@ CON_COMMAND(y_spt_release_mutex, "Releases \"hl2_singleton_mutex\" to enable run
 		Warning("Failed to obtain hl2_singleton_mutex handle.\n");
 }
 
-// y_spt_release_mutex
+// spt_release_mutex
 class MultiInstance : public FeatureWrapper<MultiInstance>
 {
 public:

@@ -10,7 +10,7 @@
 #endif
 
 
-// y_spt_autojump
+// spt_autojump
 class AutojumpFeature : public FeatureWrapper<AutojumpFeature>
 {
 public:

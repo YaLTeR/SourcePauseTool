@@ -36,7 +36,7 @@ public:
 	std::shared_ptr<StaticMeshUnit> meshPtr;
 
 private:
-	// keep a linked list through all static meshes for proper cleanup w/ tas_restart
+	// keep a linked list through all static meshes for proper cleanup w/ spt_tas_restart_game
 	StaticMesh *prev, *next;
 	static StaticMesh* first;
 

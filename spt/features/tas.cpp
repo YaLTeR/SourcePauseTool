@@ -24,7 +24,7 @@ ConVar tas_strafe_dir(
     "tas_strafe_dir",
     "3",
     FCVAR_TAS_RESET,
-    "TAS strafe dirs:\n\t0 - to the left,\n\t1 - to the right,\n\t3 - to the yaw given in tas_strafe_yaw.");
+    "TAS strafe dirs:\n\t0 - to the left,\n\t1 - to the right,\n\t3 - to the yaw given in spt_tas_strafe_yaw.");
 ConVar tas_strafe_scale("tas_strafe_scale",
                         "1",
                         FCVAR_TAS_RESET,
@@ -33,7 +33,7 @@ ConVar tas_strafe_scale("tas_strafe_scale",
                         0.0f,
                         true,
                         1.0f);
-ConVar tas_strafe_yaw("tas_strafe_yaw", "", FCVAR_TAS_RESET, "Yaw to strafe to with tas_strafe_dir = 3.");
+ConVar tas_strafe_yaw("tas_strafe_yaw", "", FCVAR_TAS_RESET, "Yaw to strafe to with spt_tas_strafe_dir = 3.");
 ConVar tas_strafe_buttons(
     "tas_strafe_buttons",
     "",
@@ -48,11 +48,11 @@ ConVar tas_strafe_vectorial_increment(
     "tas_strafe_vectorial_increment",
     "2.5",
     FCVAR_TAS_RESET,
-    "Has no effect on tas_strafe_version >= 4. Determines how fast the player yaw angle moves towards the target yaw angle. 0 for no movement, 180 for instant snapping. Has no effect on strafing speed.\n");
+    "Has no effect on spt_tas_strafe_version >= 4. Determines how fast the player yaw angle moves towards the target yaw angle. 0 for no movement, 180 for instant snapping. Has no effect on strafing speed.\n");
 ConVar tas_strafe_vectorial_offset("tas_strafe_vectorial_offset",
                                    "0",
                                    FCVAR_TAS_RESET,
-                                   "Determines the target view angle offset from tas_strafe_yaw\n");
+                                   "Determines the target view angle offset from spt_tas_strafe_yaw\n");
 ConVar tas_strafe_vectorial_snap(
     "tas_strafe_vectorial_snap",
     "170",
@@ -110,7 +110,7 @@ ConVar tas_strafe_lgagst(
     "tas_strafe_lgagst",
     "0",
     FCVAR_TAS_RESET,
-    "If enabled, jumps automatically when it's faster to move in the air than on ground. Incomplete, intended use is for tas_strafe_glitchless only.\n");
+    "If enabled, jumps automatically when it's faster to move in the air than on ground. Incomplete, intended use is for spt_tas_strafe_glitchless only.\n");
 ConVar tas_strafe_lgagst_minspeed(
     "tas_strafe_lgagst_minspeed",
     "30",
@@ -254,7 +254,7 @@ void TASFeature::Strafe()
 
 CON_COMMAND_AUTOCOMPLETEFILE(
     tas_script_load,
-    "Loads and executes an .srctas script. If an extra ticks argument is given, the script is played back at maximal FPS and without rendering until that many ticks before the end of the script. Usage: tas_load_script <script> [ticks]",
+    "Loads and executes an .srctas script. If an extra ticks argument is given, the script is played back at maximal FPS and without rendering until that many ticks before the end of the script",
     0,
     "",
     ".srctas")
@@ -266,19 +266,15 @@ CON_COMMAND_AUTOCOMPLETEFILE(
 		scripts::g_TASReader.ExecuteScriptWithResume(args.Arg(1), std::stoi(args.Arg(2)));
 	}
 	else
-		Msg("Loads and executes an .srctas script. Usage: tas_load_script <script> [ticks]\n");
+		Msg("Usage: spt_tas_load_script <script> [ticks]\n");
 }
 
-CON_COMMAND_AUTOCOMPLETEFILE(tas_script_search,
-                             "Starts a variable search for an .srctas script. Usage: tas_load_search [script]",
-                             0,
-                             "",
-                             ".srctas")
+CON_COMMAND_AUTOCOMPLETEFILE(tas_script_search, "Starts a variable search for an .srctas script", 0, "", ".srctas")
 {
 	if (args.ArgC() > 1)
 		scripts::g_TASReader.StartSearch(args.Arg(1));
 	else
-		Msg("Starts a variable search for an .srctas script. Usage: tas_load_search [script]\n");
+		Msg("Usage: spt_tas_load_search [script]\n");
 }
 
 CON_COMMAND(tas_script_result_success, "Signals a successful result in a variable search.")

@@ -31,11 +31,11 @@ ConVar y_spt_draw_portal_env_type(
     "y_spt_draw_portal_env_type",
     "auto",
     FCVAR_CHEAT | FCVAR_DONTRECORD,
-    "Usage: y_spt_draw_portal_env_type collide|auto|blue|orange|<index>; this determines what portal to use for all y_spt_draw_portal_* cvars.\n"
+    "This determines what portal to use for all spt_draw_portal_* cvars. Accepts the following values:\n"
     "   - collide: draw what the player has collision with\n"
     "   - auto: prioritize what the player has collision with, otherwise use last drawn portal index\n"
     "   - blue/orange: look for specific portal color\n"
-    "   - index: specify portal entity index");
+    "   - <index>: specify portal entity index");
 
 ConVar y_spt_draw_portal_env_ents(
     "y_spt_draw_portal_env_ents",

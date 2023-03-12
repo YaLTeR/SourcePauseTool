@@ -146,7 +146,7 @@ void DemoStuff::PreHook()
 		}
 		else
 			Warning(
-			    "Record pattern had no matching clause for catching the demoplayer. y_spt_pause_demo_on_tick unavailable.\n");
+			    "Record pattern had no matching clause for catching the demoplayer. spt_pause_demo_on_tick unavailable.\n");
 
 		DevMsg("Found demoplayer at %p, record is at %p.\n", pDemoplayer, (void*)ORIG_Record);
 
@@ -318,7 +318,7 @@ CON_COMMAND(y_spt_record, "Starts autorecording a demo.")
 {
 	if (args.ArgC() == 1)
 	{
-		Msg("Usage: y_spt_record <filepath> [incremental]\n");
+		Msg("Usage: spt_record <filepath> [incremental]\n");
 		return;
 	}
 

@@ -7,8 +7,8 @@
 
 /*
 * A StaticMesh is what we give to the user as a wrapper of a StaticMeshUnit - it's just a shared pointer but we
-* also keep a linked list through all static meshes so that we can destroy them when we do tas_restart. This is so
-* that you can have StaticMesh objects as static variables and not have to worry about cleaning them up when
+* also keep a linked list through all static meshes so that we can destroy them when we do spt_tas_restart_game.
+* This is so that you can have StaticMesh objects as static variables and not have to worry about cleaning them up when
 * features unload. If necessary, the same idea could be abstracted for other types of objects (like ConVarRefs).
 */
 

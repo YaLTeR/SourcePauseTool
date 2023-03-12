@@ -44,7 +44,7 @@ CON_COMMAND_F(y_spt_set_collision_group, "Set player's collision group\nUsually:
 
 	if (args.ArgC() < 2)
 	{
-		Warning("Format: y_spt_set_collision_group <collision group index>\nUsually:\n- 5 is normal collisions\n- 10 is quickclip\n");
+		Warning("Format: spt_set_collision_group <collision group index>\nUsually:\n- 5 is normal collisions\n- 10 is quickclip\n");
 		return;
 	}
 

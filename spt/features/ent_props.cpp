@@ -381,7 +381,7 @@ CON_COMMAND(y_spt_canjb, "Tests if player can jumpbug on a given height, with th
 {
 	if (args.ArgC() < 2)
 	{
-		Msg("Usage: y_spt_canjb [height]\n");
+		Msg("Usage: spt_canjb [height]\n");
 		return;
 	}
 
@@ -410,7 +410,7 @@ CON_COMMAND(y_spt_print_ent_props, "Prints all props for a given entity index.")
 {
 	if (args.ArgC() < 2)
 	{
-		Msg("Usage: y_spt_print_ent_props [index]\n");
+		Msg("Usage: spt_print_ent_props [index]\n");
 	}
 	else
 	{

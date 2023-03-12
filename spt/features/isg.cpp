@@ -47,7 +47,7 @@ protected:
 		if (ORIG_MiddleOfRecheck_ov_element)
 			this->isgFlagPtr = *(bool**)(ORIG_MiddleOfRecheck_ov_element + 2);
 		else
-			Warning("y_spt_hud_isg 1 and y_spt_set_isg have no effect\n");
+			Warning("spt_hud_isg 1 and spt_set_isg have no effect\n");
 	}
 
 	virtual void LoadFeature() override;

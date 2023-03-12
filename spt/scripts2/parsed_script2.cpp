@@ -67,7 +67,7 @@ namespace scripts2
 
 		++demoCount;
 		AddAfterFramesEntry(afterFramesTick,
-		                    "save " + sName + "; load " + sName + +";  _y_spt_afterframes_await_load");
+		                    "save " + sName + "; load " + sName + +";  spt_afterframes_await_load");
 		// Only manually record if autorecording isn't available
 		if (!spt_demostuff.Demo_IsAutoRecordingAvailable() && !demoName.empty())
 			AddAfterFramesEntry(afterFramesTick + 1,
@@ -84,7 +84,7 @@ namespace scripts2
 		afterFramesEntries.clear();
 		saveStateIndexes.clear();
 		initCommand =
-		    "sv_cheats 1; y_spt_pause 0;_y_spt_afterframes_await_load; _y_spt_afterframes_reset_on_server_activate 0; _y_spt_resetpitchyaw;"
+		    "sv_cheats 1; spt_pause 0; spt_afterframes_await_load; spt_afterframes_reset_on_server_activate 0; spt_resetpitchyaw;"
 		    "tas_aim_reset";
 		duringLoad.clear();
 		saveName.clear();
