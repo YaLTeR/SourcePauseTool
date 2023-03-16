@@ -331,6 +331,9 @@
     <ClCompile Include="thirdparty\x86.c">
       <Filter>thirdparty</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\visualizations\draw_ent_collides.cpp">
+      <Filter>spt\features\visualizations</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">

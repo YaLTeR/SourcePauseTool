@@ -1221,6 +1221,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClCompile Include="spt\features\updater.cpp" />
     <ClCompile Include="spt\features\vag.cpp" />
     <ClCompile Include="spt\features\vag_searcher.cpp" />
+    <ClCompile Include="spt\features\visualizations\draw_ent_collides.cpp" />
     <ClCompile Include="spt\features\visualizations\draw_seams.cpp" />
     <ClCompile Include="spt\features\visualizations\mesh_test.cpp" />
     <ClCompile Include="spt\features\visualizations\portal_placement.cpp" />
