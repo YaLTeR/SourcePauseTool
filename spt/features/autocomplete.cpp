@@ -1,4 +1,7 @@
 #include "stdafx.hpp"
+
+#ifndef BMS
+
 #include "..\feature.hpp"
 #include "..\utils\convar.hpp"
 #include "..\utils\game_detection.hpp"
@@ -83,3 +86,5 @@ void AutocompleteFeature::UnloadFeature()
 	if (execCommand)
 		execCommand->m_fnCompletionCallback = ORIG_execCompleteFunc;
 }
+
+#endif // !BMS
