@@ -453,35 +453,35 @@ void EntProps::LoadFeature()
 			    spt_hud.DrawTopHudElement(L"portal bubble: %d", in_bubble);
 		    },
 		    y_spt_hud_portal_bubble);
-
-		bool result = spt_hud.AddHudCallback(HudCallback(
-		    "z",
-		    []()
-		    {
-			    std::string info(y_spt_hud_ent_info.GetString());
-			    if (!whiteSpacesOnly(info))
-			    {
-				    int entries = utils::FillInfoArray(info,
-				                                       INFO_ARRAY,
-				                                       MAX_ENTRIES,
-				                                       INFO_BUFFER_SIZE,
-				                                       PROP_SEPARATOR,
-				                                       ENT_SEPARATOR);
-				    for (int i = 0; i < entries; ++i)
-				    {
-					    spt_hud.DrawTopHudElement(INFO_ARRAY + i * INFO_BUFFER_SIZE);
-				    }
-			    }
-		    },
-		    []() { return true; },
-		    false));
-
-		if (result)
-		{
-			InitConcommandBase(y_spt_hud_ent_info);
-		}
 	}
 #endif
+
+	bool result = spt_hud.AddHudCallback(HudCallback(
+	    "z",
+	    []()
+	    {
+		    std::string info(y_spt_hud_ent_info.GetString());
+		    if (!whiteSpacesOnly(info))
+		    {
+			    int entries = utils::FillInfoArray(info,
+			                                       INFO_ARRAY,
+			                                       MAX_ENTRIES,
+			                                       INFO_BUFFER_SIZE,
+			                                       PROP_SEPARATOR,
+			                                       ENT_SEPARATOR);
+			    for (int i = 0; i < entries; ++i)
+			    {
+				    spt_hud.DrawTopHudElement(INFO_ARRAY + i * INFO_BUFFER_SIZE);
+			    }
+		    }
+	    },
+	    []() { return true; },
+	    false));
+
+	if (result)
+	{
+		InitConcommandBase(y_spt_hud_ent_info);
+	}
 }
 
 void** _InternalPlayerField::GetServerPtr() const
