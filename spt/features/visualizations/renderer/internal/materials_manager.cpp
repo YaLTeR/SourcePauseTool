@@ -36,4 +36,20 @@ void MeshBuilderMatMgr::Unload()
 		(*mat).Release();
 }
 
+MaterialRef MeshBuilderMatMgr::GetMaterial(MeshMaterialSimple materialType)
+{
+	switch (materialType)
+	{
+	case MeshMaterialSimple::Opaque:
+		return matOpaque;
+	case MeshMaterialSimple::Alpha:
+		return matAlpha;
+	case MeshMaterialSimple::AlphaNoZ:
+		return matAlphaNoZ;
+	default:
+		Assert(0);
+		return nullptr;
+	}
+}
+
 #endif

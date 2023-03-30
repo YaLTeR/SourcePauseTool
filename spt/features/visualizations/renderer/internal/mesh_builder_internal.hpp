@@ -69,6 +69,10 @@ enum class MeshPrimitiveType
 	Count
 };
 
+// we will set aside buffers for the simple component types, meshes with other types will be allocated separately
+#define MAX_SIMPLE_COMPONENTS ((size_t)MeshPrimitiveType::Count * (size_t)MeshMaterialSimple::Count)
+#define SIMPLE_COMPONENT_INDEX(type, matType) ((size_t)(type) * (size_t)MeshMaterialSimple::Count + (size_t)(matType))
+
 // contains the instructions for creating an IMesh* object
 struct MeshVertData
 {
@@ -171,62 +175,67 @@ using ConstCompIntrvl = std::pair<CompContainer::const_iterator, CompContainer::
 * sharedVertDataArrays: meshVertData[0]..meshVertData[1]....meshVertData[2]..meshVertData[3]....meshVertData[4]
 *                       V                V                  V                V                  V
 *                       comp_slice[0,0]..comp_slice[1,0:3]..comp_slice[2,0]..comp_slice[3,0:2]..comp_slice[4,0:3]
-* 
-* We have to use linked lists intead of vectors because each slice keeps a pointer to the vector and allocations
-* would move it around if we used a vector of vectors. This system supports arbitrary many components, but adding
-* anything to a mesh unit requires an O(N) lookup for N components. In practice this doesn't matter, for basic
-* geometry meshes N<=6 and usually N<=2. Also, since the shared lists are chosen in order, the first one will
-* always end up being the biggest.
 */
 
 struct MeshBuilderInternal
 {
 	struct
 	{
-		// can't use std::swap on the inner vectors since they're pointed to from slices
-		std::forward_list<std::vector<VertexData>> verts;
-		std::forward_list<std::vector<VertIndex>> indices;
-		std::vector<MeshVertData> vertData;
+		struct
+		{
+			std::array<std::vector<VertexData>, MAX_SIMPLE_COMPONENTS> verts;
+			std::array<std::vector<VertIndex>, MAX_SIMPLE_COMPONENTS> indices;
+		} simple;
+
+		/*struct
+		{
+			std::forward_list<std::vector<VertexData>> verts;
+			std::forward_list<std::vector<VertIndex>> indices;
+		} complex;*/
+
+		std::vector<MeshVertData> dynamicMeshData;
+
 	} sharedLists;
 
-	VectorSlice<MeshVertData> curMeshVertData;
+	struct TmpMesh
+	{
+		// will always have at least MAX_SIMPLE_COMPONENTS
+		std::vector<MeshVertData> components;
+
+		void Create(const MeshCreateFunc& createFunc);
+		MeshPositionInfo CalcPosInfo();
+	} tmpMesh;
 
 	VectorStack<DynamicMeshUnit> dynamicMeshUnits;
 
-	MeshVertData& GetComponentInCurrentMesh(MeshPrimitiveType type, MaterialRef material);
-	MeshPositionInfo _CalcPosInfoForCurrentMesh();
+	MeshVertData& GetSimpleMeshComponent(MeshPrimitiveType type, MeshMaterialSimple material);
 
-	/*
-	* For mesh fusing, the renderer will give us an interval of components from a list with BeginIMeshCreation().
-	* Consecutive elements are fused so long as they don't exceed the max vert/index count. As we iterate we'll
-	* update curIntrvl.first, and fusedIntrvl is the last interval used to create an IMesh (for debug meshes).
-	*/
-
-	struct
+	struct Fuser
 	{
+		/*
+		* During rendering (or when creating static meshes), we'll be given an interval via BeginIMeshCreation().
+		* Consecutive elements are fused so long as they don't exceed the max vert/index count.
+		*/
+
+		// for keeping track of where we are in the given interval
 		ConstCompIntrvl curIntrvl;
-		ConstCompIntrvl fusedIntrvl;
+		// used for debug meshes
+		ConstCompIntrvl lastFusedIntrvl;
 		size_t maxVerts, maxIndices;
 		bool dynamic;
-	} creationState;
 
-	void BeginIMeshCreation(ConstCompIntrvl intrvl, bool dynamic);
-	IMeshWrapper _CreateIMeshFromInterval(ConstCompIntrvl intrvl,
-	                                      size_t totalVerts,
-	                                      size_t totalIndices,
-	                                      bool dynamic);
-	IMeshWrapper GetNextIMeshWrapper();
+		void BeginIMeshCreation(ConstCompIntrvl intrvl, bool dynamic);
+		IMeshWrapper GetNextIMeshWrapper();
+
+	private:
+		IMeshWrapper CreateIMeshFromInterval(ConstCompIntrvl intrvl, size_t totalVerts, size_t totalIndices);
+
+	} fuser;
 
 	void FrameCleanup();
 	const DynamicMeshUnit& GetDynamicMeshFromToken(DynamicMeshToken token) const;
 };
 
 inline MeshBuilderInternal g_meshBuilderInternal;
-
-#define GET_VDATA_FACES_CUSTOM_MATERIAL(material) \
-	g_meshBuilderInternal.GetComponentInCurrentMesh(MeshPrimitiveType::Triangles, material)
-
-#define GET_VDATA_LINES_CUSTOM_MATERIAL(material) \
-	g_meshBuilderInternal.GetComponentInCurrentMesh(MeshPrimitiveType::Lines, material)
 
 #endif

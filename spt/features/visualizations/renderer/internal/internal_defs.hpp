@@ -18,14 +18,9 @@
 #endif
 #include "vprof.h"
 
-#define VPROF_BUDGETGROUP_MESHBUILDER _T("Mesh_Builder")
 #define VPROF_BUDGETGROUP_MESH_RENDERER _T("Mesh_Renderer")
 
 #include <stack>
-
-// used to check if dynamic mesh tokens are valid, increases every frame
-inline int g_meshRenderFrameNum = 0;
-inline bool g_inMeshRenderSignal = false;
 
 using VertIndex = unsigned short;
 using DynamicMeshToken = DynamicMesh;

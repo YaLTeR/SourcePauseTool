@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mesh_builder_internal.hpp"
+#include "..\mesh_renderer.hpp"
 
 #ifdef SPT_MESH_RENDERING_ENABLED
 
@@ -44,6 +45,12 @@ struct MeshRendererInternal
 		const CViewSetup* viewSetup;
 		cplane_t frustum[FRUSTUM_NUMPLANES];
 	} viewInfo;
+
+	bool renderingSkyBox = false;
+
+	// used to check if dynamic meshes are valid
+	int frameNum = 0;
+	bool inSignal = false;
 
 	/*
 	* For simplicity, we make debug meshes not do z-testing. If we do this we can queue debug meshes in

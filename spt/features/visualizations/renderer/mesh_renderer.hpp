@@ -54,9 +54,9 @@ struct CallbackInfoOut
 typedef std::function<void(const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)> RenderCallback;
 
 /*
-* This is a helpful callback for rendering geometry that overlayed directly on top of game objects.
+* This is a helpful callback for rendering geometry that is overlayed directly on top of game objects.
 * Normally this can cause a lot of z-fighting, especially when overlaying geometry on top of the world.
-* This callback fixes that that by scaling all overlayed geometry slightly towards the camera.
+* This callback fixes that that by scaling the mesh slightly towards the camera.
 */
 inline void RenderCallbackZFightFix(const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut, float scaleFactor = 0.999f)
 {
@@ -96,14 +96,11 @@ private:
 */
 class MeshRendererFeature : public FeatureWrapper<MeshRendererFeature>
 {
-private:
-	struct CPortalRender** g_pPortalRender = nullptr;
-
 public:
 	// Works() method valid during or after LoadFeature()
 	Gallant::Signal1<MeshRendererDelegate&> signal;
 
-	// returns -1 if not available
+	// 0 for main view, 1 when looking through a portal, etc.
 	int CurrentPortalRenderDepth() const;
 
 protected:
@@ -114,7 +111,24 @@ protected:
 	void UnloadFeature() override;
 
 private:
-	DECL_MEMBER_CDECL(void, OnRenderStart);
+#ifdef SSDK2007
+	DECL_HOOK_THISCALL(void,
+	                   CSkyBoxView__DrawInternal,
+	                   void*,
+	                   view_id_t iSkyBoxViewID,
+	                   bool bInvokePreAndPostRender,
+	                   ITexture* pRenderTarget);
+
+#else
+	DECL_HOOK_THISCALL(void,
+	                   CSkyBoxView__DrawInternal,
+	                   void*,
+	                   view_id_t iSkyBoxViewID,
+	                   bool bInvokePreAndPostRender,
+	                   ITexture* pRenderTarget,
+	                   ITexture* pDepthTarget);
+#endif
+
 	DECL_HOOK_THISCALL(void, CRendering3dView__DrawOpaqueRenderables, CRendering3dView*, int param);
 
 	DECL_HOOK_THISCALL(void,
