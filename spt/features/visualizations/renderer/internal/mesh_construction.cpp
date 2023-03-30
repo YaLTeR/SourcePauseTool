@@ -42,14 +42,18 @@ Vector* Scratch(size_t n)
 
 #define INVERT_WD(wd) (((wd)&WD_BOTH) == WD_BOTH ? WD_BOTH : (WindingDir)((wd & WD_BOTH) ^ WD_BOTH))
 
-#define BASIC_MATERIAL(color_rgba, zTest) \
-	((zTest) ? ((color_rgba).a == 255 ? g_meshMaterialMgr.matOpaque : g_meshMaterialMgr.matAlpha) \
-	         : g_meshMaterialMgr.matAlphaNoZ)
+#define _MATERIAL_TYPE_FROM_COLOR(color_rgba, zTest) \
+	((zTest) ? ((color_rgba).a == 255 ? MeshMaterialSimple::Opaque : MeshMaterialSimple::Alpha) \
+	         : MeshMaterialSimple::AlphaNoZ)
 
-#define GET_VDATA_FACES(color) GET_VDATA_FACES_CUSTOM_MATERIAL(BASIC_MATERIAL(color.faceColor, color.zTestFaces))
-#define GET_VDATA_LINES(color) GET_VDATA_LINES_CUSTOM_MATERIAL(BASIC_MATERIAL(color.lineColor, color.zTestLines))
+#define GET_VDATA_FACES(color) \
+	g_meshBuilderInternal.GetSimpleMeshComponent(MeshPrimitiveType::Triangles, \
+	                                             _MATERIAL_TYPE_FROM_COLOR((color).faceColor, (color).zTestFaces))
+#define GET_VDATA_LINES(color) \
+	g_meshBuilderInternal.GetSimpleMeshComponent(MeshPrimitiveType::Lines, \
+	                                             _MATERIAL_TYPE_FROM_COLOR((color).lineColor, (color).zTestLines))
 
-#define DECLARE_MULTIPLE_COMPONENTS(count) g_meshBuilderInternal.curMeshVertData.reserve_extra(count)
+#define DECLARE_MULTIPLE_COMPONENTS(count) (void)0
 
 /*
 * Instead of using data->Reserve directly - give the numbers to this struct and it will check that
@@ -754,7 +758,6 @@ void MeshBuilderDelegate::AddArrow3D(const Vector& pos,
 	size_t outerCircleFaceIdx = vdf.verts.size() - nCirclePoints;
 	size_t outerCircleLineIdx = vdl.verts.size() - nCirclePoints;
 
-	// TODO TEST MIRROR WITH LOOP HERE
 	if (c.faceColor.a != 0)
 		_AddFaceTriangleStripIndices(vdf,
 		                             outerCircleFaceIdx,

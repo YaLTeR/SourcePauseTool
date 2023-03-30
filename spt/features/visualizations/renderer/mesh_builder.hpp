@@ -190,7 +190,7 @@ private:
 	MeshBuilderDelegate() = default;
 	MeshBuilderDelegate(MeshBuilderDelegate&) = delete;
 
-	friend class MeshBuilderPro;
+	friend struct MeshBuilderInternal;
 
 	// internal construction helper methods
 

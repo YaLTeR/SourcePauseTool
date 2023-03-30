@@ -47,6 +47,14 @@ using MaterialRef = AutoRefPtr<IMaterial*, MaterialRefMgr>;
 
 using TextureRef = AutoRefPtr<ITexture*, TextureRefMgr>;*/
 
+enum class MeshMaterialSimple
+{
+	Opaque,
+	Alpha,
+	AlphaNoZ,
+	Count
+};
+
 
 struct MeshBuilderMatMgr
 {
@@ -54,6 +62,7 @@ struct MeshBuilderMatMgr
 
 	void Load();
 	void Unload();
+	MaterialRef GetMaterial(MeshMaterialSimple materialType);
 };
 
 inline MeshBuilderMatMgr g_meshMaterialMgr;

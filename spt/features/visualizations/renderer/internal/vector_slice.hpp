@@ -95,12 +95,12 @@ struct VectorSlice
 		vec->insert(vec->end(), first, last);
 	}
 
-	inline void reserve_extra(size_t n)
+	/*inline void reserve_extra(size_t n)
 	{
 		_verify_at_end();
 		if (vec->capacity() < off + len + n)
 			vec->reserve(SmallestPowerOfTwoGreaterOrEqual(off + len + n));
-	}
+	}*/
 
 	inline void resize(size_t n)
 	{
@@ -109,7 +109,7 @@ struct VectorSlice
 		len = n;
 	}
 
-	template<class _Pr>
+	/*template<class _Pr>
 	inline void erase_if(_Pr pred)
 	{
 		_verify_at_end();
@@ -117,7 +117,7 @@ struct VectorSlice
 		auto removed = std::distance(it, end());
 		vec->erase(it, end());
 		len -= removed;
-	}
+	}*/
 
 	inline void push_back(const T& elem)
 	{

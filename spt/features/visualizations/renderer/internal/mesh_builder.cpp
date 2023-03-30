@@ -11,6 +11,7 @@
 #include "spt\utils\game_detection.hpp"
 
 #include "internal_defs.hpp"
+#include "mesh_renderer_internal.hpp"
 
 // TODO use this to implement auto-spilling?
 void GetMaxMeshSize(size_t& maxVerts, size_t& maxIndices, bool dynamic)
@@ -91,60 +92,62 @@ StaticMeshUnit::~StaticMeshUnit()
 
 /**************************************** MESH BUILDER INTERNAL ****************************************/
 
-MeshVertData& MeshBuilderInternal::GetComponentInCurrentMesh(MeshPrimitiveType type, MaterialRef material)
+MeshVertData& MeshBuilderInternal::GetSimpleMeshComponent(MeshPrimitiveType type, MeshMaterialSimple material)
 {
-	// look through all components that we already have in the current mesh and see if any match the type/material
-	auto vDataIt = std::find_if(curMeshVertData.begin(),
-	                            curMeshVertData.end(),
-	                            [=](const MeshVertData& vd) { return vd.type == type && vd.material == material; });
-
-	if (vDataIt != curMeshVertData.end())
-		return *vDataIt;
-
-	/*
-	* We didn't find a matching component, so we need to create a new one. If this is the Nth component, we'll
-	* find the Nth shared list (for verts & indices) to initialize the component from. If there aren't N shared
-	* lists, then we'll just add a new one to the end of the linked lists.
-	*/
-
-	auto vertIt = sharedLists.verts.begin();
-	auto idxIt = sharedLists.indices.begin();
-
-	if (vertIt == sharedLists.verts.end())
-	{
-		Assert(curMeshVertData.size() == 0);
-		Assert(idxIt == sharedLists.indices.end());
-		return curMeshVertData.emplace_back(sharedLists.verts.emplace_front(),
-		                                    sharedLists.indices.emplace_front(),
-		                                    type,
-		                                    material);
-	}
-
-	for (size_t i = 0; i < curMeshVertData.size(); i++)
-	{
-		auto prevVertIt = vertIt++;
-		auto prevIdxIt = idxIt++;
-		if (vertIt == sharedLists.verts.end())
-		{
-			Assert(idxIt == sharedLists.indices.end());
-			vertIt = sharedLists.verts.emplace_after(prevVertIt);
-			idxIt = sharedLists.indices.emplace_after(prevIdxIt);
-		}
-	}
-	return curMeshVertData.emplace_back(*vertIt, *idxIt, type, material);
+	return tmpMesh.components[SIMPLE_COMPONENT_INDEX(type, material)];
 }
 
-IMeshWrapper MeshBuilderInternal::_CreateIMeshFromInterval(ConstCompIntrvl intrvl,
-                                                           size_t totalVerts,
-                                                           size_t totalIndices,
-                                                           bool dynamic)
+// MeshVertData& MeshBuilderInternal::GetComponentInCurrentMesh(MeshPrimitiveType type, MaterialRef material)
+// {
+// 	// look through all components that we already have in the current mesh and see if any match the type/material
+// 	auto vDataIt = std::find_if(curMeshVertData.begin(),
+// 	                            curMeshVertData.end(),
+// 	                            [=](const MeshVertData& vd) { return vd.type == type && vd.material == material; });
+//
+// 	if (vDataIt != curMeshVertData.end())
+// 		return *vDataIt;
+//
+// 	/*
+// 	* We didn't find a matching component, so we need to create a new one. If this is the Nth component, we'll
+// 	* find the Nth shared list (for verts & indices) to initialize the component from. If there aren't N shared
+// 	* lists, then we'll just add a new one to the end of the linked lists.
+// 	*/
+//
+// 	auto vertIt = sharedLists.verts.begin();
+// 	auto idxIt = sharedLists.indices.begin();
+//
+// 	if (vertIt == sharedLists.verts.end())
+// 	{
+// 		Assert(curMeshVertData.size() == 0);
+// 		Assert(idxIt == sharedLists.indices.end());
+// 		return curMeshVertData.emplace_back(sharedLists.verts.emplace_front(),
+// 		                                    sharedLists.indices.emplace_front(),
+// 		                                    type,
+// 		                                    material);
+// 	}
+//
+// 	for (size_t i = 0; i < curMeshVertData.size(); i++)
+// 	{
+// 		auto prevVertIt = vertIt++;
+// 		auto prevIdxIt = idxIt++;
+// 		if (vertIt == sharedLists.verts.end())
+// 		{
+// 			Assert(idxIt == sharedLists.indices.end());
+// 			vertIt = sharedLists.verts.emplace_after(prevVertIt);
+// 			idxIt = sharedLists.indices.emplace_after(prevIdxIt);
+// 		}
+// 	}
+// 	return curMeshVertData.emplace_back(*vertIt, *idxIt, type, material);
+// }
+
+IMeshWrapper MeshBuilderInternal::Fuser::CreateIMeshFromInterval(ConstCompIntrvl intrvl,
+                                                                 size_t totalVerts,
+                                                                 size_t totalIndices)
 {
 	if (totalVerts == 0 || totalIndices == 0)
 		return IMeshWrapper{};
 
 #ifdef DEBUG
-	size_t maxVerts, maxIndices;
-	GetMaxMeshSize(maxVerts, maxIndices, dynamic);
 	Assert(totalVerts <= maxVerts);
 	Assert(totalIndices <= maxIndices);
 	Assert(intrvl.first->vertData);
@@ -162,7 +165,7 @@ IMeshWrapper MeshBuilderInternal::_CreateIMeshFromInterval(ConstCompIntrvl intrv
 	if (!material)
 		return IMeshWrapper{};
 
-	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESHBUILDER);
+	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 
 	CMatRenderContextPtr context{interfaces::materialSystem};
 	context->Bind(material);
@@ -236,30 +239,29 @@ IMeshWrapper MeshBuilderInternal::_CreateIMeshFromInterval(ConstCompIntrvl intrv
 	return {iMesh, material};
 }
 
-void MeshBuilderInternal::BeginIMeshCreation(ConstCompIntrvl intrvl, bool dynamic)
+void MeshBuilderInternal::Fuser::BeginIMeshCreation(ConstCompIntrvl intrvl, bool _dynamic)
 {
-	creationState.curIntrvl = intrvl;
-	creationState.dynamic = dynamic;
-	GetMaxMeshSize(creationState.maxVerts, creationState.maxIndices, dynamic);
+	curIntrvl = intrvl;
+	dynamic = _dynamic;
+	GetMaxMeshSize(maxVerts, maxIndices, _dynamic);
 }
 
-IMeshWrapper MeshBuilderInternal::GetNextIMeshWrapper()
+IMeshWrapper MeshBuilderInternal::Fuser::GetNextIMeshWrapper()
 {
-	auto& cs = creationState;
 	size_t totalNumVerts, totalNumIndices;
 	for (;;)
 	{
-		if (cs.curIntrvl.first == cs.curIntrvl.second)
+		if (curIntrvl.first == curIntrvl.second)
 			return IMeshWrapper{}; // done with iteration
 
-		totalNumVerts = cs.curIntrvl.first->vertData->verts.size();
-		totalNumIndices = cs.curIntrvl.first->vertData->indices.size();
+		totalNumVerts = curIntrvl.first->vertData->verts.size();
+		totalNumIndices = curIntrvl.first->vertData->indices.size();
 
-		if (totalNumIndices > creationState.maxIndices || totalNumVerts > creationState.maxVerts)
+		if (totalNumIndices > maxIndices || totalNumVerts > maxVerts)
 		{
 			AssertMsg(0, "too many verts/indices");
 			Warning("spt: mesh has too many verts or indices, this would cause a game error\n");
-			cs.curIntrvl.first++; // skip this component
+			curIntrvl.first++; // skip this component
 			continue;
 		}
 		else
@@ -267,23 +269,22 @@ IMeshWrapper MeshBuilderInternal::GetNextIMeshWrapper()
 			break;
 		}
 	}
-	cs.fusedIntrvl = ConstCompIntrvl{cs.curIntrvl.first, cs.curIntrvl.first + 1};
-	for (; cs.fusedIntrvl.second < cs.curIntrvl.second; cs.fusedIntrvl.second++)
+	lastFusedIntrvl = ConstCompIntrvl{curIntrvl.first, curIntrvl.first + 1};
+	for (; lastFusedIntrvl.second < curIntrvl.second; lastFusedIntrvl.second++)
 	{
-		size_t curNumVerts = cs.fusedIntrvl.second->vertData->verts.size();
-		size_t curNumIndices = cs.fusedIntrvl.second->vertData->indices.size();
+		size_t curNumVerts = lastFusedIntrvl.second->vertData->verts.size();
+		size_t curNumIndices = lastFusedIntrvl.second->vertData->indices.size();
 		Assert(curNumIndices >= curNumVerts);
 
-		if (totalNumIndices + curNumIndices > creationState.maxIndices
-		    || totalNumVerts + curNumVerts > creationState.maxVerts)
+		if (totalNumIndices + curNumIndices > maxIndices || totalNumVerts + curNumVerts > maxVerts)
 		{
 			break;
 		}
 		totalNumVerts += curNumVerts;
 		totalNumIndices += curNumIndices;
 	}
-	cs.curIntrvl.first = cs.fusedIntrvl.second;
-	return _CreateIMeshFromInterval(cs.fusedIntrvl, totalNumVerts, totalNumIndices, cs.dynamic);
+	curIntrvl.first = lastFusedIntrvl.second;
+	return CreateIMeshFromInterval(lastFusedIntrvl, totalNumVerts, totalNumIndices);
 }
 
 void MeshBuilderInternal::FrameCleanup()
@@ -291,30 +292,11 @@ void MeshBuilderInternal::FrameCleanup()
 	while (!dynamicMeshUnits.empty())
 		dynamicMeshUnits.pop();
 #ifdef DEBUG
-	for (auto& vertArray : sharedLists.verts)
+	for (auto& vertArray : sharedLists.simple.verts)
 		Assert(vertArray.size() == 0);
-	for (auto& idxArray : sharedLists.indices)
+	for (auto& idxArray : sharedLists.simple.indices)
 		Assert(idxArray.size() == 0);
 #endif
-}
-
-MeshPositionInfo MeshBuilderInternal::_CalcPosInfoForCurrentMesh()
-{
-	MeshPositionInfo pi{Vector{INFINITY}, Vector{-INFINITY}};
-	for (MeshVertData& vData : curMeshVertData)
-	{
-		for (VertexData& vert : vData.verts)
-		{
-			VectorMin(vert.pos, pi.mins, pi.mins);
-			VectorMax(vert.pos, pi.maxs, pi.maxs);
-		}
-	}
-	for (int i = 0; i < 3; i++)
-	{
-		Assert(pi.mins[i] > -1e30);
-		Assert(pi.maxs[i] < 1e30);
-	}
-	return pi;
 }
 
 const DynamicMeshUnit& MeshBuilderInternal::GetDynamicMeshFromToken(DynamicMeshToken token) const
@@ -322,51 +304,96 @@ const DynamicMeshUnit& MeshBuilderInternal::GetDynamicMeshFromToken(DynamicMeshT
 	return dynamicMeshUnits._Get_container()[token.dynamicMeshIdx];
 }
 
+void MeshBuilderInternal::TmpMesh::Create(const MeshCreateFunc& createFunc)
+{
+	// check that we don't have any existing data
+	Assert(!std::count_if(components.cbegin(),
+	                      components.cend(),
+	                      [](const MeshVertData& vd) { return vd.verts.vec || vd.indices.vec || vd.material; }));
+
+	// initialize the simple components
+	components.resize(MAX_SIMPLE_COMPONENTS);
+	for (size_t i = 0; i < (size_t)MeshPrimitiveType::Count; i++)
+	{
+		for (size_t j = 0; j < (size_t)MeshMaterialSimple::Count; j++)
+		{
+			size_t k = SIMPLE_COMPONENT_INDEX(i, j);
+			components[k].verts.assign_to_end(g_meshBuilderInternal.sharedLists.simple.verts[k]);
+			components[k].indices.assign_to_end(g_meshBuilderInternal.sharedLists.simple.indices[k]);
+			components[k].type = (MeshPrimitiveType)i;
+			components[k].material = g_meshMaterialMgr.GetMaterial((MeshMaterialSimple)j);
+		}
+	}
+
+	// let the user fill the tmp mesh buffers
+	MeshBuilderDelegate builderDelegate{};
+	createFunc(builderDelegate);
+}
+
+MeshPositionInfo MeshBuilderInternal::TmpMesh::CalcPosInfo()
+{
+	MeshPositionInfo pi{Vector{INFINITY}, Vector{-INFINITY}};
+	for (MeshVertData& vData : components)
+	{
+		for (VertexData& vert : vData.verts)
+		{
+			VectorMin(vert.pos, pi.mins, pi.mins);
+			VectorMax(vert.pos, pi.maxs, pi.maxs);
+		}
+	}
+	// this isn't strictly necessary, but infinities and NaNs might mess with the system so best to avoid them
+	for (int i = 0; i < 3; i++)
+		AssertMsg(pi.mins[i] > -1e30 && pi.maxs[i] < 1e30, "mesh likely contains weird point(s)");
+
+	return pi;
+}
+
 /**************************************** MESH BUILDER PRO ****************************************/
 
 StaticMesh MeshBuilderPro::CreateStaticMesh(const MeshCreateFunc& createFunc)
 {
-	auto& builder = g_meshBuilderInternal;
-	builder.curMeshVertData.assign_to_end(builder.sharedLists.vertData);
+	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
+	auto& tmpMesh = g_meshBuilderInternal.tmpMesh;
+	tmpMesh.Create(createFunc);
 
-	MeshBuilderDelegate builderDelegate{};
-	createFunc(builderDelegate);
+	size_t numPopulated = std::count_if(tmpMesh.components.cbegin(),
+	                                    tmpMesh.components.cend(),
+	                                    [](const MeshVertData& vd) { return !vd.Empty(); });
 
-	builder.curMeshVertData.erase_if([](const MeshVertData& vd) { return vd.Empty(); });
+	StaticMeshUnit* mu = new StaticMeshUnit{numPopulated, tmpMesh.CalcPosInfo()};
 
-	StaticMeshUnit* mu = new StaticMeshUnit{builder.curMeshVertData.size(), builder._CalcPosInfoForCurrentMesh()};
-
-	for (size_t i = 0; i < builder.curMeshVertData.size(); i++)
+	for (size_t i = tmpMesh.components.size(), muIdx = 0; i-- > 0;)
 	{
-		auto& vd = builder.curMeshVertData[i];
+		auto& vd = tmpMesh.components[i];
 		if (!vd.Empty())
 		{
+			// dumb - the fuser expects an interval but we need to give one component since these can't be fused
 			static std::vector<MeshComponent> tmp{1};
-			tmp[0] = {nullptr, &vd, IMeshWrapper{}};
-			mu->meshesArr[i] = builder._CreateIMeshFromInterval(ConstCompIntrvl{tmp.begin(), tmp.end()},
-			                                                    vd.verts.size(),
-			                                                    vd.indices.size(),
-			                                                    false);
+			tmp[0].vertData = &vd;
+			g_meshBuilderInternal.fuser.BeginIMeshCreation(ConstCompIntrvl{tmp.begin(), tmp.end()}, false);
+			mu->meshesArr[muIdx++] = g_meshBuilderInternal.fuser.GetNextIMeshWrapper();
 		}
+		tmpMesh.components.pop_back();
 	}
-	builder.curMeshVertData.pop();
 	return StaticMesh{mu};
 }
 
 DynamicMesh MeshBuilderPro::CreateDynamicMesh(const MeshCreateFunc& createFunc)
 {
-	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESHBUILDER);
-	auto& builder = g_meshBuilderInternal;
-	builder.curMeshVertData.assign_to_end(builder.sharedLists.vertData);
+	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
+	auto& tmpMesh = g_meshBuilderInternal.tmpMesh;
+	tmpMesh.Create(createFunc);
 
-	MeshBuilderDelegate builderDelegate{};
-	createFunc(builderDelegate);
-
-	builder.curMeshVertData.erase_if([](const MeshVertData& vd) { return vd.Empty(); });
-
-	MeshPositionInfo posInfo = builder._CalcPosInfoForCurrentMesh();
-	builder.dynamicMeshUnits.emplace(builder.curMeshVertData, posInfo);
-	return {builder.dynamicMeshUnits.size() - 1, g_meshRenderFrameNum};
+	const MeshPositionInfo posInfo = tmpMesh.CalcPosInfo();
+	VectorSlice<MeshVertData> dynamicSlice{g_meshBuilderInternal.sharedLists.dynamicMeshData};
+	for (size_t i = tmpMesh.components.size(); i-- > 0;)
+	{
+		if (!tmpMesh.components[i].Empty())
+			dynamicSlice.emplace_back(std::move(tmpMesh.components[i]));
+		tmpMesh.components.pop_back();
+	}
+	g_meshBuilderInternal.dynamicMeshUnits.emplace(dynamicSlice, posInfo);
+	return {g_meshBuilderInternal.dynamicMeshUnits.size() - 1, g_meshRendererInternal.frameNum };
 }
 
 #endif

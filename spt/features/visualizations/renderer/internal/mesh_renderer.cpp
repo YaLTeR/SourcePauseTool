@@ -64,41 +64,29 @@ CON_COMMAND_F(y_spt_destroy_all_static_meshes,
 
 /**************************************** MESH RENDERER FEATURE ****************************************/
 
-// TODO try removing me
-struct CPortalRender
-{
-#ifdef SSDK2007
-	byte _pad[0x57c];
-#else
-	byte _pad[0x918];
-#endif
-	int m_iViewRecursionLevel; // you could probably infer this from the call depth of DrawTranslucents
-};
-
 namespace patterns
 {
 	PATTERNS(CRendering3dView__DrawOpaqueRenderables,
-	         "5135",
+	         "5135-portal1",
 	         "55 8D 6C 24 8C 81 EC 94 00 00 00",
-	         "7462488",
+	         "7462488-portal1",
 	         "55 8B EC 81 EC 80 00 00 00 8B 15 ?? ?? ?? ??");
 	PATTERNS(CRendering3dView__DrawTranslucentRenderables,
-	         "5135",
+	         "5135-portal1",
 	         "55 8B EC 83 EC 34 53 8B D9 8B 83 94 00 00 00 8B 13 56 8D B3 94 00 00 00",
 	         "5135-hl2",
 	         "55 8B EC 83 EC 34 83 3D ?? ?? ?? ?? 00",
-	         "1910503",
+	         "1910503-portal1",
 	         "55 8B EC 81 EC 9C 00 00 00 53 56 8B F1 8B 86 E8 00 00 00 8B 16 57 8D BE E8 00 00 00",
-	         "7462488",
+	         "7462488-portal1",
 	         "55 8B EC 81 EC A0 00 00 00 53 8B D9",
 	         "7467727-hl2",
 	         "55 8B EC 81 EC A0 00 00 00 83 3D ?? ?? ?? ?? 00");
-	// this is the static OnRenderStart(), not the virtual one; only used for portal render depth
-	PATTERNS(OnRenderStart,
-	         "5135",
-	         "56 8B 35 ?? ?? ?? ?? 8B 06 8B 50 64 8B CE FF D2 8B 0D ?? ?? ?? ??",
-	         "7462488",
-	         "55 8B EC 83 EC 10 53 56 8B 35 ?? ?? ?? ?? 8B CE 57 8B 06 FF 50 64 8B 0D ?? ?? ?? ??");
+	PATTERNS(CSkyBoxView__DrawInternal,
+	         "5135-portal1",
+	         "83 EC 28 53 56 8B F1 8B 0D ?? ?? ?? ??",
+	         "7467727-hl2",
+	         "55 8B EC 83 EC 24 53 56 57 8B F9 8B 0D ?? ?? ?? ??");
 } // namespace patterns
 
 bool MeshRendererFeature::ShouldLoadFeature()
@@ -115,7 +103,7 @@ void MeshRendererFeature::InitHooks()
 {
 	HOOK_FUNCTION(client, CRendering3dView__DrawOpaqueRenderables);
 	HOOK_FUNCTION(client, CRendering3dView__DrawTranslucentRenderables);
-	FIND_PATTERN(client, OnRenderStart);
+	HOOK_FUNCTION(client, CSkyBoxView__DrawInternal);
 }
 
 void MeshRendererFeature::PreHook()
@@ -128,14 +116,6 @@ void MeshRendererFeature::PreHook()
 	*/
 	signal.Works = ORIG_CRendering3dView__DrawOpaqueRenderables && ORIG_CRendering3dView__DrawTranslucentRenderables
 	               && spt_overlay.ORIG_CViewRender__RenderView;
-
-	if (ORIG_OnRenderStart)
-	{
-		int idx = GetPatternIndex((void**)&ORIG_OnRenderStart);
-		uint32_t offs[] = {18, 24};
-		if (idx >= 0 && idx < sizeof(offs) / sizeof(uint32_t))
-			g_pPortalRender = *(CPortalRender***)((uintptr_t)ORIG_OnRenderStart + offs[idx]);
-	}
 
 	g_meshMaterialMgr.Load();
 }
@@ -155,14 +135,11 @@ void MeshRendererFeature::UnloadFeature()
 	g_meshRendererInternal.FrameCleanup();
 	g_meshMaterialMgr.Unload();
 	StaticMesh::DestroyAll();
-	g_pPortalRender = nullptr;
 }
 
 int MeshRendererFeature::CurrentPortalRenderDepth() const
 {
-	if (!g_pPortalRender || !*g_pPortalRender)
-		return -1;
-	return (**g_pPortalRender).m_iViewRecursionLevel;
+	return MAX(0, (int)g_meshRendererInternal.debugMeshInfo.descriptionSlices.size() - 1);
 }
 
 IMPL_HOOK_THISCALL(MeshRendererFeature, void, CRendering3dView__DrawOpaqueRenderables, CRendering3dView*, int param)
@@ -186,6 +163,35 @@ IMPL_HOOK_THISCALL(MeshRendererFeature,
 	if (spt_meshRenderer.signal.Works)
 		g_meshRendererInternal.OnDrawTranslucents(thisptr);
 }
+
+#ifdef SSDK2007
+IMPL_HOOK_THISCALL(MeshRendererFeature,
+                   void,
+                   CSkyBoxView__DrawInternal,
+                   void*,
+                   view_id_t id,
+                   bool bInvoke,
+                   ITexture* pRenderTarget)
+{
+	g_meshRendererInternal.renderingSkyBox = true;
+	spt_meshRenderer.ORIG_CSkyBoxView__DrawInternal(thisptr, id, bInvoke, pRenderTarget);
+	g_meshRendererInternal.renderingSkyBox = false;
+}
+#else
+IMPL_HOOK_THISCALL(MeshRendererFeature,
+                   void,
+                   CSkyBoxView__DrawInternal,
+                   void*,
+                   view_id_t id,
+                   bool bInvoke,
+                   ITexture* pRenderTarget,
+                   ITexture* pDepthTarget)
+{
+	g_meshRendererInternal.renderingSkyBox = true;
+	spt_meshRenderer.ORIG_CSkyBoxView__DrawInternal(thisptr, id, bInvoke, pRenderTarget, pDepthTarget);
+	g_meshRendererInternal.renderingSkyBox = false;
+}
+#endif
 
 /**************************************** MESH UNIT WRAPPER ****************************************/
 
@@ -292,11 +298,11 @@ void MeshRendererInternal::OnRenderViewPre_Signal(void* thisptr, CViewSetup* cam
 		return;
 	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	FrameCleanup();
-	g_meshRenderFrameNum++;
-	g_inMeshRenderSignal = true;
+	frameNum++;
+	inSignal = true;
 	MeshRendererDelegate renderDelgate{};
 	spt_meshRenderer.signal(renderDelgate);
-	g_inMeshRenderSignal = false;
+	inSignal = false;
 }
 
 void MeshRendererInternal::SetupViewInfo(CRendering3dView* rendering3dView)
@@ -318,10 +324,14 @@ void MeshRendererInternal::SetupViewInfo(CRendering3dView* rendering3dView)
 
 void MeshRendererInternal::OnDrawOpaques(CRendering3dView* renderingView)
 {
+	// if there's any use for rendering stuff in sky boxes in the future we can add this to the callback info
+	if (renderingSkyBox)
+		return;
+
 	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	SetupViewInfo(renderingView);
 
-	// push a new debug slice, the corresponding pop will be in DrawTranslucents
+	// push a new debug slice, the corresponding pop is at the end of DrawTranslucents
 	debugMeshInfo.descriptionSlices.emplace(debugMeshInfo.sharedDescriptionList);
 
 	static std::vector<MeshComponent> components;
@@ -333,6 +343,9 @@ void MeshRendererInternal::OnDrawOpaques(CRendering3dView* renderingView)
 
 void MeshRendererInternal::OnDrawTranslucents(CRendering3dView* renderingView)
 {
+	if (renderingSkyBox)
+		return;
+
 	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	SetupViewInfo(renderingView);
 
@@ -361,8 +374,10 @@ void MeshRendererInternal::OnDrawTranslucents(CRendering3dView* renderingView)
 			                 if (ignoreZA != ignoreZB)
 				                 return ignoreZA < ignoreZB;
 		                 }
-		                 if (&a.unitWrapper != &b.unitWrapper)
-			                 return a.unitWrapper->camDistSqr > b.unitWrapper->camDistSqr;
+		                 float distA = a.unitWrapper->camDistSqr;
+		                 float distB = b.unitWrapper->camDistSqr;
+		                 if (distA != distB) // same distance likely means that these are from the same unit
+			                 return distA > distB;
 		                 return a < b;
 	                 });
 
@@ -379,6 +394,8 @@ void MeshRendererInternal::OnDrawTranslucents(CRendering3dView* renderingView)
 
 void MeshRendererInternal::CollectRenderableComponents(std::vector<MeshComponent>& components, bool opaques)
 {
+	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
+
 	// go through all components of all queued meshes and return those that are eligable for rendering right now
 	for (MeshUnitWrapper& unitWrapper : queuedUnitWrappers)
 	{
@@ -491,6 +508,8 @@ void MeshRendererInternal::DrawAll(ConstCompIntrvl fullIntrvl, bool addDebugMesh
 	if (std::distance(fullIntrvl.first, fullIntrvl.second) == 0)
 		return;
 
+	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
+
 	/*
 	* We create a subinterval of fullInterval: intrvl. Our goal is to give intervals to the builder that can be
 	* fused together. Static meshes can't be fused (they're already IMesh* objects), so we render those one at a
@@ -511,15 +530,15 @@ void MeshRendererInternal::DrawAll(ConstCompIntrvl fullIntrvl, bool addDebugMesh
 			                             [=](auto& mc) { return (*intrvl.first <=> mc) != 0; });
 
 			// feed the interval that we just found to the builder
-			g_meshBuilderInternal.BeginIMeshCreation(intrvl, true);
+			g_meshBuilderInternal.fuser.BeginIMeshCreation(intrvl, true);
 			IMeshWrapper mw;
-			while (mw = g_meshBuilderInternal.GetNextIMeshWrapper(), mw.iMesh)
+			while (mw = g_meshBuilderInternal.fuser.GetNextIMeshWrapper(), mw.iMesh)
 			{
 				intrvl.first->unitWrapper->Render(mw);
 				if (addDebugMeshes)
 				{
 					AddDebugBox(debugMeshInfo.descriptionSlices.top(),
-					            g_meshBuilderInternal.creationState.fusedIntrvl,
+					            g_meshBuilderInternal.fuser.lastFusedIntrvl,
 					            opaques);
 				}
 			}
@@ -629,12 +648,12 @@ std::weak_ordering MeshComponent::operator<=>(const MeshComponent& rhs) const
 
 void MeshRendererDelegate::DrawMesh(const DynamicMesh& dynamicMesh, const RenderCallback& callback)
 {
-	if (!g_inMeshRenderSignal)
+	if (!g_meshRendererInternal.inSignal)
 	{
 		AssertMsg(0, "spt: Meshes can only be drawn in MeshRenderSignal!");
 		return;
 	}
-	if (dynamicMesh.createdFrame != g_meshRenderFrameNum)
+	if (dynamicMesh.createdFrame != g_meshRendererInternal.frameNum)
 	{
 		AssertMsg(0, "spt: Attempted to reuse a dynamic mesh between frames");
 		Warning("spt: Can only draw dynamic meshes on the frame they were created!\n");
@@ -647,7 +666,7 @@ void MeshRendererDelegate::DrawMesh(const DynamicMesh& dynamicMesh, const Render
 
 void MeshRendererDelegate::DrawMesh(const StaticMesh& staticMesh, const RenderCallback& callback)
 {
-	if (!g_inMeshRenderSignal)
+	if (!g_meshRendererInternal.inSignal)
 	{
 		AssertMsg(0, "spt: Meshes can only be drawn in MeshRenderSignal!");
 		return;
