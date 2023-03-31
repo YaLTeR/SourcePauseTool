@@ -81,18 +81,6 @@ void Tracing::InitHooks()
 #endif
 }
 
-bool Tracing::TraceClientRay(const Ray_t& ray,
-                             unsigned int mask,
-                             const IHandleEntity* ignore,
-                             int collisionGroup,
-                             trace_t* ptr)
-{
-	if (!ORIG_UTIL_TraceRay)
-		return false;
-	ORIG_UTIL_TraceRay(ray, mask, ignore, collisionGroup, ptr);
-	return true;
-}
-
 bool Tracing::CanTracePlayerBBox()
 {
 	if (utils::DoesGameLookLikePortal())
@@ -121,9 +109,9 @@ void Tracing::TracePlayerBBox(const Vector& start,
 	_maxs = maxs;
 
 	if (utils::DoesGameLookLikePortal())
-		ORIG_CPortalGameMovement__TracePlayerBBox(interfaces::gm, 0, start, end, fMask, collisionGroup, pm);
+		ORIG_CPortalGameMovement__TracePlayerBBox(interfaces::gm, start, end, fMask, collisionGroup, pm);
 	else
-		ORIG_CGameMovement__TracePlayerBBox(interfaces::gm, 0, start, end, fMask, collisionGroup, pm);
+		ORIG_CGameMovement__TracePlayerBBox(interfaces::gm, start, end, fMask, collisionGroup, pm);
 	overrideMinMax = false;
 }
 
@@ -151,8 +139,15 @@ float Tracing::TraceFirePortal(trace_t& tr, const Vector& startPos, const Vector
 	Vector vFinalPosition;
 	QAngle qFinalAngles;
 
-	return ORIG_TraceFirePortal(
-	    weapon, 0, false, startPos, vDirection, tr, vFinalPosition, qFinalAngles, PORTAL_PLACED_BY_PLAYER, true);
+	return ORIG_TraceFirePortal(weapon,
+	                            false,
+	                            startPos,
+	                            vDirection,
+	                            tr,
+	                            vFinalPosition,
+	                            qFinalAngles,
+	                            PORTAL_PLACED_BY_PLAYER,
+	                            true);
 }
 
 float Tracing::TraceTransformFirePortal(trace_t& tr, const Vector& startPos, const QAngle& startAngles)
@@ -189,8 +184,15 @@ float Tracing::TraceTransformFirePortal(trace_t& tr,
 
 	const int PORTAL_PLACED_BY_PLAYER = 2;
 
-	return ORIG_TraceFirePortal(
-	    weapon, 0, isPortal2, transformedPos, vDirection, tr, finalPos, finalAngles, PORTAL_PLACED_BY_PLAYER, true);
+	return ORIG_TraceFirePortal(weapon,
+	                            isPortal2,
+	                            transformedPos,
+	                            vDirection,
+	                            tr,
+	                            finalPos,
+	                            finalAngles,
+	                            PORTAL_PLACED_BY_PLAYER,
+	                            true);
 }
 
 ITraceFilter* Tracing::GetPortalTraceFilter()
@@ -300,24 +302,24 @@ bool Tracing::ShouldLoadFeature()
 
 void Tracing::UnloadFeature() {}
 
-const Vector& __fastcall Tracing::HOOKED_CGameMovement__GetPlayerMaxs(void* thisptr, int edx)
-{
-	if (spt_tracing.overrideMinMax)
-	{
-		return spt_tracing._maxs;
-	}
-	else
-		return spt_tracing.ORIG_CGameMovement__GetPlayerMaxs(thisptr, edx);
-}
-
-const Vector& __fastcall Tracing::HOOKED_CGameMovement__GetPlayerMins(void* thisptr, int edx)
+IMPL_HOOK_THISCALL(Tracing, const Vector&, CGameMovement__GetPlayerMins, IGameMovement*)
 {
 	if (spt_tracing.overrideMinMax)
 	{
 		return spt_tracing._mins;
 	}
 	else
-		return spt_tracing.ORIG_CGameMovement__GetPlayerMins(thisptr, edx);
+		return spt_tracing.ORIG_CGameMovement__GetPlayerMins(thisptr);
+}
+
+IMPL_HOOK_THISCALL(Tracing, const Vector&, CGameMovement__GetPlayerMaxs, IGameMovement*)
+{
+	if (spt_tracing.overrideMinMax)
+	{
+		return spt_tracing._maxs;
+	}
+	else
+		return spt_tracing.ORIG_CGameMovement__GetPlayerMaxs(thisptr);
 }
 
 #ifdef SPT_TRACE_PORTAL_ENABLED
@@ -339,9 +341,9 @@ static Vector firstPos;
 static bool firstInvocation = true;
 
 static const char find_seam_shot_help[] =
-    "Usage: spt_find_seam_shot <pitch1> <yaw1> <pitch2> <yaw2> <epsilon>\n" \
-    "Tries to find a seam shot on a \"line\" between viewangles (pitch1; yaw1) and (pitch2; yaw2) with binary search. " \
-    "Decreasing epsilon will result in more viewangles checked. A default value is 0.00001. " \
+    "Usage: spt_find_seam_shot <pitch1> <yaw1> <pitch2> <yaw2> <epsilon>\n"
+    "Tries to find a seam shot on a \"line\" between viewangles (pitch1; yaw1) and (pitch2; yaw2) with binary search. "
+    "Decreasing epsilon will result in more viewangles checked. A default value is 0.00001. "
     "If no arguments are given, first invocation selects the first point, second invocation selects the second point and searches between them.";
 
 CON_COMMAND(y_spt_find_seam_shot, find_seam_shot_help)
