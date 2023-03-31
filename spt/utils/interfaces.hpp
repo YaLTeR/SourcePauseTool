@@ -16,6 +16,8 @@
 #include "engine\IEngineTrace.h"
 #include "vphysics_interface.h"
 
+class IGameMovement;
+
 namespace interfaces
 {
 	extern std::unique_ptr<EngineClientWrapper> engine;
@@ -30,7 +32,7 @@ namespace interfaces
 	extern IMaterialSystem* materialSystem;
 	extern IInputSystem* inputSystem;
 	extern ICvar* g_pCVar;
-	extern void* gm;
+	extern IGameMovement* gm;
 	extern IClientEntityList* entList;
 	extern IVModelInfo* modelInfo;
 	extern IBaseClientDLL* clientInterface;

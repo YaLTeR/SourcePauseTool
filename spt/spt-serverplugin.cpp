@@ -59,7 +59,7 @@ namespace interfaces
 	IMaterialSystem* materialSystem = nullptr;
 	IInputSystem* inputSystem = nullptr;
 	ICvar* g_pCVar = nullptr;
-	void* gm = nullptr;
+	IGameMovement* gm = nullptr;
 	IClientEntityList* entList;
 	IVModelInfo* modelInfo;
 	IBaseClientDLL* clientInterface;
@@ -162,7 +162,7 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 
 	ConnectTier1Libraries(&interfaceFactory, 1);
 
-	interfaces::gm = gameServerFactory(INTERFACENAME_GAMEMOVEMENT, NULL);
+	interfaces::gm = (IGameMovement*)gameServerFactory(INTERFACENAME_GAMEMOVEMENT, NULL);
 	interfaces::g_pCVar = g_pCVar;
 	interfaces::engine_server = (IVEngineServer*)interfaceFactory(INTERFACEVERSION_VENGINESERVER, NULL);
 #ifdef BMS

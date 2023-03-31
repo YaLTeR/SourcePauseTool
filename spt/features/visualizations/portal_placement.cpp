@@ -426,7 +426,7 @@ void PortalPlacement::RunPpGridIteration(MeshRendererDelegate& mr)
 
 		const int PORTAL_PLACED_BY_PLAYER = 2;
 		float placementResult = spt_tracing.ORIG_TraceFirePortal(
-		    pgun, 0, bPortal2, ppGrid.camPos, dir, tr, placePos, placeAng, PORTAL_PLACED_BY_PLAYER, true);
+		    pgun, bPortal2, ppGrid.camPos, dir, tr, placePos, placeAng, PORTAL_PLACED_BY_PLAYER, true);
 
 		if (!tr.DidHit())
 			continue;
