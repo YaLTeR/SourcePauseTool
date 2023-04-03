@@ -41,7 +41,7 @@
 	_##name ORIG_##name = nullptr;
 
 #define DECL_HOOK_FASTCALL(retType, name, ...) \
-	DECL_MEMBER_CDECL(retType, name, ##__VA_ARGS__) \
+	DECL_MEMBER_FASTCALL(retType, name, ##__VA_ARGS__) \
 	static retType __fastcall HOOKED_##name(__VA_ARGS__)
 
 #define IMPL_HOOK_FASTCALL(owner, retType, name, ...) retType __fastcall owner::HOOKED_##name(__VA_ARGS__)
