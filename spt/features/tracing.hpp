@@ -5,6 +5,8 @@
 #define SPT_TRACE_PORTAL_ENABLED
 #endif
 
+#include "ent_props.hpp"
+
 #if defined(OE)
 #include "vector.h"
 #else
@@ -14,7 +16,43 @@
 
 class CBaseCombatWeapon;
 class IGameMovement;
+class ITraceFilter;
 #include "iserverunknown.h"
+#include "engine\IEngineTrace.h"
+
+// Since we're hooking engine-side tracing functions, when this includes dispcoll_common.h we need it to use the
+// CUtlVector<T, CHunkMemory<T>> type to be accurate. This allows us to use the CDispCollTree class from the SDK.
+#pragma push_macro("ENGINE_DLL")
+#define ENGINE_DLL
+#include "SDK\cmodel_private.h"
+#pragma pop_macro("ENGINE_DLL")
+
+// for TraceLineWithWorldInfoServer()
+struct WorldHitInfo
+{
+	const CCollisionBSPData* bspData;
+
+	const cbrush_t* brush;
+	ICollideable* staticProp;
+	CDispCollTree* dispTree;
+
+	void Clear()
+	{
+		bspData = nullptr;
+		brush = nullptr;
+		staticProp = nullptr;
+		dispTree = nullptr;
+	}
+};
+
+template<bool server>
+struct TraceFilterIgnorePlayer : public CTraceFilter
+{
+	virtual bool ShouldHitEntity(IHandleEntity* pEntity, int contentsMask) override
+	{
+		return pEntity != spt_entprops.GetPlayer(server);
+	}
+};
 
 // Tracing related functionality
 class Tracing : public FeatureWrapper<Tracing>
@@ -74,6 +112,13 @@ public:
 	                     int collisionGroup,
 	                     trace_t& pm);
 
+	// Traces a line, returns more detailed info if the world was hit. hitInfo.bspData is only guaranteed to be
+	// set if a brush or displacement was hit. If hooks aren't found this may return incorrect results.
+	WorldHitInfo TraceLineWithWorldInfoServer(const Ray_t& ray,
+	                                          unsigned int fMask,
+	                                          ITraceFilter* filter,
+	                                          trace_t& tr);
+
 #ifdef SPT_TRACE_PORTAL_ENABLED
 	CBaseCombatWeapon* GetActiveWeapon();
 	float TraceFirePortal(trace_t& tr, const Vector& startPos, const Vector& vDirection);
@@ -88,7 +133,7 @@ public:
 	                               bool isPortal2);
 
 	// returns the server-side filter instance which can be used for TraceFirePortal-like shenanigans
-	class ITraceFilter* GetPortalTraceFilter();
+	ITraceFilter* GetPortalTraceFilter();
 #endif
 
 protected:
@@ -104,6 +149,13 @@ private:
 	bool overrideMinMax = false;
 	Vector _mins;
 	Vector _maxs;
+
+	// for TraceLineWithWorldInfoServer()
+	struct
+	{
+		float bestFrac;
+		WorldHitInfo hitInfo;
+	} curTraceInfo;
 
 	DECL_MEMBER_THISCALL(void,
 	                     CGameMovement__TracePlayerBBox,
@@ -125,6 +177,18 @@ private:
 
 	DECL_HOOK_THISCALL(const Vector&, CGameMovement__GetPlayerMins, IGameMovement*);
 	DECL_HOOK_THISCALL(const Vector&, CGameMovement__GetPlayerMaxs, IGameMovement*);
+
+	DECL_HOOK_FASTCALL(void,
+	                   CM_ClipBoxToBrush_1,
+	                   TraceInfo_t* __restrict pTraceInfo,
+	                   const cbrush_t* __restrict brush);
+
+	DECL_HOOK_FASTCALL(void,
+	                   CM_TraceToDispTree_1,
+	                   TraceInfo_t* pTraceInfo,
+	                   CDispCollTree* pDispTree,
+	                   float startFrac,
+	                   float endFrac);
 };
 
 extern Tracing spt_tracing;

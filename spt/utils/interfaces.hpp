@@ -15,6 +15,7 @@
 #include "engine\ivmodelinfo.h"
 #include "engine\IEngineTrace.h"
 #include "vphysics_interface.h"
+#include "engine\IStaticPropMgr.h"
 
 class IGameMovement;
 
@@ -40,4 +41,5 @@ namespace interfaces
 	extern IEngineTrace* engineTraceServer;
 	extern IServerPluginHelpers* pluginHelpers;
 	extern IPhysicsCollision* physicsCollision;
+	extern IStaticPropMgrServer* staticpropmgr;
 } // namespace interfaces

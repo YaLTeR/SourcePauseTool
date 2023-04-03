@@ -67,6 +67,7 @@ namespace interfaces
 	IEngineTrace* engineTraceServer = nullptr;
 	IServerPluginHelpers* pluginHelpers = nullptr;
 	IPhysicsCollision* physicsCollision = nullptr;
+	IStaticPropMgrServer* staticpropmgr = nullptr;
 } // namespace interfaces
 
 ConVar* _viewmodel_fov = nullptr;
@@ -189,6 +190,8 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	interfaces::pluginHelpers =
 	    (IServerPluginHelpers*)interfaceFactory(INTERFACEVERSION_ISERVERPLUGINHELPERS, NULL);
 	interfaces::physicsCollision = (IPhysicsCollision*)interfaceFactory(VPHYSICS_COLLISION_INTERFACE_VERSION, NULL);
+	interfaces::staticpropmgr =
+	    (IStaticPropMgrServer*)interfaceFactory(INTERFACEVERSION_STATICPROPMGR_SERVER, NULL);
 
 	if (interfaces::gm)
 	{

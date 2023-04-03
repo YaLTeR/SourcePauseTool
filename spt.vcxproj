@@ -1224,6 +1224,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClCompile Include="spt\features\vag_searcher.cpp" />
     <ClCompile Include="spt\features\visualizations\draw_ent_collides.cpp" />
     <ClCompile Include="spt\features\visualizations\draw_seams.cpp" />
+    <ClCompile Include="spt\features\visualizations\draw_world_collides.cpp" />
     <ClCompile Include="spt\features\visualizations\mesh_test.cpp" />
     <ClCompile Include="spt\features\visualizations\portal_placement.cpp" />
     <ClCompile Include="spt\features\visualizations\renderer\internal\create_collide.cpp" />
@@ -1386,10 +1387,13 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClInclude Include="..\..\public\tier1\utlmemory.h" />
     <ClInclude Include="..\..\public\tier1\utlvector.h" />
     <ClInclude Include="..\..\public\vstdlib\vstdlib.h" />
+    <ClInclude Include="SDK\cmodel_private.h" />
+    <ClInclude Include="SDK\dispcoll_common.h" />
     <ClInclude Include="SDK\hl_movedata.h" />
     <ClInclude Include="SDK\igamemovement.h" />
     <ClInclude Include="SDK\imovehelper.h" />
     <ClInclude Include="SDK\usercmd.h" />
+    <ClInclude Include="SDK\zone.h" />
     <ClInclude Include="sptlib\Hooks.hpp" />
     <ClInclude Include="SPTLib\IHookableDirFilter.hpp" />
     <ClInclude Include="sptlib\IHookableModule.hpp" />
