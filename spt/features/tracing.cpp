@@ -60,7 +60,16 @@ namespace patterns
 	         "55 8B EC 83 E4 F0 B8 C4 11 00 00 E8 ?? ?? ?? ?? 53 56 57",
 	         "7197370",
 	         "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ?? 89 6C 24 ?? 8B EC B8 C8 11 00 00");
-
+	PATTERNS(CM_ClipBoxToBrush_1,
+	         "5135-hl2",
+	         "83 EC 08 56 8B F1 0F B7 4A 04 66 81 F9 FF FF",
+	         "7122284-hl2",
+	         "55 8B EC 83 EC 0C B8 FF FF 00 00 56");
+	PATTERNS(CM_TraceToDispTree_1,
+	         "5135-hl2",
+	         "55 8B EC 83 E4 F0 83 EC 54 53 56 8B F1 F3 0F 10 06 F3 0F 11 44 24 ?? F3 0F 10 46 ?? 57",
+	         "7122284-hl2",
+	         "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ?? 89 6C 24 ?? 8B EC 83 EC 68 8B C1 66 C7 45 ?? 01 01");
 } // namespace patterns
 
 void Tracing::InitHooks()
@@ -72,6 +81,8 @@ void Tracing::InitHooks()
 	FIND_PATTERN(server, TracePlayerBBoxForGround2);
 	HOOK_FUNCTION(server, CGameMovement__GetPlayerMaxs);
 	HOOK_FUNCTION(server, CGameMovement__GetPlayerMins);
+	HOOK_FUNCTION(engine, CM_ClipBoxToBrush_1);
+	HOOK_FUNCTION(engine, CM_TraceToDispTree_1);
 #ifdef SPT_TRACE_PORTAL_ENABLED
 	if (utils::DoesGameLookLikePortal())
 	{
@@ -113,6 +124,78 @@ void Tracing::TracePlayerBBox(const Vector& start,
 	else
 		ORIG_CGameMovement__TracePlayerBBox(interfaces::gm, start, end, fMask, collisionGroup, pm);
 	overrideMinMax = false;
+}
+
+WorldHitInfo Tracing::TraceLineWithWorldInfoServer(const Ray_t& ray,
+                                                   unsigned int fMask,
+                                                   ITraceFilter* filter,
+                                                   trace_t& tr)
+{
+	// if we need this for non-zero extents for some reason, we can hook the <IS_POINT=false> versions
+	Assert(ray.m_IsSwept && ray.m_IsRay);
+	curTraceInfo.bestFrac = 1;
+	auto& hitInfo = curTraceInfo.hitInfo;
+	hitInfo.Clear();
+
+	interfaces::engineTraceServer->TraceRay(ray, fMask, filter, &tr);
+
+	if (tr.DidHit() && !tr.startsolid
+	    && tr.m_pEnt == interfaces::engine_server->PEntityOfEntIndex(0)->GetIServerEntity()->GetBaseEntity())
+	{
+		if (tr.hitbox != 0)
+		{
+			// we hit a static prop
+			hitInfo.Clear();
+			// no clue why we need to subtract 1
+			hitInfo.staticProp = interfaces::staticpropmgr->GetStaticPropByIndex(tr.hitbox - 1);
+		}
+	}
+	else
+	{
+		// didn't hit the world or not enough information
+		hitInfo.Clear();
+	}
+	return hitInfo;
+}
+
+IMPL_HOOK_FASTCALL(Tracing,
+                   void,
+                   CM_ClipBoxToBrush_1,
+                   TraceInfo_t* __restrict pTraceInfo,
+                   const cbrush_t* __restrict brush)
+{
+	// do trace against brush, then overwrite the hitInfo if we got something better
+	spt_tracing.ORIG_CM_ClipBoxToBrush_1(pTraceInfo, brush);
+
+	auto& curInfo = spt_tracing.curTraceInfo;
+	if (pTraceInfo->m_trace.fraction < curInfo.bestFrac)
+	{
+		curInfo.bestFrac = pTraceInfo->m_trace.fraction;
+		curInfo.hitInfo.Clear();
+		curInfo.hitInfo.bspData = pTraceInfo->m_pBSPData;
+		curInfo.hitInfo.brush = brush;
+	}
+}
+
+IMPL_HOOK_FASTCALL(Tracing,
+                   void,
+                   CM_TraceToDispTree_1,
+                   TraceInfo_t* pTraceInfo,
+                   CDispCollTree* pDispTree,
+                   float startFrac,
+                   float endFrac)
+{
+	// do trace against displacement, then overwrite the hitInfo if we got something better
+	spt_tracing.ORIG_CM_TraceToDispTree_1(pTraceInfo, pDispTree, startFrac, endFrac);
+
+	auto& curInfo = spt_tracing.curTraceInfo;
+	if (pTraceInfo->m_trace.fraction < curInfo.bestFrac)
+	{
+		curInfo.bestFrac = pTraceInfo->m_trace.fraction;
+		curInfo.hitInfo.Clear();
+		curInfo.hitInfo.bspData = pTraceInfo->m_pBSPData;
+		curInfo.hitInfo.dispTree = pDispTree;
+	}
 }
 
 #ifdef SPT_TRACE_PORTAL_ENABLED
