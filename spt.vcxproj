@@ -1225,6 +1225,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClCompile Include="spt\features\visualizations\draw_ent_collides.cpp" />
     <ClCompile Include="spt\features\visualizations\draw_seams.cpp" />
     <ClCompile Include="spt\features\visualizations\draw_world_collides.cpp" />
+    <ClCompile Include="spt\features\visualizations\map_overlay.cpp" />
     <ClCompile Include="spt\features\visualizations\mesh_test.cpp" />
     <ClCompile Include="spt\features\visualizations\portal_placement.cpp" />
     <ClCompile Include="spt\features\visualizations\renderer\internal\create_collide.cpp" />
