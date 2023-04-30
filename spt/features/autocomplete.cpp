@@ -70,7 +70,7 @@ void AutocompleteFeature::LoadFeature()
 
 	if (execCommand)
 	{
-		ORIG_execCompleteFunc = playdemoCommand->m_fnCompletionCallback;
+		ORIG_execCompleteFunc = execCommand->m_fnCompletionCallback;
 		execCommand->m_fnCompletionCallback = AUTOCOMPLETION_FUNCTION(exec);
 	}
 }
