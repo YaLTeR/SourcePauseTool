@@ -45,7 +45,7 @@ int AutoCompleteList::AutoCompleteSuggest(const std::string& suggestionBase,
 std::pair<std::string, std::string> AutoCompleteList::SplitPartial(const char* partial, bool& hasDoubleQuote)
 {
 	std::string s(partial);
-	size_t pos = s.find(" ") + 1;
+	size_t pos = s.find(' ') + 1;
 	hasDoubleQuote = partial[pos] == '"';
 	if (hasDoubleQuote)
 		pos++;
