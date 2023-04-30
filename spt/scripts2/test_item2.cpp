@@ -29,7 +29,7 @@ namespace scripts2
 				GetStringTriplet(line, tickS, noS, value, ' ');
 				tick = ParseValue<int>(tickS);
 				no = ParseValue<int>(noS);
-				data.push_back(TestItem(tick, no, value));
+				data.emplace_back(tick, no, value);
 			}
 		}
 
