@@ -270,10 +270,6 @@ static void DrawPortal(MeshBuilderDelegate& mb, const PortalPlacement::Placement
 			portalColor = noDrawColor;
 		}
 	}
-	else if (info.fizzleAfterPlace)
-	{
-		portalColor = fizzleColor;
-	}
 	else
 	{
 		portalColor = col;
