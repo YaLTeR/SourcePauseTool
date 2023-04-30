@@ -444,7 +444,7 @@ bool InputHud::ModifySetting(const char* element, const char* param, const char*
 		// only works for ASCII
 		std::string str(value);
 		std::wstring wstr(str.begin(), str.end());
-		target->text = wstr;
+		target->text = std::move(wstr);
 	}
 	else if (std::strcmp(param, "font") == 0)
 	{

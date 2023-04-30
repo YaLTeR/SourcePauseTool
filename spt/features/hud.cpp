@@ -370,7 +370,7 @@ IMPL_HOOK_THISCALL(HUDFeature, void, CEngineVGui__Paint, void*, PaintMode_t mode
 
 HudCallback::HudCallback(std::string key, std::function<void()> draw, std::function<bool()> shouldDraw, bool overlay)
 {
-	this->sortKey = key;
+	this->sortKey = std::move(key);
 	this->draw = draw;
 	this->shouldDraw = shouldDraw;
 	this->drawInOverlay = overlay;
