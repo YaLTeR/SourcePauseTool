@@ -811,7 +811,6 @@ IMPL_HOOK_THISCALL(InputHud, void, DecodeUserCmdFromBuffer, void*, bf_read& buf,
 	auto pCmd = m_pCommands + spt_playerio.sizeofCUserCmd * (sequence_number % 90);
 	auto cmd = reinterpret_cast<CUserCmd*>(pCmd);
 	spt_ihud.SetInputInfo(cmd->buttons, Vector(cmd->sidemove, cmd->forwardmove, cmd->upmove));
-	pCmd = 0;
 }
 
 void InputHud::CreateMove(uintptr_t pCmd)
