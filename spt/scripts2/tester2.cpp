@@ -285,7 +285,7 @@ namespace scripts2
 		if (currentTestIndex >= 0 && currentTestIndex < testNames.size())
 			testName = GetCurrentTestName();
 		else
-			testName = "";
+			testName.clear();
 
 		if (automatedTest)
 		{

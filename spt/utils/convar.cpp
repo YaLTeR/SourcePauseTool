@@ -76,7 +76,7 @@ int FileAutoCompleteList::AutoCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 	if (!fs::is_directory(dir, ec))
 		return 0;
 
-	bool shouldUpdate = (dir != prevPath || subStrings.second == "");
+	bool shouldUpdate = (dir != prevPath || subStrings.second.empty());
 	prevPath = dir;
 
 	if (shouldUpdate)

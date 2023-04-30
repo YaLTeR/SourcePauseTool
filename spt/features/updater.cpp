@@ -250,13 +250,13 @@ static int GetPluginBuildNumber()
 bool Updater::FetchReleaseInfo()
 {
 	std::string data = Request("https://api.github.com/repos/YaLTeR/SourcePauseTool/releases/latest");
-	if (data == "")
+	if (data.empty())
 		return false;
 
 	nlohmann::json res = nlohmann::json::parse(data);
 	release.name = res["tag_name"];
 
-	if (release.name == "")
+	if (release.name.empty())
 	{
 		DevMsg("Cannot get tag_name.\n");
 		return false;
@@ -264,7 +264,7 @@ bool Updater::FetchReleaseInfo()
 
 	// Get release build number
 	std::string date = res["created_at"];
-	if (date == "")
+	if (date.empty())
 	{
 		DevMsg("Cannot get created_at.\n");
 		return false;
@@ -300,7 +300,7 @@ bool Updater::FetchReleaseInfo()
 		}
 	}
 
-	if (release.url == "")
+	if (release.url.empty())
 	{
 		DevMsg("Cannot find download URL for " ASSET_NAME "\n");
 		return false;

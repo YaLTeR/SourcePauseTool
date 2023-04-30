@@ -78,7 +78,7 @@ namespace scripts2
 
 	void ParsedScript::Reset()
 	{
-		demoName = "";
+		demoName.clear();
 		scriptName.clear();
 		demoCount = 1;
 		afterFramesTick = 0;
