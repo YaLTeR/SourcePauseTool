@@ -17,6 +17,7 @@
 #include "tier2\tier2.h"
 #include "interfaces.hpp"
 #include "..\features\ent_props.hpp"
+#include "game_detection.hpp"
 
 extern ConVar _y_spt_overlay_portal;
 
@@ -59,9 +60,12 @@ bool invalidPortal(IClientEntity* portal)
 
 IClientEntity* GetEnvironmentPortal()
 {
+	if (!utils::DoesGameLookLikePortal())
+		return nullptr;
 	int handle = spt_propertyGetter.GetProperty<int>(0, "m_hPortalEnvironment");
+	if (handle == 0)
+		return nullptr;
 	int index = (handle & INDEX_MASK) - 1;
-
 	return utils::GetClientEntity(index);
 }
 
