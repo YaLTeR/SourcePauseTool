@@ -259,7 +259,7 @@ static void DrawPortal(MeshBuilderDelegate& mb, const PortalPlacement::Placement
 	}
 	else if (info.placementResult <= 0.5f)
 	{
-		if (info.placementResult <= 0.5f && y_spt_draw_pp_failed.GetBool()
+		if (y_spt_draw_pp_failed.GetBool()
 		    && info.placementResult != PORTAL_PLACEMENT_SUCCESS_PASSTHROUGH_SURFACE
 		    && info.placementResult != PORTAL_PLACEMENT_SUCCESS_CLEANSER)
 		{
