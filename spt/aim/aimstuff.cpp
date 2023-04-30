@@ -72,6 +72,7 @@ namespace aim
 
 	ViewState::ViewState()
 	{
+		targetID = -1;
 		ticksLeft = 0;
 		state = NO_AIM;
 		timedChange = false;
