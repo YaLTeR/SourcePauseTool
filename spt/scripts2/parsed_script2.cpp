@@ -78,7 +78,7 @@ namespace scripts2
 
 	void ParsedScript::Reset()
 	{
-		demoName = "";
+		demoName.clear();
 		scriptName.clear();
 		demoCount = 1;
 		afterFramesTick = 0;
@@ -141,18 +141,18 @@ namespace scripts2
 	void ParsedScript::SetDemoName(std::string name)
 	{
 		rtrim(name);
-		demoName = name;
+		demoName = std::move(name);
 	}
 
 	void ParsedScript::AddAfterFramesEntry(long long int tick, std::string command)
 	{
-		afterFramesEntries.push_back(afterframes_entry_t(tick, std::move(command)));
+		afterFramesEntries.emplace_back(tick, std::move(command));
 	}
 
 	void ParsedScript::SetSave(std::string save)
 	{
 		rtrim(save);
-		saveName = save;
+		saveName = std::move(save);
 	}
 
 	Savestate ParsedScript::GetSaveStateInfo()

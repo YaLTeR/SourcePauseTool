@@ -346,7 +346,7 @@ namespace utils
 			int endIndex = i;
 
 			// Go to the next separator
-			while (args[endIndex] != sep && args[endIndex] != entSep && endIndex < argSize)
+			while (endIndex < argSize && args[endIndex] != sep && args[endIndex] != entSep)
 				++endIndex;
 
 			if (readEntityIndex)

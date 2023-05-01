@@ -445,7 +445,6 @@ bool PlayerIOFeature::PlayerIOAddressesFound()
 	    m_vecPreviouslyPredictedOrigin.Found() &&
 #endif
 	    m_vecAbsOrigin.Found() && m_flMaxspeed.Found() && m_fFlags.Found() && m_bDucking.Found()
-	    && m_vecAbsOrigin.Found() && m_flMaxspeed.Found() && m_fFlags.Found() && m_bDucking.Found()
 	    && m_flDuckJumpTime.Found() && m_hGroundEntity.Found() && ORIG_CreateMove && ORIG_GetButtonBits
 	    && _sv_airaccelerate && _sv_accelerate && _sv_friction && _sv_maxspeed && _sv_stopspeed
 	    && interfaces::engine_server != nullptr;

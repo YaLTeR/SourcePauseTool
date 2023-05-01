@@ -15,9 +15,9 @@ namespace scripts2
 	{
 		ResetIteration();
 		Reset();
-		trackers[VELOCITY_NO] = std::unique_ptr<Tracker>(new VelocityTracker(9));
-		trackers[POS_NO] = std::unique_ptr<Tracker>(new PosTracker(9));
-		trackers[ANG_NO] = std::unique_ptr<Tracker>(new AngTracker(9));
+		trackers[VELOCITY_NO] = std::make_unique<VelocityTracker>(9);
+		trackers[POS_NO] = std::make_unique<PosTracker>(9);
+		trackers[ANG_NO] = std::make_unique<AngTracker>(9);
 	}
 
 	void Tester::LoadTest(const std::string& testName, bool generating, bool autoTest)
@@ -165,7 +165,7 @@ namespace scripts2
 				throw std::exception(oss.str().c_str());
 			}
 
-			testItems.push_back(TestItem(dataTick, i, tracker->GenerateTestData()));
+			testItems.emplace_back(dataTick, i, tracker->GenerateTestData());
 		}
 	}
 
@@ -285,7 +285,7 @@ namespace scripts2
 		if (currentTestIndex >= 0 && currentTestIndex < testNames.size())
 			testName = GetCurrentTestName();
 		else
-			testName = "";
+			testName.clear();
 
 		if (automatedTest)
 		{

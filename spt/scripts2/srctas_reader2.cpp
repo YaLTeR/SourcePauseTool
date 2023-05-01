@@ -339,7 +339,7 @@ namespace scripts2
 			{
 				if (IsVersionLine())
 				{
-					const char* str = line.c_str() + strlen("version");
+					const char* str = line.c_str() + std::size("version") - 1;
 					int version = std::atoi(str);
 					if (version >= 2)
 					{

@@ -246,7 +246,6 @@ void TASRecordFeature::SaveToFile(const char* filepath)
 	{
 		const char* preamble = "version 2\nvars\nframes\n";
 		WriteToHandle(handle, preamble);
-		std::string line;
 
 		if (!recordedCommands.empty())
 		{
