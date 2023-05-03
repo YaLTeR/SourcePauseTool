@@ -228,10 +228,13 @@ void EntProps::AddMap(datamap_t* map, bool server)
 {
 	std::string name = map->dataClassName;
 
-	// Pop the _ out of the client maps to make them match the server
-	if (!server && strstr(map->dataClassName, "C_") == map->dataClassName)
+	// if this is a client map, get the associated server name
+	if (!server)
 	{
-		name = name.erase(1, 1);
+		if (!strcmp(map->dataClassName, "C_BaseHLPlayer"))
+			name = "CHL2_Player";
+		else if (strstr(map->dataClassName, "C_") == map->dataClassName)
+			name = name.erase(1, 1);
 	}
 
 	auto result = nameToMapWrapper.find(name);
