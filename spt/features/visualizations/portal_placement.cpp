@@ -2,6 +2,8 @@
 
 #include <chrono>
 
+#include "worldsize.h"
+
 #include "renderer\mesh_renderer.hpp"
 #include "spt\features\tracing.hpp"
 
@@ -248,6 +250,9 @@ void PortalPlacement::UpdatePlacementInfo()
 
 static void DrawPortal(MeshBuilderDelegate& mb, const PortalPlacement::PlacementInfo& info, color32 col)
 {
+	if (!info.tr.DidHit())
+		return;
+
 	const color32 failedColor = {255, 0, 0, 127};
 	const color32 noDrawColor = {0, 0, 0, 0};
 	const color32 fizzleColor = {100, 100, 100, 127};
@@ -409,7 +414,7 @@ void PortalPlacement::RunPpGridIteration(MeshRendererDelegate& mr)
 		trace_t tr;
 
 		Ray_t ray;
-		ray.Init(ppGrid.camPos, ppGrid.camPos + dir * 999'999'999);
+		ray.Init(ppGrid.camPos, ppGrid.camPos + dir * MAX_TRACE_LENGTH);
 		interfaces::engineTraceServer->TraceRay(ray, MASK_SHOT_PORTAL, spt_tracing.GetPortalTraceFilter(), &tr);
 		spherePos = tr.endpos;
 
@@ -422,6 +427,9 @@ void PortalPlacement::RunPpGridIteration(MeshRendererDelegate& mr)
 		const int PORTAL_PLACED_BY_PLAYER = 2;
 		float placementResult = spt_tracing.ORIG_TraceFirePortal(
 		    pgun, 0, bPortal2, ppGrid.camPos, dir, tr, placePos, placeAng, PORTAL_PLACED_BY_PLAYER, true);
+
+		if (!tr.DidHit())
+			continue;
 
 		color32 c;
 
