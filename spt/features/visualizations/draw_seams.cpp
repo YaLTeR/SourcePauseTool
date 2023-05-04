@@ -1,5 +1,7 @@
 #include "stdafx.hpp"
 
+#include "worldsize.h"
+
 #include "renderer\mesh_renderer.hpp"
 #include "spt\features\tracing.hpp"
 
@@ -49,7 +51,7 @@ bool TestSeamshot(const Vector& cameraPos,
 	dir.NormalizeInPlace();
 
 	Ray_t ray;
-	ray.Init(cameraPos, cameraPos + dir * 999'999'999);
+	ray.Init(cameraPos, cameraPos + dir * MAX_TRACE_LENGTH);
 	interfaces::engineTraceServer->TraceRay(ray, MASK_SHOT_PORTAL, spt_tracing.GetPortalTraceFilter(), &seamTrace);
 
 	if (seamTrace.fraction == 1.0f)
@@ -129,7 +131,7 @@ void FindClosestPlane(const trace_t& tr, trace_t& out, float maxDistSqr)
 	{
 		trace_t newEdgeTr;
 		Ray_t ray;
-		ray.Init(tr.endpos, tr.endpos + checkDirs[i] * 999'999'999);
+		ray.Init(tr.endpos, tr.endpos + checkDirs[i] * MAX_TRACE_LENGTH);
 		interfaces::engineTraceServer->TraceRay(ray,
 		                                        MASK_SHOT_PORTAL,
 		                                        spt_tracing.GetPortalTraceFilter(),
@@ -161,10 +163,21 @@ void DrawSeamsFeature::OnMeshRenderSignal(MeshRendererDelegate& mr)
 		return;
 
 	Vector cameraPosition = utils::GetPlayerEyePosition();
-	QAngle angles = utils::GetPlayerEyeAngles();
+	static utils::CachedField<QAngle, "CBasePlayer", "pl.v_angle", true, true> vangle;
+	QAngle angles = *vangle.GetPtrPlayer();
+
+	auto env = GetEnvironmentPortal();
+	if (env)
+		transformThroughPortal(env, cameraPosition, angles, cameraPosition, angles);
+
+	Vector dir;
+	AngleVectors(angles, &dir);
+
+	Ray_t ray;
+	ray.Init(cameraPosition, cameraPosition + dir * MAX_TRACE_LENGTH);
 
 	trace_t tr;
-	spt_tracing.TraceTransformFirePortal(tr, cameraPosition, angles);
+	interfaces::engineTraceServer->TraceRay(ray, MASK_SHOT_PORTAL, spt_tracing.GetPortalTraceFilter(), &tr);
 
 	if (tr.fraction >= 1.0f)
 		return;
