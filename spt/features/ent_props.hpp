@@ -118,3 +118,74 @@ inline T* PlayerField<T>::GetPtr() const
 	else
 		return nullptr;
 }
+
+namespace utils
+{
+	// horrible, but the only way I know of to get C-style strings into templates
+	template<size_t N>
+	struct _tstring
+	{
+		constexpr _tstring(const char (&str)[N])
+		{
+			std::copy_n(str, N, val);
+		}
+		char val[N];
+	};
+
+	/*
+	* A small wrapper of spt_entprops.GetFieldOffset() that caches the offset.
+	* Always asserts that the field exists. Optionally, calls Error() if it does not.
+	* additionalOffset can be used when the exact field you're looking for does not exist;
+	* you can instead reference a nearby field and add an offset from that in bytes.
+	*/
+	template<typename T, _tstring map, _tstring field, bool server, bool error, int additionalOffset = 0>
+	struct CachedField
+	{
+		int _off = INVALID_DATAMAP_OFFSET;
+
+		int Get()
+		{
+			if (_off != INVALID_DATAMAP_OFFSET)
+				return _off + additionalOffset;
+			_off = spt_entprops.GetFieldOffset(map.val, field.val, server);
+			if (_off == INVALID_DATAMAP_OFFSET)
+			{
+				char errStr[256];
+				snprintf(errStr,
+				         sizeof(errStr),
+				         "spt: %s::%s (%s) does not exist",
+				         map.val,
+				         field.val,
+				         (server) ? "server" : "client");
+				AssertMsg1(0, "%s", errStr);
+				if (error)
+					Error("%s", errStr);
+				return INVALID_DATAMAP_OFFSET;
+			}
+			else
+			{
+				return _off + additionalOffset;
+			}
+		}
+
+		bool Exists()
+		{
+			return Get() != INVALID_DATAMAP_OFFSET;
+		}
+
+		T* GetPtr(const void* ent)
+		{
+			Assert(ent);
+			if (!ent)
+				return nullptr;
+			if (!Exists())
+				return nullptr;
+			return reinterpret_cast<T*>(reinterpret_cast<uint32_t>(ent) + _off + additionalOffset);
+		}
+
+		T* GetPtrPlayer()
+		{
+			return GetPtr(spt_entprops.GetPlayer(server));
+		}
+	};
+} // namespace utils
