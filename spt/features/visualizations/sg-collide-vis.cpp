@@ -99,23 +99,6 @@ static const std::unordered_map<int, ShapeColor> entColors{
 
 #define PORTAL_CLASS "CProp_Portal"
 
-// Since we're rendering geometry directly on top of the world and other entities, we get a LOT of z-fighting by
-// default. This fixes that by scaling everything towards the camera just a little bit.
-static void RenderCallbackZFightFix(const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
-{
-	infoOut.mat[0][3] -= infoIn.cvs.origin.x;
-	infoOut.mat[1][3] -= infoIn.cvs.origin.y;
-	infoOut.mat[2][3] -= infoIn.cvs.origin.z;
-
-	matrix3x4_t scaleMat;
-	SetScaleMatrix(0.9995f, scaleMat);
-	MatrixMultiply(scaleMat, infoOut.mat, infoOut.mat);
-
-	infoOut.mat[0][3] += infoIn.cvs.origin.x;
-	infoOut.mat[1][3] += infoIn.cvs.origin.y;
-	infoOut.mat[2][3] += infoIn.cvs.origin.z;
-}
-
 class SgCollideVisFeature : public FeatureWrapper<SgCollideVisFeature>
 {
 public:

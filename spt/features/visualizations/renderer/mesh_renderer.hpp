@@ -53,6 +53,26 @@ struct CallbackInfoOut
 */
 typedef std::function<void(const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)> RenderCallback;
 
+/*
+* This is a helpful callback for rendering geometry that overlayed directly on top of game objects.
+* Normally this can cause a lot of z-fighting, especially when overlaying geometry on top of the world.
+* This callback fixes that that by scaling all overlayed geometry slightly towards the camera.
+*/
+inline void RenderCallbackZFightFix(const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut, float scaleFactor = 0.999f)
+{
+	infoOut.mat[0][3] -= infoIn.cvs.origin.x;
+	infoOut.mat[1][3] -= infoIn.cvs.origin.y;
+	infoOut.mat[2][3] -= infoIn.cvs.origin.z;
+
+	matrix3x4_t scaleMat;
+	SetScaleMatrix(scaleFactor, scaleMat);
+	MatrixMultiply(scaleMat, infoOut.mat, infoOut.mat);
+
+	infoOut.mat[0][3] += infoIn.cvs.origin.x;
+	infoOut.mat[1][3] += infoIn.cvs.origin.y;
+	infoOut.mat[2][3] += infoIn.cvs.origin.z;
+}
+
 // Simple macro for a dynamic mesh with no callback. Intellisense sucks huge dong for lambdas in this macro, so
 // maybe avoid using it if you are doing something long and complicated.
 #define RENDER_DYNAMIC(rdrDelegate, createFunc) (rdrDelegate).DrawMesh(MB_DYNAMIC(createFunc))
