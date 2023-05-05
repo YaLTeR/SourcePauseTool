@@ -64,7 +64,7 @@ void EntProps::WalkDatamap(std::string key)
 	if (result)
 		result->ExploreOffsets();
 	else
-		Msg("No datamap found with name %s\n", key.c_str());
+		Msg("No datamap found with name \"%s\"\n", key.c_str());
 }
 
 void EntProps::PrintDatamaps()

@@ -19,7 +19,10 @@ namespace utils
 		void ExploreOffsets();
 
 	private:
-		void ExploreOffsetsHelper(datamap_t* map, int prefixOffset, std::string prefix);
+		void ExploreOffsetsHelper(std::vector<std::pair<int, std::string>>& outVec,
+		                          datamap_t* map,
+		                          int prefixOffset,
+		                          const std::string& prefix);
 		void CacheOffsets();
 		void CacheOffsetsHelper(std::unordered_map<std::string, int>& offsetMap,
 		                        int prefixOffset,
