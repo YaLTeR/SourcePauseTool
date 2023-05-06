@@ -168,14 +168,9 @@ void Updater::LoadFeature()
 #endif
 
 	// auto-updater & reloader may create this file, try to get rid of it
-	try
-	{
-		if (fs::exists(TARGET_NAME ".old-auto"))
-			fs::remove(TARGET_NAME ".old-auto");
-	}
-	catch (...)
-	{
-	}
+	std::error_code ec;
+	if (fs::exists(TARGET_NAME ".old-auto", ec) && !ec)
+		fs::remove(TARGET_NAME ".old-auto", ec);
 }
 
 bool Updater::Prepare(const char* url, int timeout)
@@ -336,7 +331,8 @@ bool Updater::FetchReleaseInfo()
 
 bool Updater::ReloadPlugin()
 {
-	if (!fs::exists(sptPath))
+	std::error_code ec;
+	if (!fs::exists(sptPath, ec) || ec)
 	{
 		// Prevent renaming the plugin DLL file without replacing a file with the same name back.
 		Warning("Failed to reload: plugin path does not exist.\n");
@@ -348,36 +344,68 @@ bool Updater::ReloadPlugin()
 		return false;
 
 	std::string gamePath = GetGameDir();
+	fs::path relPath = fs::relative(sptPath, gamePath, ec);
+	if (ec)
+	{
+		Warning("Failed to get relative path to \"%s\" from game dir.\n", sptPath.c_str());
+		return false;
+	}
 	char cmd[512];
-	sprintf(cmd, "plugin_unload %d; plugin_load \"%s\";", index, fs::relative(sptPath, gamePath).string().c_str());
+	sprintf(cmd, "plugin_unload %d; plugin_load \"%s\";", index, relPath.string().c_str());
 	EngineConCmd(cmd);
 	return true;
 }
 
 void Updater::ReloadFromPath(const std::string& newPath)
 {
-	if (!fs::exists(newPath))
+	std::error_code ec;
+	if (!fs::exists(newPath, ec) || ec)
 	{
-		Msg("\"%s\" is not a valid path.\n", newPath.c_str());
+		Warning("\"%s\" is not a valid path.\n", newPath.c_str());
 		return;
 	}
 
-	// similar to the updater - rename seld, replace original path, and reload
-	fs::rename(sptPath, TARGET_NAME ".old-auto");
-	fs::copy(newPath, sptPath);
+	// similar to the updater - rename self, replace original path, and reload
+
+	fs::rename(sptPath, TARGET_NAME ".old-auto", ec);
+	if (ec)
+	{
+		Warning("Failed, could not rename plugin file.\n");
+		return;
+	}
+	fs::copy(newPath, sptPath, ec);
+	if (ec)
+	{
+		// try renaming ourself back
+		fs::rename(TARGET_NAME ".old-auto", sptPath, ec);
+		if (ec)
+		{
+			Warning("Failed, could not copy file at \"%s\", plugin location has been moved.\n",
+			        newPath.c_str());
+		}
+		else
+		{
+			Warning("Failed, could not rename file at \"%s\".\n", newPath.c_str());
+		}
+	}
 
 #ifdef OE
 	Msg("Please restart the game.\n");
 #else
 	Msg("Reloading plugin...\n");
 	if (!ReloadPlugin())
-		Msg("An error occurred when reloading, please restart the game.\n");
+		Warning("An error occurred when reloading, please restart the game.\n");
 #endif
 }
 
 void Updater::UpdatePlugin()
 {
-	std::string tmpPath = std::filesystem::temp_directory_path().append(TARGET_NAME).string();
+	std::error_code ec;
+	fs::path tmpDir = fs::temp_directory_path(ec);
+	if (ec)
+		tmpDir = TARGET_NAME ".tmp";
+
+	std::string tmpPath = tmpDir.append(TARGET_NAME).string();
 
 	Msg("Downloading " TARGET_NAME " from '%s'\n", release.url.c_str());
 	if (!Download(release.url.c_str(), tmpPath.c_str()))
@@ -387,10 +415,30 @@ void Updater::UpdatePlugin()
 	}
 
 	// In Windows, you can't delete loaded DLL file, but can rename it.
-	std::filesystem::rename(sptPath, TARGET_NAME ".old-auto");
+	fs::rename(sptPath, TARGET_NAME ".old-auto", ec);
+	if (ec)
+	{
+		Warning("Failed, could not rename plugin file.\n");
+		return;
+	}
 
-	std::filesystem::copy(tmpPath, sptPath);
-	std::filesystem::remove(tmpPath);
+
+	fs::copy(tmpPath, sptPath, ec);
+	if (ec)
+	{
+		// try renaming ourself back
+		fs::rename(TARGET_NAME ".old-auto", sptPath, ec);
+		if (ec)
+		{
+			Warning("Failed, could not copy file at \"%s\", plugin location has been moved.\n",
+			        tmpPath.c_str());
+		}
+		else
+		{
+			Warning("Failed, could not rename file at \"%s\".\n", tmpPath.c_str());
+		}
+	}
+	fs::remove(tmpPath, ec);
 
 	Msg(TARGET_NAME " successfully installed.\n");
 
@@ -422,7 +470,7 @@ int Updater::CheckUpdate()
 	Msg("Fetching latest version information...\n");
 	if (!FetchReleaseInfo())
 	{
-		Msg("An error occurred.\n");
+		Warning("An error occurred.\n");
 		return UPDATER_ERROR;
 	}
 
