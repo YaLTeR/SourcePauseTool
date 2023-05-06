@@ -50,6 +50,7 @@ public:
 	bool ReloadPlugin();
 	void ReloadFromPath(const std::string& newPath);
 	void UpdatePlugin();
+	int GetPluginIndex(); // returns -1 on failure
 
 protected:
 	virtual bool ShouldLoadFeature() override;
@@ -128,6 +129,19 @@ CON_COMMAND_F(
 		spt_updater.ReloadFromPath(args.Arg(1));
 }
 
+CON_COMMAND_F(spt_unload, "Unload the plugin.", FCVAR_CHEAT | FCVAR_DONTRECORD)
+{
+	int index = spt_updater.GetPluginIndex();
+	if (index == -1)
+	{
+		Msg("Could not determine plugin index.\n");
+		return;
+	}
+	char cmd[32];
+	snprintf(cmd, sizeof cmd, "plugin_unload %d", index);
+	EngineConCmd(cmd);
+}
+
 bool Updater::ShouldLoadFeature()
 {
 	return true;
@@ -148,6 +162,7 @@ void Updater::LoadFeature()
 	sptPath = GetPluginPath();
 	InitCommand(y_spt_check_update);
 	InitCommand(y_spt_update);
+	InitCommand(spt_unload);
 #ifndef OE
 	InitCommand(y_spt_reload);
 #endif
@@ -328,24 +343,15 @@ bool Updater::ReloadPlugin()
 		return false;
 	}
 
-	auto& plugins = *(CUtlVector<void*>*)((uint32_t)interfaces::pluginHelpers + 4);
-	extern CSourcePauseTool g_SourcePauseTool;
-	for (int i = 0; i < plugins.Count(); i++)
-	{
-		// m_pPlugin
-		if (*(IServerPluginCallbacks**)((uint32_t)plugins[i] + 132) == &g_SourcePauseTool)
-		{
-			std::string gamePath = GetGameDir();
-			char cmd[512];
-			sprintf(cmd,
-			        "plugin_unload %d; plugin_load \"%s\";",
-			        i,
-			        fs::relative(sptPath, gamePath).string().c_str());
-			EngineConCmd(cmd);
-			return true;
-		}
-	}
-	return false;
+	int index = spt_updater.GetPluginIndex();
+	if (index == -1)
+		return false;
+
+	std::string gamePath = GetGameDir();
+	char cmd[512];
+	sprintf(cmd, "plugin_unload %d; plugin_load \"%s\";", index, fs::relative(sptPath, gamePath).string().c_str());
+	EngineConCmd(cmd);
+	return true;
 }
 
 void Updater::ReloadFromPath(const std::string& newPath)
@@ -398,6 +404,17 @@ void Updater::UpdatePlugin()
 		Msg("An error occurred when reloading. To complete the installation, please restart the game.\n");
 	}
 #endif
+}
+
+int Updater::GetPluginIndex()
+{
+	auto& plugins = *(CUtlVector<uintptr_t>*)((uint32_t)interfaces::pluginHelpers + 4);
+	extern CSourcePauseTool g_SourcePauseTool;
+
+	for (int i = 0; i < plugins.Count(); i++)
+		if (*(IServerPluginCallbacks**)(plugins[i] + 132) == &g_SourcePauseTool)
+			return i;
+	return -1;
 }
 
 int Updater::CheckUpdate()
