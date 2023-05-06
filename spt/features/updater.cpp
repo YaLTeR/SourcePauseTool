@@ -26,16 +26,6 @@ extern "C"
 #include <curl\curl.h>
 }
 
-#ifdef SSDK2007
-#define ASSET_NAME "spt.dll"
-#elif SSDK2013
-#define ASSET_NAME "spt-2013.dll"
-#elif BMS
-#define ASSET_NAME "spt-bms.dll"
-#elif OE
-#define ASSET_NAME "spt-oe.dll"
-#endif
-
 // Update spt
 class Updater : public FeatureWrapper<Updater>
 {
@@ -58,6 +48,7 @@ public:
 
 	int CheckUpdate();
 	bool ReloadPlugin();
+	void ReloadFromPath(const std::string& newPath);
 	void UpdatePlugin();
 
 protected:
@@ -79,7 +70,7 @@ private:
 
 static Updater spt_updater;
 
-CON_COMMAND(y_spt_check_update, "Check the release information of spt.")
+CON_COMMAND_F(y_spt_check_update, "Check the release information of spt.", FCVAR_CHEAT | FCVAR_DONTRECORD)
 {
 	int res = spt_updater.CheckUpdate();
 	switch (res)
@@ -97,7 +88,7 @@ CON_COMMAND(y_spt_check_update, "Check the release information of spt.")
 	}
 }
 
-CON_COMMAND(y_spt_update, "Check and install available update for spt")
+CON_COMMAND_F(y_spt_update, "Check and install available update for spt", FCVAR_CHEAT | FCVAR_DONTRECORD)
 {
 	if (args.ArgC() > 2)
 	{
@@ -126,9 +117,15 @@ CON_COMMAND(y_spt_update, "Check and install available update for spt")
 	}
 }
 
-CON_COMMAND(y_spt_reload, "Reload the plugin.")
+CON_COMMAND_F(
+    y_spt_reload,
+    "spt_reload [path]. Reloads the plugin. If a path is given, will try to replace the current loaded plugin with the one from the path.",
+    FCVAR_CHEAT | FCVAR_DONTRECORD)
 {
-	spt_updater.ReloadPlugin();
+	if (args.ArgC() == 1)
+		spt_updater.ReloadPlugin();
+	else
+		spt_updater.ReloadFromPath(args.Arg(1));
 }
 
 bool Updater::ShouldLoadFeature()
@@ -154,6 +151,16 @@ void Updater::LoadFeature()
 #ifndef OE
 	InitCommand(y_spt_reload);
 #endif
+
+	// auto-updater & reloader may create this file, try to get rid of it
+	try
+	{
+		if (fs::exists(TARGET_NAME ".old-auto"))
+			fs::remove(TARGET_NAME ".old-auto");
+	}
+	catch (...)
+	{
+	}
 }
 
 bool Updater::Prepare(const char* url, int timeout)
@@ -294,7 +301,7 @@ bool Updater::FetchReleaseInfo()
 	// Find download link
 	for (auto asset : res["assets"])
 	{
-		if (asset["name"] == ASSET_NAME)
+		if (asset["name"] == TARGET_NAME)
 		{
 			release.url = asset["browser_download_url"];
 		}
@@ -302,7 +309,7 @@ bool Updater::FetchReleaseInfo()
 
 	if (release.url.empty())
 	{
-		DevMsg("Cannot find download URL for " ASSET_NAME "\n");
+		DevMsg("Cannot find download URL for " TARGET_NAME "\n");
 		return false;
 	}
 
@@ -341,11 +348,32 @@ bool Updater::ReloadPlugin()
 	return false;
 }
 
+void Updater::ReloadFromPath(const std::string& newPath)
+{
+	if (!fs::exists(newPath))
+	{
+		Msg("\"%s\" is not a valid path.\n", newPath.c_str());
+		return;
+	}
+
+	// similar to the updater - rename seld, replace original path, and reload
+	fs::rename(sptPath, TARGET_NAME ".old-auto");
+	fs::copy(newPath, sptPath);
+
+#ifdef OE
+	Msg("Please restart the game.\n");
+#else
+	Msg("Reloading plugin...\n");
+	if (!ReloadPlugin())
+		Msg("An error occurred when reloading, please restart the game.\n");
+#endif
+}
+
 void Updater::UpdatePlugin()
 {
-	std::string tmpPath = std::filesystem::temp_directory_path().append(ASSET_NAME).string();
+	std::string tmpPath = std::filesystem::temp_directory_path().append(TARGET_NAME).string();
 
-	Msg("Downloading " ASSET_NAME " from '%s'\n", release.url.c_str());
+	Msg("Downloading " TARGET_NAME " from '%s'\n", release.url.c_str());
 	if (!Download(release.url.c_str(), tmpPath.c_str()))
 	{
 		Msg("An error occurred.\n");
@@ -353,12 +381,12 @@ void Updater::UpdatePlugin()
 	}
 
 	// In Windows, you can't delete loaded DLL file, but can rename it.
-	std::filesystem::rename(sptPath, ASSET_NAME ".old-auto");
+	std::filesystem::rename(sptPath, TARGET_NAME ".old-auto");
 
 	std::filesystem::copy(tmpPath, sptPath);
 	std::filesystem::remove(tmpPath);
 
-	Msg(ASSET_NAME " successfully installed.\n");
+	Msg(TARGET_NAME " successfully installed.\n");
 
 #ifdef OE
 	Msg("To complete the installation, please restart the game.\n");
