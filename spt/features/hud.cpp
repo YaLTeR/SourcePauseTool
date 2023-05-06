@@ -13,6 +13,7 @@
 #include "..\vgui\vgui_utils.hpp"
 #include "string_utils.hpp"
 
+ConVar y_spt_hud("y_spt_hud", "1", 0, "When set to 1, displays SPT HUD.\n");
 ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT, "When set to 1, displays SPT HUD on the left.\n");
 
 extern ConVar _y_spt_overlay;
@@ -27,61 +28,47 @@ const std::string FONT_HudNumbers = "HudNumbers";
 namespace patterns
 {
 	PATTERNS(
-		CMatSystemSurface__StartDrawing,
-		"5135",
-		"55 8B EC 83 E4 C0 83 EC 38 80 ?? ?? ?? ?? ?? ?? 56 57 8B F9 75 57 8B ?? ?? ?? ?? ?? C6 ?? ?? ?? ?? ?? ?? FF ?? 8B 10 6A 00 8B C8 8B 42 20",
-		"7462488",
-		"55 8B EC 64 A1 ?? ?? ?? ?? 6A FF 68 ?? ?? ?? ?? 50 64 89 25 ?? ?? ?? ?? 83 EC 14",
-		"BMS-Retail-0.9",
-		"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 83 EC 14 56 57 A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 ?? ?? ?? ?? 8B F9 80 3D ?? ?? ?? ?? 00");
+	    CMatSystemSurface__StartDrawing,
+	    "5135",
+	    "55 8B EC 83 E4 C0 83 EC 38 80 ?? ?? ?? ?? ?? ?? 56 57 8B F9 75 57 8B ?? ?? ?? ?? ?? C6 ?? ?? ?? ?? ?? ?? FF ?? 8B 10 6A 00 8B C8 8B 42 20",
+	    "7462488",
+	    "55 8B EC 64 A1 ?? ?? ?? ?? 6A FF 68 ?? ?? ?? ?? 50 64 89 25 ?? ?? ?? ?? 83 EC 14",
+	    "BMS-Retail-0.9",
+	    "55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 83 EC 14 56 57 A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 ?? ?? ?? ?? 8B F9 80 3D ?? ?? ?? ?? 00");
 	PATTERNS(
-		CMatSystemSurface__FinishDrawing,
-		"5135",
-		"56 6A 00 E8 ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? 8B 01 8B ?? ?? ?? ?? ?? 83 C4 04 FF D2 8B F0 85 F6 74 09 8B 06 8B 50 08 8B CE FF D2",
-		"7462488",
-		"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 64 89 25 ?? ?? ?? ?? 51 56 6A 00",
-		"BMS-Retail-0.9",
-		"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 51 56 A1 ?? ?? ?? ?? 33 C5 50 8D 45 ?? 64 A3 ?? ?? ?? ?? 6A 00");
-	PATTERNS(
-		CEngineVGui__Paint,
-		"5135",
-		"83 EC 18 56 6A 04 6A 00",
-		"BMS-Retail-0.9",
-		"55 8B EC 83 EC 18 53 8B D9 8B 0D ?? ?? ?? ?? FF 15 ?? ?? ?? ?? 88 45 FE 84 C0",
-		"7462488",
-		"55 8B EC 83 EC 2C 53 8B D9 8B 0D ?? ?? ?? ?? 56",
-		"4044",
-		"6A FF 68 B8 CA 2C 20");
+	    CMatSystemSurface__FinishDrawing,
+	    "5135",
+	    "56 6A 00 E8 ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? 8B 01 8B ?? ?? ?? ?? ?? 83 C4 04 FF D2 8B F0 85 F6 74 09 8B 06 8B 50 08 8B CE FF D2",
+	    "7462488",
+	    "55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 64 89 25 ?? ?? ?? ?? 51 56 6A 00",
+	    "BMS-Retail-0.9",
+	    "55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 51 56 A1 ?? ?? ?? ?? 33 C5 50 8D 45 ?? 64 A3 ?? ?? ?? ?? 6A 00");
+	PATTERNS(CEngineVGui__Paint,
+	         "5135",
+	         "83 EC 18 56 6A 04 6A 00",
+	         "BMS-Retail-0.9",
+	         "55 8B EC 83 EC 18 53 8B D9 8B 0D ?? ?? ?? ?? FF 15 ?? ?? ?? ?? 88 45 FE 84 C0",
+	         "7462488",
+	         "55 8B EC 83 EC 2C 53 8B D9 8B 0D ?? ?? ?? ?? 56",
+	         "4044",
+	         "6A FF 68 B8 CA 2C 20");
 
 #ifdef BMS
-	PATTERNS(
-		ISurface__DrawPrintText, 
-		"BMS-Retail-0.9", 
-		"55 8B EC 83 EC ?? A1 ?? ?? ?? ?? 33 C5 89 45 ?? 83 7D ?? 00");	
-	PATTERNS(
-		ISurface__DrawSetTextPos, 
-		"BMS-Retail-0.9", 
-		"55 8b ec 8b 45 08 89 41 28 8b 45 0c 89 41 2c 5d c2 08 00");
-	PATTERNS(
-		ISurface__DrawSetTextFont, 
-		"BMS-Retail-0.9", 
-		"55 8b ec 8b 45 08 89 81 ?? ?? 00 00 5d c2 04 00");
-	PATTERNS(
-		ISurface__DrawSetTextColor, 
-		"BMS-Retail-0.9", 
-		"55 8B EC F3 0F 2A 45 ?? 53");
-	PATTERNS(
-		ISurface__DrawSetTexture, 
-		"BMS-Retail-0.9", 
-		"55 8B EC 56 8B F1 57 8B 7D ?? 3B BE ?? ?? ?? ??");
-	PATTERNS(
-		ISurface__AddCustomFontFile, 
-		"BMS-Retail-0.9", 
-		"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 81 EC 48 01 00 00");
-	PATTERNS(
-		ISurface__GetFontTall, 
-		"BMS-Retail-0.9", 
-		"55 8B EC FF 75 08 E8 ?? ?? ?? ?? 8B C8 E8 ?? ?? ?? ?? 5D C2 04 00");
+	PATTERNS(ISurface__DrawPrintText,
+	         "BMS-Retail-0.9",
+	         "55 8B EC 83 EC ?? A1 ?? ?? ?? ?? 33 C5 89 45 ?? 83 7D ?? 00");
+	PATTERNS(ISurface__DrawSetTextPos,
+	         "BMS-Retail-0.9",
+	         "55 8b ec 8b 45 08 89 41 28 8b 45 0c 89 41 2c 5d c2 08 00");
+	PATTERNS(ISurface__DrawSetTextFont, "BMS-Retail-0.9", "55 8b ec 8b 45 08 89 81 ?? ?? 00 00 5d c2 04 00");
+	PATTERNS(ISurface__DrawSetTextColor, "BMS-Retail-0.9", "55 8B EC F3 0F 2A 45 ?? 53");
+	PATTERNS(ISurface__DrawSetTexture, "BMS-Retail-0.9", "55 8B EC 56 8B F1 57 8B 7D ?? 3B BE ?? ?? ?? ??");
+	PATTERNS(ISurface__AddCustomFontFile,
+	         "BMS-Retail-0.9",
+	         "55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 81 EC 48 01 00 00");
+	PATTERNS(ISurface__GetFontTall,
+	         "BMS-Retail-0.9",
+	         "55 8B EC FF 75 08 E8 ?? ?? ?? ?? 8B C8 E8 ?? ?? ?? ?? 5D C2 04 00");
 
 #endif
 
@@ -111,17 +98,24 @@ void HUDFeature::InitHooks()
 }
 
 #ifdef BMS
-#define CALL(func_name, ...) ORIG_ISurface__##func_name(interfaces::surface, __VA_ARGS__); 
+#define CALL(func_name, ...) ORIG_ISurface__##func_name(interfaces::surface, __VA_ARGS__);
 #else
 #define CALL(func_name, ...) interfaces::surface->##func_name(__VA_ARGS__);
 #endif
 
-bool HUDFeature::AddHudCallback(HudCallback callback)
+bool HUDFeature::AddHudCallback(std::string key, HudCallback callback)
 {
 	if (!this->loadingSuccessful)
 		return false;
-	hudCallbacks.push_back(callback);
-	callbacksSorted = false;
+	hudCallbacks[key] = callback;
+	return true;
+}
+
+bool HUDFeature::AddHudDefaultGroup(HudCallback callback)
+{
+	if (!this->loadingSuccessful)
+		return false;
+	hudDefaultGroups.push_back(callback);
 	return true;
 }
 
@@ -218,8 +212,8 @@ void HUDFeature::PreHook()
 #ifdef BMS
 
 	if (!ORIG_ISurface__DrawPrintText || !ORIG_ISurface__DrawSetTextColor || !ORIG_ISurface__DrawSetTextPos
-		|| !ORIG_ISurface__DrawSetTexture || !ORIG_ISurface__AddCustomFontFile || MATCHES_ISurface__DrawSetTextFont.empty()
-		|| MATCHES_ISurface__GetFontTall.empty())
+	    || !ORIG_ISurface__DrawSetTexture || !ORIG_ISurface__AddCustomFontFile
+	    || MATCHES_ISurface__DrawSetTextFont.empty() || MATCHES_ISurface__GetFontTall.empty())
 	{
 		loadingSuccessful = false;
 		return;
@@ -238,7 +232,7 @@ void HUDFeature::PreHook()
 
 		if (curPtr == (uintptr_t)ORIG_ISurface__AddCustomFontFile)
 		{
-			for (auto candidate : MATCHES_ISurface__GetFontTall) 
+			for (auto candidate : MATCHES_ISurface__GetFontTall)
 				if (candidate.ptr == nextPtr)
 					ORIG_ISurface__GetFontTall = (_ISurface__GetFontTall)(candidate.ptr);
 		}
@@ -254,7 +248,7 @@ void HUDFeature::PreHook()
 
 	if (isLatest)
 		ORIG_ISurface__DrawPrintText_BMSLatest =
-			(_ISurface__DrawPrintText_BMSLatest)ORIG_ISurface__DrawPrintText;
+		    (_ISurface__DrawPrintText_BMSLatest)ORIG_ISurface__DrawPrintText;
 
 	loadingSuccessful = ORIG_ISurface__GetFontTall && ORIG_ISurface__DrawSetTextFont;
 #endif
@@ -267,7 +261,13 @@ void HUDFeature::LoadFeature()
 
 	cl_showpos = g_pCVar->FindVar("cl_showpos");
 	cl_showfps = g_pCVar->FindVar("cl_showfps");
-	InitConcommandBase(y_spt_hud_left);
+	bool result = spt_hud.AddHudDefaultGroup(HudCallback(
+	    std::bind(&HUDFeature::DrawDefaultHUD, this), []() { return y_spt_hud.GetBool(); }, false));
+	if (result)
+	{
+		InitConcommandBase(y_spt_hud);
+		InitConcommandBase(y_spt_hud_left);
+	}
 }
 
 void HUDFeature::UnloadFeature()
@@ -278,30 +278,16 @@ void HUDFeature::UnloadFeature()
 	MATCHES_ISurface__DrawSetTextFont.clear();
 	MATCHES_ISurface__GetFontTall.clear();
 #endif
-
 }
 
-void HUDFeature::DrawHUD(bool overlay)
+void HUDFeature::DrawDefaultHUD()
 {
 	vgui::HFont font;
-
-	if (!interfaces::surface || !renderView || !GetFont(FONT_DefaultFixedOutline, font))
+	if (!GetFont(FONT_DefaultFixedOutline, font))
 		return;
-
-#ifndef OE
-	ORIG_CMatSystemSurface__StartDrawing(interfaces::surface);
-#endif
 
 	try
 	{
-		if (!callbacksSorted)
-		{
-			std::sort(hudCallbacks.begin(),
-					  hudCallbacks.end(),
-					  [](HudCallback& lhs, HudCallback& rhs) { return lhs.sortKey < rhs.sortKey; });
-			callbacksSorted = true;
-		}
-
 		// Reset top HUD stuff
 		topVertIndex = 0;
 		topFontTall = CALL(GetFontTall, font);
@@ -317,7 +303,48 @@ void HUDFeature::DrawHUD(bool overlay)
 			if (cl_showfps && cl_showfps->GetBool())
 				++topVertIndex;
 		}
-		for (auto& callback : hudCallbacks)
+		for (auto& item : hudCallbacks)
+		{
+			auto& callback = item.second;
+			if (callback.shouldDraw())
+				callback.draw();
+		}
+	}
+	catch (const std::exception& e)
+	{
+		Msg("Error drawing HUD: %s\n", e.what());
+	}
+}
+
+void HUDFeature::DrawHUD(bool overlay)
+{
+	vgui::HFont font;
+
+	if (!interfaces::surface || !renderView)
+		return;
+
+#ifndef OE
+	ORIG_CMatSystemSurface__StartDrawing(interfaces::surface);
+#endif
+
+	try
+	{
+		// Reset top HUD stuff
+		topVertIndex = 0;
+		topFontTall = CALL(GetFontTall, font);
+		if (y_spt_hud_left.GetBool())
+		{
+			topX = 6;
+		}
+		else
+		{
+			topX = renderView->width - 300 + 2;
+			if (cl_showpos && cl_showpos->GetBool())
+				topVertIndex += 3;
+			if (cl_showfps && cl_showfps->GetBool())
+				++topVertIndex;
+		}
+		for (auto& callback : hudDefaultGroups)
 		{
 #ifdef SPT_OVERLAY_ENABLED
 			if (overlay == callback.drawInOverlay && callback.shouldDraw())
@@ -368,11 +395,8 @@ IMPL_HOOK_THISCALL(HUDFeature, void, CEngineVGui__Paint, void*, PaintMode_t mode
 	spt_hud.ORIG_CEngineVGui__Paint(thisptr, mode);
 }
 
-HudCallback::HudCallback(std::string key, std::function<void()> drawable, std::function<bool()> shouldDrawable, bool overlay)
-	: drawInOverlay{overlay},
-	sortKey{std::move(key)},
-	draw{drawable},
-	shouldDraw{shouldDrawable}
+HudCallback::HudCallback(std::function<void()> drawable, std::function<bool()> shouldDrawable, bool overlay)
+    : drawInOverlay{overlay}, draw{drawable}, shouldDraw{shouldDrawable}
 {
 }
 

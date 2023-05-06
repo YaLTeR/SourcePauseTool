@@ -488,8 +488,8 @@ void HopsHud::InitHooks() {}
 
 void HopsHud::LoadFeature()
 {
-	bool result = spt_hud.AddHudCallback(
-	    HudCallback("hops", std::bind(&HopsHud::DrawHopHud, this), std::bind(&HopsHud::ShouldDraw, this), false));
+	bool result = spt_hud.AddHudDefaultGroup(
+	    HudCallback(std::bind(&HopsHud::DrawHopHud, this), std::bind(&HopsHud::ShouldDraw, this), false));
 
 	if (result && OngroundSignal.Works && JumpSignal.Works)
 	{

@@ -28,10 +28,10 @@ extern const std::string FONT_HudNumbers;
 
 struct HudCallback
 {
-	HudCallback(std::string key, std::function<void()> draw, std::function<bool()> shouldDraw, bool overlay);
+	HudCallback() = default;
+	HudCallback(std::function<void()> draw, std::function<bool()> shouldDraw, bool overlay);
 
 	bool drawInOverlay;
-	std::string sortKey;
 	std::function<void()> draw;
 	std::function<bool()> shouldDraw;
 };
@@ -43,7 +43,9 @@ public:
 	const CViewSetup* renderView = nullptr;
 	std::unordered_map<std::string, vgui::HFont> fonts;
 
-	bool AddHudCallback(HudCallback callback);
+	bool AddHudCallback(std::string key, HudCallback callback);
+	bool AddHudDefaultGroup(HudCallback callback);
+
 	void DrawTopHudElement(const wchar* format, ...);
 	void DrawColorTopHudElement(Color color, const wchar* format, ...);
 	virtual bool ShouldLoadFeature() override;
@@ -56,8 +58,9 @@ protected:
 	virtual void UnloadFeature() override;
 
 private:
-	bool callbacksSorted = true;
-	std::vector<HudCallback> hudCallbacks;
+	std::vector<HudCallback> hudDefaultGroups;
+
+	std::map<std::string, HudCallback> hudCallbacks;
 
 	int topX = 0;
 	int topVertIndex = 0;
@@ -102,6 +105,7 @@ private:
 #endif
 
 	void DrawHUD(bool overlay);
+	void DrawDefaultHUD();
 	void vDrawTopHudElement(Color color, const wchar* format, va_list args);
 };
 
