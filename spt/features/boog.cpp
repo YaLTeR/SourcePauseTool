@@ -10,7 +10,10 @@
 #include "playerio.hpp"
 #include "signals.hpp"
 
-ConVar y_spt_hud_edgebug("y_spt_hud_edgebug", "0", 0, "Draws text in the middle of the screen when you get an edgeboog");
+ConVar y_spt_hud_edgebug("y_spt_hud_edgebug",
+                         "0",
+                         0,
+                         "Draws text in the middle of the screen when you get an edgeboog");
 ConVar y_spt_hud_edgebug_sec("y_spt_hud_edgebug_sec", "1", 0, "Duration of the boog text in seconds");
 
 // Boog detection
@@ -23,6 +26,7 @@ public:
 	int ticksLeftToDrawBoog = 0;
 	bool previousTickFalling = false;
 	vgui::HFont boogFont = 0;
+
 protected:
 	virtual bool ShouldLoadFeature() override;
 
@@ -101,7 +105,7 @@ void BoogFeature::DrawBoog()
 
 	int x = renderView->width / 2 - len / 2;
 	int y = renderView->height / 2 + 100;
-	
+
 	if (tall + y > renderView->height)
 	{
 		y = renderView->height - tall;
@@ -116,16 +120,14 @@ bool BoogFeature::ShouldLoadFeature()
 	return spt_hud.ShouldLoadFeature() && spt_playerio.ShouldLoadFeature();
 }
 
-void BoogFeature::InitHooks() 
-{
-}
+void BoogFeature::InitHooks() {}
 
-static void SV_FrameWrapper(bool finalTick) 
+static void SV_FrameWrapper(bool finalTick)
 {
 	spt_boog.BoogTick();
 }
 
-void BoogFeature::LoadFeature() 
+void BoogFeature::LoadFeature()
 {
 	bool boogHooked = false;
 
@@ -144,9 +146,10 @@ void BoogFeature::LoadFeature()
 
 	if (boogHooked)
 	{
-		HudCallback cb("boog",
-			std::bind(&BoogFeature::DrawBoog, this), std::bind(&BoogFeature::ShouldDrawBoog, this), false);
-		if (spt_hud.AddHudCallback(cb)) 
+		bool result = spt_hud.AddHudDefaultGroup(HudCallback(std::bind(&BoogFeature::DrawBoog, this),
+		                                                     std::bind(&BoogFeature::ShouldDrawBoog, this),
+		                                                     false));
+		if (result)
 		{
 			InitConcommandBase(y_spt_hud_edgebug);
 			InitConcommandBase(y_spt_hud_edgebug_sec);

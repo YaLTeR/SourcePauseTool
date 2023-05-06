@@ -342,7 +342,8 @@ void InputHud::LoadFeature()
 	if (CreateMoveSignal.Works)
 		CreateMoveSignal.Connect(this, &InputHud::CreateMove);
 
-	bool result = AddHudCallback("ihud", std::bind(&InputHud::DrawInputHud, this), y_spt_ihud);
+	bool result = spt_hud.AddHudDefaultGroup(HudCallback(
+	    std::bind(&InputHud::DrawInputHud, this), []() { return y_spt_ihud.GetBool(); }, false));
 	if (result)
 	{
 		InitCommand(y_spt_ihud_modify);
@@ -352,6 +353,7 @@ void InputHud::LoadFeature()
 		InitCommand(y_spt_ihud_add_key);
 #endif
 
+		InitConcommandBase(y_spt_ihud);
 		InitConcommandBase(y_spt_ihud_grid_size);
 		InitConcommandBase(y_spt_ihud_grid_padding);
 		InitConcommandBase(y_spt_ihud_x);

@@ -127,8 +127,8 @@ void Overlay::LoadFeature()
 	InitConcommandBase(_y_spt_overlay_no_roll);
 
 #ifdef SPT_HUD_ENABLED
-	bool result = spt_hud.AddHudCallback(HudCallback(
-	    "overlay", std::bind(&Overlay::DrawCrosshair, this), []() { return true; }, true));
+	bool result = spt_hud.AddHudDefaultGroup(HudCallback(
+	    std::bind(&Overlay::DrawCrosshair, this), []() { return true; }, true));
 
 	if (result)
 	{

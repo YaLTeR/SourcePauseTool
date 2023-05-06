@@ -178,11 +178,12 @@ void Feature::InitConcommandBase(ConCommandBase& convar)
 	Cvar_InitConCommandBase(convar, this);
 }
 
-bool Feature::AddHudCallback(const char* sortKey, std::function<void()> func, ConVar& convar)
+bool Feature::AddHudCallback(const char* key, std::function<void()> func, ConVar& convar)
 {
 #ifdef SPT_HUD_ENABLED
-	bool result = spt_hud.AddHudCallback(HudCallback(
-	    sortKey, func, [&convar]() { return convar.GetBool(); }, false));
+	bool result = spt_hud.AddHudCallback(key,
+	                                     HudCallback(
+	                                         func, [&convar]() { return convar.GetBool(); }, false));
 
 	if (result)
 	{
