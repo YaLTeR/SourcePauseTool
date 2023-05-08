@@ -19,8 +19,9 @@ struct MeshPositionInfo
 	Vector mins, maxs;
 };
 
-// winding direction - determines which side a face is visible from; has no effect on lines
-enum WindingDir
+// winding direction - determines which side a face is visible from; has no effect on lines,
+// code assumes that these values are what they are
+enum WindingDir : unsigned char
 {
 	WD_CW = 1,       // clockwise
 	WD_CCW = 1 << 1, // counter clockwise

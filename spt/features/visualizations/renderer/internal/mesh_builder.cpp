@@ -92,54 +92,6 @@ StaticMeshUnit::~StaticMeshUnit()
 
 /**************************************** MESH BUILDER INTERNAL ****************************************/
 
-MeshVertData& MeshBuilderInternal::GetSimpleMeshComponent(MeshPrimitiveType type, MeshMaterialSimple material)
-{
-	return tmpMesh.components[SIMPLE_COMPONENT_INDEX(type, material)];
-}
-
-// MeshVertData& MeshBuilderInternal::GetComponentInCurrentMesh(MeshPrimitiveType type, MaterialRef material)
-// {
-// 	// look through all components that we already have in the current mesh and see if any match the type/material
-// 	auto vDataIt = std::find_if(curMeshVertData.begin(),
-// 	                            curMeshVertData.end(),
-// 	                            [=](const MeshVertData& vd) { return vd.type == type && vd.material == material; });
-//
-// 	if (vDataIt != curMeshVertData.end())
-// 		return *vDataIt;
-//
-// 	/*
-// 	* We didn't find a matching component, so we need to create a new one. If this is the Nth component, we'll
-// 	* find the Nth shared list (for verts & indices) to initialize the component from. If there aren't N shared
-// 	* lists, then we'll just add a new one to the end of the linked lists.
-// 	*/
-//
-// 	auto vertIt = sharedLists.verts.begin();
-// 	auto idxIt = sharedLists.indices.begin();
-//
-// 	if (vertIt == sharedLists.verts.end())
-// 	{
-// 		Assert(curMeshVertData.size() == 0);
-// 		Assert(idxIt == sharedLists.indices.end());
-// 		return curMeshVertData.emplace_back(sharedLists.verts.emplace_front(),
-// 		                                    sharedLists.indices.emplace_front(),
-// 		                                    type,
-// 		                                    material);
-// 	}
-//
-// 	for (size_t i = 0; i < curMeshVertData.size(); i++)
-// 	{
-// 		auto prevVertIt = vertIt++;
-// 		auto prevIdxIt = idxIt++;
-// 		if (vertIt == sharedLists.verts.end())
-// 		{
-// 			Assert(idxIt == sharedLists.indices.end());
-// 			vertIt = sharedLists.verts.emplace_after(prevVertIt);
-// 			idxIt = sharedLists.indices.emplace_after(prevIdxIt);
-// 		}
-// 	}
-// 	return curMeshVertData.emplace_back(*vertIt, *idxIt, type, material);
-// }
-
 IMeshWrapper MeshBuilderInternal::Fuser::CreateIMeshFromInterval(ConstCompIntrvl intrvl,
                                                                  size_t totalVerts,
                                                                  size_t totalIndices)
@@ -304,7 +256,7 @@ const DynamicMeshUnit& MeshBuilderInternal::GetDynamicMeshFromToken(DynamicMeshT
 	return dynamicMeshUnits._Get_container()[token.dynamicMeshIdx];
 }
 
-void MeshBuilderInternal::TmpMesh::Create(const MeshCreateFunc& createFunc)
+void MeshBuilderInternal::TmpMesh::Create(const MeshCreateFunc& createFunc, bool dynamic)
 {
 	// check that we don't have any existing data
 	Assert(!std::count_if(components.cbegin(),
@@ -324,6 +276,9 @@ void MeshBuilderInternal::TmpMesh::Create(const MeshCreateFunc& createFunc)
 			components[k].material = g_meshMaterialMgr.GetMaterial((MeshMaterialSimple)j);
 		}
 	}
+
+	// used by the delegate to check if the temp mesh is too big
+	GetMaxMeshSize(maxVerts, maxIndices, dynamic);
 
 	// let the user fill the tmp mesh buffers
 	MeshBuilderDelegate builderDelegate{};
@@ -354,7 +309,7 @@ StaticMesh MeshBuilderPro::CreateStaticMesh(const MeshCreateFunc& createFunc)
 {
 	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	auto& tmpMesh = g_meshBuilderInternal.tmpMesh;
-	tmpMesh.Create(createFunc);
+	tmpMesh.Create(createFunc, false);
 
 	size_t numPopulated = std::count_if(tmpMesh.components.cbegin(),
 	                                    tmpMesh.components.cend(),
@@ -382,7 +337,7 @@ DynamicMesh MeshBuilderPro::CreateDynamicMesh(const MeshCreateFunc& createFunc)
 {
 	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	auto& tmpMesh = g_meshBuilderInternal.tmpMesh;
-	tmpMesh.Create(createFunc);
+	tmpMesh.Create(createFunc, true);
 
 	const MeshPositionInfo posInfo = tmpMesh.CalcPosInfo();
 	VectorSlice<MeshVertData> dynamicSlice{g_meshBuilderInternal.sharedLists.dynamicMeshData};
@@ -393,7 +348,7 @@ DynamicMesh MeshBuilderPro::CreateDynamicMesh(const MeshCreateFunc& createFunc)
 		tmpMesh.components.pop_back();
 	}
 	g_meshBuilderInternal.dynamicMeshUnits.emplace(dynamicSlice, posInfo);
-	return {g_meshBuilderInternal.dynamicMeshUnits.size() - 1, g_meshRendererInternal.frameNum };
+	return {g_meshBuilderInternal.dynamicMeshUnits.size() - 1, g_meshRendererInternal.frameNum};
 }
 
 #endif

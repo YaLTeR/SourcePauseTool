@@ -47,7 +47,7 @@ using MaterialRef = AutoRefPtr<IMaterial*, MaterialRefMgr>;
 
 using TextureRef = AutoRefPtr<ITexture*, TextureRefMgr>;*/
 
-enum class MeshMaterialSimple
+enum class MeshMaterialSimple : unsigned char
 {
 	Opaque,
 	Alpha,
