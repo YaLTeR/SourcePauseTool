@@ -62,7 +62,7 @@ struct VertexData
 	VertexData(const Vector& pos, color32 color) : pos(pos), col(color) {}
 };
 
-enum class MeshPrimitiveType
+enum class MeshPrimitiveType : unsigned char
 {
 	Lines,
 	Triangles,
@@ -201,14 +201,18 @@ struct MeshBuilderInternal
 	{
 		// will always have at least MAX_SIMPLE_COMPONENTS
 		std::vector<MeshVertData> components;
+		size_t maxVerts, maxIndices;
 
-		void Create(const MeshCreateFunc& createFunc);
+		void Create(const MeshCreateFunc& createFunc, bool dynamic);
 		MeshPositionInfo CalcPosInfo();
 	} tmpMesh;
 
 	VectorStack<DynamicMeshUnit> dynamicMeshUnits;
 
-	MeshVertData& GetSimpleMeshComponent(MeshPrimitiveType type, MeshMaterialSimple material);
+	inline MeshVertData& GetSimpleMeshComponent(MeshPrimitiveType type, MeshMaterialSimple material)
+	{
+		return tmpMesh.components[SIMPLE_COMPONENT_INDEX(type, material)];
+	}
 
 	struct Fuser
 	{

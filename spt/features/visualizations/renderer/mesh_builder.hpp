@@ -106,57 +106,61 @@ inline color32 color32RgbLerp(color32 a, color32 b, float f)
 * call their Valid() method to check if they're alive, and recreate them if not. Internally they are shared
 * pointers, so they'll get deleted once you get rid of the last copy.
 * 
-* Creating few big meshes is MUCH more efficient than many small ones, and this is great for opaque meshes. If
-* your mesh has ANY translucent vertex however, the whole thing is considered translucent, and it's possible you
-* may get meshes getting rendered in the wrong order relative to each other. For translucent meshes the best way
-* to solve this is to break your mesh apart into small pieces, but this sucks for fps :(.
+* Each of these functions returns true on success and false on failure. A failure likely means that the internal
+* buffers have reached the maximum size and cannot fit the primitive, in which case the mesh is unchaged. It is
+* only really necessary to check the return value for very large meshes (probably thousands or tens of thousands
+* of primitives), and in the case of failure "spill" to another mesh.
+* 
+* Creating few big meshes is generally more efficient than many small ones, but dynamic meshes are automatically
+* merged in some cases. If using translucent meshes, then smaller meshes may be required in some cases to increase
+* the chance of correct relative render order, (but the correct render order is not guaranteed).
 */
 class MeshBuilderDelegate
 {
 public:
 	// a single line segment
-	void AddLine(const Vector& v1, const Vector& v2, LineColor c);
+	bool AddLine(const Vector& v1, const Vector& v2, LineColor c);
 
 	// points is a pair-wise array of separate line segments
-	void AddLines(const Vector* points, int nSegments, LineColor c);
+	bool AddLines(const Vector* points, int nSegments, LineColor c);
 
 	// points is an array of points connected by lines
-	void AddLineStrip(const Vector* points, int nPoints, bool loop, LineColor c);
+	bool AddLineStrip(const Vector* points, int nPoints, bool loop, LineColor c);
 
 	// simple position indicator
-	void AddCross(const Vector& pos, float radius, LineColor c);
+	bool AddCross(const Vector& pos, float radius, LineColor c);
 
-	void AddTri(const Vector& v1, const Vector& v2, const Vector& v3, ShapeColor c);
+	bool AddTri(const Vector& v1, const Vector& v2, const Vector& v3, ShapeColor c);
 
 	// verts is a 3-pair-wise array of points
-	void AddTris(const Vector* verts, int nFaces, ShapeColor c);
+	bool AddTris(const Vector* verts, int nFaces, ShapeColor c);
 
-	void AddQuad(const Vector& v1, const Vector& v2, const Vector& v3, const Vector& v4, ShapeColor c);
+	bool AddQuad(const Vector& v1, const Vector& v2, const Vector& v3, const Vector& v4, ShapeColor c);
 
 	// verts is a 4-pair-wise array of points
-	void AddQuads(const Vector* verts, int nFaces, ShapeColor c);
+	bool AddQuads(const Vector* verts, int nFaces, ShapeColor c);
 
 	// verts is a array of points, polygon is assumed to be simple & convex
-	void AddPolygon(const Vector* verts, int nVerts, ShapeColor c);
+	bool AddPolygon(const Vector* verts, int nVerts, ShapeColor c);
 
 	// 'pos' is the circle center, an 'ang' of <0,0,0> means the circle normal points towards x+
-	void AddCircle(const Vector& pos, const QAngle& ang, float radius, int nPoints, ShapeColor c);
+	bool AddCircle(const Vector& pos, const QAngle& ang, float radius, int nPoints, ShapeColor c);
 
-	void AddEllipse(const Vector& pos, const QAngle& ang, float radiusA, float radiusB, int nPoints, ShapeColor c);
+	bool AddEllipse(const Vector& pos, const QAngle& ang, float radiusA, float radiusB, int nPoints, ShapeColor c);
 
-	void AddBox(const Vector& pos, const Vector& mins, const Vector& maxs, const QAngle& ang, ShapeColor c);
+	bool AddBox(const Vector& pos, const Vector& mins, const Vector& maxs, const QAngle& ang, ShapeColor c);
 
-	// nSubdivisions >= 0, 0 subdivsions is just a cube :)
-	void AddSphere(const Vector& pos, float radius, int nSubdivisions, ShapeColor c);
+	// nSubdivisions >= 0; the sphere looks kind of like a (nSubdivisions X nSubdivisions) pillowed rubik's cube
+	bool AddSphere(const Vector& pos, float radius, int nSubdivisions, ShapeColor c);
 
-	void AddSweptBox(const Vector& start,
+	bool AddSweptBox(const Vector& start,
 	                 const Vector& end,
 	                 const Vector& mins,
 	                 const Vector& maxs,
 	                 const SweptBoxColor& c);
 
 	// 'pos' is at the center of the cone base, an 'ang' of <0,0,0> means the cone tip will point towards x+
-	void AddCone(const Vector& pos,
+	bool AddCone(const Vector& pos,
 	             const QAngle& ang,
 	             float height,
 	             float radius,
@@ -165,7 +169,7 @@ public:
 	             ShapeColor c);
 
 	// 'pos' is at the center of the base, an ang of <0,0,0> means the normals are facing x+/x- for top/base
-	void AddCylinder(const Vector& pos,
+	bool AddCylinder(const Vector& pos,
 	                 const QAngle& ang,
 	                 float height,
 	                 float radius,
@@ -175,7 +179,7 @@ public:
 	                 ShapeColor c);
 
 	// a 3D arrow with its tail base at 'pos' pointing towards 'target'
-	void AddArrow3D(const Vector& pos,
+	bool AddArrow3D(const Vector& pos,
 	                const Vector& target,
 	                float tailLength,
 	                float tailRadius,
@@ -184,33 +188,26 @@ public:
 	                int nCirclePoints,
 	                ShapeColor c);
 
-	void AddCPolyhedron(const CPolyhedron* polyhedron, ShapeColor c);
+	bool AddCPolyhedron(const CPolyhedron* polyhedron, ShapeColor c);
 
 private:
 	MeshBuilderDelegate() = default;
 	MeshBuilderDelegate(MeshBuilderDelegate&) = delete;
 
 	friend struct MeshBuilderInternal;
-
-	// internal construction helper methods
-
-	// clang-format off
-
-	void _AddLine(const Vector& v1, const Vector& v2, color32 c, struct MeshVertData& vd);
-	void _AddLineStrip(const Vector* points, int nPoints, bool loop, color32 c, struct MeshVertData& vd);
-	void _AddTris(const Vector* verts, int nFaces, ShapeColor c, struct MeshVertData& vdf, struct MeshVertData& vdl);
-	void _AddPolygon(const Vector* verts, int nVerts, ShapeColor c, struct MeshVertData& vdf, struct MeshVertData& vdl);
-	void _AddFaceTriangleStripIndices(struct MeshVertData& vdf, size_t vIdx1, size_t vIdx2, size_t nVerts, bool loop, bool mirror, WindingDir wd);
-	void _AddFacePolygonIndices(struct MeshVertData& vdf, size_t vertsIdx, int nVerts, WindingDir wd);
-	void _AddLineStripIndices(struct MeshVertData& vdl, size_t vertsIdx, int nVerts, bool loop);
-	void _AddSubdivCube(int nSubdivisions, ShapeColor c, struct MeshVertData& vdf, struct MeshVertData& vdl);
-	void _AddUnitCube(ShapeColor c, struct MeshVertData& vdf, struct MeshVertData& vdl);
-	Vector* _CreateEllipseVerts(const Vector& pos, const QAngle& ang, float radiusA, float radiusB, int nPoints);
-
-	// clang-format on
 };
 
 typedef std::function<void(MeshBuilderDelegate& mb)> MeshCreateFunc;
+
+class TmpMesh
+{
+public:
+	DynamicMesh FinalizeToDynamic();
+	StaticMesh FinalizeToStatic();
+
+private:
+	TmpMesh();
+};
 
 // give this guy a function which accepts a mesh builder delegate -
 // it'll be executed immediately so you can capture stuff by reference if you're using a lambda
@@ -219,6 +216,8 @@ class MeshBuilderPro
 public:
 	DynamicMesh CreateDynamicMesh(const MeshCreateFunc& createFunc);
 	StaticMesh CreateStaticMesh(const MeshCreateFunc& createFunc);
+
+	TmpMesh CreateTmpMesh();
 };
 
 inline MeshBuilderPro spt_meshBuilder;
