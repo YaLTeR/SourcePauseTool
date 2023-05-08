@@ -137,7 +137,7 @@ ConVar tas_script_printvars("tas_script_printvars",
                             "Prints variable information when running .srctas scripts.\n");
 ConVar tas_script_savestates("tas_script_savestates", "1", 0, "Enables/disables savestates in .srctas scripts.\n");
 ConVar tas_script_onsuccess("tas_script_onsuccess", "", 0, "Commands to be executed when a search concludes.\n");
-ConVar y_spt_hud_script_length("y_spt_hud_script_progress", "0", FCVAR_CHEAT, "Turns on the script progress hud.\n");
+ConVar y_spt_hud_script_progress("y_spt_hud_script_progress", "0", FCVAR_CHEAT, "Turns on the script progress hud.\n");
 
 extern ConVar tas_anglespeed;
 
@@ -310,14 +310,14 @@ void TASFeature::LoadFeature()
 		AfterFramesSignal.Connect(&scripts::g_TASReader, &scripts::SourceTASReader::OnAfterFrames);
 #ifdef SPT_HUD_ENABLED
 		AddHudCallback(
-		    "frame",
+		    "script_progress",
 		    [this]()
 		    {
 			    spt_hud.DrawTopHudElement(L"frame: %d / %d",
 			                              scripts::g_TASReader.GetCurrentTick(),
 			                              scripts::g_TASReader.GetCurrentScriptLength());
 		    },
-		    y_spt_hud_script_length);
+		    y_spt_hud_script_progress);
 #endif
 	}
 

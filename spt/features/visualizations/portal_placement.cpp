@@ -553,7 +553,7 @@ void PortalPlacement::LoadFeature()
 	{
 #ifdef SPT_HUD_ENABLED
 		AddHudCallback(
-		    "pp",
+		    "portal_placement",
 		    []()
 		    {
 			    if (!y_spt_hud_portal_placement.GetBool())

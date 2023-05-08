@@ -446,7 +446,7 @@ void EntProps::LoadFeature()
 	if (utils::DoesGameLookLikePortal())
 	{
 		AddHudCallback(
-		    "portal bubble",
+		    "portal_bubble",
 		    [this]()
 		    {
 			    int in_bubble = GetEnvironmentPortal() != NULL;
@@ -456,7 +456,7 @@ void EntProps::LoadFeature()
 	}
 #endif
 
-	bool result = spt_hud.AddHudCallback("z",
+	bool result = spt_hud.AddHudCallback("ent_info",
 	                                     HudCallback(
 	                                         []()
 	                                         {
