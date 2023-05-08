@@ -74,7 +74,7 @@ void ShadowPosition::LoadFeature()
 	{
 #ifdef SPT_HUD_ENABLED
 		AddHudCallback(
-		    "shadow",
+		    "shadow_info",
 		    [this]()
 		    {
 			    const Vector& pos = PlayerHavokPos;

@@ -848,7 +848,7 @@ void PlayerIOFeature::LoadFeature()
 
 #ifdef SPT_HUD_ENABLED
 		AddHudCallback(
-		    "accelerate",
+		    "vars",
 		    [this]()
 		    {
 			    auto vars = GetMovementVars();
@@ -875,7 +875,7 @@ void PlayerIOFeature::LoadFeature()
 			TickSignal.Connect(this, &PlayerIOFeature::OnTick);
 
 			AddHudCallback(
-			    "accel(xyz)",
+			    "accel",
 			    [this]()
 			    {
 				    Vector accel = currentVelocity - previousVelocity;
@@ -886,7 +886,7 @@ void PlayerIOFeature::LoadFeature()
 		}
 
 		AddHudCallback(
-		    "vel(xyz)",
+		    "velocity",
 		    [this]()
 		    {
 			    Vector currentVel = GetPlayerVelocity();
@@ -899,7 +899,7 @@ void PlayerIOFeature::LoadFeature()
 		    y_spt_hud_velocity);
 
 		AddHudCallback(
-		    "vel(p/y/r)",
+		    "velocity_angles",
 		    [this]()
 		    {
 			    Vector currentVel = GetPlayerVelocity();
@@ -913,7 +913,7 @@ void PlayerIOFeature::LoadFeature()
 		if (utils::DoesGameLookLikePortal())
 		{
 			AddHudCallback(
-			    "ag sg",
+			    "ag_sg_tester",
 			    [this]()
 			    {
 				    Vector v = spt_playerio.GetPlayerEyePos();
@@ -947,7 +947,7 @@ void PlayerIOFeature::LoadFeature()
 	if (m_fFlags.Found())
 	{
 		bool hasHudFlags = AddHudCallback(
-		    "fl_",
+		    "flags",
 		    [this]()
 		    {
 			    int flags = spt_playerio.m_fFlags.GetValue();
@@ -986,7 +986,7 @@ void PlayerIOFeature::LoadFeature()
 	if (m_MoveCollide.Found())
 	{
 		AddHudCallback(
-		    "movecollide",
+		    "movecollideflags",
 		    [this]()
 		    {
 			    int flags = spt_playerio.m_MoveCollide.GetValue();
