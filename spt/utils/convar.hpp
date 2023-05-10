@@ -55,7 +55,7 @@ struct ConVar_guts : public ConCommandBase_guts
 #ifndef OE
 	FnChangeCallback_t m_fnChangeCallback;
 #else
-	typedef void ( *FnChangeCallback )( ConVar *var, char const *pOldString );
+	typedef void (*FnChangeCallback)(ConVar* var, char const* pOldString);
 	FnChangeCallback m_fnChangeCallback;
 #endif
 };
@@ -136,12 +136,13 @@ public:
 	AutoCompleteList();
 	AutoCompleteList(std::vector<std::string> completions);
 	virtual int AutoCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS);
+	static int AutoCompleteSuggest(const std::string& suggestionBase,
+	                               const std::string& incompleteArgument,
+	                               const std::vector<std::string>& _completions,
+	                               bool hasDoubleQuote,
+	                               char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 
 protected:
-	int AutoCompleteSuggest(const std::string& suggestionBase,
-	                        const std::string& incompleteArgument,
-	                        bool hasDoubleQuote,
-	                        char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 	std::pair<std::string, std::string> SplitPartial(const char* partial, bool& hasDoubleQuote);
 	std::vector<std::string> completions;
 };
@@ -166,12 +167,12 @@ struct ArgsWrapper
 {
 	ArgsWrapper(){};
 
-	int ArgC()
+	int ArgC() const
 	{
 		return interfaces::engine->Cmd_Argc();
 	};
 
-	const char* Arg(int arg)
+	const char* Arg(int arg) const
 	{
 		return interfaces::engine->Cmd_Argv(arg);
 	};
@@ -257,9 +258,9 @@ struct ArgsWrapper
 #endif
 
 #ifdef OE
-#define CON_COMMAND_CALLBACK_ARGS ConVar* var, char const* pOldString
+#define CON_COMMAND_CALLBACK_ARGS ConVar *var, char const *pOldString
 #else
-#define CON_COMMAND_CALLBACK_ARGS IConVar* var, const char* pOldValue, float flOldValue
+#define CON_COMMAND_CALLBACK_ARGS IConVar *var, const char *pOldValue, float flOldValue
 #endif
 
 #ifdef OE

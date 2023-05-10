@@ -16,16 +16,17 @@ int AutoCompleteList::AutoCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 {
 	bool hasDoubleQuote;
 	auto subStrings = SplitPartial(partial, hasDoubleQuote);
-	return AutoCompleteSuggest(subStrings.first, subStrings.second, hasDoubleQuote, commands);
+	return AutoCompleteSuggest(subStrings.first, subStrings.second, completions, hasDoubleQuote, commands);
 }
 
 int AutoCompleteList::AutoCompleteSuggest(const std::string& suggestionBase,
                                           const std::string& incompleteArgument,
+                                          const std::vector<std::string>& _completions,
                                           bool hasDoubleQuote,
                                           char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
 	int count = 0;
-	for (auto& item : completions)
+	for (const auto& item : _completions)
 	{
 		if (count == COMMAND_COMPLETION_MAXITEMS)
 			break;
@@ -97,7 +98,7 @@ int FileAutoCompleteList::AutoCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 			}
 		}
 	}
-	return AutoCompleteSuggest(subStrings.first, subStrings.second, hasDoubleQuote, commands);
+	return AutoCompleteSuggest(subStrings.first, subStrings.second, completions, hasDoubleQuote, commands);
 }
 
 #ifdef OE

@@ -82,7 +82,6 @@ private:
 	                          Color textColor,
 	                          const wchar_t* text);
 	void DrawButton(Button button);
-	Color StringToColor(const char* hex);
 	void GetCurrentSize(int& x, int& y);
 
 	IMatSystemSurface* surface;
@@ -522,26 +521,6 @@ void InputHud::AddCustomKey(const char* key)
 	    {false, true, wstr, font, 0, 0, 1, 1, background, highlight, textcolor, texthighlight, code};
 }
 #endif
-
-Color InputHud::StringToColor(const char* color)
-{
-	int len = std::strlen(color);
-	if (len != 6 && len != 8)
-	{
-		return Color(0, 0, 0);
-	}
-	int shift = len == 6 ? 16 : 24;
-	unsigned int hex = strtoul(color, NULL, 16);
-	int r, g, b, a = 0xff;
-	r = (hex >> shift) & 0xff;
-	shift -= 8;
-	g = (hex >> shift) & 0xff;
-	shift -= 8;
-	b = (hex >> shift) & 0xff;
-	if (len == 8)
-		a = hex & 0xff;
-	return Color(r, g, b, a);
-}
 
 void InputHud::GetCurrentSize(int& x, int& y)
 {

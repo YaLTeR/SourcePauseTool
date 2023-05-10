@@ -10,6 +10,7 @@
 #include "vgui\IScheme.h"
 #include "VGuiMatSurface\IMatSystemSurface.h"
 #include "ienginevgui.h"
+#include "Color.h"
 
 class C_BasePlayer;
 enum SkyboxVisibility_t;
@@ -28,12 +29,24 @@ extern const std::string FONT_HudNumbers;
 
 struct HudCallback
 {
-	HudCallback() = default;
+	HudCallback();
 	HudCallback(std::function<void()> draw, std::function<bool()> shouldDraw, bool overlay);
 
 	bool drawInOverlay;
 	std::function<void()> draw;
 	std::function<bool()> shouldDraw;
+};
+
+struct HudUserGroup
+{
+	HudUserGroup();
+	std::string ToString() const;
+
+	float x, y;
+	bool shouldDraw;
+	vgui::HFont font;
+	Color textcolor;
+	std::vector<std::string> callbacks;
 };
 
 // HUD stuff
@@ -42,6 +55,9 @@ class HUDFeature : public FeatureWrapper<HUDFeature>
 public:
 	const CViewSetup* renderView = nullptr;
 	std::unordered_map<std::string, vgui::HFont> fonts;
+
+	std::unordered_map<std::string, HudUserGroup> hudUserGroups;
+	std::map<std::string, HudCallback> hudCallbacks;
 
 	bool AddHudCallback(std::string key, HudCallback callback);
 	bool AddHudDefaultGroup(HudCallback callback);
@@ -58,14 +74,15 @@ protected:
 	virtual void UnloadFeature() override;
 
 private:
-	std::vector<HudCallback> hudDefaultGroups;
-
-	std::map<std::string, HudCallback> hudCallbacks;
+	std::vector<HudCallback> hudDefaultCallbacks;
 
 	int topX = 0;
+	int topY = 0;
 	int topVertIndex = 0;
-
 	int topFontTall = 0;
+	Color hudTextColor;
+	vgui::HFont font = 0;
+
 	bool loadingSuccessful = false;
 
 	ConVar* cl_showpos = nullptr;
@@ -108,5 +125,8 @@ private:
 	void DrawDefaultHUD();
 	void vDrawTopHudElement(Color color, const wchar* format, va_list args);
 };
+
+Color StringToColor(const std::string& color);
+std::string ColorToString(Color color);
 
 extern HUDFeature spt_hud;

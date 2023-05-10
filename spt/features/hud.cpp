@@ -13,17 +13,365 @@
 #include "..\vgui\vgui_utils.hpp"
 #include "string_utils.hpp"
 
-ConVar y_spt_hud("y_spt_hud", "1", 0, "When set to 1, displays SPT HUD.\n");
-ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT, "When set to 1, displays SPT HUD on the left.\n");
-
 extern ConVar _y_spt_overlay;
 
 HUDFeature spt_hud;
+
+ConVar y_spt_hud("y_spt_hud", "1", 0, "When set to 1, displays SPT HUD.");
+ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT, "When set to 1, displays SPT HUD on the left.");
 
 const std::string FONT_DefaultFixedOutline = "DefaultFixedOutline";
 const std::string FONT_Trebuchet20 = "Trebuchet20";
 const std::string FONT_Trebuchet24 = "Trebuchet24";
 const std::string FONT_HudNumbers = "HudNumbers";
+
+Color StringToColor(const std::string& color)
+{
+	int len = color.size();
+	if (len != 6 && len != 8)
+	{
+		return Color(0, 0, 0);
+	}
+	int shift = len == 6 ? 16 : 24;
+	unsigned int hex = std::stoul(color, NULL, 16);
+	int r, g, b, a = 0xff;
+	r = (hex >> shift) & 0xff;
+	shift -= 8;
+	g = (hex >> shift) & 0xff;
+	shift -= 8;
+	b = (hex >> shift) & 0xff;
+	if (len == 8)
+		a = hex & 0xff;
+	return Color(r, g, b, a);
+}
+
+std::string ColorToString(Color color)
+{
+	char hexString[9];
+	std::snprintf(hexString, sizeof(hexString), "#%02X%02X%02X%02X", color.r(), color.g(), color.b(), color.a());
+	return std::string(hexString);
+}
+
+#ifdef SSDK2013
+CON_COMMAND(spt_hud_group,
+            "Modifies parameters in given HUD group.\n"
+            "HUD element:\n"
+            "    spt_hud_group <group name|all> add <HUD element> [args]\n"
+            "    spt_hud_group <group name|all> remove <index>\n"
+            "Display: spt_hud_group <group name|all> <show|hide|toggle>\n"
+            "Attributes: spt_hud_group <group name|all> <x|y|pos|font|textcolor> [value]")
+#else
+static int HudGroupCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
+{
+	std::string s(partial);
+	size_t pos = s.find_last_of(' ') + 1;
+	std::string base = s.substr(0, pos);
+	std::string incomplete = s.substr(pos);
+
+	std::istringstream iss(base);
+	std::vector<std::string> args{std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{}};
+
+	switch (args.size())
+	{
+	case 0:
+		return 0;
+	case 1:
+	{
+		std::vector<std::string> suggestions;
+		for (const auto& group : spt_hud.hudUserGroups)
+		{
+			suggestions.push_back(group.first);
+		}
+		suggestions.push_back("all");
+		return AutoCompleteList::AutoCompleteSuggest(base, incomplete, suggestions, false, commands);
+	}
+	case 2:
+	{
+		if (args[1] == "all" || spt_hud.hudUserGroups.contains(args[1]))
+			return AutoCompleteList::AutoCompleteSuggest(base,
+			                                             incomplete,
+			                                             {
+			                                                 "add",
+			                                                 "remove",
+			                                                 "show",
+			                                                 "hide",
+			                                                 "toggle",
+			                                                 "x",
+			                                                 "y",
+			                                                 "pos",
+			                                                 "font",
+			                                                 "textcolor",
+			                                             },
+			                                             false,
+			                                             commands);
+		return 0;
+	}
+	case 3:
+	{
+		if (args[2] == "add")
+		{
+			std::vector<std::string> suggestions;
+			for (const auto& group : spt_hud.hudCallbacks)
+			{
+				suggestions.push_back(group.first);
+			}
+			return AutoCompleteList::AutoCompleteSuggest(base, incomplete, suggestions, false, commands);
+		}
+		return 0;
+	}
+	default:
+		return 0;
+	}
+}
+
+CON_COMMAND_F_COMPLETION(spt_hud_group,
+                         "Modifies parameters in given HUD group.\n"
+                         "HUD element:\n"
+                         "    spt_hud_group <group name|all> add <HUD element> [args]\n"
+                         "    spt_hud_group <group name|all> remove <index>\n"
+                         "Display: spt_hud_group <group name|all> <show|hide|toggle>\n"
+                         "Attributes: spt_hud_group <group name|all> <x|y|pos|font|textcolor> [value]",
+                         0,
+                         HudGroupCompletionFunc)
+#endif
+{
+	if (args.ArgC() < 2)
+	{
+		for (const auto& group : spt_hud.hudUserGroups)
+		{
+			Msg("%s\n", group.first.c_str());
+		}
+		return;
+	}
+
+	auto commandAction = [args](std::string name) -> bool
+	{
+		HudUserGroup& group = spt_hud.hudUserGroups[name];
+
+		int argc = args.ArgC();
+		if (argc == 2)
+		{
+			Msg("%s:\n"
+			    "%s\n",
+			    name.c_str(),
+			    group.ToString().c_str());
+			return true;
+		}
+
+		std::string param = args.Arg(2);
+		if (param == "add")
+		{
+			if (argc != 4 && argc != 5)
+			{
+				Msg("Usage: spt_hud_group <group name|all> add <HUD element> [args]\n");
+				return false;
+			}
+
+			std::string element = args.Arg(3);
+			if (!spt_hud.hudCallbacks.contains(element))
+			{
+				Msg("%s is not a HUD element.\n", element.c_str());
+				return false;
+			}
+			group.callbacks.push_back({element, argc == 5 ? args.Arg(4) : ""});
+		}
+		else if (param == "remove")
+		{
+			if (argc != 4)
+			{
+				Msg("Usage: spt_hud_group <group name|all> remove <index>\n");
+				return false;
+			}
+			int index = std::atoi(args.Arg(3));
+			if (index < 0 || (unsigned)index >= group.callbacks.size())
+			{
+				Msg("Invalid HUD element index.\n");
+				return false;
+			}
+			group.callbacks.erase(group.callbacks.begin() + index);
+		}
+		else if (param == "show")
+		{
+			group.shouldDraw = true;
+		}
+		else if (param == "hide")
+		{
+			group.shouldDraw = false;
+		}
+		else if (param == "toggle")
+		{
+			group.shouldDraw = !group.shouldDraw;
+		}
+		else if (param == "x" || param == "y" || param == "pos")
+		{
+			if (argc == 3)
+			{
+				Msg("%s: pos = (%.2f, %.2f)\n", name.c_str(), group.x, group.y);
+			}
+			else if (param == "pos")
+			{
+				if (argc != 5)
+				{
+					Msg("Usage: spt_hud_group <group name|all> pos [<x> <y>]\n");
+					return false;
+				}
+				group.x = std::atof(args.Arg(3));
+				group.y = std::atof(args.Arg(4));
+			}
+			else
+			{
+				// x y
+				if (argc != 4)
+				{
+					Msg("Usage: spt_hud_group <group name|all> <x|y> [value]\n");
+					return false;
+				}
+				float value = std::atof(args.Arg(3));
+				if (param == "x")
+					group.x = value;
+				else
+					group.y = value;
+			}
+		}
+		else if (param == "font")
+		{
+			if (argc == 3)
+			{
+				std::string fontName = "Invalid";
+				for (const auto& kv : spt_hud.fonts)
+				{
+					if (kv.second == group.font)
+					{
+						fontName = kv.first;
+						break;
+					}
+				}
+				Msg("%s: font = %s\n", name.c_str(), fontName.c_str());
+			}
+			else if (argc == 4)
+			{
+				if (!spt_hud.GetFont(args.Arg(3), group.font))
+				{
+					Msg("Invalid font name.\n");
+					return false;
+				}
+			}
+			else
+			{
+				Msg("Usage: spt_hud_group <group name|all> font [name]\n");
+				return false;
+			}
+		}
+		else if (param == "textcolor" )
+		{
+			if (argc == 3)
+			{
+				Msg("%s: %s = %s", name.c_str(), param.c_str(), ColorToString(group.textcolor).c_str());
+			}
+			else if (argc == 4)
+			{
+				group.textcolor = StringToColor(args.Arg(3));
+			}
+			else
+			{
+				Msg("Usage: spt_hud_group <group name|all> textcolor [color]\n");
+				return false;
+			}
+		}
+		else
+		{
+			Msg("Invalid argument %s.\n"
+			    "Params: add, remove, show, hide, toggle, x, y, pos, font, textcolor.\n",
+			    param.c_str());
+			return false;
+		}
+		return true;
+	};
+
+	std::string name = args.Arg(1);
+	if (name == "all")
+	{
+		for (auto& kv : spt_hud.hudUserGroups)
+		{
+			if (!commandAction(kv.first))
+				return;
+		}
+	}
+	else if (spt_hud.hudUserGroups.contains(name))
+	{
+		commandAction(name);
+	}
+	else
+	{
+		Msg("Group %s does not exist!\n", name.c_str());
+	}
+}
+
+CON_COMMAND(spt_hud_group_add, "Add a HUD group. Usage: spt_hud_group_add <group name>")
+{
+	if (args.ArgC() != 2)
+	{
+		Msg("Usage: spt_hud_group_add <group name>\n");
+		return;
+	}
+
+	std::string name = args.Arg(1);
+	if (name == "all")
+	{
+		Msg("\"all\" cannot be a group name!\n");
+	}
+	else if (spt_hud.hudUserGroups.contains(name))
+	{
+		Msg("Group %s already exist!", name.c_str());
+	}
+	else
+	{
+		spt_hud.hudUserGroups[name] = HudUserGroup();
+	}
+}
+
+#ifdef SSDK2013
+CON_COMMAND(spt_hud_group_remove, "Remove HUD group(s). Usage: spt_hud_group_remove <group name|all>")
+#else
+static int HudGroupRemoveCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
+{
+	std::vector<std::string> suggestions;
+	for (const auto& group : spt_hud.hudUserGroups)
+	{
+		suggestions.push_back(group.first);
+	}
+	suggestions.push_back("all");
+
+	AutoCompleteList completeList(suggestions);
+	return completeList.AutoCompletionFunc(partial, commands);
+}
+
+CON_COMMAND_F_COMPLETION(spt_hud_group_remove,
+                         "Remove HUD group(s). Usage: spt_hud_group_remove <group name|all>",
+                         0,
+                         HudGroupRemoveCompletionFunc)
+#endif
+{
+	if (args.ArgC() != 2)
+	{
+		Msg("Usage: spt_hud_group_remove <group name | all>\n");
+		return;
+	}
+
+	std::string name = args.Arg(1);
+	if (name == "all")
+	{
+		spt_hud.hudUserGroups.clear();
+	}
+	else if (spt_hud.hudUserGroups.contains(name))
+	{
+		spt_hud.hudUserGroups.erase(name);
+	}
+	else
+	{
+		Msg("Group %s does not exist!\n", name.c_str());
+	}
+}
 
 namespace patterns
 {
@@ -107,6 +455,8 @@ bool HUDFeature::AddHudCallback(std::string key, HudCallback callback)
 {
 	if (!this->loadingSuccessful)
 		return false;
+	if (hudCallbacks.contains(key))
+		return false;
 	hudCallbacks[key] = callback;
 	return true;
 }
@@ -115,22 +465,18 @@ bool HUDFeature::AddHudDefaultGroup(HudCallback callback)
 {
 	if (!this->loadingSuccessful)
 		return false;
-	hudDefaultGroups.push_back(callback);
+	hudDefaultCallbacks.push_back(callback);
 	return true;
 }
 
 void HUDFeature::vDrawTopHudElement(Color color, const wchar* format, va_list args)
 {
-	vgui::HFont font;
-
-	if (!GetFont(FONT_DefaultFixedOutline, font))
-		return;
 	const wchar* text = FormatTempString(format, args);
 
 	CALL(DrawSetTextFont, font);
 	CALL(DrawSetTextColor, color.r(), color.g(), color.b(), color.a());
 	CALL(DrawSetTexture, 0);
-	CALL(DrawSetTextPos, topX, 2 + (topFontTall + 2) * topVertIndex);
+	CALL(DrawSetTextPos, topX, 2 + topY + (topFontTall + 2) * topVertIndex);
 
 #ifdef BMS
 	if (isLatest)
@@ -150,7 +496,7 @@ void HUDFeature::DrawTopHudElement(const wchar* format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	vDrawTopHudElement({255, 255, 255, 255}, format, args);
+	vDrawTopHudElement(hudTextColor, format, args);
 	va_end(args);
 }
 
@@ -267,6 +613,9 @@ void HUDFeature::LoadFeature()
 	{
 		InitConcommandBase(y_spt_hud);
 		InitConcommandBase(y_spt_hud_left);
+		InitCommand(spt_hud_group);
+		InitCommand(spt_hud_group_add);
+		InitCommand(spt_hud_group_remove);
 	}
 }
 
@@ -282,13 +631,13 @@ void HUDFeature::UnloadFeature()
 
 void HUDFeature::DrawDefaultHUD()
 {
-	vgui::HFont font;
 	if (!GetFont(FONT_DefaultFixedOutline, font))
 		return;
 
 	try
 	{
 		// Reset top HUD stuff
+		hudTextColor = Color(255, 255, 255, 255);
 		topVertIndex = 0;
 		topFontTall = CALL(GetFontTall, font);
 		if (y_spt_hud_left.GetBool())
@@ -303,9 +652,12 @@ void HUDFeature::DrawDefaultHUD()
 			if (cl_showfps && cl_showfps->GetBool())
 				++topVertIndex;
 		}
-		for (auto& item : hudCallbacks)
+
+		topY = 0;
+
+		for (auto& kv : hudCallbacks)
 		{
-			auto& callback = item.second;
+			auto& callback = kv.second;
 			if (callback.shouldDraw())
 				callback.draw();
 		}
@@ -318,8 +670,6 @@ void HUDFeature::DrawDefaultHUD()
 
 void HUDFeature::DrawHUD(bool overlay)
 {
-	vgui::HFont font;
-
 	if (!interfaces::surface || !renderView)
 		return;
 
@@ -329,30 +679,40 @@ void HUDFeature::DrawHUD(bool overlay)
 
 	try
 	{
-		// Reset top HUD stuff
-		topVertIndex = 0;
-		topFontTall = CALL(GetFontTall, font);
-		if (y_spt_hud_left.GetBool())
-		{
-			topX = 6;
-		}
-		else
-		{
-			topX = renderView->width - 300 + 2;
-			if (cl_showpos && cl_showpos->GetBool())
-				topVertIndex += 3;
-			if (cl_showfps && cl_showfps->GetBool())
-				++topVertIndex;
-		}
-		for (auto& callback : hudDefaultGroups)
+		// Draw default callbacks
+		for (auto& callback : hudDefaultCallbacks)
 		{
 #ifdef SPT_OVERLAY_ENABLED
 			if (overlay == callback.drawInOverlay && callback.shouldDraw())
 				callback.draw();
 #else
 			if (!callback.drawInOverlay && callback.shouldDraw())
-				callback.draw();
+				callback.draw("");
 #endif
+		}
+
+		if (!overlay)
+		{
+			// Draw user groups
+			for (const auto& kv : hudUserGroups)
+			{
+				const auto& group = kv.second;
+				if (!group.shouldDraw)
+					continue;
+
+				// Reset top HUD stuff
+				hudTextColor = group.textcolor;
+				topX = renderView->width * group.x * 0.01f;
+				topY = renderView->height * group.y * 0.01f;
+				topVertIndex = 0;
+				topFontTall = CALL(GetFontTall, group.font);
+				font = group.font;
+
+				for (auto& elementName : group.callbacks)
+				{
+					hudCallbacks[elementName].draw();
+				}
+			}
 		}
 	}
 	catch (const std::exception& e)
@@ -395,9 +755,48 @@ IMPL_HOOK_THISCALL(HUDFeature, void, CEngineVGui__Paint, void*, PaintMode_t mode
 	spt_hud.ORIG_CEngineVGui__Paint(thisptr, mode);
 }
 
+HudCallback::HudCallback() : drawInOverlay(false) {}
+
 HudCallback::HudCallback(std::function<void()> drawable, std::function<bool()> shouldDrawable, bool overlay)
     : drawInOverlay{overlay}, draw{drawable}, shouldDraw{shouldDrawable}
 {
+}
+
+HudUserGroup::HudUserGroup() : x(0), y(0), shouldDraw(true), textcolor(255, 255, 255, 255)
+{
+	if (!spt_hud.GetFont(FONT_DefaultFixedOutline, font))
+	{
+		font = 0;
+	}
+}
+
+std::string HudUserGroup::ToString() const
+{
+	std::stringstream ss;
+	ss << "state: " << (shouldDraw ? "Shown" : "Hidden") << "\n";
+	ss << "pos: (" << x << ", " << y << ")\n";
+
+	std::string fontName = "Invalid";
+	for (const auto& kv : spt_hud.fonts)
+	{
+		if (kv.second == font)
+		{
+			fontName = kv.first;
+			break;
+		}
+	}
+	ss << "font: " << fontName << "\n";
+
+	ss << "textcolor: " << ColorToString(textcolor) << "\n";
+
+	ss << "HUD elements:\n";
+
+	for (size_t i = 0; i < callbacks.size(); i++)
+	{
+		ss << i << ": " << callbacks[i] << "\n";
+	}
+
+	return ss.str();
 }
 
 #endif
