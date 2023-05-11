@@ -1194,6 +1194,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClCompile Include="spt\features\game_fixes\nosleep.cpp" />
     <ClCompile Include="spt\features\game_fixes\portal_nogroundsnap.cpp" />
     <ClCompile Include="spt\features\game_fixes\rng.cpp" />
+    <ClCompile Include="spt\features\game_fixes\snapshot_overflow.cpp" />
     <ClCompile Include="spt\features\game_fixes\vag_crash.cpp" />
     <ClCompile Include="spt\features\game_fixes\visual_fixes.cpp" />
     <ClCompile Include="spt\features\generic.cpp" />
