@@ -70,9 +70,6 @@
     <ClCompile Include="spt\features\autojump.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
-    <ClCompile Include="spt\features\nosleep.cpp">
-      <Filter>spt\features</Filter>
-    </ClCompile>
     <ClCompile Include="spt\features\hud.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
@@ -80,9 +77,6 @@
       <Filter>spt\features</Filter>
     </ClCompile>
     <ClCompile Include="spt\features\tickrate.cpp">
-      <Filter>spt\features</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\visual_fixes.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
     <ClCompile Include="spt\features\dmomm.cpp">
@@ -107,12 +101,6 @@
       <Filter>spt\features</Filter>
     </ClCompile>
     <ClCompile Include="spt\features\timer.cpp">
-      <Filter>spt\features</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\rng.cpp">
-      <Filter>spt\features</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\vag.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
     <ClCompile Include="spt\features\ent_props.cpp">
@@ -253,9 +241,6 @@
     <ClCompile Include="spt\features\leafvis.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
-    <ClCompile Include="spt\features\multi_instance.cpp">
-      <Filter>spt\features</Filter>
-    </ClCompile>
     <ClCompile Include="spt\features\visualizations\draw_seams.cpp">
       <Filter>spt\features\visualizations</Filter>
     </ClCompile>
@@ -277,22 +262,10 @@
     <ClCompile Include="spt\features\visualizations\portal_placement.cpp">
       <Filter>spt\features\visualizations</Filter>
     </ClCompile>
-    <ClCompile Include="spt\features\bms_flashlight_fix.cpp">
-      <Filter>spt\features</Filter>
-    </ClCompile>
     <ClCompile Include="spt\features\afterticks.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
     <ClCompile Include="spt\features\saveloads.cpp">
-      <Filter>spt\features</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\noclip_nofix.cpp">
-      <Filter>spt\features</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\free_oob.cpp">
-      <Filter>spt\features</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\portal_nogroundsnap.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
     <ClCompile Include="spt\features\updater.cpp">
@@ -300,12 +273,6 @@
     </ClCompile>
     <ClCompile Include="spt\utils\stdafx.cpp">
       <Filter>spt\utils</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\hardlock.cpp">
-      <Filter>spt\features</Filter>
-    </ClCompile>
-    <ClCompile Include="spt\features\fastload.cpp">
-      <Filter>spt\features</Filter>
     </ClCompile>
     <ClCompile Include="spt\features\movement_vars.cpp">
       <Filter>spt\features</Filter>
@@ -342,6 +309,39 @@
     </ClCompile>
     <ClCompile Include="spt\features\visualizations\map_overlay.cpp">
       <Filter>spt\features\visualizations</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\game_fixes\bms_flashlight_fix.cpp">
+      <Filter>spt\features\game_fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\game_fixes\fastload.cpp">
+      <Filter>spt\features\game_fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\game_fixes\free_oob.cpp">
+      <Filter>spt\features\game_fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\game_fixes\hardlock.cpp">
+      <Filter>spt\features\game_fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\game_fixes\multi_instance.cpp">
+      <Filter>spt\features\game_fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\game_fixes\noclip_nofix.cpp">
+      <Filter>spt\features\game_fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\game_fixes\nosleep.cpp">
+      <Filter>spt\features\game_fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\game_fixes\portal_nogroundsnap.cpp">
+      <Filter>spt\features\game_fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\game_fixes\rng.cpp">
+      <Filter>spt\features\game_fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\game_fixes\vag_crash.cpp">
+      <Filter>spt\features\game_fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\game_fixes\visual_fixes.cpp">
+      <Filter>spt\features\game_fixes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -493,9 +493,6 @@
       <Filter>spt\features</Filter>
     </ClInclude>
     <ClInclude Include="spt\features\tracing.hpp">
-      <Filter>spt\features</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\features\rng.hpp">
       <Filter>spt\features</Filter>
     </ClInclude>
     <ClInclude Include="spt\utils\convar.hpp">
@@ -714,6 +711,9 @@
     <ClInclude Include="SDK\zone.h">
       <Filter>SDK</Filter>
     </ClInclude>
+    <ClInclude Include="spt\features\game_fixes\rng.hpp">
+      <Filter>spt\features\game_fixes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">
@@ -786,6 +786,9 @@
     </Filter>
     <Filter Include="spt\features\visualizations\renderer\internal">
       <UniqueIdentifier>{09923d45-41e4-45c5-ad0e-cbfdea8b9be3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\features\game_fixes">
+      <UniqueIdentifier>{2252b542-464d-4fe9-b7e5-fae8736791b5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

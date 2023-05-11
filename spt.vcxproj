@@ -1177,7 +1177,6 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClCompile Include="spt\features\aim.cpp" />
     <ClCompile Include="spt\features\autocomplete.cpp" />
     <ClCompile Include="spt\features\autojump.cpp" />
-    <ClCompile Include="spt\features\bms_flashlight_fix.cpp" />
     <ClCompile Include="spt\features\boog.cpp" />
     <ClCompile Include="spt\features\camera.cpp" />
     <ClCompile Include="spt\features\collision_group.cpp" />
@@ -1185,11 +1184,19 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClCompile Include="spt\features\demo.cpp" />
     <ClCompile Include="spt\features\dmomm.cpp" />
     <ClCompile Include="spt\features\ent_props.cpp" />
-    <ClCompile Include="spt\features\fastload.cpp" />
     <ClCompile Include="spt\features\fov.cpp" />
-    <ClCompile Include="spt\features\free_oob.cpp" />
+    <ClCompile Include="spt\features\game_fixes\bms_flashlight_fix.cpp" />
+    <ClCompile Include="spt\features\game_fixes\fastload.cpp" />
+    <ClCompile Include="spt\features\game_fixes\free_oob.cpp" />
+    <ClCompile Include="spt\features\game_fixes\hardlock.cpp" />
+    <ClCompile Include="spt\features\game_fixes\multi_instance.cpp" />
+    <ClCompile Include="spt\features\game_fixes\noclip_nofix.cpp" />
+    <ClCompile Include="spt\features\game_fixes\nosleep.cpp" />
+    <ClCompile Include="spt\features\game_fixes\portal_nogroundsnap.cpp" />
+    <ClCompile Include="spt\features\game_fixes\rng.cpp" />
+    <ClCompile Include="spt\features\game_fixes\vag_crash.cpp" />
+    <ClCompile Include="spt\features\game_fixes\visual_fixes.cpp" />
     <ClCompile Include="spt\features\generic.cpp" />
-    <ClCompile Include="spt\features\hardlock.cpp" />
     <ClCompile Include="spt\features\hops_hud.cpp" />
     <ClCompile Include="spt\features\hud.cpp" />
     <ClCompile Include="spt\features\ihud.cpp" />
@@ -1197,16 +1204,11 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClCompile Include="spt\features\isg.cpp" />
     <ClCompile Include="spt\features\leafvis.cpp" />
     <ClCompile Include="spt\features\movement_vars.cpp" />
-    <ClCompile Include="spt\features\multi_instance.cpp" />
-    <ClCompile Include="spt\features\noclip_nofix.cpp" />
-    <ClCompile Include="spt\features\nosleep.cpp" />
     <ClCompile Include="spt\features\overlay.cpp" />
     <ClCompile Include="spt\features\pause.cpp" />
     <ClCompile Include="spt\features\playerio.cpp" />
-    <ClCompile Include="spt\features\portal_nogroundsnap.cpp" />
     <ClCompile Include="spt\features\property_getter.cpp" />
     <ClCompile Include="spt\features\restart.cpp" />
-    <ClCompile Include="spt\features\rng.cpp" />
     <ClCompile Include="spt\features\saveloads.cpp" />
     <ClCompile Include="spt\features\shadow.cpp" />
     <ClCompile Include="spt\features\stucksave.cpp" />
@@ -1220,7 +1222,6 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClCompile Include="spt\features\timer.cpp" />
     <ClCompile Include="spt\features\tracing.cpp" />
     <ClCompile Include="spt\features\updater.cpp" />
-    <ClCompile Include="spt\features\vag.cpp" />
     <ClCompile Include="spt\features\vag_searcher.cpp" />
     <ClCompile Include="spt\features\visualizations\draw_ent_collides.cpp" />
     <ClCompile Include="spt\features\visualizations\draw_seams.cpp" />
@@ -1236,7 +1237,6 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClCompile Include="spt\features\visualizations\renderer\internal\static_mesh.cpp" />
     <ClCompile Include="spt\features\visualizations\sg-collide-vis.cpp" />
     <ClCompile Include="spt\features\visualizations\vag_trace.cpp" />
-    <ClCompile Include="spt\features\visual_fixes.cpp" />
     <ClCompile Include="spt\ipc\ipc.cpp" />
     <ClCompile Include="sptlib\sptlib.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">sptlib-stdafx.hpp</PrecompiledHeaderFile>
@@ -1414,12 +1414,12 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClInclude Include="spt\features\cvar.hpp" />
     <ClInclude Include="spt\features\demo.hpp" />
     <ClInclude Include="spt\features\ent_props.hpp" />
+    <ClInclude Include="spt\features\game_fixes\rng.hpp" />
     <ClInclude Include="spt\features\generic.hpp" />
     <ClInclude Include="spt\features\hud.hpp" />
     <ClInclude Include="spt\features\overlay.hpp" />
     <ClInclude Include="spt\features\playerio.hpp" />
     <ClInclude Include="spt\features\property_getter.hpp" />
-    <ClInclude Include="spt\features\rng.hpp" />
     <ClInclude Include="spt\features\saveloads.hpp" />
     <ClInclude Include="spt\features\shadow.hpp" />
     <ClInclude Include="spt\features\tas.hpp" />

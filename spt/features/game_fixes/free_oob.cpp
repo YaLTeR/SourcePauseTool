@@ -1,7 +1,7 @@
 #include "stdafx.hpp"
 #include "..\feature.hpp"
 #include "convar.hpp"
-#include "autojump.hpp"
+#include "..\autojump.hpp"
 #include "interfaces.hpp"
 
 #ifndef  OE

@@ -6,7 +6,7 @@
 #include "math.hpp"
 #include "ent_utils.hpp"
 #include "spt/sptlib-wrapper.hpp"
-#include "..\features\rng.hpp"
+#include "spt\features\game_fixes\rng.hpp"
 #include "..\spt-serverplugin.hpp"
 
 #undef max
