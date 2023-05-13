@@ -633,9 +633,6 @@
     <ClInclude Include="spt\features\afterticks.hpp">
       <Filter>spt\features</Filter>
     </ClInclude>
-    <ClInclude Include="spt\features\saveloads.hpp">
-      <Filter>spt\features</Filter>
-    </ClInclude>
     <ClInclude Include="thirdparty\curl\include\curl\curl.h">
       <Filter>thirdparty\curl\include\curl</Filter>
     </ClInclude>
