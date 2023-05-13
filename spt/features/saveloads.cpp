@@ -86,8 +86,8 @@ void SaveloadsFeature::LoadFeature()
 
 #ifdef SPT_HUD_ENABLED
 	AddHudCallback(
-		"SAVELOADS",
-		[this]()
+		"saveloads_showcurinde",
+	    [this](std::string)
 		{
 			if (execute)
 				spt_hud.DrawTopHudElement(L"SAVELOADS: %i / %i (%i left)", startIndex, endIndex, endIndex - startIndex);

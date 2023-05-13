@@ -222,7 +222,7 @@ public:
 
 protected:
 	void InitConcommandBase(ConCommandBase& convar);
-	bool AddHudCallback(const char* key, std::function<void()> func, ConVar& cvar);
+	bool AddHudCallback(const char* key, std::function<void(std::string)> func, ConVar& cvar);
 
 	bool moduleLoaded;
 	bool startedLoading;

@@ -75,7 +75,7 @@ void ShadowPosition::LoadFeature()
 #ifdef SPT_HUD_ENABLED
 		AddHudCallback(
 		    "shadow_info",
-		    [this]()
+		    [this](std::string)
 		    {
 			    const Vector& pos = PlayerHavokPos;
 			    const QAngle& ang = PlayerHavokAngles;

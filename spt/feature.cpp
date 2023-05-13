@@ -178,7 +178,7 @@ void Feature::InitConcommandBase(ConCommandBase& convar)
 	Cvar_InitConCommandBase(convar, this);
 }
 
-bool Feature::AddHudCallback(const char* key, std::function<void()> func, ConVar& convar)
+bool Feature::AddHudCallback(const char* key, std::function<void(std::string)> func, ConVar& convar)
 {
 #ifdef SPT_HUD_ENABLED
 	bool result = spt_hud.AddHudCallback(key,
