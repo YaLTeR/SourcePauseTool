@@ -85,7 +85,7 @@ void ISGFeature::LoadFeature()
 
 #ifdef SPT_HUD_ENABLED
 		AddHudCallback(
-		    "isg", []() { spt_hud.DrawTopHudElement(L"isg: %d", IsISGActive()); }, y_spt_hud_isg);
+		    "isg", [](std::string) { spt_hud.DrawTopHudElement(L"isg: %d", IsISGActive()); }, y_spt_hud_isg);
 #endif
 	}
 }

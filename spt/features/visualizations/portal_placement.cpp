@@ -108,6 +108,7 @@ protected:
 	virtual void LoadFeature() override;
 
 private:
+	bool placementInfoUpdateRequested = false;
 	ConVar* sv_portal_placement_never_fail = nullptr;
 
 	DECL_MEMBER_CDECL(bool,
@@ -323,12 +324,14 @@ void PortalPlacement::OnMeshRenderSignal(MeshRendererDelegate& mr)
 		}
 	}
 
+	if (placementInfoUpdateRequested || y_spt_draw_pp.GetBool())
+	{
+		UpdatePlacementInfo();
+		placementInfoUpdateRequested = false;
+	}
+	
 	if (!y_spt_draw_pp.GetBool())
 		return;
-
-	// HUD callback didn't update placement info
-	if (!y_spt_hud_portal_placement.GetBool())
-		UpdatePlacementInfo();
 
 	// No portalgun
 	if (p1.placementResult == PORTAL_PLACEMENT_FAIL_NO_SERVER
@@ -554,12 +557,11 @@ void PortalPlacement::LoadFeature()
 #ifdef SPT_HUD_ENABLED
 		AddHudCallback(
 		    "portal_placement",
-		    []()
+		    [](std::string args)
 		    {
-			    if (!y_spt_hud_portal_placement.GetBool())
-				    return;
+			    int mode = args == "" ? y_spt_hud_portal_placement.GetInt() : std::stoi(args);
+			    spt_pp.placementInfoUpdateRequested = true;
 
-			    spt_pp.UpdatePlacementInfo();
 			    float res1 = spt_pp.p1.placementResult;
 			    float res2 = spt_pp.p2.placementResult;
 
@@ -578,12 +580,12 @@ void PortalPlacement::LoadFeature()
 			    {
 				    spt_hud.DrawTopHudElement(L"Portal: No portalgun");
 			    }
-			    else if (y_spt_hud_portal_placement.GetInt() == 1)
+			    else if (mode == 0 || mode == 1)
 			    {
 				    spt_hud.DrawColorTopHudElement(blueTextColor, L"Portal1: %d", res1 > 0.5f);
 				    spt_hud.DrawColorTopHudElement(orangeTextColor, L"Portal2: %d", res2 > 0.5f);
 			    }
-			    else if (y_spt_hud_portal_placement.GetInt() == 2)
+			    else if (mode == 2)
 			    {
 				    spt_hud.DrawColorTopHudElement(blueTextColor,
 				                                   L"Portal1: %s",

@@ -650,74 +650,86 @@ CON_COMMAND(_y_spt_getangles, "Gets the view angles of the player.")
 
 static uint32_t hud_flags_filter = 0xffffffff;
 
+// char version of flags
+static const char* FLAGS[] = {
+    "ONGROUND",
+    "DUCKING",
+    "WATERJUMP",
+    "ONTRAIN",
+    "INRAIN",
+    "FROZEN",
+    "ATCONTROLS",
+    "CLIENT",
+    "FAKECLIENT",
+    "INWATER",
+    "FLY",
+    "SWIM",
+    "CONVEYOR",
+    "NPC",
+    "GODMODE",
+    "NOTARGET",
+    "AIMTARGET",
+    "PARTIALGROUND",
+    "STATICPROP",
+    "GRAPHED",
+    "GRENADE",
+    "STEPMOVEMENT",
+    "DONTTOUCH",
+    "BASEVELOCITY",
+    "WORLDBRUSH",
+    "OBJECT",
+    "KILLME",
+    "ONFIRE",
+    "DISSOLVING",
+    "TRANSRAGDOLL",
+    "UNBLOCKABLE_BY_PLAYER",
+};
+
+static uint32_t GetFlagsFilter(std::string args, bool verbose)
+{
+	int result = 0;
+	std::istringstream iss(args);
+	std::string arg;
+	while (iss >> arg)
+	{
+		bool found = false;
+		for (int j = 0; j < ARRAYSIZE(FLAGS); j++)
+		{
+			std::string flag = FLAGS[j];
+			if (std::equal(flag.begin(),
+			               flag.end(),
+			               arg.begin(),
+			               arg.end(),
+			               [](char a, char b) { return tolower(a) == tolower(b); }))
+			{
+				result |= (1 << j);
+				found = true;
+				break;
+			}
+		}
+		if (!found && verbose)
+			Msg("Unknown flag: %s\n", arg.c_str());
+	}
+	return result;
+}
+
 CON_COMMAND(y_spt_hud_flags_filter, "Sets the filter for spt_hud_flags.")
 {
-	// char version of flags
-	const char* flags[] = {
-	    "ONGROUND",
-	    "DUCKING",
-	    "WATERJUMP",
-	    "ONTRAIN",
-	    "INRAIN",
-	    "FROZEN",
-	    "ATCONTROLS",
-	    "CLIENT",
-	    "FAKECLIENT",
-	    "INWATER",
-	    "FLY",
-	    "SWIM",
-	    "CONVEYOR",
-	    "NPC",
-	    "GODMODE",
-	    "NOTARGET",
-	    "AIMTARGET",
-	    "PARTIALGROUND",
-	    "STATICPROP",
-	    "GRAPHED",
-	    "GRENADE",
-	    "STEPMOVEMENT",
-	    "DONTTOUCH",
-	    "BASEVELOCITY",
-	    "WORLDBRUSH",
-	    "OBJECT",
-	    "KILLME",
-	    "ONFIRE",
-	    "DISSOLVING",
-	    "TRANSRAGDOLL",
-	    "UNBLOCKABLE_BY_PLAYER",
-	};
-
 	if (args.ArgC() < 2)
 	{
 		Msg("Flags filter resets.\n");
 		hud_flags_filter = 0xffffffff;
 		Msg("All flags:\n");
-		for (int i = 0; i < ARRAYSIZE(flags); i++)
+		for (int i = 0; i < ARRAYSIZE(FLAGS); i++)
 		{
-			Msg("    %s\n", flags[i]);
+			Msg("    %s\n", FLAGS[i]);
 		}
 		return;
 	}
-
-	hud_flags_filter = 0;
-	for (int i = 1; i < args.ArgC(); i++)
-	{
-		bool found = false;
-		for (int j = 0; j < ARRAYSIZE(flags); j++)
-		{
-			if (Q_strcasecmp(flags[j], args.Arg(i)) == 0)
-			{
-				hud_flags_filter |= (1 << j);
-				found = true;
-				break;
-			}
-		}
-		if (!found)
-			Msg("Unknown flag: %s\n", args.Arg(i));
-	}
+	hud_flags_filter = GetFlagsFilter(args.Arg(1), true);
 }
 
-static const wchar* FLAGS[] = {
+static const wchar* L_FLAGS[] = {
     L"FL_ONGROUND",
     L"FL_DUCKING",
     L"FL_WATERJUMP",
@@ -849,7 +861,7 @@ void PlayerIOFeature::LoadFeature()
 #ifdef SPT_HUD_ENABLED
 		AddHudCallback(
 		    "vars",
-		    [this]()
+		    [this](std::string)
 		    {
 			    auto vars = GetMovementVars();
 			    spt_hud.DrawTopHudElement(L"accelerate: %.3f", vars.Accelerate);
@@ -876,7 +888,7 @@ void PlayerIOFeature::LoadFeature()
 
 			AddHudCallback(
 			    "accel",
-			    [this]()
+			    [this](std::string)
 			    {
 				    Vector accel = currentVelocity - previousVelocity;
 				    spt_hud.DrawTopHudElement(L"accel(xyz): %.3f %.3f %.3f", accel.x, accel.y, accel.z);
@@ -887,7 +899,7 @@ void PlayerIOFeature::LoadFeature()
 
 		AddHudCallback(
 		    "velocity",
-		    [this]()
+		    [this](std::string)
 		    {
 			    Vector currentVel = GetPlayerVelocity();
 			    spt_hud.DrawTopHudElement(L"vel(xyz): %.3f %.3f %.3f",
@@ -900,7 +912,7 @@ void PlayerIOFeature::LoadFeature()
 
 		AddHudCallback(
 		    "velocity_angles",
-		    [this]()
+		    [this](std::string)
 		    {
 			    Vector currentVel = GetPlayerVelocity();
 			    QAngle angles;
@@ -914,7 +926,7 @@ void PlayerIOFeature::LoadFeature()
 		{
 			AddHudCallback(
 			    "ag_sg_tester",
-			    [this]()
+			    [this](std::string)
 			    {
 				    Vector v = spt_playerio.GetPlayerEyePos();
 				    QAngle q;
@@ -948,10 +960,11 @@ void PlayerIOFeature::LoadFeature()
 	{
 		bool hasHudFlags = AddHudCallback(
 		    "flags",
-		    [this]()
+		    [this](std::string args)
 		    {
 			    int flags = spt_playerio.m_fFlags.GetValue();
-			    DrawFlagsHud(NULL, FLAGS, ARRAYSIZE(FLAGS), flags, false, hud_flags_filter);
+			    int filter = args == "" ? hud_flags_filter : GetFlagsFilter(args, false);
+			    DrawFlagsHud(NULL, L_FLAGS, ARRAYSIZE(L_FLAGS), flags, false, filter);
 		    },
 		    y_spt_hud_flags);
 
@@ -963,7 +976,7 @@ void PlayerIOFeature::LoadFeature()
 	{
 		AddHudCallback(
 		    "moveflags",
-		    [this]()
+		    [this](std::string)
 		    {
 			    int flags = spt_playerio.m_MoveType.GetValue();
 			    DrawFlagsHud(L"Move type", MOVETYPE_FLAGS, ARRAYSIZE(MOVETYPE_FLAGS), flags);
@@ -975,7 +988,7 @@ void PlayerIOFeature::LoadFeature()
 	{
 		AddHudCallback(
 		    "collisionflags",
-		    [this]()
+		    [this](std::string)
 		    {
 			    int flags = spt_playerio.m_CollisionGroup.GetValue();
 			    DrawFlagsHud(L"Collision group", COLLISION_GROUPS, ARRAYSIZE(COLLISION_GROUPS), flags);
@@ -987,7 +1000,7 @@ void PlayerIOFeature::LoadFeature()
 	{
 		AddHudCallback(
 		    "movecollideflags",
-		    [this]()
+		    [this](std::string)
 		    {
 			    int flags = spt_playerio.m_MoveCollide.GetValue();
 			    DrawFlagsHud(L"Move collide", MOVECOLLIDE_FLAGS, ARRAYSIZE(MOVECOLLIDE_FLAGS), flags);

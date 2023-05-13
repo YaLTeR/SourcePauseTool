@@ -262,7 +262,7 @@ CON_COMMAND_F_COMPLETION(spt_hud_group,
 				return false;
 			}
 		}
-		else if (param == "textcolor" )
+		else if (param == "textcolor")
 		{
 			if (argc == 3)
 			{
@@ -659,7 +659,7 @@ void HUDFeature::DrawDefaultHUD()
 		{
 			auto& callback = kv.second;
 			if (callback.shouldDraw())
-				callback.draw();
+				callback.draw("");
 		}
 	}
 	catch (const std::exception& e)
@@ -684,7 +684,7 @@ void HUDFeature::DrawHUD(bool overlay)
 		{
 #ifdef SPT_OVERLAY_ENABLED
 			if (overlay == callback.drawInOverlay && callback.shouldDraw())
-				callback.draw();
+				callback.draw("");
 #else
 			if (!callback.drawInOverlay && callback.shouldDraw())
 				callback.draw("");
@@ -708,9 +708,9 @@ void HUDFeature::DrawHUD(bool overlay)
 				topFontTall = CALL(GetFontTall, group.font);
 				font = group.font;
 
-				for (auto& elementName : group.callbacks)
+				for (const auto& callback : group.callbacks)
 				{
-					hudCallbacks[elementName].draw();
+					hudCallbacks[callback.name].draw(callback.args);
 				}
 			}
 		}
@@ -757,7 +757,7 @@ IMPL_HOOK_THISCALL(HUDFeature, void, CEngineVGui__Paint, void*, PaintMode_t mode
 
 HudCallback::HudCallback() : drawInOverlay(false) {}
 
-HudCallback::HudCallback(std::function<void()> drawable, std::function<bool()> shouldDrawable, bool overlay)
+HudCallback::HudCallback(std::function<void(std::string)> drawable, std::function<bool()> shouldDrawable, bool overlay)
     : drawInOverlay{overlay}, draw{drawable}, shouldDraw{shouldDrawable}
 {
 }
@@ -793,7 +793,7 @@ std::string HudUserGroup::ToString() const
 
 	for (size_t i = 0; i < callbacks.size(); i++)
 	{
-		ss << i << ": " << callbacks[i] << "\n";
+		ss << i << ": " << callbacks[i].name << " " << callbacks[i].args << "\n";
 	}
 
 	return ss.str();

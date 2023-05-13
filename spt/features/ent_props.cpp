@@ -447,7 +447,7 @@ void EntProps::LoadFeature()
 	{
 		AddHudCallback(
 		    "portal_bubble",
-		    [this]()
+		    [this](std::string)
 		    {
 			    int in_bubble = GetEnvironmentPortal() != NULL;
 			    spt_hud.DrawTopHudElement(L"portal bubble: %d", in_bubble);
@@ -458,9 +458,13 @@ void EntProps::LoadFeature()
 
 	bool result = spt_hud.AddHudCallback("ent_info",
 	                                     HudCallback(
-	                                         []()
+	                                         [](std::string args)
 	                                         {
-		                                         std::string info(y_spt_hud_ent_info.GetString());
+		                                         std::string info;
+		                                         if (args == "")
+			                                         info = y_spt_hud_ent_info.GetString();
+		                                         else
+			                                         info = args;
 		                                         if (!whiteSpacesOnly(info))
 		                                         {
 			                                         int entries = utils::FillInfoArray(info,

@@ -311,7 +311,7 @@ void TASFeature::LoadFeature()
 #ifdef SPT_HUD_ENABLED
 		AddHudCallback(
 		    "script_progress",
-		    [this]()
+		    [this](std::string)
 		    {
 			    spt_hud.DrawTopHudElement(L"frame: %d / %d",
 			                              scripts::g_TASReader.GetCurrentTick(),

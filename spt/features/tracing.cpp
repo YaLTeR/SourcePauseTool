@@ -545,7 +545,7 @@ void Tracing::LoadFeature()
 	{
 		AddHudCallback(
 		    "oob",
-		    []()
+		    [](std::string)
 		    {
 			    Vector v = spt_generic.GetCameraOrigin();
 			    trace_t tr;

@@ -30,10 +30,10 @@ extern const std::string FONT_HudNumbers;
 struct HudCallback
 {
 	HudCallback();
-	HudCallback(std::function<void()> draw, std::function<bool()> shouldDraw, bool overlay);
+	HudCallback(std::function<void(std::string)> draw, std::function<bool()> shouldDraw, bool overlay);
 
 	bool drawInOverlay;
-	std::function<void()> draw;
+	std::function<void(std::string)> draw;
 	std::function<bool()> shouldDraw;
 };
 
@@ -46,7 +46,12 @@ struct HudUserGroup
 	bool shouldDraw;
 	vgui::HFont font;
 	Color textcolor;
-	std::vector<std::string> callbacks;
+	struct GruopCallback
+	{
+		std::string name;
+		std::string args;
+	};
+	std::vector<GruopCallback> callbacks;
 };
 
 // HUD stuff
