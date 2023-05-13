@@ -1421,7 +1421,6 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClInclude Include="spt\features\overlay.hpp" />
     <ClInclude Include="spt\features\playerio.hpp" />
     <ClInclude Include="spt\features\property_getter.hpp" />
-    <ClInclude Include="spt\features\saveloads.hpp" />
     <ClInclude Include="spt\features\shadow.hpp" />
     <ClInclude Include="spt\features\tas.hpp" />
     <ClInclude Include="spt\features\tickrate.hpp" />

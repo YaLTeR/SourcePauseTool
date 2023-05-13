@@ -29,7 +29,6 @@ public:
 	_GetClientModeNormal ORIG_GetClientModeNormal = nullptr;
 	_ControllerMove ORIG_ControllerMove = nullptr;
 
-	uintptr_t ORIG_SignOnState;
 	bool shouldPreventNextUnpause = false;
 	int signOnState;
 
