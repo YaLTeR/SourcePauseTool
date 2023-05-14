@@ -2,7 +2,7 @@
 
 #include "hud.hpp"
 
-#ifdef SPT_HUD_ENABLED
+#if !defined(BMS) && defined(SPT_HUD_ENABLED)
 
 #include "spt\feature.hpp"
 #include "spt\features\playerio.hpp"
@@ -10,6 +10,7 @@
 #include "spt\utils\convar.hpp"
 #include "spt\utils\interfaces.hpp"
 #include "spt\utils\signals.hpp"
+#include "spt\utils\game_detection.hpp"
 
 #include "basehandle.h"
 #include "Color.h"
@@ -40,20 +41,22 @@ public:
 
 	struct Button
 	{
-		bool is_normal_key;
-		bool enabled;
+		bool is_normal_key = false;
+		bool enabled = false;
 		std::wstring text;
 		std::string font;
-		int x;
-		int y;
-		int width;
-		int height;
+		int x = 0;
+		int y = 0;
+		int width = 0;
+		int height = 0;
 		Color background;
 		Color highlight;
 		Color textcolor;
 		Color texthighlight;
 		// used as button code if not normal key
-		int mask;
+		int mask = 0;
+
+		std::string ToString() const;
 	};
 	bool tasPreset = false;
 	std::map<std::string, Button> buttonSettings;
@@ -86,17 +89,17 @@ private:
 
 	IMatSystemSurface* surface;
 
-	int xOffset;
-	int yOffset;
-	int gridSize;
-	int padding;
+	int xOffset = 0;
+	int yOffset = 0;
+	int gridSize = 0;
+	int padding = 0;
 
 	Vector inputMovement;
 	QAngle currentAng;
 	QAngle previousAng;
-	int buttonBits;
+	int buttonBits = 0;
 
-	bool awaitingFrameDraw;
+	bool awaitingFrameDraw = false;
 
 	bool loadingSuccessful = false;
 };
@@ -116,52 +119,293 @@ static const Color textcolor = {255, 255, 255, 66};
 static const Color texthighlight = {0, 0, 0, 233};
 static const std::string font = FONT_Trebuchet20;
 
-CON_COMMAND(
-    y_spt_ihud_modify,
-    "Modifies parameters in given element.\nParams: enabled, text, font, x, y, width, height, background, highlight, textcolor, texthighlight.")
+#ifdef SSDK2013
+CON_COMMAND(y_spt_ihud_modify,
+            "Modifies parameters in given element.\n"
+            "spt_ihud_modify <button name|all> <enabled> [0|1]\n"
+            "spt_ihud_modify <button name|all> <text|font> [value]\n"
+            "spt_ihud_modify <button name|all> <x|y|pos|width|height> [value]\n"
+            "spt_ihud_modify <element|all> <background|highlight|textcolor|texthighlight> [color]")
+#else
+static int IHudModifyFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 {
-	if (args.ArgC() != 4)
+	std::string s(partial);
+	size_t pos = s.find_last_of(' ') + 1;
+	std::string base = s.substr(0, pos);
+	std::string incomplete = s.substr(pos);
+
+	std::istringstream iss(base);
+	std::vector<std::string> args{std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{}};
+
+	switch (args.size())
 	{
-		Msg("Usage: spt_ihud_modify <element|all> <param> <value>\n");
+	case 0:
+		return 0;
+	case 1:
+	{
+		std::vector<std::string> suggestions;
+		for (const auto& button : spt_ihud.buttonSettings)
+		{
+			suggestions.push_back(button.first);
+		}
+		suggestions.push_back("angles");
+		suggestions.push_back("all");
+		return AutoCompleteList::AutoCompleteSuggest(base, incomplete, suggestions, false, commands);
+	}
+	case 2:
+	{
+		if (args[1] == "all" || args[1] == "angles" || spt_ihud.buttonSettings.contains(args[1]))
+			return AutoCompleteList::AutoCompleteSuggest(base,
+			                                             incomplete,
+			                                             {
+			                                                 "enabled",
+			                                                 "text",
+			                                                 "font",
+			                                                 "x",
+			                                                 "y",
+			                                                 "pos",
+			                                                 "width",
+			                                                 "height",
+			                                                 "background",
+			                                                 "highlight",
+			                                                 "textcolor",
+			                                                 "texthighlight",
+			                                             },
+			                                             false,
+			                                             commands);
+		return 0;
+	}
+	default:
+		return 0;
+	}
+}
+
+CON_COMMAND_F_COMPLETION(y_spt_ihud_modify,
+                         "Modifies parameters in given element.\n"
+                         "spt_ihud_modify <button name|all> <enabled> [0|1]\n"
+                         "spt_ihud_modify <button name|all> <text|font> [value]\n"
+                         "spt_ihud_modify <button name|all> <x|y|pos|width|height> [value]\n"
+                         "spt_ihud_modify <element|all> <background|highlight|textcolor|texthighlight> [color]",
+                         0,
+                         IHudModifyFunc)
+#endif
+{
+	if (args.ArgC() < 2)
+	{
+		for (const auto& button : spt_ihud.buttonSettings)
+		{
+			Msg("%s\n", button.first.c_str());
+		}
+		Msg("angles\n");
 		return;
 	}
-	const char* errorMsg =
-	    "Invalid arguments.\nElements: all, angles, forward, back, moveright, moveleft, use, duck, jump, attack, attack2\nParams: enabled, text, font, x, y, width, height, background, highlight, textcolor, texthighlight.\n";
 
-	const char* element = args.Arg(1);
-	const char* param = args.Arg(2);
-	const char* value = args.Arg(3);
-
-	if (std::strcmp(element, "all") == 0)
+	auto commandAction = [args](std::string name) -> bool
 	{
-		for (const auto& kv : spt_ihud.buttonSettings)
+		bool isAngles = (name == "angles");
+		InputHud::Button& button = isAngles ? spt_ihud.anglesSetting : spt_ihud.buttonSettings[name];
+		int argc = args.ArgC();
+		if (argc == 2)
 		{
-			if (!spt_ihud.ModifySetting(kv.first.c_str(), param, value))
+			Msg("%s:\n"
+			    "%s\n",
+			    name.c_str(),
+			    button.ToString().c_str());
+			return true;
+		}
+
+		std::string param = args.Arg(2);
+		if (param == "enabled")
+		{
+			if (argc == 3)
 			{
-				Msg(errorMsg);
-				return;
+				Msg("%s: enabled = %s\n", button.enabled ? "true" : "false");
+			}
+			else if (argc == 4)
+			{
+				button.enabled = !!std::atoi(args.Arg(3));
+			}
+			else
+			{
+				Msg("Usage: spt_ihud_modify <element|all> enable [value]\n");
+				return false;
 			}
 		}
-		if (std::strcmp(param, "text") != 0 && std::strcmp(param, "width") != 0
-		    && std::strcmp(param, "height") != 0 && std::strcmp(param, "texthighlight") != 0)
+		else if (param == "text")
 		{
-			spt_ihud.ModifySetting("angles", param, value);
+			if (isAngles)
+			{
+				Msg("text for angles has no effect.\n");
+				return true;
+			}
+
+			if (argc == 3)
+			{
+				std::string str(button.text.begin(), button.text.end());
+				Msg("%s: text = \"%s\"", name.c_str(), str.c_str());
+			}
+			else if (argc == 4)
+			{
+				// only works for ASCII
+				std::string str(args.Arg(3));
+				std::wstring wstr(str.begin(), str.end());
+				button.text = wstr;
+			}
+			else
+			{
+				Msg("Usage: spt_ihud_modify <element|all> text [text]\n");
+				return false;
+			}
 		}
-	}
-	else if (!spt_ihud.ModifySetting(element, param, value))
+		else if (param == "font")
+		{
+			if (isAngles)
+			{
+				Msg("text for angles has no effect.\n");
+				return true;
+			}
+
+			if (argc == 3)
+			{
+				Msg("%s: font = \"%s\"", name.c_str(), font.c_str());
+			}
+			else if (argc == 4)
+			{
+				button.font = args.Arg(3);
+			}
+			else
+			{
+				Msg("Usage: spt_ihud_modify <element|all> font [name]\n");
+				return false;
+			}
+		}
+		else if (param == "x" || param == "y" || param == "pos")
+		{
+			if (argc == 3)
+			{
+				Msg("%s: pos = (%d, %d)\n", name.c_str(), button.x, button.y);
+			}
+			else if (param == "pos")
+			{
+				if (argc != 5)
+				{
+					Msg("Usage: spt_ihud_modify <element|all> pos [<x> <y>]\n");
+					return false;
+				}
+				button.x = std::atoi(args.Arg(3));
+				button.y = std::atoi(args.Arg(4));
+			}
+			else
+			{
+				if (argc != 4)
+				{
+					Msg("Usage: spt_ihud_modify <element|all> <x|y> [value]\n");
+					return false;
+				}
+				int value = std::atoi(args.Arg(3));
+				if (param == "x")
+					button.x = value;
+				else
+					button.y = value;
+			}
+		}
+		else if (param == "width" || param == "height")
+		{
+			if (isAngles)
+			{
+				Msg("width and height for angles have no effect.\n");
+				return true;
+			}
+
+			if (argc == 3)
+			{
+				Msg("%s: %s = %d\n",
+				    name.c_str(),
+				    param.c_str(),
+				    param == "width" ? button.width : button.height);
+			}
+			else if (argc == 4)
+			{
+				int value = std::atoi(args.Arg(3));
+				if (param == "width")
+					button.width = value;
+				else
+					button.height = value;
+			}
+			else
+			{
+				Msg("Usage: spt_ihud_modify <element|all> <width|height> [value]\n");
+				return false;
+			}
+		}
+		else if (param == "background" || param == "highlight" || param == "textcolor"
+		         || param == "texthighlight")
+		{
+			if (param == "texthighlight" && isAngles)
+			{
+				Msg("angles texthighlight has no effect\n");
+				return true;
+			}
+
+			Color& elementColor = (param == "background")  ? button.background
+			                      : (param == "highlight") ? button.highlight
+			                      : (param == "textcolor") ? button.textcolor
+			                                               : button.texthighlight;
+
+			if (argc == 3)
+			{
+				Msg("%s: %s = %s\n", name.c_str(), param.c_str(), ColorToString(elementColor).c_str());
+			}
+			else if (argc == 4)
+			{
+				elementColor = StringToColor(args.Arg(3));
+			}
+			else
+			{
+				Msg("Usage: spt_ihud_modify <element|all> <background|highlight|textcolor|texthighlight> [color]\n");
+				return false;
+			}
+		}
+		else
+		{
+			Msg("Invalid arguments %s.\n"
+			    "Params: enabled, text, font, x, y, pos, width, height, background, highlight, textcolor, texthighlight.\n",
+			    param.c_str());
+			return false;
+		}
+		return true;
+	};
+
+	std::string name = args.Arg(1);
+	if (name == "all")
 	{
-		Msg(errorMsg);
+		for (auto& kv : spt_ihud.buttonSettings)
+		{
+			if (!commandAction(kv.first))
+				return;
+		}
+		commandAction("angles");
+	}
+	else if (spt_ihud.buttonSettings.contains(name))
+	{
+		commandAction(name);
+	}
+	else
+	{
+		Msg("Button %s does not exist!\n", name.c_str());
 	}
 }
 
 CON_COMMAND_AUTOCOMPLETE(y_spt_ihud_preset,
-                         "Load ihud preset.\nValid options: normal, normal_mouse, tas.",
+                         "Load ihud preset.\n"
+                         "Valid options: normal, normal_mouse, tas.",
                          0,
                          ({"normal", "normal_mouse", "tas"}))
 {
 	if (args.ArgC() != 2)
 	{
-		Msg("Usage: spt_ihud_preset <preset>\nPresets: normal, normal_mouse, tas.\n");
+		Msg("Usage: spt_ihud_preset <preset>\n"
+		    "Presets: normal, normal_mouse, tas.\n");
 	}
 	const char* preset = args.Arg(1);
 	if (std::strcmp(preset, "normal") == 0)
@@ -798,6 +1042,29 @@ void InputHud::CreateMove(uintptr_t pCmd)
 {
 	auto cmd = reinterpret_cast<CUserCmd*>(pCmd);
 	spt_ihud.SetInputInfo(cmd->buttons, Vector(cmd->sidemove, cmd->forwardmove, cmd->upmove));
+}
+
+std::string InputHud::Button::ToString() const
+{
+	std::stringstream ss;
+
+	ss << "enabled: " << (enabled ? "true" : "false") << "\n";
+
+	std::string textStr(text.begin(), text.end());
+	ss << "text: " << textStr << "\n";
+
+	ss << "pos: (" << x << ", " << y << ")\n";
+	ss << "width: " << width << "\n";
+	ss << "height: " << height << "\n";
+
+	ss << "font: " << font << "\n";
+
+	ss << "background: " << ColorToString(background) << "\n";
+	ss << "highlight: " << ColorToString(highlight) << "\n";
+	ss << "textcolor: " << ColorToString(textcolor) << "\n";
+	ss << "texthighlight: " << ColorToString(texthighlight) << "\n";
+
+	return ss.str();
 }
 
 #endif
