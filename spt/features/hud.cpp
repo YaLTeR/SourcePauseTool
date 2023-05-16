@@ -48,7 +48,7 @@ Color StringToColor(const std::string& color)
 std::string ColorToString(Color color)
 {
 	char hexString[9];
-	std::snprintf(hexString, sizeof(hexString), "#%02X%02X%02X%02X", color.r(), color.g(), color.b(), color.a());
+	std::snprintf(hexString, sizeof(hexString), "%02X%02X%02X%02X", color.r(), color.g(), color.b(), color.a());
 	return std::string(hexString);
 }
 
@@ -59,7 +59,7 @@ CON_COMMAND(spt_hud_group,
             "    spt_hud_group <group name|all> add <HUD element> [args]\n"
             "    spt_hud_group <group name|all> remove <index>\n"
             "Display: spt_hud_group <group name|all> <show|hide|toggle>\n"
-            "Attributes: spt_hud_group <group name|all> <x|y|pos|font|textcolor> [value]")
+            "Attributes: spt_hud_group <group name|all> <x|y|pos|font|textcolor|background> [value]")
 #else
 static int HudGroupCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 {
@@ -70,8 +70,9 @@ static int HudGroupCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 
 	std::istringstream iss(base);
 	std::vector<std::string> args{std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{}};
-
-	switch (args.size())
+	
+	int argc = args.size();
+	switch (argc)
 	{
 	case 0:
 		return 0;
@@ -93,6 +94,7 @@ static int HudGroupCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 			                                             {
 			                                                 "add",
 			                                                 "remove",
+			                                                 "edit",
 			                                                 "show",
 			                                                 "hide",
 			                                                 "toggle",
@@ -101,14 +103,16 @@ static int HudGroupCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 			                                                 "pos",
 			                                                 "font",
 			                                                 "textcolor",
+			                                                 "background",
 			                                             },
 			                                             false,
 			                                             commands);
 		return 0;
 	}
 	case 3:
+	case 4:
 	{
-		if (args[2] == "add")
+		if (args[2] == "add" || (argc == 4 && args [2] == "edit"))
 		{
 			std::vector<std::string> suggestions;
 			for (const auto& group : spt_hud.hudCallbacks)
@@ -119,6 +123,7 @@ static int HudGroupCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 		}
 		return 0;
 	}
+
 	default:
 		return 0;
 	}
@@ -129,8 +134,9 @@ CON_COMMAND_F_COMPLETION(spt_hud_group,
                          "HUD element:\n"
                          "    spt_hud_group <group name|all> add <HUD element> [args]\n"
                          "    spt_hud_group <group name|all> remove <index>\n"
+                         "    spt_hud_group <group name|all> edit <index> <HUD element> [args]\n"
                          "Display: spt_hud_group <group name|all> <show|hide|toggle>\n"
-                         "Attributes: spt_hud_group <group name|all> <x|y|pos|font|textcolor> [value]",
+                         "Attributes: spt_hud_group <group name|all> <x|y|pos|font|textcolor|background> [value]",
                          0,
                          HudGroupCompletionFunc)
 #endif
@@ -189,6 +195,27 @@ CON_COMMAND_F_COMPLETION(spt_hud_group,
 				return false;
 			}
 			group.callbacks.erase(group.callbacks.begin() + index);
+		}
+		else if (param == "edit")
+		{
+			if (argc != 5 && argc != 6)
+			{
+				Msg("spt_hud_group <group name|all> edit <index> <HUD element> [args]\n");
+				return false;
+			}
+			int index = std::atoi(args.Arg(3));
+			if (index < 0 || (unsigned)index >= group.callbacks.size())
+			{
+				Msg("Invalid HUD element index.\n");
+				return false;
+			}
+			std::string element = args.Arg(4);
+			if (!spt_hud.hudCallbacks.contains(element))
+			{
+				Msg("%s is not a HUD element.\n", element.c_str());
+				return false;
+			}
+			group.callbacks[index] = {element, argc == 6 ? args.Arg(5) : ""};
 		}
 		else if (param == "show")
 		{
@@ -262,26 +289,27 @@ CON_COMMAND_F_COMPLETION(spt_hud_group,
 				return false;
 			}
 		}
-		else if (param == "textcolor")
+		else if (param == "textcolor" || param == "background")
 		{
+			Color& elementColor = (param == "textcolor") ? group.textcolor : group.background;
 			if (argc == 3)
 			{
-				Msg("%s: %s = %s", name.c_str(), param.c_str(), ColorToString(group.textcolor).c_str());
+				Msg("%s: %s = %s\n", name.c_str(), param.c_str(), ColorToString(elementColor).c_str());
 			}
 			else if (argc == 4)
 			{
-				group.textcolor = StringToColor(args.Arg(3));
+				elementColor = StringToColor(args.Arg(3));
 			}
 			else
 			{
-				Msg("Usage: spt_hud_group <group name|all> textcolor [color]\n");
+				Msg("Usage: spt_hud_group <group name|all> <textcolor|background> [color]\n");
 				return false;
 			}
 		}
 		else
 		{
 			Msg("Invalid argument %s.\n"
-			    "Params: add, remove, show, hide, toggle, x, y, pos, font, textcolor.\n",
+			    "Params: add, remove, show, hide, toggle, x, y, pos, font, textcolor, background.\n",
 			    param.c_str());
 			return false;
 		}
@@ -322,7 +350,7 @@ CON_COMMAND(spt_hud_group_add, "Add a HUD group. Usage: spt_hud_group_add <group
 	}
 	else if (spt_hud.hudUserGroups.contains(name))
 	{
-		Msg("Group %s already exist!", name.c_str());
+		Msg("Group %s already exist!\n", name.c_str());
 	}
 	else
 	{
@@ -354,7 +382,7 @@ CON_COMMAND_F_COMPLETION(spt_hud_group_remove,
 {
 	if (args.ArgC() != 2)
 	{
-		Msg("Usage: spt_hud_group_remove <group name | all>\n");
+		Msg("Usage: spt_hud_group_remove <group name|all>\n");
 		return;
 	}
 
@@ -472,6 +500,18 @@ bool HUDFeature::AddHudDefaultGroup(HudCallback callback)
 void HUDFeature::vDrawTopHudElement(Color color, const wchar* format, va_list args)
 {
 	const wchar* text = FormatTempString(format, args);
+
+	if (!drawText)
+	{
+#ifndef BMS
+		int tw, th;
+		interfaces::surface->GetTextSize(font, text, tw, th);
+		if (tw > textWidth)
+			textWidth = tw;
+		textHeight += th + 2;
+#endif
+		return;
+	}
 
 	CALL(DrawSetTextFont, font);
 	CALL(DrawSetTextColor, color.r(), color.g(), color.b(), color.a());
@@ -637,6 +677,7 @@ void HUDFeature::DrawDefaultHUD()
 	try
 	{
 		// Reset top HUD stuff
+		drawText = true;
 		hudTextColor = Color(255, 255, 255, 255);
 		topVertIndex = 0;
 		topFontTall = CALL(GetFontTall, font);
@@ -708,6 +749,31 @@ void HUDFeature::DrawHUD(bool overlay)
 				topFontTall = CALL(GetFontTall, group.font);
 				font = group.font;
 
+#ifndef BMS
+				// Getting the text width
+				if (group.background.a())
+				{
+					textWidth = 0;
+					textHeight = 0;
+					drawText = false;
+					for (const auto& callback : group.callbacks)
+					{
+						hudCallbacks[callback.name].draw(callback.args);
+					}
+
+					interfaces::surface->DrawSetColor(group.background.r(),
+					                                  group.background.g(),
+					                                  group.background.b(),
+					                                  group.background.a());
+					interfaces::surface->DrawFilledRect(topX - 2,
+					                                    topY,
+					                                    topX + textWidth + 2,
+					                                    topY + textHeight);
+				}
+#endif
+
+				// Draw HUD
+				drawText = true;
 				for (const auto& callback : group.callbacks)
 				{
 					hudCallbacks[callback.name].draw(callback.args);
@@ -762,7 +828,7 @@ HudCallback::HudCallback(std::function<void(std::string)> drawable, std::functio
 {
 }
 
-HudUserGroup::HudUserGroup() : x(0), y(0), shouldDraw(true), textcolor(255, 255, 255, 255)
+HudUserGroup::HudUserGroup() : x(0), y(0), shouldDraw(true), textcolor(255, 255, 255, 255), background(0, 0, 0, 0)
 {
 	if (!spt_hud.GetFont(FONT_DefaultFixedOutline, font))
 	{
@@ -788,6 +854,7 @@ std::string HudUserGroup::ToString() const
 	ss << "font: " << fontName << "\n";
 
 	ss << "textcolor: " << ColorToString(textcolor) << "\n";
+	ss << "background: " << ColorToString(background) << "\n";
 
 	ss << "HUD elements:\n";
 
