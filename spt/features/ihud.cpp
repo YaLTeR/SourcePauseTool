@@ -87,7 +87,7 @@ private:
 	void DrawButton(Button button);
 	void GetCurrentSize(int& x, int& y);
 
-	IMatSystemSurface* surface;
+	IMatSystemSurface* surface = nullptr;
 
 	int xOffset = 0;
 	int yOffset = 0;

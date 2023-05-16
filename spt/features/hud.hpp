@@ -46,6 +46,7 @@ struct HudUserGroup
 	bool shouldDraw;
 	vgui::HFont font;
 	Color textcolor;
+	Color background;
 	struct GruopCallback
 	{
 		std::string name;
@@ -85,6 +86,11 @@ private:
 	int topY = 0;
 	int topVertIndex = 0;
 	int topFontTall = 0;
+
+	int textWidth = 0;
+	int textHeight = 0;
+	bool drawText = false;
+
 	Color hudTextColor;
 	vgui::HFont font = 0;
 
