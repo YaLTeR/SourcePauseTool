@@ -26,17 +26,24 @@
 PlayerIOFeature spt_playerio;
 static void* cinput_thisptr = nullptr;
 
-ConVar y_spt_hud_accel("y_spt_hud_accel", "0", FCVAR_CHEAT, "Turns on the acceleration hud.\n");
+ConVar spt_hud_position("spt_hud_position",
+                        "0",
+                        FCVAR_CHEAT,
+                        "Turns on the position hud.\n"
+                        "=1: eye position\n"
+                        ">1: player position with more precision.");
+ConVar spt_hud_angles("spt_hud_angles", "0", FCVAR_CHEAT, "Turns on the angles hud with more precision.");
+ConVar y_spt_hud_accel("y_spt_hud_accel", "0", FCVAR_CHEAT, "Turns on the acceleration hud.");
 ConVar y_spt_hud_ag_sg_tester("y_spt_hud_ag_sg_tester",
                               "0",
                               FCVAR_CHEAT,
-                              "Tests if angle glitch will save glitch you.\n");
-ConVar y_spt_hud_flags("y_spt_hud_flags", "0", FCVAR_CHEAT, "Turns on the flags hud.\n");
-ConVar y_spt_hud_moveflags("y_spt_hud_moveflags", "0", FCVAR_CHEAT, "Turns on the move type hud.\n");
-ConVar y_spt_hud_movecollideflags("y_spt_hud_movecollideflags", "0", FCVAR_CHEAT, "Turns on the move collide hud.\n");
-ConVar y_spt_hud_collisionflags("y_spt_hud_collisionflags", "0", FCVAR_CHEAT, "Turns on the collision group hud.\n");
-ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement vars HUD.\n");
-ConVar y_spt_hud_velocity("y_spt_hud_velocity", "0", FCVAR_CHEAT, "Turns on the velocity hud.\n");
+                              "Tests if angle glitch will save glitch you.");
+ConVar y_spt_hud_flags("y_spt_hud_flags", "0", FCVAR_CHEAT, "Turns on the flags hud.");
+ConVar y_spt_hud_moveflags("y_spt_hud_moveflags", "0", FCVAR_CHEAT, "Turns on the move type hud.");
+ConVar y_spt_hud_movecollideflags("y_spt_hud_movecollideflags", "0", FCVAR_CHEAT, "Turns on the move collide hud.");
+ConVar y_spt_hud_collisionflags("y_spt_hud_collisionflags", "0", FCVAR_CHEAT, "Turns on the collision group hud.");
+ConVar y_spt_hud_vars("y_spt_hud_vars", "0", FCVAR_CHEAT, "Turns on the movement vars HUD.");
+ConVar y_spt_hud_velocity("y_spt_hud_velocity", "0", FCVAR_CHEAT, "Turns on the velocity hud.");
 ConVar y_spt_hud_velocity_angles("y_spt_hud_velocity_angles", "0", FCVAR_CHEAT, "Display velocity Euler angles.");
 
 extern ConVar tas_force_airaccelerate;
@@ -898,15 +905,55 @@ void PlayerIOFeature::LoadFeature()
 		}
 
 		AddHudCallback(
-		    "velocity",
-		    [this](std::string)
+		    "position",
+		    [this](std::string args)
 		    {
+			    int mode = (args == "") ? spt_hud_position.GetInt() : std::stoi(args);
+			    Vector pos = (mode == 1) ? m_vecAbsOrigin.GetValue() + m_vecViewOffset.GetValue()
+			                             : m_vecAbsOrigin.GetValue();
+			    int precision = (mode == 1) ? 2 : mode;
+
+			    spt_hud.DrawTopHudElement(L"pos: %.*f %.*f %.*f",
+			                              precision,
+			                              pos.x,
+			                              precision,
+			                              pos.y,
+			                              precision,
+			                              pos.z);
+		    },
+		    spt_hud_position);
+
+		AddHudCallback(
+		    "angles",
+		    [this](std::string args)
+		    {
+			    int mode = (args == "") ? spt_hud_angles.GetInt() : std::stoi(args);
+			    QAngle ang = utils::GetPlayerEyeAngles();
+			    int precision = (mode < 2) ? 2 : mode;
+
+			    spt_hud.DrawTopHudElement(L"ang: %.*f %.*f %.*f",
+			                              precision,
+			                              ang.x,
+			                              precision,
+			                              ang.y,
+			                              precision,
+			                              ang.z);
+		    },
+		    spt_hud_angles);
+
+		AddHudCallback(
+		    "velocity",
+		    [this](std::string args)
+		    {
+			    int mode = (args == "") ? y_spt_hud_velocity.GetInt() : std::stoi(args);
 			    Vector currentVel = GetPlayerVelocity();
-			    spt_hud.DrawTopHudElement(L"vel(xyz): %.3f %.3f %.3f",
-			                              currentVel.x,
-			                              currentVel.y,
-			                              currentVel.z);
-			    spt_hud.DrawTopHudElement(L"vel(xy): %.3f", currentVel.Length2D());
+			    if (mode != 2)
+				    spt_hud.DrawTopHudElement(L"vel(xyz): %.3f %.3f %.3f",
+				                              currentVel.x,
+				                              currentVel.y,
+				                              currentVel.z);
+			    if (mode != 3)
+				    spt_hud.DrawTopHudElement(L"vel(xy): %.3f", currentVel.Length2D());
 		    },
 		    y_spt_hud_velocity);
 
