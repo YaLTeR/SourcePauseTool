@@ -1,7 +1,8 @@
 #include "stdafx.hpp"
 #include "..\feature.hpp"
-#include "generic.hpp"
+#include "..\generic.hpp"
 #include "signals.hpp"
+
 #ifdef BMS
 ConVar y_spt_fast_loads(
     "y_spt_fast_loads",

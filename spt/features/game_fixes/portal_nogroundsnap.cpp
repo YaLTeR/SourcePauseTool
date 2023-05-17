@@ -2,7 +2,7 @@
 
 #include "..\feature.hpp"
 #include "convar.hpp"
-#include "autojump.hpp"
+#include "..\autojump.hpp"
 #include "interfaces.hpp"
 #include "game_detection.hpp"
 
