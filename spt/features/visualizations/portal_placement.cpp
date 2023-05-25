@@ -574,30 +574,30 @@ void PortalPlacement::LoadFeature()
 
 			    if (res1 == PORTAL_PLACEMENT_FAIL_NO_SERVER)
 			    {
-				    spt_hud.DrawTopHudElement(L"Portal: No server player");
+				    spt_hud_feat.DrawTopHudElement(L"Portal: No server player");
 			    }
 			    else if (res1 == PORTAL_PLACEMENT_FAIL_NO_WEAPON)
 			    {
-				    spt_hud.DrawTopHudElement(L"Portal: No portalgun");
+				    spt_hud_feat.DrawTopHudElement(L"Portal: No portalgun");
 			    }
 			    else if (mode == 0 || mode == 1)
 			    {
-				    spt_hud.DrawColorTopHudElement(blueTextColor, L"Portal1: %d", res1 > 0.5f);
-				    spt_hud.DrawColorTopHudElement(orangeTextColor, L"Portal2: %d", res2 > 0.5f);
+				    spt_hud_feat.DrawColorTopHudElement(blueTextColor, L"Portal1: %d", res1 > 0.5f);
+				    spt_hud_feat.DrawColorTopHudElement(orangeTextColor, L"Portal2: %d", res2 > 0.5f);
 			    }
 			    else if (mode == 2)
 			    {
-				    spt_hud.DrawColorTopHudElement(blueTextColor,
+				    spt_hud_feat.DrawColorTopHudElement(blueTextColor,
 				                                   L"Portal1: %s",
 				                                   PlacementResultToString(spt_pp.p1));
-				    spt_hud.DrawColorTopHudElement(orangeTextColor,
+				    spt_hud_feat.DrawColorTopHudElement(orangeTextColor,
 				                                   L"Portal2: %s",
 				                                   PlacementResultToString(spt_pp.p2));
 			    }
 			    else
 			    {
-				    spt_hud.DrawColorTopHudElement(blueTextColor, L"Portal1: %f", res1);
-				    spt_hud.DrawColorTopHudElement(orangeTextColor, L"Portal2: %f", res2);
+				    spt_hud_feat.DrawColorTopHudElement(blueTextColor, L"Portal1: %f", res1);
+				    spt_hud_feat.DrawColorTopHudElement(orangeTextColor, L"Portal2: %f", res2);
 			    }
 		    },
 		    y_spt_hud_portal_placement);

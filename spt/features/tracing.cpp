@@ -551,7 +551,7 @@ void Tracing::LoadFeature()
 			    trace_t tr;
 			    Strafe::Trace(tr, v, v + Vector(1, 1, 1));
 			    int oob = interfaces::engineTraceClient->PointOutsideWorld(v) && !tr.startsolid;
-			    spt_hud.DrawTopHudElement(L"oob: %d", oob);
+			    spt_hud_feat.DrawTopHudElement(L"oob: %d", oob);
 		    },
 		    y_spt_hud_oob);
 	}

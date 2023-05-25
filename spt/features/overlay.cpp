@@ -127,7 +127,7 @@ void Overlay::LoadFeature()
 	InitConcommandBase(_y_spt_overlay_no_roll);
 
 #ifdef SPT_HUD_ENABLED
-	bool result = spt_hud.AddHudDefaultGroup(HudCallback(
+	bool result = spt_hud_feat.AddHudDefaultGroup(HudCallback(
 	    std::bind(&Overlay::DrawCrosshair, this), []() { return true; }, true));
 
 	if (result)
@@ -151,7 +151,7 @@ IMPL_HOOK_THISCALL(Overlay,
 {
 #ifdef SPT_HUD_TEXTONLY
 
-	spt_hud.renderView = cameraView;
+	spt_hud_feat.renderView = cameraView;
 	spt_overlay.ORIG_CViewRender__RenderView(thisptr, cameraView, nClearFlags, whatToDraw);
 
 #else
@@ -209,7 +209,7 @@ IMPL_HOOK_THISCALL(Overlay,
 
 IMPL_HOOK_THISCALL(Overlay, void, CViewRender__RenderView_4044, void*, CViewSetup* cameraView, bool drawViewmodel)
 {
-	spt_hud.renderView = cameraView;
+	spt_hud_feat.renderView = cameraView;
 	spt_overlay.ORIG_CViewRender__RenderView_4044(thisptr, cameraView, drawViewmodel);
 }
 
@@ -240,8 +240,8 @@ void Overlay::DrawCrosshair()
 	}
 
 	interfaces::surface->DrawSetColor(r, g, b, a);
-	int x = spt_hud.renderView->x + spt_hud.renderView->width / 2;
-	int y = spt_hud.renderView->y + spt_hud.renderView->height / 2;
+	int x = spt_hud_feat.renderView->x + spt_hud_feat.renderView->width / 2;
+	int y = spt_hud_feat.renderView->y + spt_hud_feat.renderView->height / 2;
 	int width = _y_spt_overlay_crosshair_size.GetInt();
 	int thickness = _y_spt_overlay_crosshair_thickness.GetInt();
 

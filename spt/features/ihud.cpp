@@ -575,7 +575,7 @@ void InputHud::InitHooks()
 
 bool InputHud::ShouldLoadFeature()
 {
-	return spt_hud.ShouldLoadFeature();
+	return spt_hud_feat.ShouldLoadFeature();
 }
 
 void InputHud::LoadFeature()
@@ -585,7 +585,7 @@ void InputHud::LoadFeature()
 	if (CreateMoveSignal.Works)
 		CreateMoveSignal.Connect(this, &InputHud::CreateMove);
 
-	bool result = spt_hud.AddHudDefaultGroup(HudCallback(
+	bool result = spt_hud_feat.AddHudDefaultGroup(HudCallback(
 	    std::bind(&InputHud::DrawInputHud, this), []() { return y_spt_ihud.GetBool(); }, false));
 	if (result)
 	{
@@ -804,7 +804,7 @@ void InputHud::DrawInputHud()
 {
 	vgui::HFont anglesSettingFont;
 
-	if (!spt_hud.GetFont(anglesSetting.font, anglesSettingFont))
+	if (!spt_hud_feat.GetFont(anglesSetting.font, anglesSettingFont))
 	{
 		return;
 	}
@@ -821,8 +821,8 @@ void InputHud::DrawInputHud()
 	// get offset from percentage
 	int ihudSizeX, ihudSizeY;
 	GetCurrentSize(ihudSizeX, ihudSizeY);
-	xOffset = (spt_hud.renderView->width - ihudSizeX) * y_spt_ihud_x.GetFloat() * 0.01f;
-	yOffset = (spt_hud.renderView->height - ihudSizeY) * y_spt_ihud_y.GetFloat() * 0.01f;
+	xOffset = (spt_hud_feat.renderView->width - ihudSizeX) * y_spt_ihud_x.GetFloat() * 0.01f;
+	yOffset = (spt_hud_feat.renderView->height - ihudSizeY) * y_spt_ihud_y.GetFloat() * 0.01f;
 
 	gridSize = y_spt_ihud_grid_size.GetInt();
 	padding = y_spt_ihud_grid_padding.GetInt();
@@ -990,7 +990,7 @@ void InputHud::DrawRectAndCenterTxt(Color buttonColor,
 {
 	vgui::HFont rectFont;
 
-	if (!spt_hud.GetFont(fontName, rectFont))
+	if (!spt_hud_feat.GetFont(fontName, rectFont))
 	{
 		return;
 	}

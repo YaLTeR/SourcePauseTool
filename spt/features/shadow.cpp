@@ -79,8 +79,8 @@ void ShadowPosition::LoadFeature()
 		    {
 			    const Vector& pos = PlayerHavokPos;
 			    const QAngle& ang = PlayerHavokAngles;
-			    spt_hud.DrawTopHudElement(L"shadow pos (xyz): %.3f %.3f %.3f", pos.x, pos.y, pos.z);
-			    spt_hud.DrawTopHudElement(L"shadow ang (pyr): %.3f %.3f %.3f", ang.x, ang.y, ang.z);
+			    spt_hud_feat.DrawTopHudElement(L"shadow pos (xyz): %.3f %.3f %.3f", pos.x, pos.y, pos.z);
+			    spt_hud_feat.DrawTopHudElement(L"shadow ang (pyr): %.3f %.3f %.3f", ang.x, ang.y, ang.z);
 		    },
 		    y_spt_hud_shadow_info);
 #endif

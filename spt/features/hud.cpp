@@ -15,7 +15,7 @@
 
 extern ConVar _y_spt_overlay;
 
-HUDFeature spt_hud;
+HUDFeature spt_hud_feat;
 
 ConVar y_spt_hud("y_spt_hud", "1", 0, "When set to 1, displays SPT HUD.");
 ConVar y_spt_hud_left("y_spt_hud_left", "0", FCVAR_CHEAT, "When set to 1, displays SPT HUD on the left.");
@@ -70,7 +70,7 @@ static int HudGroupCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 
 	std::istringstream iss(base);
 	std::vector<std::string> args{std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{}};
-	
+
 	int argc = args.size();
 	switch (argc)
 	{
@@ -79,7 +79,7 @@ static int HudGroupCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 	case 1:
 	{
 		std::vector<std::string> suggestions;
-		for (const auto& group : spt_hud.hudUserGroups)
+		for (const auto& group : spt_hud_feat.hudUserGroups)
 		{
 			suggestions.push_back(group.first);
 		}
@@ -88,7 +88,7 @@ static int HudGroupCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 	}
 	case 2:
 	{
-		if (args[1] == "all" || spt_hud.hudUserGroups.contains(args[1]))
+		if (args[1] == "all" || spt_hud_feat.hudUserGroups.contains(args[1]))
 			return AutoCompleteList::AutoCompleteSuggest(base,
 			                                             incomplete,
 			                                             {
@@ -112,10 +112,10 @@ static int HudGroupCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 	case 3:
 	case 4:
 	{
-		if (args[2] == "add" || (argc == 4 && args [2] == "edit"))
+		if (args[2] == "add" || (argc == 4 && args[2] == "edit"))
 		{
 			std::vector<std::string> suggestions;
-			for (const auto& group : spt_hud.hudCallbacks)
+			for (const auto& group : spt_hud_feat.hudCallbacks)
 			{
 				suggestions.push_back(group.first);
 			}
@@ -143,7 +143,7 @@ CON_COMMAND_F_COMPLETION(spt_hud_group,
 {
 	if (args.ArgC() < 2)
 	{
-		for (const auto& group : spt_hud.hudUserGroups)
+		for (const auto& group : spt_hud_feat.hudUserGroups)
 		{
 			Msg("%s\n", group.first.c_str());
 		}
@@ -152,7 +152,7 @@ CON_COMMAND_F_COMPLETION(spt_hud_group,
 
 	auto commandAction = [args](std::string name) -> bool
 	{
-		HudUserGroup& group = spt_hud.hudUserGroups[name];
+		HudUserGroup& group = spt_hud_feat.hudUserGroups[name];
 
 		int argc = args.ArgC();
 		if (argc == 2)
@@ -174,7 +174,7 @@ CON_COMMAND_F_COMPLETION(spt_hud_group,
 			}
 
 			std::string element = args.Arg(3);
-			if (!spt_hud.hudCallbacks.contains(element))
+			if (!spt_hud_feat.hudCallbacks.contains(element))
 			{
 				Msg("%s is not a HUD element.\n", element.c_str());
 				return false;
@@ -210,7 +210,7 @@ CON_COMMAND_F_COMPLETION(spt_hud_group,
 				return false;
 			}
 			std::string element = args.Arg(4);
-			if (!spt_hud.hudCallbacks.contains(element))
+			if (!spt_hud_feat.hudCallbacks.contains(element))
 			{
 				Msg("%s is not a HUD element.\n", element.c_str());
 				return false;
@@ -265,7 +265,7 @@ CON_COMMAND_F_COMPLETION(spt_hud_group,
 			if (argc == 3)
 			{
 				std::string fontName = "Invalid";
-				for (const auto& kv : spt_hud.fonts)
+				for (const auto& kv : spt_hud_feat.fonts)
 				{
 					if (kv.second == group.font)
 					{
@@ -277,7 +277,7 @@ CON_COMMAND_F_COMPLETION(spt_hud_group,
 			}
 			else if (argc == 4)
 			{
-				if (!spt_hud.GetFont(args.Arg(3), group.font))
+				if (!spt_hud_feat.GetFont(args.Arg(3), group.font))
 				{
 					Msg("Invalid font name.\n");
 					return false;
@@ -319,13 +319,13 @@ CON_COMMAND_F_COMPLETION(spt_hud_group,
 	std::string name = args.Arg(1);
 	if (name == "all")
 	{
-		for (auto& kv : spt_hud.hudUserGroups)
+		for (auto& kv : spt_hud_feat.hudUserGroups)
 		{
 			if (!commandAction(kv.first))
 				return;
 		}
 	}
-	else if (spt_hud.hudUserGroups.contains(name))
+	else if (spt_hud_feat.hudUserGroups.contains(name))
 	{
 		commandAction(name);
 	}
@@ -348,13 +348,13 @@ CON_COMMAND(spt_hud_group_add, "Add a HUD group. Usage: spt_hud_group_add <group
 	{
 		Msg("\"all\" cannot be a group name!\n");
 	}
-	else if (spt_hud.hudUserGroups.contains(name))
+	else if (spt_hud_feat.hudUserGroups.contains(name))
 	{
 		Msg("Group %s already exist!\n", name.c_str());
 	}
 	else
 	{
-		spt_hud.hudUserGroups[name] = HudUserGroup();
+		spt_hud_feat.hudUserGroups[name] = HudUserGroup();
 	}
 }
 
@@ -364,7 +364,7 @@ CON_COMMAND(spt_hud_group_remove, "Remove HUD group(s). Usage: spt_hud_group_rem
 static int HudGroupRemoveCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 {
 	std::vector<std::string> suggestions;
-	for (const auto& group : spt_hud.hudUserGroups)
+	for (const auto& group : spt_hud_feat.hudUserGroups)
 	{
 		suggestions.push_back(group.first);
 	}
@@ -389,11 +389,11 @@ CON_COMMAND_F_COMPLETION(spt_hud_group_remove,
 	std::string name = args.Arg(1);
 	if (name == "all")
 	{
-		spt_hud.hudUserGroups.clear();
+		spt_hud_feat.hudUserGroups.clear();
 	}
-	else if (spt_hud.hudUserGroups.contains(name))
+	else if (spt_hud_feat.hudUserGroups.contains(name))
 	{
-		spt_hud.hudUserGroups.erase(name);
+		spt_hud_feat.hudUserGroups.erase(name);
 	}
 	else
 	{
@@ -647,7 +647,7 @@ void HUDFeature::LoadFeature()
 
 	cl_showpos = g_pCVar->FindVar("cl_showpos");
 	cl_showfps = g_pCVar->FindVar("cl_showfps");
-	bool result = spt_hud.AddHudDefaultGroup(HudCallback(
+	bool result = spt_hud_feat.AddHudDefaultGroup(HudCallback(
 	    std::bind(&HUDFeature::DrawDefaultHUD, this), []() { return y_spt_hud.GetBool(); }, false));
 	if (result)
 	{
@@ -793,7 +793,7 @@ void HUDFeature::DrawHUD(bool overlay)
 
 IMPL_HOOK_THISCALL(HUDFeature, void, CEngineVGui__Paint, void*, PaintMode_t mode)
 {
-	if (spt_hud.loadingSuccessful && mode & PAINT_INGAMEPANELS)
+	if (spt_hud_feat.loadingSuccessful && mode & PAINT_INGAMEPANELS)
 	{
 #ifdef SPT_OVERLAY_ENABLED
 		/*
@@ -805,20 +805,20 @@ IMPL_HOOK_THISCALL(HUDFeature, void, CEngineVGui__Paint, void*, PaintMode_t mode
 		* both views.
 		*/
 		Assert(spt_overlay.mainView);
-		spt_hud.renderView = spt_overlay.mainView;
-		spt_hud.DrawHUD(false);
+		spt_hud_feat.renderView = spt_overlay.mainView;
+		spt_hud_feat.DrawHUD(false);
 		if (_y_spt_overlay.GetBool())
 		{
 			Assert(spt_overlay.overlayView);
-			spt_hud.renderView = spt_overlay.overlayView;
-			spt_hud.DrawHUD(true);
+			spt_hud_feat.renderView = spt_overlay.overlayView;
+			spt_hud_feat.DrawHUD(true);
 		}
 #else
-		Assert(spt_hud.renderView);
-		spt_hud.DrawHUD(false);
+		Assert(spt_hud_feat.renderView);
+		spt_hud_feat.DrawHUD(false);
 #endif
 	}
-	spt_hud.ORIG_CEngineVGui__Paint(thisptr, mode);
+	spt_hud_feat.ORIG_CEngineVGui__Paint(thisptr, mode);
 }
 
 HudCallback::HudCallback() : drawInOverlay(false) {}
@@ -830,7 +830,7 @@ HudCallback::HudCallback(std::function<void(std::string)> drawable, std::functio
 
 HudUserGroup::HudUserGroup() : x(0), y(0), shouldDraw(true), textcolor(255, 255, 255, 255), background(0, 0, 0, 0)
 {
-	if (!spt_hud.GetFont(FONT_DefaultFixedOutline, font))
+	if (!spt_hud_feat.GetFont(FONT_DefaultFixedOutline, font))
 	{
 		font = 0;
 	}
@@ -843,7 +843,7 @@ std::string HudUserGroup::ToString() const
 	ss << "pos: (" << x << ", " << y << ")\n";
 
 	std::string fontName = "Invalid";
-	for (const auto& kv : spt_hud.fonts)
+	for (const auto& kv : spt_hud_feat.fonts)
 	{
 		if (kv.second == font)
 		{

@@ -63,7 +63,8 @@ void BoogFeature::BoogTick()
 
 bool BoogFeature::ShouldDrawBoog()
 {
-	bool rval = ticksLeftToDrawBoog > 0 && y_spt_hud_edgebug.GetBool() && interfaces::surface && spt_hud.renderView;
+	bool rval =
+	    ticksLeftToDrawBoog > 0 && y_spt_hud_edgebug.GetBool() && interfaces::surface && spt_hud_feat.renderView;
 
 	if (rval)
 	{
@@ -78,7 +79,7 @@ bool BoogFeature::ShouldDrawBoog()
 void BoogFeature::DrawBoog()
 {
 	auto surface = interfaces::surface;
-	auto renderView = spt_hud.renderView;
+	auto renderView = spt_hud_feat.renderView;
 
 	if (boogFont == 0)
 	{
@@ -117,7 +118,7 @@ void BoogFeature::DrawBoog()
 
 bool BoogFeature::ShouldLoadFeature()
 {
-	return spt_hud.ShouldLoadFeature() && spt_playerio.ShouldLoadFeature();
+	return spt_hud_feat.ShouldLoadFeature() && spt_playerio.ShouldLoadFeature();
 }
 
 void BoogFeature::InitHooks() {}
@@ -146,9 +147,9 @@ void BoogFeature::LoadFeature()
 
 	if (boogHooked)
 	{
-		bool result = spt_hud.AddHudDefaultGroup(HudCallback(std::bind(&BoogFeature::DrawBoog, this),
-		                                                     std::bind(&BoogFeature::ShouldDrawBoog, this),
-		                                                     false));
+		bool result = spt_hud_feat.AddHudDefaultGroup(HudCallback(std::bind(&BoogFeature::DrawBoog, this),
+		                                                          std::bind(&BoogFeature::ShouldDrawBoog, this),
+		                                                          false));
 		if (result)
 		{
 			InitConcommandBase(y_spt_hud_edgebug);

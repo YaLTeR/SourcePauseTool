@@ -181,9 +181,9 @@ void Feature::InitConcommandBase(ConCommandBase& convar)
 bool Feature::AddHudCallback(const char* key, std::function<void(std::string)> func, ConVar& convar)
 {
 #ifdef SPT_HUD_ENABLED
-	bool result = spt_hud.AddHudCallback(key,
-	                                     HudCallback(
-	                                         func, [&convar]() { return convar.GetBool(); }, false));
+	bool result = spt_hud_feat.AddHudCallback(key,
+	                                          HudCallback(
+	                                              func, [&convar]() { return convar.GetBool(); }, false));
 
 	if (result)
 	{

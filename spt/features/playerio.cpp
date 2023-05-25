@@ -828,11 +828,11 @@ void DrawFlagsHud(const wchar* hudName,
 		{
 			if (mutuallyExclusiveFlags && (flags & mask) == u)
 			{
-				spt_hud.DrawTopHudElement(L"%s: %s", hudName, nameArray[u]);
+				spt_hud_feat.DrawTopHudElement(L"%s: %s", hudName, nameArray[u]);
 			}
 			else if (!mutuallyExclusiveFlags && (filter & (1 << u)))
 			{
-				spt_hud.DrawTopHudElement(L"%s: %d", nameArray[u], (flags & (1 << u)) != 0);
+				spt_hud_feat.DrawTopHudElement(L"%s: %d", nameArray[u], (flags & (1 << u)) != 0);
 			}
 		}
 	}
@@ -871,15 +871,15 @@ void PlayerIOFeature::LoadFeature()
 		    [this](std::string)
 		    {
 			    auto vars = GetMovementVars();
-			    spt_hud.DrawTopHudElement(L"accelerate: %.3f", vars.Accelerate);
-			    spt_hud.DrawTopHudElement(L"airaccelerate: %.3f", vars.Airaccelerate);
-			    spt_hud.DrawTopHudElement(L"ent friction: %.3f", vars.EntFriction);
-			    spt_hud.DrawTopHudElement(L"frametime: %.3f", vars.Frametime);
-			    spt_hud.DrawTopHudElement(L"friction %.3f", vars.Friction);
-			    spt_hud.DrawTopHudElement(L"maxspeed: %.3f", vars.Maxspeed);
-			    spt_hud.DrawTopHudElement(L"stopspeed: %.3f", vars.Stopspeed);
-			    spt_hud.DrawTopHudElement(L"wishspeed cap: %.3f", vars.WishspeedCap);
-			    spt_hud.DrawTopHudElement(L"onground: %d", (int)vars.OnGround);
+			    spt_hud_feat.DrawTopHudElement(L"accelerate: %.3f", vars.Accelerate);
+			    spt_hud_feat.DrawTopHudElement(L"airaccelerate: %.3f", vars.Airaccelerate);
+			    spt_hud_feat.DrawTopHudElement(L"ent friction: %.3f", vars.EntFriction);
+			    spt_hud_feat.DrawTopHudElement(L"frametime: %.3f", vars.Frametime);
+			    spt_hud_feat.DrawTopHudElement(L"friction %.3f", vars.Friction);
+			    spt_hud_feat.DrawTopHudElement(L"maxspeed: %.3f", vars.Maxspeed);
+			    spt_hud_feat.DrawTopHudElement(L"stopspeed: %.3f", vars.Stopspeed);
+			    spt_hud_feat.DrawTopHudElement(L"wishspeed cap: %.3f", vars.WishspeedCap);
+			    spt_hud_feat.DrawTopHudElement(L"onground: %d", (int)vars.OnGround);
 		    },
 		    y_spt_hud_vars);
 #endif
@@ -898,8 +898,11 @@ void PlayerIOFeature::LoadFeature()
 			    [this](std::string)
 			    {
 				    Vector accel = currentVelocity - previousVelocity;
-				    spt_hud.DrawTopHudElement(L"accel(xyz): %.3f %.3f %.3f", accel.x, accel.y, accel.z);
-				    spt_hud.DrawTopHudElement(L"accel(xy): %.3f", accel.Length2D());
+				    spt_hud_feat.DrawTopHudElement(L"accel(xyz): %.3f %.3f %.3f",
+				                                   accel.x,
+				                                   accel.y,
+				                                   accel.z);
+				    spt_hud_feat.DrawTopHudElement(L"accel(xy): %.3f", accel.Length2D());
 			    },
 			    y_spt_hud_accel);
 		}
@@ -913,13 +916,13 @@ void PlayerIOFeature::LoadFeature()
 			                             : m_vecAbsOrigin.GetValue();
 			    int precision = (mode == 1) ? 2 : mode;
 
-			    spt_hud.DrawTopHudElement(L"pos: %.*f %.*f %.*f",
-			                              precision,
-			                              pos.x,
-			                              precision,
-			                              pos.y,
-			                              precision,
-			                              pos.z);
+			    spt_hud_feat.DrawTopHudElement(L"pos: %.*f %.*f %.*f",
+			                                   precision,
+			                                   pos.x,
+			                                   precision,
+			                                   pos.y,
+			                                   precision,
+			                                   pos.z);
 		    },
 		    spt_hud_position);
 
@@ -931,13 +934,13 @@ void PlayerIOFeature::LoadFeature()
 			    QAngle ang = utils::GetPlayerEyeAngles();
 			    int precision = (mode < 2) ? 2 : mode;
 
-			    spt_hud.DrawTopHudElement(L"ang: %.*f %.*f %.*f",
-			                              precision,
-			                              ang.x,
-			                              precision,
-			                              ang.y,
-			                              precision,
-			                              ang.z);
+			    spt_hud_feat.DrawTopHudElement(L"ang: %.*f %.*f %.*f",
+			                                   precision,
+			                                   ang.x,
+			                                   precision,
+			                                   ang.y,
+			                                   precision,
+			                                   ang.z);
 		    },
 		    spt_hud_angles);
 
@@ -948,12 +951,12 @@ void PlayerIOFeature::LoadFeature()
 			    int mode = (args == "") ? y_spt_hud_velocity.GetInt() : std::stoi(args);
 			    Vector currentVel = GetPlayerVelocity();
 			    if (mode != 2)
-				    spt_hud.DrawTopHudElement(L"vel(xyz): %.3f %.3f %.3f",
-				                              currentVel.x,
-				                              currentVel.y,
-				                              currentVel.z);
+				    spt_hud_feat.DrawTopHudElement(L"vel(xyz): %.3f %.3f %.3f",
+				                                   currentVel.x,
+				                                   currentVel.y,
+				                                   currentVel.z);
 			    if (mode != 3)
-				    spt_hud.DrawTopHudElement(L"vel(xy): %.3f", currentVel.Length2D());
+				    spt_hud_feat.DrawTopHudElement(L"vel(xy): %.3f", currentVel.Length2D());
 		    },
 		    y_spt_hud_velocity);
 
@@ -964,7 +967,7 @@ void PlayerIOFeature::LoadFeature()
 			    Vector currentVel = GetPlayerVelocity();
 			    QAngle angles;
 			    VectorAngles(currentVel, Vector(0, 0, 1), angles);
-			    spt_hud.DrawTopHudElement(L"vel(p/y/r): %.3f %.3f %.3f", angles.x, angles.y, angles.z);
+			    spt_hud_feat.DrawTopHudElement(L"vel(p/y/r): %.3f %.3f %.3f", angles.x, angles.y, angles.z);
 		    },
 		    y_spt_hud_velocity_angles);
 
@@ -978,7 +981,7 @@ void PlayerIOFeature::LoadFeature()
 				    Vector v = spt_playerio.GetPlayerEyePos();
 				    QAngle q;
 				    std::wstring result = calculateWillAGSG(v, q);
-				    spt_hud.DrawTopHudElement(L"ag sg: %s", result.c_str());
+				    spt_hud_feat.DrawTopHudElement(L"ag sg: %s", result.c_str());
 			    },
 			    y_spt_hud_ag_sg_tester);
 		}

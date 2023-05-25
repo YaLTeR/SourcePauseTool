@@ -119,12 +119,12 @@ void SaveloadsFeature::LoadFeature()
 	    [this](std::string)
 	    {
 		    if (execute)
-			    spt_hud.DrawTopHudElement(L"SAVELOADS: %i / %i (%i left)",
-			                              startIndex,
-			                              endIndex,
-			                              endIndex - startIndex);
+			    spt_hud_feat.DrawTopHudElement(L"SAVELOADS: %i / %i (%i left)",
+			                                   startIndex,
+			                                   endIndex,
+			                                   endIndex - startIndex);
 		    else
-			    spt_hud.DrawTopHudElement(L"SAVELOADS: Not executing");
+			    spt_hud_feat.DrawTopHudElement(L"SAVELOADS: Not executing");
 	    },
 	    y_spt_hud_saveloads_showcurindex);
 #endif
