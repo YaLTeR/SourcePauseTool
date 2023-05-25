@@ -127,12 +127,12 @@ void MapOverlay::LoadMapFile(std::string filename, Vector offsets, bool ztest)
 	std::vector<dleaf_t> leaves;
 	if (header.version < 20)
 	{
-		leaves_v0.reserve(header.lumps[LUMP_LEAFS].filelen / sizeof(dleaf_version_0_t));
+		leaves_v0.resize(header.lumps[LUMP_LEAFS].filelen / sizeof(dleaf_version_0_t));
 		READ_BYTES(mapFile, (char*)leaves_v0.data(), header.lumps[LUMP_LEAFS].filelen);
 	}
 	else
 	{
-		leaves.reserve(header.lumps[LUMP_LEAFS].filelen / sizeof(dleaf_t));
+		leaves.resize(header.lumps[LUMP_LEAFS].filelen / sizeof(dleaf_t));
 		READ_BYTES(mapFile, (char*)leaves.data(), header.lumps[LUMP_LEAFS].filelen);
 	}
 
