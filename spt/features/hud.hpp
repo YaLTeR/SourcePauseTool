@@ -140,4 +140,4 @@ private:
 Color StringToColor(const std::string& color);
 std::string ColorToString(Color color);
 
-extern HUDFeature spt_hud;
+extern HUDFeature spt_hud_feat;

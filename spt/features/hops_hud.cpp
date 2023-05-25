@@ -440,7 +440,7 @@ static HopsHud spt_hops_hud;
 
 bool HopsHud::ShouldLoadFeature()
 {
-	return spt_hud.ShouldLoadFeature();
+	return spt_hud_feat.ShouldLoadFeature();
 }
 
 bool HopsHud::ShouldDraw()
@@ -472,7 +472,7 @@ void HopsHud::PrintStrafeCol(std::function<void(const ljstats::SegmentStats&, wc
 		}
 
 		// Leave space left for last line
-		if (y + fontTall * 2 > spt_hud.renderView->height)
+		if (y + fontTall * 2 > spt_hud_feat.renderView->height)
 		{
 			break;
 		}
@@ -488,7 +488,7 @@ void HopsHud::InitHooks() {}
 
 void HopsHud::LoadFeature()
 {
-	bool result = spt_hud.AddHudDefaultGroup(
+	bool result = spt_hud_feat.AddHudDefaultGroup(
 	    HudCallback(std::bind(&HopsHud::DrawHopHud, this), std::bind(&HopsHud::ShouldDraw, this), false));
 
 	if (result && OngroundSignal.Works && JumpSignal.Works)
@@ -528,7 +528,7 @@ void HopsHud::DrawHopHud()
 	swprintf_s(buffer, BUFFER_SIZE, fmt, value); \
 	DrawBuffer();
 
-	if (hopsFont == 0 && !spt_hud.GetFont(FONT_Trebuchet24, hopsFont))
+	if (hopsFont == 0 && !spt_hud_feat.GetFont(FONT_Trebuchet24, hopsFont))
 	{
 		return;
 	}
@@ -538,7 +538,7 @@ void HopsHud::DrawHopHud()
 	const Color white(255, 255, 255, 255);
 
 	auto surface = interfaces::surface;
-	auto renderView = spt_hud.renderView;
+	auto renderView = spt_hud_feat.renderView;
 
 	surface->DrawSetTextFont(hopsFont);
 	surface->DrawSetTextColor(white);

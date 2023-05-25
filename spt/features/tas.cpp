@@ -313,9 +313,9 @@ void TASFeature::LoadFeature()
 		    "script_progress",
 		    [this](std::string)
 		    {
-			    spt_hud.DrawTopHudElement(L"frame: %d / %d",
-			                              scripts::g_TASReader.GetCurrentTick(),
-			                              scripts::g_TASReader.GetCurrentScriptLength());
+			    spt_hud_feat.DrawTopHudElement(L"frame: %d / %d",
+			                                   scripts::g_TASReader.GetCurrentTick(),
+			                                   scripts::g_TASReader.GetCurrentScriptLength());
 		    },
 		    y_spt_hud_script_progress);
 #endif
