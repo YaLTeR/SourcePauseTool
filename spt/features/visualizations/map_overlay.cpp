@@ -178,9 +178,6 @@ void MapOverlay::LoadMapFile(std::string filename, Vector offsets, bool ztest)
 	// Build meshes
 	meshes.clear();
 
-	size_t maxVerts, maxIndices;
-	GetMaxMeshSize(maxVerts, maxIndices, false);
-
 	auto brushIndexIter = mapBrushesIndex.begin();
 	const auto brushIndexEnd = mapBrushesIndex.end();
 	while (brushIndexIter != brushIndexEnd)
@@ -188,8 +185,6 @@ void MapOverlay::LoadMapFile(std::string filename, Vector offsets, bool ztest)
 		meshes.push_back(spt_meshBuilder.CreateStaticMesh(
 		    [&](MeshBuilderDelegate& mb)
 		    {
-			    size_t verts = 0;
-			    size_t indices = 0;
 			    for (; brushIndexIter != brushIndexEnd; brushIndexIter++)
 			    {
 				    dbrush_t brush = brushes[*brushIndexIter];
@@ -217,18 +212,6 @@ void MapOverlay::LoadMapFile(std::string filename, Vector offsets, bool ztest)
 				    if (!poly)
 					    continue;
 
-				    for (int i = 0; i < poly->iPolygonCount; i++)
-				    {
-					    verts += (poly->pPolygons[i].iIndexCount - 2) * 3;
-				    }
-				    indices += poly->iLineCount * 2;
-
-				    if (verts >= maxVerts || indices >= maxIndices)
-				    {
-					    poly->Release();
-					    break;
-				    }
-
 				    if (offsets != Vector(0))
 				    {
 					    for (int i = 0; i < poly->iVertexCount; i++)
@@ -239,7 +222,11 @@ void MapOverlay::LoadMapFile(std::string filename, Vector offsets, bool ztest)
 
 				    ShapeColor color = isBox ? SC_BOX_BRUSH : SC_COMPLEX_BRUSH;
 				    color.zTestFaces = ztest;
-				    mb.AddCPolyhedron(poly, color);
+				    if (!mb.AddCPolyhedron(poly, color))
+				    {
+					    poly->Release();
+					    break;
+				    }
 				    poly->Release();
 			    }
 		    }));
