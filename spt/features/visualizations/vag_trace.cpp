@@ -46,8 +46,7 @@ static bool ShouldDrawForFreeExit()
 
 static matrix3x4_t tpRotateMat{{-1, 0, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, 0}}; // 180 rotation about z
 
-// tailLen, tailRad, tipLen, tipRad, numSubdivs
-#define ARROW_PARAMS 15, 1.5, 6, 3, 6
+#define ARROW_PARAMS (ArrowParams{6, 20.f, 1.5f})
 
 // visualizations for vertical angle glitches
 class VagTrace : public FeatureWrapper<VagTrace>

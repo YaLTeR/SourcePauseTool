@@ -64,6 +64,36 @@ struct SweptBoxColor
 	// clang-format on
 };
 
+struct ArrowParams
+{
+	// resolution (>=3)
+	int nCirclePoints;
+	// the length of the whole arrow
+	float arrowLength;
+	// the radius of the arrow base
+	float radius;
+	// must be between 0,1 exclusive; determines what portion of the arrow is made from the tip
+	float tipLengthPortion;
+	// a multiplier for the tip radius
+	float tipRadiusScale;
+
+	ArrowParams() = default;
+
+	ArrowParams(int nCirclePoints,
+	            float arrowLength,
+	            float radius,
+	            float tipLengthPortion = 0.3f,
+	            float tipRadiusScale = 2.f)
+	    : nCirclePoints(nCirclePoints)
+	    , arrowLength(arrowLength)
+	    , radius(radius)
+	    , tipLengthPortion(tipLengthPortion)
+	    , tipRadiusScale(tipRadiusScale)
+	{
+		AssertMsg(tipLengthPortion > 0 && tipLengthPortion < 1, "arrow will not be rendered");
+	}
+};
+
 // these macros can be used for ShapeColor & SweptBoxColor, e.g. ShapeColor{C_OUTLINE(255, 255, 255, 20)}
 
 #define _COLOR(...) (color32{__VA_ARGS__})
@@ -107,9 +137,10 @@ inline color32 color32RgbLerp(color32 a, color32 b, float f)
 * pointers, so they'll get deleted once you get rid of the last copy.
 * 
 * Each of these functions returns true on success and false on failure. A failure likely means that the internal
-* buffers have reached the maximum size and cannot fit the primitive, in which case the mesh is unchaged. It is
+* buffers have reached the maximum size and cannot fit the primitive, in which case the mesh is unchanged. It is
 * only really necessary to check the return value for very large meshes (probably thousands or tens of thousands
-* of primitives), and in the case of failure "spill" to another mesh.
+* of primitives), and in the case of failure "spill" to another mesh. Some functions check for invalid parameters
+* (e.g. negative nCirclePoints or nSubdivisions), and will return true without adding anything to the mesh.
 * 
 * Creating few big meshes is generally more efficient than many small ones, but dynamic meshes are automatically
 * merged in some cases. If using translucent meshes, then smaller meshes may be required in some cases to increase
@@ -179,14 +210,7 @@ public:
 	                 ShapeColor c);
 
 	// a 3D arrow with its tail base at 'pos' pointing towards 'target'
-	bool AddArrow3D(const Vector& pos,
-	                const Vector& target,
-	                float tailLength,
-	                float tailRadius,
-	                float tipHeight,
-	                float tipRadius,
-	                int nCirclePoints,
-	                ShapeColor c);
+	bool AddArrow3D(const Vector& pos, const Vector& target, ArrowParams params, ShapeColor c);
 
 	bool AddCPolyhedron(const CPolyhedron* polyhedron, ShapeColor c);
 
