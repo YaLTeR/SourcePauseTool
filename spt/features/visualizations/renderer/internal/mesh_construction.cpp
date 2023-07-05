@@ -590,6 +590,7 @@ static Vector* Scratch(size_t n)
 	return scratch.get();
 }
 
+// note that this does *not* take the absolute value of the radii
 static Vector* CreateEllipseVerts(const Vector& pos, const QAngle& ang, float radiusA, float radiusB, int nPoints)
 {
 	VMatrix mat;
@@ -639,7 +640,7 @@ bool MeshBuilderDelegate::AddLineStrip(const Vector* points, int nPoints, bool l
 
 bool MeshBuilderDelegate::AddCross(const Vector& pos, float radius, LineColor c)
 {
-	if (c.lineColor.a == 0 || radius <= 0)
+	if (c.lineColor.a == 0)
 		return true;
 
 	auto& vdl = GET_MVD_LINES(c);
@@ -716,11 +717,10 @@ bool MeshBuilderDelegate::AddEllipse(const Vector& pos,
                                      int nPoints,
                                      ShapeColor c)
 {
-	if (nPoints < 3 || radiusA < 0 || radiusB < 0 || (c.faceColor.a == 0 && c.lineColor.a == 0)
-	    || !(c.wd & WD_BOTH))
-	{
+	if (nPoints < 3 || (c.faceColor.a == 0 && c.lineColor.a == 0) || !(c.wd & WD_BOTH))
 		return true;
-	}
+	if (radiusA < 0 != radiusB < 0)
+		c.wd = WD_INVERT(c.wd);
 	return AddPolygon(CreateEllipseVerts(pos, ang, radiusA, radiusB, nPoints), nPoints, c);
 }
 
@@ -759,8 +759,10 @@ bool MeshBuilderDelegate::AddBox(const Vector& pos,
 
 bool MeshBuilderDelegate::AddSphere(const Vector& pos, float radius, int nSubdivisions, ShapeColor c)
 {
-	if (nSubdivisions < 0 || radius < 0 || (c.faceColor.a == 0 && c.lineColor.a == 0) || !(c.wd & WD_BOTH))
+	if (nSubdivisions < 0 || (c.faceColor.a == 0 && c.lineColor.a == 0) || !(c.wd & WD_BOTH))
 		return true;
+
+	radius = fabsf(radius); // :)
 
 	auto& vdf = GET_MVD_FACES(c);
 	auto& vdl = GET_MVD_LINES(c);
@@ -1079,8 +1081,11 @@ bool MeshBuilderDelegate::AddCone(const Vector& pos,
 	const bool doFaces = c.faceColor.a != 0;
 	const bool doLines = c.lineColor.a != 0;
 
-	if (height < 0 || radius < 0 || nCirclePoints < 3 || (!doFaces && !doLines) || !(c.wd & WD_BOTH))
+	if (nCirclePoints < 3 || (!doFaces && !doLines) || !(c.wd & WD_BOTH))
 		return true;
+
+	if (height < 0)
+		c.wd = WD_INVERT(c.wd);
 
 	Vector* circleVerts = CreateEllipseVerts(pos, ang, radius, radius, nCirclePoints);
 
@@ -1146,7 +1151,7 @@ bool MeshBuilderDelegate::AddCone(const Vector& pos,
 	{
 		size_t tipIdx = vdl.verts.size();
 		vdl.verts.emplace_back(tip, c.lineColor);
-		AddLineStrip(circleVerts, nCirclePoints, true, c.lineColor);
+		MvdAddLineStrip(vdl, circleVerts, nCirclePoints, true, c.lineColor);
 		for (int i = 0; i < nCirclePoints; i++)
 		{
 			// lines from tip to base
@@ -1171,8 +1176,11 @@ bool MeshBuilderDelegate::AddCylinder(const Vector& pos,
 	const bool doFaces = c.faceColor.a != 0;
 	const bool doLines = c.lineColor.a != 0;
 
-	if (nCirclePoints < 3 || height < 0 || (!doFaces && !doLines) || !(c.wd & WD_BOTH))
+	if (nCirclePoints < 3 || (!doFaces && !doLines) || !(c.wd & WD_BOTH))
 		return true;
+
+	if (height < 0)
+		c.wd = WD_INVERT(c.wd);
 
 	auto& vdf = GET_MVD_FACES(c);
 	auto& vdl = GET_MVD_LINES(c);
@@ -1231,20 +1239,20 @@ bool MeshBuilderDelegate::AddCylinder(const Vector& pos,
 	return true;
 }
 
-bool MeshBuilderDelegate::AddArrow3D(const Vector& pos,
-                                     const Vector& target,
-                                     float tailLength,
-                                     float tailRadius,
-                                     float tipHeight,
-                                     float tipRadius,
-                                     int nCirclePoints,
-                                     ShapeColor c)
+bool MeshBuilderDelegate::AddArrow3D(const Vector& pos, const Vector& target, ArrowParams params, ShapeColor c)
 {
 	const bool doFaces = c.faceColor.a != 0;
 	const bool doLines = c.lineColor.a != 0;
 
-	if (nCirclePoints < 3 || (!doFaces && !doLines))
+	if (params.nCirclePoints < 3 || (!doFaces && !doLines) || params.tipLengthPortion <= 0
+	    || params.tipLengthPortion >= 1)
+	{
 		return true;
+	}
+
+	// The cone and cylinder parts handle the wd correctly, but since we access their buffers directly we have to
+	// do a couple hacks to make sure the wd of the whole arrow gets handled in a way that makes sense.
+	params.tipRadiusScale = fabsf(params.tipRadiusScale);
 
 	auto& vdf = GET_MVD_FACES(c);
 	auto& vdl = GET_MVD_LINES(c);
@@ -1252,28 +1260,42 @@ bool MeshBuilderDelegate::AddArrow3D(const Vector& pos,
 
 	Vector dir = target - pos;
 	dir.NormalizeInPlace();
+	// VectorAngles is garbage!
+	if (fabsf(dir[0]) < 1e-3 && fabsf(dir[1]) < 1e-3)
+		dir[0] = dir[1] = 0;
 	QAngle ang;
 	VectorAngles(dir, ang);
 
-	if (!AddCylinder(pos, ang, tailLength, tailRadius, nCirclePoints, true, false, c))
+	float baseLength = params.arrowLength * (1 - params.tipLengthPortion);
+
+	if (!AddCylinder(pos, ang, baseLength, params.radius, params.nCirclePoints, true, false, c))
 		return false;
 
 	// assumes AddCylinder() puts the "top" vertices at the end of the vert list for faces & lines
-	size_t innerCircleFaceIdx = vdf.verts.size() - nCirclePoints;
-	size_t innerCircleLineIdx = vdl.verts.size() - nCirclePoints;
+	size_t innerCircleFaceIdx = vdf.verts.size() - params.nCirclePoints;
+	size_t innerCircleLineIdx = vdl.verts.size() - params.nCirclePoints;
 
-	if (!AddCone(pos + dir * tailLength, ang, tipHeight, tipRadius, nCirclePoints, false, c))
+	float tipLength = params.arrowLength * params.tipLengthPortion;
+	float tipRadius = params.radius * params.tipRadiusScale;
+
+	if (!AddCone(pos + dir * baseLength, ang, tipLength, tipRadius, params.nCirclePoints, false, c))
 	{
 		MVD_ROLLBACK2(vdf, vdl);
 		return false;
 	}
 	// assumes AddCone() puts the base vertices at the end of the vert list for faces & lines
-	size_t outerCircleFaceIdx = vdf.verts.size() - nCirclePoints;
-	size_t outerCircleLineIdx = vdl.verts.size() - nCirclePoints;
+	size_t outerCircleFaceIdx = vdf.verts.size() - params.nCirclePoints;
+	size_t outerCircleLineIdx = vdl.verts.size() - params.nCirclePoints;
 
+	// params.arrowLength < 0: another check to make sure the wd is handled correctly
 	if (doFaces
-	    && !MvdAddFaceTriangleStripIndices(
-	        vdf, outerCircleFaceIdx, innerCircleFaceIdx, nCirclePoints, true, false, c.wd))
+	    && !MvdAddFaceTriangleStripIndices(vdf,
+	                                       outerCircleFaceIdx,
+	                                       innerCircleFaceIdx,
+	                                       params.nCirclePoints,
+	                                       true,
+	                                       false,
+	                                       params.arrowLength < 0 ? WD_INVERT(c.wd) : c.wd))
 	{
 		MVD_ROLLBACK2(vdf, vdl);
 		return false;
@@ -1281,12 +1303,12 @@ bool MeshBuilderDelegate::AddArrow3D(const Vector& pos,
 
 	if (doLines)
 	{
-		if (MVD_WILL_OVERFLOW(vdl, 0, nCirclePoints * 2))
+		if (MVD_WILL_OVERFLOW(vdl, 0, params.nCirclePoints * 2))
 		{
 			MVD_ROLLBACK2(vdf, vdl);
 			return false;
 		}
-		for (int i = 0; i < nCirclePoints; i++)
+		for (int i = 0; i < params.nCirclePoints; i++)
 		{
 			vdl.indices.push_back(innerCircleLineIdx + i);
 			vdl.indices.push_back(outerCircleLineIdx + i);

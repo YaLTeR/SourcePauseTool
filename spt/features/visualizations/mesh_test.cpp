@@ -424,8 +424,9 @@ TEST_CASE("AddArrow3D()", Vector(2600, 0, 0))
 			Vector start = testPos + Vector((i - 1.5) * 25, k * 75, k * 30);
 			unsigned char g = (unsigned char)(1.f / (1 + start.DistToSqr(target) / 2000) * 255);
 			unsigned char b = (unsigned char)(1.f / (1 + start.DistToSqr(target) / 3000) * 255);
-			RENDER_DYNAMIC(mr,
-			               { mb.AddArrow3D(start, target, 15, 1.5, 7, 3, 7, {C_OUTLINE(99, g, b, 20)}); });
+			RENDER_DYNAMIC(mr, {
+				mb.AddArrow3D(start, target, ArrowParams{7, 20.f, 1.5f}, {C_OUTLINE(99, g, b, 20)});
+			});
 		}
 	}
 }
@@ -642,9 +643,10 @@ TEST_CASE("Empty meshes", Vector(1000, -300, 0))
 TEST_CASE("Testing winding direction", Vector(1200, -300, 0))
 {
 	/*
-	* The purpose of this test is twofold:
+	* There's 3 parts to this test:
 	* - test all 3 winding directions for all primitives
 	* - test that the index math is correct when the indices don't start at 0
+	* - test negative shape sizes, e.g. a cylinder with a negative height should *not* be inside out
 	* It's not strictly necessary to test all mesh builder functions because internally some defer to others,
 	* e.g. AddTri() & AddTris() both defer to _AddTris().
 	*/
@@ -679,28 +681,64 @@ TEST_CASE("Testing winding direction", Vector(1200, -300, 0))
 
 			    pos.y += ySpacing;
 
-			    mb.AddCircle(pos, QAngle{-90, 0, 0}, shapeRadius, 17, color);
+			    mb.AddEllipse(pos, QAngle{-90, 0, 0}, shapeRadius, shapeRadius, 17, color);
+			    pos.y += ySpacing;
+			    mb.AddEllipse(pos, QAngle{-90, 0, 0}, shapeRadius, -shapeRadius, 17, color);
+			    pos.y += ySpacing;
+			    mb.AddEllipse(pos, QAngle{-90, 0, 0}, -shapeRadius, shapeRadius, 17, color);
+			    pos.y += ySpacing;
+			    mb.AddEllipse(pos, QAngle{-90, 0, 0}, -shapeRadius, -shapeRadius, 17, color);
 
 			    pos.y += ySpacing;
 
 			    const Vector extents{10, 10, 10};
 			    mb.AddBox(pos, -extents, extents, vec3_angle, color);
+			    pos.y += ySpacing;
+			    mb.AddBox(pos, extents, -extents, vec3_angle, color);
 
 			    pos.y += ySpacing;
 
 			    mb.AddSphere(pos, shapeRadius, 1, color);
+			    pos.y += ySpacing;
+			    mb.AddSphere(pos, -shapeRadius, 1, color);
 
 			    pos.y += ySpacing;
 
-			    mb.AddCone(pos, QAngle{-90, 0, 0}, 30, shapeRadius, 4, true, color);
+			    mb.AddCone(pos, QAngle{-90, 0, 0}, 30, shapeRadius, 5, true, color);
+			    pos.y += ySpacing;
+			    mb.AddCone(pos, QAngle{-90, 0, 0}, 30, -shapeRadius, 5, true, color);
+			    pos.y += ySpacing;
+			    mb.AddCone(pos, QAngle{-90, 0, 0}, -30, shapeRadius, 5, true, color);
+			    pos.y += ySpacing;
+			    mb.AddCone(pos, QAngle{-90, 0, 0}, -30, -shapeRadius, 5, true, color);
 
 			    pos.y += ySpacing;
 
 			    mb.AddCylinder(pos, QAngle{-90, 0, 0}, 30, shapeRadius, 6, true, true, color);
+			    pos.y += ySpacing;
+			    mb.AddCylinder(pos, QAngle{-90, 0, 0}, 30, -shapeRadius, 6, true, true, color);
+			    pos.y += ySpacing;
+			    mb.AddCylinder(pos, QAngle{-90, 0, 0}, -30, shapeRadius, 6, true, true, color);
+			    pos.y += ySpacing;
+			    mb.AddCylinder(pos, QAngle{-90, 0, 0}, -30, -shapeRadius, 6, true, true, color);
 
 			    pos.y += ySpacing;
 
-			    mb.AddArrow3D(pos, pos + Vector{0, 0, 1}, 30, 2, 6, 4, 8, color);
+			    mb.AddArrow3D(pos, pos + Vector{0, 0, 1}, ArrowParams{8, 30.f, 3.f, 0.4f, 2.f}, color);
+			    pos.y += ySpacing;
+			    mb.AddArrow3D(pos, pos + Vector{0, 0, 1}, ArrowParams{8, 30.f, 3.f, 0.4f, -2.f}, color);
+			    pos.y += ySpacing;
+			    mb.AddArrow3D(pos, pos + Vector{0, 0, 1}, ArrowParams{8, 30.f, -3.f, 0.4f, 2.f}, color);
+			    pos.y += ySpacing;
+			    mb.AddArrow3D(pos, pos + Vector{0, 0, 1}, ArrowParams{8, 30.f, -3.f, 0.4f, -2.f}, color);
+			    pos.y += ySpacing;
+			    mb.AddArrow3D(pos, pos + Vector{0, 0, 1}, ArrowParams{8, -30.f, 3.f, 0.4f, 2.f}, color);
+			    pos.y += ySpacing;
+			    mb.AddArrow3D(pos, pos + Vector{0, 0, 1}, ArrowParams{8, -30.f, 3.f, 0.4f, -2.f}, color);
+			    pos.y += ySpacing;
+			    mb.AddArrow3D(pos, pos + Vector{0, 0, 1}, ArrowParams{8, -30.f, -3.f, 0.4f, 2.f}, color);
+			    pos.y += ySpacing;
+			    mb.AddArrow3D(pos, pos + Vector{0, 0, 1}, ArrowParams{8, -30.f, -3.f, 0.4f, -2.f}, color);
 
 			    pos.y += ySpacing;
 
