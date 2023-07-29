@@ -386,7 +386,7 @@ CON_COMMAND_F_COMPLETION(y_spt_ihud_modify,
 		}
 		commandAction("angles");
 	}
-	else if (spt_ihud.buttonSettings.contains(name))
+	else if (spt_ihud.buttonSettings.contains(name) || name == "angles")
 	{
 		commandAction(name);
 	}
