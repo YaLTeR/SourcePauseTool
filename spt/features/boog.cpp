@@ -9,6 +9,7 @@
 #include "interfaces.hpp"
 #include "playerio.hpp"
 #include "signals.hpp"
+#include "game_detection.hpp"
 
 ConVar y_spt_hud_edgebug("y_spt_hud_edgebug",
                          "0",
@@ -94,8 +95,30 @@ void BoogFeature::DrawBoog()
 		{
 			return;
 		}
-
-		surface->SetFontGlyphSet(boogFont, "Trebuchet MS", 96, 0, 0, 0, 0x010);
+		if (utils::GetBuildNumber() <= 3420)
+		{
+			typedef bool(__thiscall * SetFontGlyphSetOld_func)(void* thisptr,
+			                                                   vgui::HFont font,
+			                                                   const char* windowsFontName,
+			                                                   int tall,
+			                                                   int weight,
+			                                                   int blur,
+			                                                   int scanlines,
+			                                                   int flags);
+			const int vtidx_SetFontGlyphSet = 65;
+			((*(SetFontGlyphSetOld_func**)(surface))[vtidx_SetFontGlyphSet])(surface,
+			                                                                 boogFont,
+			                                                                 "Trebuchet MS",
+			                                                                 96,
+			                                                                 0,
+			                                                                 0,
+			                                                                 0,
+			                                                                 0x010);
+		}
+		else
+		{
+			surface->SetFontGlyphSet(boogFont, "Trebuchet MS", 96, 0, 0, 0, 0x010);
+		}
 	}
 
 	surface->DrawSetTextFont(boogFont);
