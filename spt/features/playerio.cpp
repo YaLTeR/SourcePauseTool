@@ -142,7 +142,15 @@ void PlayerIOFeature::PreHook()
 		}
 		else if (index == 0) // 5135
 		{
-			offM_pCommands = 180;
+			if (utils::GetBuildNumber() <= 3740)
+			{
+				// Both 3420 and 3740 use 196, but 3420 uses 4104 pattern
+				offM_pCommands = 196;
+			}
+			else
+			{
+				offM_pCommands = 180;
+			}
 		}
 		else if (index == 7 || index == 8 || utils::DoesGameLookLikeBMSRetail()) // OE & BMS
 		{
