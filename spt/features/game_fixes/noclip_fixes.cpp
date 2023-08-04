@@ -1,8 +1,10 @@
 #include "stdafx.hpp"
 
 #include "..\feature.hpp"
+#include "..\playerio.hpp"
 #include "convar.hpp"
 #include "game_detection.hpp"
+#include "signals.hpp"
 
 #ifdef  OE
 static void NoclipNofixCVarCallback(ConVar* pConVar, const char* pOldValue);
@@ -15,13 +17,13 @@ ConVar y_spt_noclip_nofix("y_spt_noclip_nofix",
 						  0,
                           "Disables noclip's position fixing.",
                           NoclipNofixCVarCallback);
+ConVar spt_noclip_noslowfly("spt_noclip_noslowfly", "0", 0, "Fix noclip slowfly.");
 
-// Gives the option to disable noclip position fixing
-class NoclipNofixFeature : public FeatureWrapper<NoclipNofixFeature>
+// Noclip related fixes
+class NoclipFixesFeature : public FeatureWrapper<NoclipFixesFeature>
 {
 public:
-	void Toggle(bool enabled);
-
+	void ToggleNoclipNofix(bool enabled);
 
 protected:
 	virtual bool ShouldLoadFeature() override;
@@ -36,7 +38,9 @@ protected:
 	// value replacements and single instruction overrides
 	// we'll just write the bytes ourselves...
 private:
-	uintptr_t ORIG_Server__NoclipString;
+	void OnTick();
+
+	uintptr_t ORIG_Server__NoclipString = 0;
 	std::vector<patterns::MatchedPattern> MATCHES_Server__StringReferences;
 
 	DECL_BYTE_REPLACE(Jump, 6);
@@ -45,7 +49,7 @@ private:
 	int jmpDistance = 0x0;
 };
 
-static NoclipNofixFeature spt_noclipnofix;
+static NoclipFixesFeature spt_noclipfixes;
 
 #ifdef OE
 static void NoclipNofixCVarCallback(ConVar* pConVar, const char* pOldValue)
@@ -53,7 +57,7 @@ static void NoclipNofixCVarCallback(ConVar* pConVar, const char* pOldValue)
 static void NoclipNofixCVarCallback(IConVar* pConVar, const char* pOldValue, float flOldValue)
 #endif
 {
-	spt_noclipnofix.Toggle(((ConVar*)pConVar)->GetBool());
+	spt_noclipfixes.ToggleNoclipNofix(((ConVar*)pConVar)->GetBool());
 }
 
 namespace patterns
@@ -62,19 +66,25 @@ namespace patterns
 	PATTERNS(Server__StringReferences, "1", "68");
 }
 
-bool NoclipNofixFeature::ShouldLoadFeature()
+bool NoclipFixesFeature::ShouldLoadFeature()
 {
 	return true;
 }
 
-void NoclipNofixFeature::InitHooks()
+void NoclipFixesFeature::InitHooks()
 {
 	FIND_PATTERN(server, Server__NoclipString);
 	FIND_PATTERN_ALL(server, Server__StringReferences);
 }
 
-void NoclipNofixFeature::LoadFeature() 
+void NoclipFixesFeature::LoadFeature()
 {
+	if (spt_playerio.m_surfaceFriction.Found() && spt_playerio.m_MoveType.Found() && TickSignal.Works)
+	{
+		TickSignal.Connect(this, &NoclipFixesFeature::OnTick);
+		InitConcommandBase(spt_noclip_noslowfly);
+	}
+
 	if (!ORIG_Server__NoclipString || MATCHES_Server__StringReferences.empty())
 		return;
 
@@ -116,13 +126,27 @@ void NoclipNofixFeature::LoadFeature()
 	}
 }
 
-void NoclipNofixFeature::UnloadFeature()
+void NoclipFixesFeature::OnTick()
+{
+	if (!spt_noclip_noslowfly.GetBool())
+		return;
+
+	if ((unsigned char)spt_playerio.m_MoveType.GetValue() == MOVETYPE_NOCLIP)
+	{
+		float* friction = spt_playerio.m_surfaceFriction.GetPtr();
+		if (!friction)
+			return;
+		*friction = 1.0f;
+	}
+}
+
+void NoclipFixesFeature::UnloadFeature()
 {
 	DESTROY_BYTE_REPLACE(Jump);
 }
 
 
-void NoclipNofixFeature::Toggle(bool enabled)
+void NoclipFixesFeature::ToggleNoclipNofix(bool enabled)
 {
 	if (PTR_Jump == 0)
 		return;

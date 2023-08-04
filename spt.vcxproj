@@ -1190,7 +1190,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClCompile Include="spt\features\game_fixes\free_oob.cpp" />
     <ClCompile Include="spt\features\game_fixes\hardlock.cpp" />
     <ClCompile Include="spt\features\game_fixes\multi_instance.cpp" />
-    <ClCompile Include="spt\features\game_fixes\noclip_nofix.cpp" />
+    <ClCompile Include="spt\features\game_fixes\noclip_fixes.cpp" />
     <ClCompile Include="spt\features\game_fixes\nosleep.cpp" />
     <ClCompile Include="spt\features\game_fixes\portal_nogroundsnap.cpp" />
     <ClCompile Include="spt\features\game_fixes\rng.cpp" />

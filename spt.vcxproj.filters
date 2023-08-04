@@ -325,7 +325,7 @@
     <ClCompile Include="spt\features\game_fixes\multi_instance.cpp">
       <Filter>spt\features\game_fixes</Filter>
     </ClCompile>
-    <ClCompile Include="spt\features\game_fixes\noclip_nofix.cpp">
+    <ClCompile Include="spt\features\game_fixes\noclip_fixes.cpp">
       <Filter>spt\features\game_fixes</Filter>
     </ClCompile>
     <ClCompile Include="spt\features\game_fixes\nosleep.cpp">
