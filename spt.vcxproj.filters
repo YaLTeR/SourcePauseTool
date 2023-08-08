@@ -199,9 +199,6 @@
     <ClCompile Include="spt\features\camera.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
-    <ClCompile Include="spt\patterns_archive.cpp">
-      <Filter>spt</Filter>
-    </ClCompile>
     <ClCompile Include="spt\features\boog.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
@@ -713,6 +710,9 @@
     </ClInclude>
     <ClInclude Include="spt\features\game_fixes\rng.hpp">
       <Filter>spt\features\game_fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="patterns_archive.hpp">
+      <Filter>spt</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

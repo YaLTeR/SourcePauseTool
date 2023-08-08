@@ -1309,7 +1309,6 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release OE|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="spt\patterns_archive.cpp" />
     <ClCompile Include="spt\scripts2\condition2.cpp" />
     <ClCompile Include="spt\scripts2\framebulk_handler2.cpp" />
     <ClCompile Include="spt\scripts2\parsed_script2.cpp" />
@@ -1389,6 +1388,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClInclude Include="..\..\public\tier1\utlmemory.h" />
     <ClInclude Include="..\..\public\tier1\utlvector.h" />
     <ClInclude Include="..\..\public\vstdlib\vstdlib.h" />
+    <ClInclude Include="patterns_archive.hpp" />
     <ClInclude Include="SDK\cmodel_private.h" />
     <ClInclude Include="SDK\dispcoll_common.h" />
     <ClInclude Include="SDK\hl_movedata.h" />
