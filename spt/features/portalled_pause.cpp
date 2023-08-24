@@ -4,7 +4,7 @@
 
 #include "..\feature.hpp"
 #include "..\sptlib-wrapper.hpp"
-#include "afterframes.hpp"
+#include "afterticks.hpp"
 #include "ent_utils.hpp"
 #include "game_detection.hpp"
 
@@ -73,10 +73,10 @@ IMPL_HOOK_THISCALL(PortalledPause, void, TeleportTouchingEntity, void*, void* pO
 	{
 		EngineConCmd("setpause");
 
-		afterframes_entry_t entry;
-		entry.framesLeft = pauseFor;
+		afterticks_entry_t entry;
+		entry.ticksLeft = pauseFor;
 		entry.command = "unpause";
-		spt_afterframes.AddAfterFramesEntry(entry);
+		spt_afterticks.AddAfterticksEntry(entry);
 	}
 }
 
