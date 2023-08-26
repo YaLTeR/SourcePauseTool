@@ -3,7 +3,7 @@
 #include "..\feature.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "..\utils\game_detection.hpp"
-#include "afterframes.hpp"
+#include "afterticks.hpp"
 #include "convar.hpp"
 #include "dbg.h"
 
@@ -111,10 +111,10 @@ void DMoMM::HOOKED_MiddleOfSlidingFunction_Func()
 		{
 			EngineConCmd("setpause");
 
-			afterframes_entry_t entry;
-			entry.framesLeft = pauseFor;
+			afterticks_entry_t entry;
+			entry.ticksLeft = pauseFor;
 			entry.command = "unpause";
-			spt_afterframes.AddAfterFramesEntry(entry);
+			spt_afterticks.AddAfterticksEntry(entry);
 		}
 	}
 }
