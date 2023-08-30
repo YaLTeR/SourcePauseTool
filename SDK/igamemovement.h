@@ -54,6 +54,9 @@ public:
 	int				m_nButtons;			// Attack buttons.
 	int				m_nOldButtons;		// From host_client->oldbuttons;
 	float			m_flForwardMove;
+#if BMS
+	int				UNKNOWN001;
+#endif
 	float			m_flSideMove;
 	float			m_flUpMove;
 	
@@ -81,6 +84,10 @@ public:
 	const Vector	&GetAbsOrigin() const;
 
 private:
+#if BMS
+	int				UNKNOWN002;
+	int				UNKNOWN003;
+#endif
 	Vector			m_vecAbsOrigin;		// edict::origin
 };
 
