@@ -11,7 +11,7 @@ static void BMSFlashLightFixCVarCallback(IConVar* pConVar, const char* pOldValue
 ConVar y_spt_bms_flashlight_fix("y_spt_bms_flashlight_fix",
 								"0",
 								0,
-								"Disables all extra movement on flashlight.",
+								"Disables all extra movement on the flashlight.",
 								BMSFlashLightFixCVarCallback);
 
 // Gives the option to disable all extra flashlight movement, including delay, swaying, and bobbing.

@@ -71,7 +71,7 @@ void PortalNoGroundSnapFeature::LoadFeature()
 	* The check we're looking for is one inserted in the middle of CategorizePosition:
 	* "if (player->GetGroundEntity() != NULL)".
 	* 
-	* We actually scan for another check a but below this, inside the if condition in the code,
+	* We actually scan for another check a bit below this, inside the if condition in the code,
 	* as it is more distinctive in assembly...
 	* 
 	* E8 xx xx xx xx		CALL [GetGroundEntity]
