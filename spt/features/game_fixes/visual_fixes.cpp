@@ -39,6 +39,8 @@ protected:
 
 	virtual void InitHooks() override;
 
+	virtual void PreHook() override;
+
 	virtual void LoadFeature() override;
 
 	virtual void UnloadFeature() override;
@@ -83,7 +85,9 @@ namespace patterns
 	    "1910503",
 	    "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC A1 ?? ?? ?? ?? 81 EC ?? ?? ?? ?? 83 78 30 00 56 57 0F 84 ?? ?? ?? ?? 8B 0D",
 	    "missinginfo1_6",
-	    "55 8B EC A1 ?? ?? ?? ?? 81 EC ?? ?? ?? ?? 83 78 30 00 0F 84 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 8B 11");
+	    "55 8B EC A1 ?? ?? ?? ?? 81 EC ?? ?? ?? ?? 83 78 30 00 0F 84 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 8B 11",
+	    "BMS 0.9",
+	    "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ?? 89 6C 24 ?? 8B EC 81 EC A8 00 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 ?? A1");
 	PATTERNS(
 	    CViewEffects__Fade,
 	    "dmomm-4104-5135",
@@ -137,7 +141,7 @@ bool VisualFixes::ShouldLoadFeature()
 	return true;
 }
 
-void VisualFixes::LoadFeature()
+void VisualFixes::PreHook()
 {
 	if (ORIG_DoImageSpaceMotionBlur)
 	{
@@ -163,12 +167,18 @@ void VisualFixes::LoadFeature()
 		case 5: // missinginfo1_6
 			pgpGlobals = *(uintptr_t**)((uintptr_t)ORIG_DoImageSpaceMotionBlur + 128);
 			break;
+		case 6: // BMS 0.9
+			pgpGlobals = *(uintptr_t**)((uintptr_t)ORIG_DoImageSpaceMotionBlur + 0x18C);
+			break;
 		}
 
 		DevMsg("[client dll] pgpGlobals is %p.\n", pgpGlobals);
 		InitConcommandBase(y_spt_motion_blur_fix);
 	}
+}
 
+void VisualFixes::LoadFeature()
+{
 	if (ORIG_CViewEffects__Fade)
 		InitConcommandBase(y_spt_disable_fade);
 
