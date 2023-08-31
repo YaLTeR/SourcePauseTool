@@ -413,7 +413,7 @@ CON_COMMAND(spt_turnangles, "Turns a number of degrees of pitch (down and up), a
 {
     if (args.ArgC() != 3)
     {
-        Msg("Usage: spt_addtoangles <degrees of pitch> <degrees of yaw>\n");
+        Msg("Usage: spt_turnangles <degrees of pitch> <degrees of yaw>\n");
         return;
     }
 
