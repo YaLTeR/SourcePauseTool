@@ -3,28 +3,30 @@
 #include "..\feature.hpp"
 #include "..\aim\aimstuff.hpp"
 #include "..\strafe\strafestuff.hpp"
+#include <deque>
 
-typedef struct _angset_command
+typedef int ANGCOMPONENT;
+enum ANGCHANGETYPE
 {
-	float angle;
-	bool set;
-	_angset_command() : angle(0.0f), set(false) {}
-} angset_command_t;
+	SET,
+	TURN
+};
 
-typedef struct _angturn_command
+typedef struct _angchange_command
 {
-	float old; // degrees to snap
-	float left; // degrees left in turn
-	_angturn_command() : left(0.0f) {}
-} angturn_command_t;
+public:
+	ANGCOMPONENT component;
+	ANGCHANGETYPE type;
+	float value;
+	_angchange_command() {}
+} angchange_command_t;
+
 
 class AimFeature : public FeatureWrapper<AimFeature>
 {
 public:
 	aim::ViewState viewState;
 	void HandleAiming(float* va, bool& yawChanged, const Strafe::StrafeInput& input);
-	bool DoAngleChange(float& angle, float target);
-	float DoAngleTurn(float& angle, float left);
 	void SetPitch(float pitch);
 	void TurnPitch(float add);
 	void SetYaw(float yaw);
@@ -35,8 +37,14 @@ public:
 
 protected:
 private:
-	angset_command_t setPitch, setYaw;
-	angturn_command_t turnPitch, turnYaw;
+	void AddChange(angchange_command_t change);
+	bool DoAngleChange(float& angle, float target);
+	float DoAngleTurn(float& angle, float left);
+	ConVar* cl_pitchup;
+	ConVar* cl_pitchdown;
+	bool IsPitchWithinLimits(float pitch);
+	float BoundPitch(float pitch);
+	std::deque<angchange_command_t> angChanges;
 };
 
 extern AimFeature spt_aim;

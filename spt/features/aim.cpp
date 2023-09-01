@@ -5,6 +5,7 @@
 #include "ent_utils.hpp"
 #include "math.hpp"
 #include "playerio.hpp"
+#include <deque>
 
 #undef min
 #undef max
@@ -16,13 +17,17 @@ ConVar _y_spt_anglesetspeed(
     "Determines how fast the view angle can move per tick while doing spt_setyaw/spt_setpitch.\n");
 ConVar _y_spt_pitchspeed("_y_spt_pitchspeed", "0", FCVAR_TAS_RESET);
 ConVar _y_spt_yawspeed("_y_spt_yawspeed", "0", FCVAR_TAS_RESET);
-ConVar spt_turning_queuing_behavior("spt_turning_queuing_behavior", 
+ConVar spt_angchange_queuing_behavior("spt_angchanging_queuing_behavior", 
                                     "0", 
                                     FCVAR_TAS_RESET, 
-                                    "Determines the behavior of the spt_turn commands when there are unfinished turns.\n"
-                                    "0: stop ongoing turns, then begin new ones.\n"
-                                    "1: snap to resultant angles of old turn, then begin new ones. \n"
-                                    "2: add degrees of new turn onto what's left of the current turn.");
+                                    "Determines how SPT processes the angle change command queue.\n"
+                                    "0: do changes one by one.\n"
+                                    "1: stop ongoing changes immediately, then begin new ones.\n"
+                                    "2: snap to resultant angles of old change, then begin new ones.\n");
+ConVar spt_angchange_limitpitch("spt_angchange_limitpitch", 
+                                "1",
+                                FCVAR_TAS_RESET,
+                                "Limits pitch changes to stay within cl_pitchup and cl_pitchdown values.");
 
 ConVar tas_anglespeed("tas_anglespeed",
                       "5",
@@ -79,40 +84,74 @@ void AimFeature::HandleAiming(float* va, bool& yawChanged, const Strafe::StrafeI
     {
         va[PITCH] += pitchSpeed;
     }
-    if (setPitch.set)
-    {
-        setPitch.set = DoAngleChange(va[PITCH], setPitch.angle);
-    }
-    if (std::abs(turnPitch.old) > 0)
-    {
-        va[PITCH] += turnPitch.old;
-        turnPitch.old = 0;
-    }
-    if (std::abs(turnPitch.left) > 0)
-    {
-        turnPitch.left = DoAngleTurn(va[PITCH], turnPitch.left);
-    }
-
     if (yawSpeed != 0.0f)
     {
         va[YAW] += yawSpeed;
     }
-    if (setYaw.set)
+
+    while (!angChanges.empty())
     {
-        yawChanged = true;
-        setYaw.set = DoAngleChange(va[YAW], setYaw.angle);
+        while (angChanges.size() > 1)
+        {
+            switch (spt_angchange_queuing_behavior.GetInt())
+            {
+            case 1:  
+                angChanges.pop_front();
+                continue;
+            case 2:
+            {
+                angchange_command_t current = angChanges.front();
+                int component = current.component;
+                if (component == YAW) yawChanged = true;
+
+                switch (current.type)
+                {
+                case SET:
+                    va[component] = current.value;
+                    break;
+                case TURN:
+                    va[component] += current.value;
+                    break;
+                }
+                if (component == PITCH && spt_angchange_limitpitch.GetBool())
+                    va[component] = BoundPitch(va[component]);
+
+                angChanges.pop_front();
+                continue;
+            }
+            default:
+                goto normal;
+            }
+        }
+
+        normal:
+
+        auto current = angChanges.begin();
+        auto component = current->component;
+        if (component == YAW) yawChanged = true;
+
+        bool left = true;
+        switch (current->type)
+        {
+        case SET:
+            left = DoAngleChange(va[component], current->value);
+            break;
+        case TURN:
+            current->value = DoAngleTurn(va[component], current->value);
+            left = std::abs(current->value) > 0;
+            break;
+        }
+        if (component == PITCH && spt_angchange_limitpitch.GetBool() && !IsPitchWithinLimits(va[component]))
+        {
+            va[component] = BoundPitch(va[component]);
+            left = false;
+        }
+        
+        if (!left) angChanges.pop_front();
+
+        break;
     }
-    if (std::abs(turnYaw.old) > 0)
-    {
-        yawChanged = true;
-        va[YAW] += turnYaw.old;
-        turnYaw.old = 0;
-    }
-    if (std::abs(turnYaw.left) > 0)
-    {
-        yawChanged = true;
-        turnYaw.left = DoAngleTurn(va[YAW], turnYaw.left);
-    }
+
 
     // Fix the case where anglespeed is 0
     if (input.Version >= 6)
@@ -126,6 +165,32 @@ void AimFeature::HandleAiming(float* va, bool& yawChanged, const Strafe::StrafeI
     {
         spt_aim.viewState.UpdateView(va[PITCH], va[YAW], input);
     }
+}
+
+bool AimFeature::IsPitchWithinLimits(float pitch)
+{
+    if (cl_pitchup == nullptr && cl_pitchdown == nullptr) return true;
+
+    float upperLimit = cl_pitchup == nullptr ? 180 : cl_pitchup->GetFloat();
+    float lowerLimit = cl_pitchdown == nullptr ? 180 : cl_pitchdown->GetFloat();
+    return pitch <= lowerLimit && pitch >= -upperLimit;
+}
+
+float AimFeature::BoundPitch(float pitch)
+{
+    if (cl_pitchup == nullptr && cl_pitchdown == nullptr) return pitch;
+
+    float upperLimit = cl_pitchup == nullptr ? 180 : cl_pitchup->GetFloat();
+    float lowerLimit = cl_pitchdown == nullptr ? 180 : cl_pitchdown->GetFloat();
+    if (pitch > lowerLimit)
+    {
+        pitch = lowerLimit;
+    }
+    if (pitch < -upperLimit)
+    {
+        pitch = -upperLimit;
+    }
+    return pitch;
 }
 
 bool AimFeature::DoAngleChange(float& angle, float target)
@@ -142,7 +207,6 @@ bool AimFeature::DoAngleChange(float& angle, float target)
         return false;
     }
 }
-
 float AimFeature::DoAngleTurn(float& angle, float left)
 {
     float add = MIN(std::abs(left), _y_spt_anglesetspeed.GetFloat());
@@ -151,60 +215,48 @@ float AimFeature::DoAngleTurn(float& angle, float left)
     return left - add;
 }
 
+void AimFeature::AddChange(angchange_command_t change)
+{
+    angChanges.push_back(change);
+}
+
 void AimFeature::SetPitch(float pitch)
 {
-    setPitch.angle = pitch;
-    setPitch.set = true;
+    angchange_command_t set;
+    set.value = pitch;
+    set.component = PITCH;
+    set.type = SET;
+    AddChange(set);
+
 }
 void AimFeature::TurnPitch(float add)
 {
-    switch (spt_turning_queuing_behavior.GetInt())
-    {
-    default:
-        turnPitch.old = 0;
-        turnPitch.left = add;
-        break;
-    case 1:
-        turnPitch.old += turnPitch.left;
-        turnPitch.left = add;
-        break;
-    case 2:
-        turnPitch.old = 0;
-        turnPitch.left += add;
-        break;
-    }
+    angchange_command_t turn;
+    turn.value = add;
+    turn.component = PITCH;
+    turn.type = TURN;
+    AddChange(turn);
 }
+
 void AimFeature::SetYaw(float yaw)
 {
-    setYaw.angle = yaw;
-    setYaw.set = true;
+    angchange_command_t set;
+    set.value = yaw;
+    set.component = YAW;
+    set.type = SET;
+    AddChange(set);
 }
 void AimFeature::TurnYaw(float add)
 {
-    switch (spt_turning_queuing_behavior.GetInt())
-    {
-    default:
-        turnYaw.old = 0;
-        turnYaw.left = add;
-        break;
-    case 1:
-        turnYaw.old += turnYaw.left;
-        turnYaw.left = add;
-        break;
-    case 2:
-        turnYaw.old = 0;
-        turnYaw.left += add;
-        break;
-    }
+    angchange_command_t turn;
+    turn.value = add;
+    turn.component = YAW;
+    turn.type = TURN;
+    AddChange(turn);
 }
 void AimFeature::ResetPitchYawCommands()
 {
-    setYaw.set = false;
-    setPitch.set = false;
-    turnPitch.left = 0;
-    turnPitch.old = 0;
-    turnYaw.left = 0;
-    turnYaw.old = 0;
+    angChanges.clear();
 }
 
 void AimFeature::SetJump()
@@ -462,6 +514,13 @@ void AimFeature::LoadFeature()
         InitConcommandBase(_y_spt_pitchspeed);
         InitConcommandBase(_y_spt_yawspeed);
         InitConcommandBase(tas_anglespeed);
-        InitConcommandBase(spt_turning_queuing_behavior);
+        InitConcommandBase(spt_angchange_queuing_behavior);
+
+        cl_pitchup = g_pCVar->FindVar("cl_pitchup");
+        cl_pitchdown = g_pCVar->FindVar("cl_pitchdown");
+        if (cl_pitchdown != nullptr && cl_pitchup != nullptr)
+        {
+            InitConcommandBase(spt_angchange_limitpitch);
+        }
     }
 }
