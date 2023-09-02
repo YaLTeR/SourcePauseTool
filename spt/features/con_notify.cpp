@@ -12,13 +12,19 @@ namespace patterns
 {
 	PATTERNS(Con_ColorPrint, 
              "BMS 0.9", 
-             "55 8B EC 83 EC 08 80 3D ?? ?? ?? ?? 00 0F 85");
+             "55 8B EC 83 EC 08 80 3D ?? ?? ?? ?? 00 0F 85", 
+             "5135", 
+             "83 EC 08 80 3D ?? ?? ?? ?? 00 0F 85");
 	PATTERNS(CConPanel__AddToNotify, 
              "BMS 0.9", 
-             "55 8B EC 81 EC 30 08 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 ?? 80 3D ?? ?? ?? ?? 00");
+             "55 8B EC 81 EC 30 08 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 ?? 80 3D ?? ?? ?? ?? 00",
+             "5135", 
+             "81 EC 04 08 00 00 80 3D ?? ?? ?? ?? 00");
 	PATTERNS(CConPanel__DrawNotify,
 	         "BMS 0.9",
-	         "55 8B EC 83 EC 3C 56 8B F1 C7 45 ?? 05 00 00 00");
+	         "55 8B EC 83 EC 3C 56 8B F1 C7 45 ?? 05 00 00 00",
+	         "5135",
+	         "83 EC 08 55 57 8B F9");
 }
 
 // Feature description
