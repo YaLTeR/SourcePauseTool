@@ -22,7 +22,7 @@ namespace patterns
 }
 
 // Feature description
-class ConNotify : public FeatureWrapper<ConNotify>
+class ConNotifyFeature : public FeatureWrapper<ConNotifyFeature>
 {
 public:
 protected:
@@ -38,14 +38,14 @@ private:
     DECL_HOOK_THISCALL(void, CConPanel__DrawNotify, void*);
 };
 
-static ConNotify spt_con_notify;
+static ConNotifyFeature spt_con_notify;
 
-bool ConNotify::ShouldLoadFeature()
+bool ConNotifyFeature::ShouldLoadFeature()
 {
     return true;
 }
 
-void ConNotify::InitHooks()
+void ConNotifyFeature::InitHooks()
 {
     HOOK_FUNCTION(engine, Con_ColorPrint);
     HOOK_FUNCTION(engine, CConPanel__AddToNotify);
@@ -54,7 +54,7 @@ void ConNotify::InitHooks()
     developer = g_pCVar->FindVar("developer");
 }
 
-void ConNotify::LoadFeature()
+void ConNotifyFeature::LoadFeature()
 {
     if (ORIG_CConPanel__AddToNotify == nullptr 
         || ORIG_CConPanel__DrawNotify == nullptr
@@ -85,17 +85,17 @@ void ConNotify::LoadFeature()
     return;\
 }
 
-IMPL_HOOK_CDECL(ConNotify, void, Con_ColorPrint, const Color& clr, char const* msg) 
+IMPL_HOOK_CDECL(ConNotifyFeature, void, Con_ColorPrint, const Color& clr, char const* msg) 
 {
     IMPL(Con_ColorPrint, clr, msg);
 }
 
-IMPL_HOOK_THISCALL(ConNotify, void, CConPanel__AddToNotify, void*, const Color& clr, char const* msg)
+IMPL_HOOK_THISCALL(ConNotifyFeature, void, CConPanel__AddToNotify, void*, const Color& clr, char const* msg)
 {
     IMPL(CConPanel__AddToNotify, thisptr, clr, msg);
 }
 
-IMPL_HOOK_THISCALL(ConNotify, void, CConPanel__DrawNotify, void*)
+IMPL_HOOK_THISCALL(ConNotifyFeature, void, CConPanel__DrawNotify, void*)
 {
     IMPL(CConPanel__DrawNotify, thisptr);
 }
