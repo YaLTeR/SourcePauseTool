@@ -15,10 +15,15 @@ enum ANGCHANGETYPE
 typedef struct _angchange_command
 {
 public:
-	ANGCOMPONENT component;
 	ANGCHANGETYPE type;
-	float value;
-	_angchange_command() {}
+	bool doYaw;
+	float yawValue;
+	bool doPitch;
+	float pitchValue;
+	_angchange_command() : 
+		yawValue(0.0f), doYaw(false),
+		pitchValue(0.0f), doPitch(false),
+		type(SET) {}
 } angchange_command_t;
 
 
@@ -31,9 +36,12 @@ public:
 	void TurnPitch(float add);
 	void SetYaw(float yaw);
 	void TurnYaw(float yaw);
+	void SetAngles(float pitch, float yaw);
+	void TurnAngles(float pitch, float yaw);
 	void ResetPitchYawCommands();
 	void SetJump();
 	virtual void LoadFeature() override;
+	std::deque<angchange_command_t> angChanges;
 
 protected:
 private:
@@ -44,7 +52,6 @@ private:
 	ConVar* cl_pitchdown;
 	bool IsPitchWithinLimits(float pitch);
 	float BoundPitch(float pitch);
-	std::deque<angchange_command_t> angChanges;
 };
 
 extern AimFeature spt_aim;

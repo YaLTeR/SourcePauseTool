@@ -17,17 +17,25 @@ ConVar _y_spt_anglesetspeed(
     "Determines how fast the view angle can move per tick while doing spt_setyaw/spt_setpitch.\n");
 ConVar _y_spt_pitchspeed("_y_spt_pitchspeed", "0", FCVAR_TAS_RESET);
 ConVar _y_spt_yawspeed("_y_spt_yawspeed", "0", FCVAR_TAS_RESET);
-ConVar spt_angchange_queuing_behavior("spt_angchanging_queuing_behavior", 
-                                    "0", 
-                                    FCVAR_TAS_RESET, 
-                                    "Determines how SPT processes the angle change command queue.\n"
-                                    "0: do changes one by one.\n"
-                                    "1: stop ongoing changes immediately, then begin new ones.\n"
-                                    "2: snap to resultant angles of old change, then begin new ones.\n");
+ConVar spt_angchange_queue_processing("spt_angchange_queue_processing", 
+                                      "1", 
+                                      FCVAR_TAS_RESET, 
+                                      "Determines how SPT processes queued angle changes.\n"
+                                      "0: do changes one by one.\n"
+                                      "1: stop ongoing changes immediately, then begin new ones.\n"
+                                      "2: finish all the previous changes immediately and in order, then begin new ones.\n");
+ConVar spt_angchange_queue_adding("spt_angchange_queue_adding",
+                                  "1",
+                                  FCVAR_TAS_RESET, 
+                                  "Determines how new angle changes will be added onto the queue.\n"
+                                  "0: add changes one by one.\n"
+                                  "1: if the new change changes pitch or yaw, and the last one in the queue doesn't, complement the latter with the former.\n"
+                                  "2: if the new change is a turn, and the last one is also, add the angles of the former to the latter.\n"
+                                  "3: do both 1 and 2\n");
 ConVar spt_angchange_limitpitch("spt_angchange_limitpitch", 
                                 "1",
                                 FCVAR_TAS_RESET,
-                                "Limits pitch changes to stay within cl_pitchup and cl_pitchdown values.");
+                                "Limits pitch changes to stay within cl_pitchup and cl_pitchdown values.\n");
 
 ConVar tas_anglespeed("tas_anglespeed",
                       "5",
@@ -93,7 +101,7 @@ void AimFeature::HandleAiming(float* va, bool& yawChanged, const Strafe::StrafeI
     {
         while (angChanges.size() > 1)
         {
-            switch (spt_angchange_queuing_behavior.GetInt())
+            switch (spt_angchange_queue_processing.GetInt())
             {
             case 1:  
                 angChanges.pop_front();
@@ -101,20 +109,31 @@ void AimFeature::HandleAiming(float* va, bool& yawChanged, const Strafe::StrafeI
             case 2:
             {
                 angchange_command_t current = angChanges.front();
-                int component = current.component;
-                if (component == YAW) yawChanged = true;
+                if (!yawChanged) yawChanged = current.doYaw;
 
                 switch (current.type)
                 {
                 case SET:
-                    va[component] = current.value;
+                    if (current.doPitch)
+                    {
+                        if (spt_angchange_limitpitch.GetBool())
+                        {
+                            float diff = utils::NormalizeDeg(current.pitchValue - va[PITCH]);
+                            va[PITCH] = BoundPitch(va[PITCH] + diff);
+                        }
+                        else va[PITCH] = current.pitchValue;
+                    }
+                    if (current.doYaw) va[YAW] = current.yawValue;
                     break;
                 case TURN:
-                    va[component] += current.value;
+                    if (current.doPitch)
+                    {   
+                        va[PITCH] += current.pitchValue;
+                        if (spt_angchange_limitpitch.GetBool()) va[PITCH] = BoundPitch(va[PITCH]);
+                    }
+                    if (current.doYaw) va[YAW] += current.yawValue;
                     break;
                 }
-                if (component == PITCH && spt_angchange_limitpitch.GetBool())
-                    va[component] = BoundPitch(va[component]);
 
                 angChanges.pop_front();
                 continue;
@@ -127,27 +146,52 @@ void AimFeature::HandleAiming(float* va, bool& yawChanged, const Strafe::StrafeI
         normal:
 
         auto current = angChanges.begin();
-        auto component = current->component;
-        if (component == YAW) yawChanged = true;
+        if (!yawChanged) yawChanged = current->doYaw;
 
-        bool left = true;
+        bool yawLeft = false, pitchLeft = false;
         switch (current->type)
         {
         case SET:
-            left = DoAngleChange(va[component], current->value);
+            if (current->doPitch)
+            {
+		        float oldPitch = va[PITCH];
+		        pitchLeft = DoAngleChange(va[PITCH], current->pitchValue);
+		        if (spt_angchange_limitpitch.GetBool() && !IsPitchWithinLimits(va[PITCH]))
+		        {
+		            float diff = utils::NormalizeDeg(current->pitchValue - oldPitch);
+                    float newAng = oldPitch + diff;
+			        va[PITCH] = BoundPitch(newAng);
+			        pitchLeft = false;
+			        current->doPitch = false;
+		        }
+            }
+            if (current->doYaw)
+            {
+                yawLeft = DoAngleChange(va[YAW], current->yawValue);
+            }
             break;
         case TURN:
-            current->value = DoAngleTurn(va[component], current->value);
-            left = std::abs(current->value) > 0;
+            if (current->doPitch)
+            {
+                current->pitchValue = DoAngleTurn(va[PITCH], current->pitchValue);
+                pitchLeft = current->pitchValue != 0;
+
+                if (spt_angchange_limitpitch.GetBool() && !IsPitchWithinLimits(va[PITCH]))
+		        {
+		            va[PITCH] = BoundPitch(va[PITCH]);
+		            current->doPitch = false;
+		            pitchLeft = false;
+		        }
+            }
+            if (current->doYaw)
+            {
+                current->yawValue = DoAngleTurn(va[YAW], current->yawValue);
+                yawLeft = current->yawValue != 0;
+            }
             break;
         }
-        if (component == PITCH && spt_angchange_limitpitch.GetBool() && !IsPitchWithinLimits(va[component]))
-        {
-            va[component] = BoundPitch(va[component]);
-            left = false;
-        }
-        
-        if (!left) angChanges.pop_front();
+
+        if (!yawLeft && !pitchLeft) angChanges.pop_front();
 
         break;
     }
@@ -217,14 +261,57 @@ float AimFeature::DoAngleTurn(float& angle, float left)
 
 void AimFeature::AddChange(angchange_command_t change)
 {
-    angChanges.push_back(change);
+    if (!angChanges.empty())
+    {
+        int opt = spt_angchange_queue_adding.GetInt();
+        angchange_command_t& last = angChanges.back();
+
+        if (last.type == change.type)
+        {
+            if (opt == 3 || opt == 1)
+            {
+                if (change.doPitch && !last.doPitch)
+                {
+                    last.doPitch = true;
+                    last.pitchValue = change.pitchValue;
+                    change.doPitch = false;
+                }
+                if (change.doYaw && !last.doYaw)
+                {
+                    last.doYaw = true;
+                    last.yawValue = change.yawValue;
+                    change.doYaw = false;
+                }
+            }
+            if ((opt == 3 || opt == 2) && change.type == TURN)
+            {
+                if (change.doPitch)
+                {
+                    last.pitchValue += change.pitchValue;
+                    change.doPitch = false;
+                    last.doPitch = true;
+                }
+                if (change.doYaw)
+                {
+                    last.yawValue += change.yawValue;
+                    change.doYaw = false;
+                    last.doYaw = true;
+                }
+            }
+        }
+    }
+
+    if (change.doYaw || change.doPitch)
+    {
+        angChanges.push_back(change);
+    }
 }
 
 void AimFeature::SetPitch(float pitch)
 {
     angchange_command_t set;
-    set.value = pitch;
-    set.component = PITCH;
+    set.doPitch = true;
+    set.pitchValue = pitch;
     set.type = SET;
     AddChange(set);
 
@@ -232,8 +319,8 @@ void AimFeature::SetPitch(float pitch)
 void AimFeature::TurnPitch(float add)
 {
     angchange_command_t turn;
-    turn.value = add;
-    turn.component = PITCH;
+    turn.doPitch = true;
+    turn.pitchValue = add;
     turn.type = TURN;
     AddChange(turn);
 }
@@ -241,19 +328,41 @@ void AimFeature::TurnPitch(float add)
 void AimFeature::SetYaw(float yaw)
 {
     angchange_command_t set;
-    set.value = yaw;
-    set.component = YAW;
+    set.doYaw = true;
+    set.yawValue = yaw;
     set.type = SET;
     AddChange(set);
 }
 void AimFeature::TurnYaw(float add)
 {
     angchange_command_t turn;
-    turn.value = add;
-    turn.component = YAW;
+    turn.doYaw = true;
+    turn.yawValue = add;
     turn.type = TURN;
     AddChange(turn);
 }
+
+void AimFeature::SetAngles(float pitch, float yaw)
+{
+    angchange_command_t set;
+    set.doPitch = true;
+    set.pitchValue = pitch;
+    set.doYaw = true;
+    set.yawValue = yaw;
+    set.type = SET;
+    AddChange(set);
+}
+void AimFeature::TurnAngles(float pitch, float yaw)
+{
+    angchange_command_t turn;
+    turn.doPitch = true;
+    turn.pitchValue = pitch;
+    turn.doYaw = true;
+    turn.yawValue = yaw;
+    turn.type = TURN;
+    AddChange(turn);
+}
+
 void AimFeature::ResetPitchYawCommands()
 {
     angChanges.clear();
@@ -457,8 +566,7 @@ CON_COMMAND(_y_spt_setangles, "Sets the angles")
         return;
     }
 
-    spt_aim.SetPitch(atof(args.Arg(1)));
-    spt_aim.SetYaw(atof(args.Arg(2)));
+    spt_aim.SetAngles(atof(args.Arg(1)), atof(args.Arg(2)));
 }
 
 CON_COMMAND(spt_turnangles, "Turns a number of degrees of pitch (down and up), and yaw (left and right).")
@@ -469,8 +577,7 @@ CON_COMMAND(spt_turnangles, "Turns a number of degrees of pitch (down and up), a
         return;
     }
 
-    spt_aim.TurnPitch(atof(args.Arg(1)));
-    spt_aim.TurnYaw(atof(args.Arg(2)));
+    spt_aim.TurnAngles(atof(args.Arg(1)), atof(args.Arg(2)));
 }
 
 CON_COMMAND(_y_spt_setangle,
@@ -493,6 +600,33 @@ CON_COMMAND(_y_spt_setangle,
     }
 }
 
+CON_COMMAND(spt_angchange_printqueue, "Print currently queued angle changes")
+{
+    if (spt_aim.angChanges.empty())
+    {
+        ConMsg("No angle changed queued.\n");
+	    return;
+    }
+
+    std::ostringstream str;
+    str << "Angle change queue (executed from top to bottom)\n";
+    for (const angchange_command_t& change : spt_aim.angChanges)
+    {
+        str << "    ";
+        const char* indicator = (change.type == SET ? "->" : "+=");
+        if (change.doPitch)
+        {
+            str << "pitch " << indicator << " " << change.pitchValue << "    ";
+        }
+        if (change.doYaw)
+        {
+            str << "yaw " << indicator << " " << change.yawValue;
+        }
+        str << "\n";
+    }
+    ConMsg(str.str().c_str());
+}
+
 void AimFeature::LoadFeature()
 {
     if (spt_generic.ORIG_ControllerMove && spt_playerio.ORIG_CreateMove)
@@ -509,12 +643,14 @@ void AimFeature::LoadFeature()
         InitCommand(_y_spt_setangles);
         InitCommand(spt_turnangles);
         InitCommand(_y_spt_setangle);
+        InitCommand(spt_angchange_printqueue);
 
         InitConcommandBase(_y_spt_anglesetspeed);
         InitConcommandBase(_y_spt_pitchspeed);
         InitConcommandBase(_y_spt_yawspeed);
         InitConcommandBase(tas_anglespeed);
-        InitConcommandBase(spt_angchange_queuing_behavior);
+        InitConcommandBase(spt_angchange_queue_processing);
+        InitConcommandBase(spt_angchange_queue_adding);
 
         cl_pitchup = g_pCVar->FindVar("cl_pitchup");
         cl_pitchdown = g_pCVar->FindVar("cl_pitchdown");
