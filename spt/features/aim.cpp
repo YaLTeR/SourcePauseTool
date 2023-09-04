@@ -604,7 +604,7 @@ CON_COMMAND(spt_angchange_printqueue, "Print currently queued angle changes")
 {
     if (spt_aim.angChanges.empty())
     {
-        ConMsg("No angle changed queued.\n");
+        Msg("No angle changed queued.\n");
 	    return;
     }
 
@@ -624,7 +624,7 @@ CON_COMMAND(spt_angchange_printqueue, "Print currently queued angle changes")
         }
         str << "\n";
     }
-    ConMsg(str.str().c_str());
+    Msg(str.str().c_str());
 }
 
 void AimFeature::LoadFeature()
