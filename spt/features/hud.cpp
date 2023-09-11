@@ -52,15 +52,6 @@ std::string ColorToString(Color color)
 	return std::string(hexString);
 }
 
-#ifdef SSDK2013
-CON_COMMAND(spt_hud_group,
-            "Modifies parameters in given HUD group.\n"
-            "HUD element:\n"
-            "    spt_hud_group <group name|all> add <HUD element> [args]\n"
-            "    spt_hud_group <group name|all> remove <index>\n"
-            "Display: spt_hud_group <group name|all> <show|hide|toggle>\n"
-            "Attributes: spt_hud_group <group name|all> <x|y|pos|font|textcolor|background> [value]")
-#else
 static int HudGroupCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 {
 	std::string s(partial);
@@ -139,7 +130,6 @@ CON_COMMAND_F_COMPLETION(spt_hud_group,
                          "Attributes: spt_hud_group <group name|all> <x|y|pos|font|textcolor|background> [value]",
                          0,
                          HudGroupCompletionFunc)
-#endif
 {
 	if (args.ArgC() < 2)
 	{
@@ -358,9 +348,6 @@ CON_COMMAND(spt_hud_group_add, "Add a HUD group. Usage: spt_hud_group_add <group
 	}
 }
 
-#ifdef SSDK2013
-CON_COMMAND(spt_hud_group_remove, "Remove HUD group(s). Usage: spt_hud_group_remove <group name|all>")
-#else
 static int HudGroupRemoveCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 {
 	std::vector<std::string> suggestions;
@@ -378,7 +365,6 @@ CON_COMMAND_F_COMPLETION(spt_hud_group_remove,
                          "Remove HUD group(s). Usage: spt_hud_group_remove <group name|all>",
                          0,
                          HudGroupRemoveCompletionFunc)
-#endif
 {
 	if (args.ArgC() != 2)
 	{

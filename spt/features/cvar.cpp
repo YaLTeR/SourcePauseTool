@@ -15,9 +15,6 @@ namespace patterns
 
 CvarStuff spt_cvarstuff;
 
-#ifdef SSDK2013
-CON_COMMAND(y_spt_cvar, "CVar manipulation.")
-#else
 static int DevCvarCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 {
 	AutoCompleteList devCvarComplete(spt_cvarstuff.dev_cvars);
@@ -25,7 +22,6 @@ static int DevCvarCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 }
 
 CON_COMMAND_F_COMPLETION(y_spt_cvar, "CVar manipulation.", 0, DevCvarCompletionFunc)
-#endif
 {
 	if (!g_pCVar)
 		return;
@@ -97,14 +93,10 @@ CON_COMMAND(y_spt_cvar_random, "Randomize CVar value.")
 
 #if !defined(OE)
 
-#ifdef SSDK2013
-CON_COMMAND(y_spt_cvar2, "CVar manipulation, sets the CVar value to the rest of the argument string.")
-#else
 CON_COMMAND_F_COMPLETION(y_spt_cvar2,
                          "CVar manipulation, sets the CVar value to the rest of the argument string.",
                          0,
                          DevCvarCompletionFunc)
-#endif
 {
 	if (!g_pCVar)
 		return;

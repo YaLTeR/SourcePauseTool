@@ -227,6 +227,10 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 #endif
 	}
 
+#ifdef SSDK2013
+	ReplaceAutoCompleteSuggest();
+#endif
+
 #if !defined(BMS)
 	auto ptr = interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION, NULL);
 #else
@@ -251,8 +255,8 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	{
 		DevWarning("SPT: Failed to get the IVEngineClient interface.\n");
 		Warning("SPT: spt_afterframes has no effect.\n");
-		Warning("SPT: spt_setpitch and _y_spt_setyaw have no effect.\n");
-		Warning("SPT: spt_pitchspeed and _y_spt_yawspeed have no effect.\n");
+		Warning("SPT: spt_setpitch and spt_setyaw have no effect.\n");
+		Warning("SPT: spt_pitchspeed and spt_yawspeed have no effect.\n");
 		Warning("SPT: spt_stucksave has no effect.\n");
 	}
 

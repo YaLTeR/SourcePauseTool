@@ -1,5 +1,5 @@
 #include "stdafx.hpp"
-#include "spt/features/cvar.hpp"
+#include "cvars.hpp"
 
 #include <stdarg.h>
 #include <algorithm>
@@ -8,6 +8,8 @@
 #include "thirdparty/x86.h"
 #include "tier1\tier1.h"
 
+#include "spt\features\cvar.hpp"
+#include "spt\feature.hpp"
 #include "convar.hpp"
 #include "interfaces.hpp"
 #include "sptlib-wrapper.hpp"
@@ -92,7 +94,8 @@ static void RemoveCommandFromList(ConCommandBase** head, ConCommandBase* command
 		return;
 
 	ConCommandBase_guts* pPrev = NULL;
-	for (ConCommandBase_guts* pCommand = *(ConCommandBase_guts**)head; pCommand; pCommand = (ConCommandBase_guts*)pCommand->m_pNext)
+	for (ConCommandBase_guts* pCommand = *(ConCommandBase_guts**)head; pCommand;
+	     pCommand = (ConCommandBase_guts*)pCommand->m_pNext)
 	{
 		if (pCommand != (ConCommandBase_guts*)command)
 		{
@@ -170,7 +173,6 @@ public:
 
 static CPluginConVarAccessor g_ConVarAccessor;
 #endif // OE
-
 
 // Returns the address of ConCommandBase::s_pConCommandBases
 // This is where commands are stored before being registered
@@ -361,3 +363,26 @@ void Cvar_UnregisterSPTCvars()
 
 	cmd_to_feature.clear();
 }
+
+#ifdef SSDK2013
+CON_COMMAND(spt_dummy, "") {}
+
+// Hack: ConCommand::AutoCompleteSuggest is broken in the SDK. Replacing it with the game's one.
+void ReplaceAutoCompleteSuggest()
+{
+	if (!_record)
+		return;
+	ConCommand_guts* cmd = (ConCommand_guts*)_record;
+
+	const int vtidx_AutoCompleteSuggest = 10;
+	ConCommand_guts* dummy = (ConCommand_guts*)&spt_dummy_command;
+
+	void* temp;
+	Feature::AddVFTableHook(VFTableHook(dummy->vfptr,
+	                                    vtidx_AutoCompleteSuggest,
+	                                    cmd->vfptr[vtidx_AutoCompleteSuggest],
+	                                    &temp),
+	                        "spt-2013");
+}
+
+#endif
