@@ -7,6 +7,10 @@ void Cvar_UnregisterSPTCvars();
 void Cvar_InitConCommandBase(ConCommandBase& concommand, void* owner);
 void FormatConCmd(const char* fmt, ...);
 
+#ifdef SSDK2013
+void ReplaceAutoCompleteSuggest();
+#endif
+
 
 extern ConVar* _viewmodel_fov;
 extern ConCommand* _record;

@@ -282,7 +282,7 @@ CON_COMMAND(y_spt_cam_path_getkfs, "Prints all keyframes in commands.")
 	for (const auto& kv : spt_camera.keyframes)
 	{
 		Camera::CameraInfo info = kv.second;
-		Msg("y_spt_cam_path_setkf %d %f %f %f %f %f %f %f;\n",
+		Msg("spt_cam_path_setkf %d %f %f %f %f %f %f %f;\n",
 		    kv.first,
 		    info.origin.x,
 		    info.origin.y,
@@ -294,10 +294,6 @@ CON_COMMAND(y_spt_cam_path_getkfs, "Prints all keyframes in commands.")
 	}
 }
 
-#ifdef SSDK2013
-// autocomplete crashes on stemapipe :((
-CON_COMMAND(y_spt_cam_path_rmkf, "Removes a keyframe.")
-#else
 static int y_spt_cam_path_rmkf_CompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 {
 	std::vector<std::string> completion;
@@ -310,7 +306,6 @@ static int y_spt_cam_path_rmkf_CompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 }
 
 CON_COMMAND_F_COMPLETION(y_spt_cam_path_rmkf, "Removes a keyframe.", 0, y_spt_cam_path_rmkf_CompletionFunc)
-#endif
 {
 	if (args.ArgC() != 2)
 	{

@@ -164,7 +164,7 @@ void VagSearcher::StartIterations()
 {
 	if (!y_spt_prevent_vag_crash.GetBool())
 	{
-		Msg("Auto enable y_spt_prevent_vag_crash.\n");
+		Msg("Auto enable spt_prevent_vag_crash.\n");
 		y_spt_prevent_vag_crash.SetValue(1);
 	}
 
