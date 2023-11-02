@@ -5,16 +5,19 @@ A plugin for all your pausing needs.
 
 ### Usage
 1. Download the DLL corresponding to your game / engine / SDK:
-    SDK                                                              | SPT DLL
-    ---------------------------------------------------------------- | --------------
-    Source SDK (Base) 2007 / New Engine / Source Unpack / Orange Box | `spt.dll`
-    Source SDK (Base) 2013 / SteamPipe / Latest                      | `spt-2013.dll`
-    Black Mesa                                                       | `spt-bms.dll`
-    Source SDK (Base) 2006 / Old Engine                              | `spt-oe.dll`
+    SDK                                                               | SPT DLL
+    ----------------------------------------------------------------- | --------------
+    Source SDK (Base) 2007 / New Engine / Source Unpack* / Orange Box | `spt.dll`
+    Source SDK (Base) 2013 / SteamPipe / Latest                       | `spt-2013.dll`
+    Black Mesa                                                        | `spt-bms.dll`
+    Source SDK (Base) 2006 / Old Engine                               | `spt-oe.dll`
+    
+    \* Including Portal 3420
+
 2. Place the DLL into the correct folder:
     SDK                        | Folder
     -------------------------- | -----------------------------------------
-    Old Engine / Portal (3420) | Topmost `bin` with `AdminServer.dll` etc.
+    Old Engine & Portal (3420) | Topmost `bin` with `AdminServer.dll` etc.
     Old Engine mods            | `Source SDK Base\bin`
     Half-Life: Source          | `hl1`
     Half-Life 2                | `hl2`
@@ -28,13 +31,12 @@ A plugin for all your pausing needs.
 5. Press the tilde key (<kbd>~</kbd>) and enter `plugin_load spt` into the developer console.
     * You must `disconnect` first in Black Mesa.
     * Add `plugin_load spt` to `cfg/autoexec.cfg` to load SourcePauseTool automatically.
-    * *Loading SourcePauseTool more than once will crash the game!*
 
 ### Building
-0. You will need [Visual Studio 2019](https://visualstudio.microsoft.com/free-developer-offers/) (or later) and [git](https://git-scm.com).
-1. Open Visual Studio 2019. Click on Tools → Get Tools and Features... from the top bar of the window.
+0. You will need [Visual Studio 2022](https://visualstudio.microsoft.com/free-developer-offers/) (or later) and [git](https://git-scm.com).
+1. Open Visual Studio 2022. Click on Tools → Get Tools and Features... from the top bar of the window.
 <br>This should open the Visual Studio Installer in another window. From the Workload tab, install `Desktop development with C++`. From the Individual Components tab, install:
-    * MSVC v142 - VS 2019 C++ x64/x86 build tools
+    * MSVC v143 - VS 2022 C++ x64/x86 build tools
 2. Run the following in cmd:
     ```
     git clone --recurse-submodules https://github.com/YaLTeR/SourcePauseTool.git
