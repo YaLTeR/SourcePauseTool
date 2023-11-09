@@ -148,9 +148,114 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CSourcePauseTool,
                                   g_SourcePauseTool);
 #endif
 
+class SDKVersion
+{
+public:
+	enum Value : uint8_t
+	{
+		SDK_UNKNOWN,
+		SDK_2007,
+		SDK_2013,
+		SDK_BMS,
+		SDK_OE,
+	};
+
+	SDKVersion() = default;
+
+	constexpr SDKVersion(Value version) : value(version) {}
+
+	constexpr operator Value() const
+	{
+		return value;
+	}
+
+	explicit operator bool() const = delete;
+
+	const char* GetSPTName()
+	{
+		switch (value)
+		{
+		case SDK_2007:
+			return "spt.dll";
+		case SDK_2013:
+			return "spt-2013.dll";
+		case SDK_BMS:
+			return "spt-bms.dll";
+		case SDK_OE:
+			return "spt-oe.dll";
+		default:
+			return "";
+		}
+	}
+
+private:
+	Value value;
+};
+
+static SDKVersion sptSDKVersion =
+#if defined(SSDK2007)
+    SDKVersion::SDK_2007
+#elif defined(SSDK2013)
+    SDKVersion::SDK_2013
+#elif defined(BMS)
+    SDKVersion::SDK_BMS
+#elif defined(OE)
+    SDKVersion::SDK_OE
+#else
+#error "Unknown SDK version"
+#endif
+    ;
+
+static SDKVersion CheckSDKVersion(CreateInterfaceFn interfaceFactory)
+{
+	void* icvar = interfaceFactory("VEngineCvar003", NULL);
+	if (icvar)
+		return SDKVersion::SDK_OE;
+	icvar = interfaceFactory("VEngineCvar004", NULL);
+	if (!icvar)
+		return SDKVersion::SDK_UNKNOWN;
+
+	typedef void*(__thiscall * FindCommandBase_func)(void* thisptr, const char* name);
+
+	// GENIUS HACK (BUT STILL BAD) (from SST): BMS has everything in ICvar shifted
+	// down 3 places due to the extra stuff in IAppSystem. This means that
+	// if we look up the BMS-specific cvar using FindCommandBase, it
+	// *actually* calls the const-overloaded FindVar on other branches,
+	// which just happens to still work fine.
+
+	auto find_commandbase_bms = (*(FindCommandBase_func**)(icvar))[13];
+	if (find_commandbase_bms(icvar, "kill"))
+		return SDKVersion::SDK_BMS;
+
+	if (interfaceFactory("VEngineClient014", NULL))
+		return SDKVersion::SDK_2013;
+
+	return SDKVersion::SDK_2007;
+}
+
 bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory)
 {
 	auto startTime = std::chrono::high_resolution_clock::now();
+
+	SDKVersion detectedVersion = CheckSDKVersion(interfaceFactory);
+	if (detectedVersion != sptSDKVersion)
+	{
+		if (detectedVersion == SDKVersion::SDK_UNKNOWN)
+		{
+			Warning("This game is not supported by SPT.\n");
+		}
+		else
+		{
+			Warning(
+			    "You might be using the wrong SPT build (%s)\n"
+			    "The correct SPT build seems to be %s\n",
+			    sptSDKVersion.GetSPTName(),
+			    detectedVersion.GetSPTName());
+		}
+
+		skipUnload = true;
+		return false;
+	}
 
 	if (pluginLoaded)
 	{
