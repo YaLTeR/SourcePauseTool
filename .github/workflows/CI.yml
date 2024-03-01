@@ -29,10 +29,10 @@ jobs:
           - {SDK: episode1, Configuration_2: ' OE'}
     steps:
       - name: Checkout SPT
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Checkout submodules
         run: git submodule update --init -j $env:NUMBER_OF_PROCESSORS SPTLib SDK\${{ matrix.config.SDK }}
-      - uses: microsoft/setup-msbuild@v1.1
+      - uses: microsoft/setup-msbuild@v2
       - name: Build
         run: msbuild -m -nologo -p:Configuration="${{ matrix.Configuration }}${{ matrix.config.Configuration_2 }}" spt.sln
       - name: Get SPT DLL name
@@ -40,7 +40,7 @@ jobs:
         run: |
           $spt_filename = (Get-Item "${{ matrix.Configuration }}${{ matrix.config.Configuration_2 }}\spt*.dll").BaseName
           echo "spt_filename=$spt_filename" >> $env:GITHUB_OUTPUT
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.Configuration }}${{ matrix.config.Configuration_2 }} - ${{ steps.get_spt_filename.outputs.spt_filename }}
           path: ${{ matrix.Configuration }}${{ matrix.config.Configuration_2 }}\${{ steps.get_spt_filename.outputs.spt_filename }}.dll
