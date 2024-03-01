@@ -314,7 +314,7 @@ void PortalPlacement::OnMeshRenderSignal(MeshRendererDelegate& mr)
 
 		size_t maxVerts, maxIndices;
 		GetMaxMeshSize(maxVerts, maxIndices, true);
-		const int maxCubesPerMesh = MIN(maxIndices / 36, maxVerts / 8);
+		const int maxCubesPerMesh = MIN(maxIndices / 36, maxVerts / 8) - 1;
 
 		for (size_t start = 0; start < ppGrid.unmergedPts.size(); start += maxCubesPerMesh)
 		{
@@ -329,7 +329,7 @@ void PortalPlacement::OnMeshRenderSignal(MeshRendererDelegate& mr)
 		UpdatePlacementInfo();
 		placementInfoUpdateRequested = false;
 	}
-	
+
 	if (!y_spt_draw_pp.GetBool())
 		return;
 
@@ -371,7 +371,7 @@ void PortalPlacement::RunPpGridIteration(MeshRendererDelegate& mr)
 
 	size_t maxVerts, maxIndices;
 	GetMaxMeshSize(maxVerts, maxIndices, false);
-	const size_t maxCubesPerMesh = MIN(maxIndices / 36, maxVerts / 8);
+	const size_t maxCubesPerMesh = MIN(maxIndices / 36, maxVerts / 8) - 1;
 
 	int gridWidth = ppGrid.gridWidth;
 	int numGridPts = gridWidth * gridWidth;
@@ -428,8 +428,15 @@ void PortalPlacement::RunPpGridIteration(MeshRendererDelegate& mr)
 		bool fizzle;
 
 		const int PORTAL_PLACED_BY_PLAYER = 2;
-		float placementResult = spt_tracing.ORIG_TraceFirePortal(
-		    pgun, bPortal2, ppGrid.camPos, dir, tr, placePos, placeAng, PORTAL_PLACED_BY_PLAYER, true);
+		float placementResult = spt_tracing.ORIG_TraceFirePortal(pgun,
+		                                                         bPortal2,
+		                                                         ppGrid.camPos,
+		                                                         dir,
+		                                                         tr,
+		                                                         placePos,
+		                                                         placeAng,
+		                                                         PORTAL_PLACED_BY_PLAYER,
+		                                                         true);
 
 		if (!tr.DidHit())
 			continue;
@@ -588,11 +595,11 @@ void PortalPlacement::LoadFeature()
 			    else if (mode == 2)
 			    {
 				    spt_hud_feat.DrawColorTopHudElement(blueTextColor,
-				                                   L"Portal1: %s",
-				                                   PlacementResultToString(spt_pp.p1));
+				                                        L"Portal1: %s",
+				                                        PlacementResultToString(spt_pp.p1));
 				    spt_hud_feat.DrawColorTopHudElement(orangeTextColor,
-				                                   L"Portal2: %s",
-				                                   PlacementResultToString(spt_pp.p2));
+				                                        L"Portal2: %s",
+				                                        PlacementResultToString(spt_pp.p2));
 			    }
 			    else
 			    {
