@@ -24,6 +24,8 @@ ConVar spt_draw_world_collides(
     "    - white: displacement\n"
     "    - red: static prop");
 
+extern ConVar tas_pause;
+
 // this hidden cvar can be used to change the mask
 const std::string _g_default_mask_str = std::to_string(MASK_PLAYERSOLID | MASK_VISIBLE);
 ConVar spt_draw_world_collides_mask("spt_draw_world_collides_mask",
@@ -108,7 +110,7 @@ private:
 		// this does not work when we're in a vehicle, we'd want to use a modified version of CBasePlayer::CalcView
 		Vector eyePos = utils::GetPlayerEyePosition();
 		static utils::CachedField<QAngle, "CBasePlayer", "pl.v_angle", true, true> vangle;
-		QAngle eyeAng = *vangle.GetPtrPlayer();
+		QAngle eyeAng = tas_pause.GetBool() ? utils::GetPlayerEyeAngles() : *vangle.GetPtrPlayer();
 
 		// this transform may be slightly off since it uses client-side ents
 		auto env = GetEnvironmentPortal();
