@@ -102,7 +102,7 @@
 #define MVD_ROLLBACK(mvd) \
 	{ \
 		mvd.verts.resize(mvd##_origNumVerts); \
-		mvd.verts.resize(mvd##_origNumIndices); \
+		mvd.indices.resize(mvd##_origNumIndices); \
 	}
 
 #define MVD_ROLLBACK2(mvd1, mvd2) \

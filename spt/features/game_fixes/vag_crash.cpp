@@ -15,6 +15,11 @@ ConVar y_spt_prevent_vag_crash(
     FCVAR_CHEAT | FCVAR_DONTRECORD,
     "Prevents the game from crashing from too many recursive teleports (useful when searching for vertical angle glitches).\n");
 
+CON_COMMAND(spt_touch_grass, "crashes the game")
+{
+	abort();
+}
+
 // spt_prevent_vag_crash
 class VAG : public FeatureWrapper<VAG>
 {
@@ -68,6 +73,7 @@ void VAG::LoadFeature()
 		VagCrashSignal.Works = true;
 	}
 	recursiveTeleportCount = 0;
+	InitCommand(spt_touch_grass);
 }
 
 void VAG::UnloadFeature() {}
