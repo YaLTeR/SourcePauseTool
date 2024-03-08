@@ -54,6 +54,9 @@ public:
 	int				m_nButtons;			// Attack buttons.
 	int				m_nOldButtons;		// From host_client->oldbuttons;
 	float			m_flForwardMove;
+#if BMS
+	int UNKNOWN001;
+#endif
 	float			m_flSideMove;
 	float			m_flUpMove;
 	
