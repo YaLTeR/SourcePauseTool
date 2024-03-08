@@ -83,7 +83,9 @@ namespace patterns
 	         "7467727-hl2",
 	         "55 8B EC 81 EC A0 00 00 00 83 3D ?? ?? ?? ?? 00");
 	PATTERNS(CSkyBoxView__DrawInternal,
-	         "5135-portal1",
+	         "EZ2-1.0.0+original",
+	         "55 8B EC 81 EC 28 01 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 ?? 8B 45 ??",
+			 "5135-portal1",
 	         "83 EC 28 53 56 8B F1 8B 0D ?? ?? ?? ??",
 	         "7467727-hl2",
 	         "55 8B EC 83 EC 24 53 56 57 8B F9 8B 0D ?? ?? ?? ??");
