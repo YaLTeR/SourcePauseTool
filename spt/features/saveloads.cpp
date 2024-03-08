@@ -4,27 +4,46 @@
 #include "signals.hpp"
 #include "convar.hpp"
 #include "..\features\afterticks.hpp"
-#include "generic.hpp"
-#include "hud.hpp"
 #include <format>
 
 static std::vector<const char*> _saveloadTypes = {"segment", "execute", "render"};
-static const char saveloads_usage[] =
+static const char saveloads_info[] =
+    "Initiates a new save/load session.\n"
     "Arguments: spt_saveloads <type> <segment name> <start index> <end index> [<ticks to wait>] [<extra commands>].\n"
-    "  - <type> is the type of the save/load process, which can be\n"
-    "	- \"segment\" for full save/load segment creation. Saves and demos for each save/load will be made and named accordingly.\n"
-    "	- \"execute\" for save/load execution. The tool will only use 1 name for saves, and no demos will be made.\n"
-    "	- \"render\" for save/load segment rendering. Saves and demos will be loaded in order according to the specified naming format and then screenshotted.\n"
-    "	These will determine what set of commands will be executed.\n"
-    "  - <segment name> is the segment name, which will be used to name the saves and demos (format: <segment name>-<index>)\n"
-    "  - <start index> is the index from which the saves and demos will be named from.\n"
-    "  - <end index> is the index up to which SPT will process.\n"
-    "  - OPTIONAL: <ticks to wait> is the number of ticks to wait after a save is loaded before SPT executes the commands of the corresponding process type.\n\n"
-    "  - OPTIONAL: <extra commands> is a string containing extra commands to be executed every save/load \n\n"
-    "Usage: \n"
-    "  - Enter in the command.\n"
-    "  - Load the save from which the process should begin from. The save/load process will begin automatically.\n"
-    "  - Use \"spt_saveloads_stop\" at any time to stop the process.";
+    "\n"
+    "* Required arguments:\n"
+    "   - <type> determines what the command does during for this session. Valid values include:\n"
+    "      - 'segment': Full save/load segment creation. Saves and demos for each save/load will be kept and named properly.\n"
+    "      - 'execute': Partial save/load execution. No demos will be made and only the last save/load's save is kept.\n"
+    "      - 'render':  Renders an existing save/load segment. The provided segment name will be used to load up saves for screenshotting.\n"
+    "   - <segment name> determines the name that the session will refer to for saves and demos.\n"
+    "   - <start index> determines the starting index for saves and demos.\n"
+    "   - <end index> determines the ending index for saves and demos.\n"
+    "\n"
+    "* Optional arguments:\n"
+    "   - <ticks to wait> is the number of ticks to wait after a save is loaded before executing commands. Default value is 0.\n"
+    "   - <extra commands> determines the commands to be executed right after a save has finished loading. These commands are not deferred by the delay specified by ticks to wait. Default is empty.\n"
+    "\n"
+    "* Examples:\n"
+    "   - 'spt_saveloads segment 001-abc 0 100' will:\n"
+    "       - Do 101 save/loads.\n"
+    "       - Generate '001-abc-000.dem', '001-abc-000.sav'; '001-abc-001.dem', '001-abc-001.sav'; and so on.\n"
+    "   - 'spt_saveloads execute 001-abc 0 100' will:\n"
+    "       - Do 101 save/loads.\n"
+    "       - Only generate a '001-abc.sav' file which is of the last save/load.\n"
+    "   - 'spt_saveloads render 001-abc 0 100' will:\n"
+    "       - Load the save '001-abc-000', then screenshot.\n"
+    "       - Load the save '001-abc-001', then screenshot.\n"
+    "       - ... repeat until '001-abc-100' is loaded and screenshotted.\n"
+    "   - 'spt_saveloads segment 001-abc 0 100 100 \"+duck\"' will:\n"
+    "       - Do 101 save/loads.\n"
+    "       - Generate '001-abc-000.dem', '001-abc-000.sav'; '001-abc-001.dem', '001-abc-001.sav'; and so on.\n"
+    "       - Right after a save is loaded, it will send the command '+duck', then wait 100 ticks before running save and demo commands."
+    "\n"
+    "* Usage: \n"
+    "   - Enter in the command.\n"
+    "   - Load the save from which the session should begin from. The save/loading will begin automatically.\n"
+    "   - Use the 'spt_saveloads_stop' command at any time to stop the session.";
 
 // Feature that does automated save/loading operations, such as save/load segment creation or rendering
 class SaveloadsFeature : public FeatureWrapper<SaveloadsFeature>
@@ -57,11 +76,12 @@ private:
 
 static SaveloadsFeature spt_saveloads;
 
-CON_COMMAND(y_spt_saveloads, "Begins an automated save/load process")
+CON_COMMAND(y_spt_saveloads,
+            "Initiates a new save/load session. Enter this command without arguments for detailed help.")
 {
 	if (args.ArgC() < 4)
 	{
-		Msg("%s\n", saveloads_usage);
+		Msg("%s\n", saveloads_info);
 		return;
 	}
 
@@ -78,7 +98,7 @@ CON_COMMAND(y_spt_saveloads, "Begins an automated save/load process")
 	if (type == -1)
 	{
 		type = 0;
-		Warning("SAVELOADS: Invalid save/load process type! Using \"segment\" instead.\n");
+		Warning("SAVELOADS: Invalid save/load session type! Using \"segment\" instead.\n");
 	}
 
 	spt_saveloads.Begin(type,
@@ -89,7 +109,7 @@ CON_COMMAND(y_spt_saveloads, "Begins an automated save/load process")
 	                    args.ArgC() == 6 ? nullptr : args.Arg(6));
 }
 
-CON_COMMAND(y_spt_saveloads_stop, "Stops the current save/loading process.")
+CON_COMMAND(y_spt_saveloads_stop, "Stops the current save/loading session.")
 {
 	spt_saveloads.Stop();
 }
@@ -97,7 +117,7 @@ CON_COMMAND(y_spt_saveloads_stop, "Stops the current save/loading process.")
 ConVar y_spt_hud_saveloads_showcurindex("y_spt_hud_saveloads_showcurindex",
                                         "0",
                                         0,
-                                        "Shows the current save/load index of the current save/load process.\n");
+                                        "Shows the current save/load index of the current save/load session.\n");
 
 bool SaveloadsFeature::ShouldLoadFeature()
 {
@@ -141,7 +161,7 @@ void SaveloadsFeature::Begin(int type_,
 {
 	if (type_ > 2 || type_ < 0)
 	{
-		Warning("SAVELOADS: Invalid save/load process type! Not continuing.\n");
+		Warning("SAVELOADS: Invalid save/load session type! Not continuing.\n");
 		return;
 	}
 
@@ -160,12 +180,12 @@ void SaveloadsFeature::Begin(int type_,
 
 	execute = true;
 
-	Msg("------\n\nSAVELOADS: Save/load process:\n\
-	- Type: %s\n\
-	- Segment name: \"%s\"\n\
-	- From index %i to index %i (%i save/loads)\n\
-	- Wait time before action: %i\n\
-	- Extra commands: \"%s\"\n\n\
+	Msg("------\n\nSAVELOADS: Save/load session:\n\
+    - Type: %s\n\
+    - Segment name: \"%s\"\n\
+    - From index %i to index %i (%i save/loads)\n\
+    - Wait time before action: %i\n\
+    - Extra commands: \"%s\"\n\n\
 Please load the save from which save/loading should begin.\n",
 	    _saveloadTypes[type_],
 	    segName_,
@@ -174,7 +194,7 @@ Please load the save from which save/loading should begin.\n",
 	    endIndex_ - startIndex_ + 1,
 	    ticksToWait_,
 	    this->extraCommands.c_str());
-	Warning("Use \"spt_saveloads_stop\" to stop the process!!! You should bind it to something.\n");
+	Warning("Use \"spt_saveloads_stop\" to stop the session!!! You should bind it to something.\n");
 	Msg("\n------\n");
 }
 
@@ -187,7 +207,7 @@ void SaveloadsFeature::Stop()
 	execute = false;
 	;
 	spt_afterticks.ResetAfterticksQueue();
-	Warning("SAVELOADS: Save/load process stopped.\n");
+	Warning("SAVELOADS: Save/load session stopped.\n");
 }
 
 void SaveloadsFeature::OnSetSignonState(void* thisptr, int state)
@@ -218,9 +238,7 @@ void SaveloadsFeature::OnSetSignonState(void* thisptr, int state)
 
 		EngineConCmd(std::format("record {}", segName).c_str());
 		command = std::format(
-		    "save {0};\
-spt_afterticks 20 \"echo #SAVE#\"; spt_afterticks 25 \"stop\";\
-spt_afterticks 30 \"load {0}\"",
+		    "save {0}; spt_afterticks 20 \"echo #SAVE#\"; spt_afterticks 25 \"stop\"; spt_afterticks 30 \"load {0}\"",
 		    segName,
 		    extraCommands,
 		    prefixName);
@@ -257,6 +275,6 @@ spt_afterticks 30 \"load {0}\"",
 	if (startIndex > endIndex)
 	{
 		execute = false;
-		Warning("SAVELOADS: Save/load process finished.\n");
+		Warning("SAVELOADS: Save/load session finished.\n");
 	}
 }
