@@ -3,19 +3,12 @@
 #include "..\generic.hpp"
 #include "signals.hpp"
 
-#ifdef BMS
-ConVar y_spt_fast_loads(
-    "y_spt_fast_loads",
-    "1",
-    0,
-    "Increases FPS and turns off rendering during loads to speed up load times. Values greater than one set fps_max to the value after loading.");
-#else
+
 ConVar y_spt_fast_loads(
     "y_spt_fast_loads",
     "0",
     0,
     "Increases FPS and turns off rendering during loads to potentially speed up long load times. Values greater than one set fps_max to the value after loading.");
-#endif
 
 // Speed up loads minimally
 class FastLoads : public FeatureWrapper<FastLoads>
@@ -23,6 +16,7 @@ class FastLoads : public FeatureWrapper<FastLoads>
 public:
 	ConVar* fps_max = nullptr;
 	ConVar* mat_norendering = nullptr;
+	float prevfps_max;
 	void TurnOnFastLoads();
 	void TurnOffFastLoads();
 
@@ -76,7 +70,7 @@ void FastLoads::TurnOffFastLoads()
 		}
 		else
 		{
-			fast_loads.fps_max->SetValue(300);
+			fast_loads.fps_max->SetValue(prevfps_max);
 		}
 		fast_loads.mat_norendering->SetValue(0);
 	}
@@ -86,6 +80,7 @@ void FastLoads::TurnOnFastLoads()
 {
 	if (y_spt_fast_loads.GetBool())
 	{
+		prevfps_max = fast_loads.fps_max->GetFloat();
 		fast_loads.fps_max->SetValue(0);
 		fast_loads.mat_norendering->SetValue(1);
 	}

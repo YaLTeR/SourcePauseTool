@@ -1,15 +1,16 @@
 #include "stdafx.hpp"
-
-#ifdef BMS
 #include "..\feature.hpp"
-#define GAME_DLL
-#include "cbase.h"
-#include "inetmessage.h"
-#include "recipientfilter.h"
 
 namespace patterns
 {
-	PATTERNS(BroadcastMessage, "BMS-0.9", "55 8B EC 51 53 8B 5D ?? 56 8B F1 8B CB 89 75 ??");
+	PATTERNS(Host_Error,
+		"BMS-0.9",
+		"55 8B EC 81 EC 04 04 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 ?? FF 05",
+		"5135",
+		"83 05 ?? ?? ?? ?? 01 81 EC 00 04 00 00 80 3D ?? ?? ?? ?? 00 74 ?? 68 ?? ?? ?? ?? E8 ?? ?? ?? ?? 83 C4 04",
+	    "SDK2013", // Also works for current(8491853) steampipe
+	    "55 8B EC FF 05 ?? ?? ?? ?? 81 EC 00 04 00 00 80 3D ?? ?? ?? ?? 00 74")
+
 }
 
 // ""Fix"" crashing and hardlocking if issuing too many commands too fast during a load
@@ -21,7 +22,7 @@ protected:
 	virtual void InitHooks() override;
 
 private:
-	DECL_HOOK_THISCALL(void, BroadcastMessage, void*, INetMessage& msg, IRecipientFilter& filter) {}
+	DECL_HOOK_CDECL(void, Host_Error, const char* error, ...);
 };
 
 static HardlockFix hardlock_fix;
@@ -33,7 +34,20 @@ bool HardlockFix::ShouldLoadFeature()
 
 void HardlockFix::InitHooks()
 {
-	HOOK_FUNCTION(engine, BroadcastMessage);
+	HOOK_FUNCTION(engine, Host_Error);
 }
 
-#endif
+IMPL_HOOK_CDECL(HardlockFix, void, Host_Error, const char* error, ...) {
+
+	if (strncmp(error, "Reliable message (type ", 23) == 0) // I'm not mid function hooking for this, easier to just prevent the specfic call...
+	{
+		return;
+	}
+	else
+	{
+		va_list args;
+		va_start(args, error);
+		hardlock_fix.ORIG_Host_Error(error, args);
+		va_end(args);
+	}
+}
