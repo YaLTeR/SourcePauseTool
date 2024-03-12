@@ -8,7 +8,6 @@
 
 #include "convar.hpp"
 
-#if defined(SSDK2007) || defined(SSDK2013) || defined(OE)
 
 ConVar y_spt_hud_isg("y_spt_hud_isg", "0", FCVAR_CHEAT, "Is the ISG flag set?\n");
 
@@ -20,7 +19,9 @@ namespace patterns
 	         "1910503",
 	         "C6 05 ?? ?? ?? ?? 01 4E 3B 75 ?? 7D ??",
 	         "DMoMM",
-	         "C6 05 ?? ?? ?? ?? 01 83 EE 01 3B 74 24 30 7D D5");
+	         "C6 05 ?? ?? ?? ?? 01 83 EE 01 3B 74 24 30 7D D5",
+	         "BMS-0.9",
+	         "C6 05 ?? ?? ?? ?? 01 4E 3B B5 ?? ?? ?? ?? 7D ?? 8B 8D ?? ?? ?? ?? 8B 9D ?? ?? ?? ?? 0F B7 85");
 }
 
 // This feature enables the ISG setting and HUD features
@@ -93,12 +94,3 @@ void ISGFeature::LoadFeature()
 }
 
 void ISGFeature::UnloadFeature() {}
-
-#else
-
-bool IsISGActive()
-{
-	return false;
-}
-
-#endif
