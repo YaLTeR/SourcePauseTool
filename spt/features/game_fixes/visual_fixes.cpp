@@ -30,6 +30,10 @@ ConVar y_spt_override_tpose("y_spt_override_tpose",
                             "Override Chell's t-pose animation with the given sequence, use 17 for standing in air.");
 #endif
 
+ConVar spt_viewmodel_offset_x("spt_viewmodel_offset_x", "0.0", FCVAR_ARCHIVE, "The viewmodel offset from default in X");
+ConVar spt_viewmodel_offset_y("spt_viewmodel_offset_y", "0.0", FCVAR_ARCHIVE, "The viewmodel offset from default in Y");
+ConVar spt_viewmodel_offset_z("spt_viewmodel_offset_z", "0.0", FCVAR_ARCHIVE, "The viewmodel offset from default in Z");
+
 // Misc visual fixes
 class VisualFixes : public FeatureWrapper<VisualFixes>
 {
@@ -64,6 +68,13 @@ private:
 	_C_BaseAnimating__SetSequence ORIG_C_BaseAnimating__SetSequence = nullptr;
 	static void __fastcall HOOKED_C_BaseAnimating__SetSequence(void* thisptr, int edx, int nSequence);
 #endif
+
+	DECL_HOOK_THISCALL(void,
+	                   C_BaseViewModel__CalcViewModelView,
+	                   void*,
+	                   void* owner,
+	                   const Vector& eyePosition,
+	                   const QAngle& eyeAngles);
 
 	void OnFinishRestore(void* thisptr);
 };
@@ -122,6 +133,11 @@ namespace patterns
 	         "A1 ?? ?? ?? ?? 83 78 30 00 75 ?? C6 05 ?? ?? ?? ?? 01",
 	         "7122284",
 	         "A1 ?? ?? ?? ?? BA 01 00 00 00 0F B6 0D ?? ?? ?? ?? 83 78 30 00");
+	PATTERNS(C_BaseViewModel__CalcViewModelView,
+	         "5135",
+	         "83 EC 24 8B 44 24 ?? 8B 50 ?? 56 8B f1 8B 08",
+	         "7122284",
+	         "55 8B EC 83 EC 24 8B 55 ?? 56 57 8B F9");
 } // namespace patterns
 
 void VisualFixes::InitHooks()
@@ -134,6 +150,7 @@ void VisualFixes::InitHooks()
 	HOOK_FUNCTION(client, C_BaseAnimating__SetSequence);
 #endif
 	FIND_PATTERN(client, CAM_ToThirdPerson);
+	HOOK_FUNCTION(client, C_BaseViewModel__CalcViewModelView);
 }
 
 bool VisualFixes::ShouldLoadFeature()
@@ -198,6 +215,13 @@ void VisualFixes::LoadFeature()
 		FinishRestoreSignal.Connect(this, &VisualFixes::OnFinishRestore);
 		thirdPersonFlag = *(bool**)((uintptr_t)ORIG_CAM_ToThirdPerson + 13);
 	}
+
+	if (!g_pCVar->FindVar("viewmodel_offset_x") && ORIG_C_BaseViewModel__CalcViewModelView)
+	{
+		InitConcommandBase(spt_viewmodel_offset_x);
+		InitConcommandBase(spt_viewmodel_offset_y);
+		InitConcommandBase(spt_viewmodel_offset_z);
+	}
 }
 
 void VisualFixes::UnloadFeature() {}
@@ -259,6 +283,27 @@ void __fastcall VisualFixes::HOOKED_C_BaseAnimating__SetSequence(void* thisptr, 
 	spt_visual_fixes.ORIG_C_BaseAnimating__SetSequence(thisptr, edx, nSequence);
 }
 #endif
+
+IMPL_HOOK_THISCALL(VisualFixes,
+                   void,
+                   C_BaseViewModel__CalcViewModelView,
+                   void*,
+                   void* owner,
+                   const Vector& eyePosition,
+                   const QAngle& eyeAngles)
+{
+	Vector vmorigin = eyePosition;
+
+	Vector vecRight;
+	Vector vecUp;
+	Vector vecForward;
+	AngleVectors(eyeAngles, &vecForward, &vecRight, &vecUp);
+
+	vmorigin += (vecForward * spt_viewmodel_offset_y.GetFloat()) + (vecUp * spt_viewmodel_offset_z.GetFloat())
+	            + (vecRight * spt_viewmodel_offset_x.GetFloat());
+
+	spt_visual_fixes.ORIG_C_BaseViewModel__CalcViewModelView(thisptr, owner, vmorigin, eyeAngles);
+}
 
 void VisualFixes::OnFinishRestore(void* thisptr)
 {
