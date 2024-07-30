@@ -124,7 +124,6 @@
 	X(X86_INT3,       0xCC) \
 	X(X86_INTO,       0xCE) \
 	X(X86_XLAT,       0xD7) \
-	X(X86_JMPI8,      0xEB) \
 	X(X86_CMC,        0xF5) \
 	X(X86_CLC,        0xF8) \
 	X(X86_STC,        0xF9) \
@@ -177,7 +176,8 @@
 	X(X86_LOOPNZ,  0xE0) /* AKA LOOPNE */ \
 	X(X86_LOOPZ,   0xE1) /* AKA LOOPE */ \
 	X(X86_LOOP,    0xE2) \
-	X(X86_JCXZ,    0xE3)
+	X(X86_JCXZ,    0xE3) \
+	X(X86_JMPI8,   0xEB)
 
 /* Single-byte opcodes with a word-sized immediate operand */
 #define X86_OPS_1BYTE_IW(X) \
