@@ -1,0 +1,6 @@
+To update Dear ImGui files go to https://github.com/ocornut/imgui/tree/docking.
+1) Switch to a commit with the tag X.XX.X-docking.
+2) Copy all .h & .cpp files in the main imgui directory as well as the dx9 & win32 backends EXCEPT for the imconfig.h file.
+3) Add '#include <stdafx.hpp>' to all .cpp files.
+
+- uncrafted

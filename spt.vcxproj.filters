@@ -355,6 +355,30 @@
     <ClCompile Include="spt\features\visualizations\drawline.cpp">
       <Filter>spt\features\visualizations</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\visualizations\imgui\imgui_interface.cpp">
+      <Filter>spt\features\visualizations\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\imgui\imgui.cpp">
+      <Filter>thirdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\imgui\imgui_demo.cpp">
+      <Filter>thirdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\imgui\imgui_draw.cpp">
+      <Filter>thirdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\imgui\imgui_tables.cpp">
+      <Filter>thirdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\imgui\imgui_widgets.cpp">
+      <Filter>thirdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\imgui\imgui_impl_dx9.cpp">
+      <Filter>thirdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\imgui\imgui_impl_win32.cpp">
+      <Filter>thirdparty\imgui</Filter>
+    </ClCompile>
     <ClCompile Include="spt\spt-version.cpp">
       <Filter>spt</Filter>
     </ClCompile>
@@ -729,6 +753,51 @@
     <ClInclude Include="patterns_archive.hpp">
       <Filter>spt</Filter>
     </ClInclude>
+    <ClInclude Include="thirdparty\imgui\imconfig.h">
+      <Filter>thirdparty\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\imgui\imgui.h">
+      <Filter>thirdparty\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\imgui\imgui_internal.h">
+      <Filter>thirdparty\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\imgui\imstb_rectpack.h">
+      <Filter>thirdparty\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\imgui\imstb_textedit.h">
+      <Filter>thirdparty\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\imgui\imstb_truetype.h">
+      <Filter>thirdparty\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\imgui\imgui_impl_dx9.h">
+      <Filter>thirdparty\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\imgui\imgui_impl_win32.h">
+      <Filter>thirdparty\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\shaderapi\commandbuffer.h">
+      <Filter>SDK\shaderapi</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\shaderapi\ishaderapi.h">
+      <Filter>SDK\shaderapi</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\shaderapi\IShaderDevice.h">
+      <Filter>SDK\shaderapi</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\shaderapi\ishaderdynamic.h">
+      <Filter>SDK\shaderapi</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\shaderapi\ishadershadow.h">
+      <Filter>SDK\shaderapi</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\shaderapi\ishaderutil.h">
+      <Filter>SDK\shaderapi</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\shaderapi\shareddefs.h">
+      <Filter>SDK\shaderapi</Filter>
+    </ClInclude>
     <ClInclude Include="spt\utils\spt_vprof.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
@@ -808,6 +877,15 @@
     <Filter Include="spt\features\game_fixes">
       <UniqueIdentifier>{2252b542-464d-4fe9-b7e5-fae8736791b5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="thirdparty\imgui">
+      <UniqueIdentifier>{a1ca88b7-0633-4293-afd1-c3fb04dcccd0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\features\visualizations\imgui">
+      <UniqueIdentifier>{76c21305-4e35-4acf-b73d-0b47cdc07b75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\shaderapi">
+      <UniqueIdentifier>{72c1ddec-fb93-4a1b-83fb-86018e362f75}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="thirdparty\example.txt">
@@ -816,5 +894,10 @@
     <Text Include="spt\features\template.cpp.txt">
       <Filter>spt\features</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="thirdparty\imgui\README">
+      <Filter>thirdparty\imgui</Filter>
+    </None>
   </ItemGroup>
 </Project>

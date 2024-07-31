@@ -1238,6 +1238,7 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClCompile Include="spt\features\visualizations\draw_ent_collides.cpp" />
     <ClCompile Include="spt\features\visualizations\draw_seams.cpp" />
     <ClCompile Include="spt\features\visualizations\draw_world_collides.cpp" />
+    <ClCompile Include="spt\features\visualizations\imgui\imgui_interface.cpp" />
     <ClCompile Include="spt\features\visualizations\map_overlay.cpp" />
     <ClCompile Include="spt\features\visualizations\mesh_test.cpp" />
     <ClCompile Include="spt\features\visualizations\oob_ents.cpp" />
@@ -1373,6 +1374,13 @@ del "$(OutDir)spt-version.obj"</Command>
     </ClCompile>
     <ClCompile Include="spt\utils\string_utils.cpp" />
     <ClCompile Include="spt\vgui\vgui_utils.cpp" />
+    <ClCompile Include="thirdparty\imgui\imgui.cpp" />
+    <ClCompile Include="thirdparty\imgui\imgui_demo.cpp" />
+    <ClCompile Include="thirdparty\imgui\imgui_draw.cpp" />
+    <ClCompile Include="thirdparty\imgui\imgui_impl_dx9.cpp" />
+    <ClCompile Include="thirdparty\imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="thirdparty\imgui\imgui_tables.cpp" />
+    <ClCompile Include="thirdparty\imgui\imgui_widgets.cpp" />
     <ClCompile Include="thirdparty\md5.cpp" />
     <ClCompile Include="thirdparty\x86.c" />
   </ItemGroup>
@@ -1407,6 +1415,13 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="SDK\hl_movedata.h" />
     <ClInclude Include="SDK\igamemovement.h" />
     <ClInclude Include="SDK\imovehelper.h" />
+    <ClInclude Include="SDK\shaderapi\commandbuffer.h" />
+    <ClInclude Include="SDK\shaderapi\ishaderapi.h" />
+    <ClInclude Include="SDK\shaderapi\IShaderDevice.h" />
+    <ClInclude Include="SDK\shaderapi\ishaderdynamic.h" />
+    <ClInclude Include="SDK\shaderapi\ishadershadow.h" />
+    <ClInclude Include="SDK\shaderapi\ishaderutil.h" />
+    <ClInclude Include="SDK\shaderapi\shareddefs.h" />
     <ClInclude Include="SDK\usercmd.h" />
     <ClInclude Include="SDK\zone.h" />
     <ClInclude Include="sptlib\Hooks.hpp" />
@@ -1500,6 +1515,14 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="thirdparty\curl\include\curl\typecheck-gcc.h" />
     <ClInclude Include="thirdparty\curl\include\curl\urlapi.h" />
     <ClInclude Include="thirdparty\Delegate.h" />
+    <ClInclude Include="thirdparty\imgui\imconfig.h" />
+    <ClInclude Include="thirdparty\imgui\imgui.h" />
+    <ClInclude Include="thirdparty\imgui\imgui_impl_dx9.h" />
+    <ClInclude Include="thirdparty\imgui\imgui_impl_win32.h" />
+    <ClInclude Include="thirdparty\imgui\imgui_internal.h" />
+    <ClInclude Include="thirdparty\imgui\imstb_rectpack.h" />
+    <ClInclude Include="thirdparty\imgui\imstb_textedit.h" />
+    <ClInclude Include="thirdparty\imgui\imstb_truetype.h" />
     <ClInclude Include="thirdparty\json.hpp" />
     <ClInclude Include="thirdparty\kmp-cpp.hpp" />
     <ClInclude Include="thirdparty\md5.hpp" />
@@ -1514,6 +1537,9 @@ del "$(OutDir)spt-version.obj"</Command>
   <ItemGroup>
     <Text Include="spt\features\template.cpp.txt" />
     <Text Include="thirdparty\example.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="thirdparty\imgui\README" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
