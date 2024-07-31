@@ -16,6 +16,7 @@
 #include "engine\IEngineTrace.h"
 #include "vphysics_interface.h"
 #include "engine\IStaticPropMgr.h"
+#include "SDK\shaderapi\IShaderDevice.h"
 
 class IGameMovement;
 
@@ -42,4 +43,5 @@ namespace interfaces
 	extern IServerPluginHelpers* pluginHelpers;
 	extern IPhysicsCollision* physicsCollision;
 	extern IStaticPropMgrServer* staticpropmgr;
+	extern IShaderDevice* shaderDevice;
 } // namespace interfaces
