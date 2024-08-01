@@ -220,37 +220,64 @@ static ConCommandBase** GetPluginCommandListHead()
 #endif
 }
 
+const char* WrangleLegacyCommandName(const char* name, bool useTempStorage, bool* allocated)
+{
+	static char* tmpStr = nullptr;
+	static size_t tmpLen = 0;
+
+	bool plusMinus = (name[0] == '+' || name[0] == '-');
+	char* newName = const_cast<char*>(strstr(name, "spt_"));
+	if (newName == (name + plusMinus) || (newName && !plusMinus))
+	{
+		if (allocated)
+			*allocated = false;
+		return plusMinus ? name : newName;
+	}
+
+	if (allocated)
+		*allocated = true;
+
+	size_t allocLen = newName ? strlen(newName) + 2 // ex: +y_spt_duckspam
+	                          : strlen(name) + 5;   // ex: tas_pause, +myprefix_something
+
+	// (re)allocate new string
+	char* allocStr;
+	if (useTempStorage)
+	{
+		if (allocLen > tmpLen)
+		{
+			delete[] tmpStr;
+			tmpStr = new char[allocLen];
+			tmpLen = allocLen;
+		}
+		allocStr = tmpStr;
+	}
+	else
+	{
+		allocStr = new char[allocLen];
+	}
+
+	if (newName)
+	{
+		allocStr[0] = name[0];
+		strcpy(allocStr + 1, newName);
+	}
+	else
+	{
+		allocStr[0] = name[0];
+		strcpy(allocStr + plusMinus, "spt_");
+		strcat(allocStr, name + plusMinus);
+	}
+	return allocStr;
+}
+
 // Check if spt_ prefix is at the start. If not, create a new command and hide the old one with
 // the legacy name. Put prefix at the start if we don't find it at all
 static void HandleBackwardsCompatibility(FeatureCommand& featCmd, const char* cmdName)
 {
 	ConCommandBase* cmd = featCmd.command;
-	bool plusMinus = (cmdName[0] == '+' || cmdName[0] == '-');
-	char* newName = const_cast<char*>(strstr(cmdName, "spt_"));
-	if (newName == (cmdName + plusMinus)) // no legacy prefix
-		return;
-
-	bool allocatedName = false;
-	// ex: tas_pause, +myprefix_something
-	if (!newName)
-	{
-		int len = strlen(cmdName) + 5;
-		newName = new char[len];
-		newName[0] = cmdName[0];
-		strcpy(newName + plusMinus, "spt_");
-		strcat(newName, cmdName + plusMinus);
-		allocatedName = true;
-	}
-	// ex: +y_spt_duckspam
-	else if (plusMinus)
-	{
-		int len = strlen(newName) + 2;
-		char* tmpName = new char[len];
-		tmpName[0] = cmdName[0];
-		strcpy(tmpName + 1, newName);
-		newName = tmpName;
-		allocatedName = true;
-	}
+	bool allocatedName;
+	const char* newName = WrangleLegacyCommandName(cmdName, false, &allocatedName);
 
 	// New commands are added to the beginning of the linked list, so it's safe to do this
 	// while iterating through the list. s_pAccessor needs to be NULL here or else the
