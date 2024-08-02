@@ -13,6 +13,7 @@
 #include "spt\features\ent_props.hpp"
 #include "renderer\mesh_renderer.hpp"
 #include "renderer\create_collide.hpp"
+#include "imgui\imgui_interface.hpp"
 
 #ifdef SPT_MESH_RENDERING_ENABLED
 
@@ -30,10 +31,10 @@ ConVar spt_draw_ent_collides(
 	((faces) ? ShapeColor{_COLOR(r, g, b, 15), _COLOR(0, 0, 0, 255), zTest, zTest} \
 	         : ShapeColor{C_WIRE(r, g, b, 255), zTest, zTest})
 
-#define SC_SERVER_VPHYS(flags) _SC(0, 255, 0, (flags)&CEF_COLLIDES_WITH_PLAYER, spt_draw_ent_collides.GetInt() < 2)
-#define SC_SERVER(flags) _SC(255, 0, 0, (flags)&CEF_COLLIDES_WITH_PLAYER, spt_draw_ent_collides.GetInt() < 2)
-#define SC_VPHYS(flags) _SC(0, 0, 255, (flags)&CEF_COLLIDES_WITH_PLAYER, spt_draw_ent_collides.GetInt() < 2)
-#define SC_MULTI_VPHYS(flags) _SC(255, 255, 0, (flags)&CEF_COLLIDES_WITH_PLAYER, spt_draw_ent_collides.GetInt() < 2)
+#define SC_SERVER_VPHYS(flags) _SC(0, 255, 0, (flags) & CEF_COLLIDES_WITH_PLAYER, spt_draw_ent_collides.GetInt() < 2)
+#define SC_SERVER(flags) _SC(255, 0, 0, (flags) & CEF_COLLIDES_WITH_PLAYER, spt_draw_ent_collides.GetInt() < 2)
+#define SC_VPHYS(flags) _SC(0, 0, 255, (flags) & CEF_COLLIDES_WITH_PLAYER, spt_draw_ent_collides.GetInt() < 2)
+#define SC_MULTI_VPHYS(flags) _SC(255, 255, 0, (flags) & CEF_COLLIDES_WITH_PLAYER, spt_draw_ent_collides.GetInt() < 2)
 
 extern class DrawEntCollideFeature spt_DrawEntCollides_feat;
 
@@ -114,6 +115,8 @@ protected:
 				    spt_DrawEntCollides_feat.ClearCache();
 		    });
 		ClearCache();
+
+		SptImGui::RegisterSectionCallback(SptImGuiGroup::Draw_Collides_Ents, ImGuiCallback);
 	};
 
 	virtual void UnloadFeature() override
@@ -377,6 +380,28 @@ private:
 				}
 			}
 		}
+	}
+
+	static void ImGuiCallback(bool open)
+	{
+		if (!open)
+			return;
+		ConVar& c = spt_draw_ent_collides;
+		int oldVal = c.GetInt();
+		bool enabled = !!oldVal;
+		SptImGui::CvarValue(c);
+		ImGui::Checkbox("Enabled", &enabled);
+		ImGui::BeginDisabled(!enabled);
+		// done with a static value to persist the checkbox state even if the cvar is disabled
+		static bool zTest = true;
+		if (enabled && !!oldVal)
+			zTest = oldVal < 2;
+		ImGui::Checkbox("Z test", &zTest);
+		ImGui::SetItemTooltip("If disabled, will draw on top of everything else.");
+		ImGui::EndDisabled();
+		int newVal = enabled ? 2 - zTest : 0;
+		if (newVal != oldVal)
+			c.SetValue(newVal);
 	}
 };
 
