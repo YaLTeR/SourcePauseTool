@@ -11,6 +11,7 @@
 #include "spt\features\generic.hpp"
 #include "renderer\mesh_renderer.hpp"
 #include "renderer\create_collide.hpp"
+#include "imgui\imgui_interface.hpp"
 
 #ifdef SPT_MESH_RENDERING_ENABLED
 
@@ -63,6 +64,8 @@ protected:
 			    if (strcmp(((ConVar*)var)->GetString(), pOldValue))
 				    spt_DrawWorldCollides_feat.cache.Clear();
 		    });
+
+		SptImGui::RegisterSectionCallback(SptImGuiGroup::Draw_Collides_World, ImGuiCallback);
 	};
 
 	virtual void UnloadFeature() override
@@ -85,6 +88,46 @@ protected:
 	} cache;
 
 private:
+	static void ImGuiCallback(bool open)
+	{
+		if (!open)
+			return;
+		// copied from the draw world collides callback
+		ConVar& c = spt_draw_world_collides;
+		int oldVal = c.GetInt();
+		bool enabled = !!oldVal;
+		SptImGui::CvarValue(c);
+		ImGui::Checkbox("Enabled", &enabled);
+		ImGui::BeginDisabled(!enabled);
+		// done with a static value to persist the checkbox state even if the cvar is disabled
+		static bool zTest = true;
+		if (enabled && !!oldVal)
+			zTest = oldVal < 2;
+		ImGui::Checkbox("Z test", &zTest);
+		ImGui::SetItemTooltip("If disabled, will draw on top of everything else.");
+		int newVal = enabled ? 2 - zTest : 0;
+		if (newVal != oldVal)
+			c.SetValue(newVal);
+
+		static char buf[16];
+		strncpy(buf, spt_draw_world_collides_mask.GetString(), sizeof buf);
+		buf[sizeof(buf) - 1] = '\0';
+		// this prolly depends on the font size, idk of a better way tho..
+		ImGui::PushItemWidth(ImGui::GetFontSize() * (sizeof(buf) - 1) * 0.6f);
+		ImGui::InputTextWithHint("##cvar_mask",
+		                         "enter integer mask",
+		                         buf,
+		                         sizeof buf,
+		                         ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsUppercase
+		                             | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
+		ImGui::PopItemWidth();
+		spt_draw_world_collides_mask.SetValue(buf);
+		ImGui::SameLine();
+		SptImGui::CvarValue(spt_draw_world_collides_mask);
+
+		ImGui::EndDisabled();
+	}
+
 	void OnMeshRenderSignal(MeshRendererDelegate& mr)
 	{
 		if (!spt_draw_world_collides.GetBool())
