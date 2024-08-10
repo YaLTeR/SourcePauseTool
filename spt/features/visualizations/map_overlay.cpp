@@ -7,6 +7,8 @@
 #include "spt\utils\convar.hpp"
 #include "spt\utils\game_detection.hpp"
 #include "spt\utils\file.hpp"
+#include "imgui\imgui_interface.hpp"
+#include "thirdparty\imgui\imgui_internal.h"
 
 #include "bspfile.h"
 
@@ -19,8 +21,11 @@
 class MapOverlay : public FeatureWrapper<MapOverlay>
 {
 public:
-	void LoadMapFile(std::string filename, Vector offsets, bool ztest);
+	bool LoadMapFile(std::string filename, bool ztest, const char** err);
 	void ClearMeshes();
+	Vector offset;
+	std::string lastLoadedFile;
+	bool createdWithZTestMaterial;
 
 protected:
 	virtual bool ShouldLoadFeature() override;
@@ -33,6 +38,7 @@ protected:
 
 private:
 	void OnMeshRenderSignal(MeshRendererDelegate& mr);
+	static void ImGuiCallback(bool open);
 
 	std::vector<StaticMesh> meshes;
 };
@@ -51,32 +57,46 @@ CON_COMMAND_AUTOCOMPLETEFILE(spt_draw_map_overlay, "Draw the brushes from anothe
 	{
 		spt_map_overlay.ClearMeshes();
 		return;
-	}
-
-	Vector offsets(0, 0, 0);
-	if (argc == 5 || argc == 6)
-	{
-		offsets.x = atof(args.Arg(2));
-		offsets.y = atof(args.Arg(3));
-		offsets.z = atof(args.Arg(4));
-	}
+	};
 
 	bool ztest = true;
 	if (argc == 3 || argc == 6)
 		ztest = !!atoi(args.Arg(argc - 1));
 
-	spt_map_overlay.LoadMapFile(args.Arg(1), offsets, ztest);
+	const char* err;
+	if (!spt_map_overlay.LoadMapFile(args.Arg(1), ztest, &err))
+	{
+		Warning("%s\n", err);
+	}
+	else
+	{
+		if (argc == 5 || argc == 6)
+		{
+			spt_map_overlay.offset = {
+			    (float)atof(args.Arg(2)),
+			    (float)atof(args.Arg(3)),
+			    (float)atof(args.Arg(4)),
+			};
+		}
+		else
+		{
+			spt_map_overlay.offset = {0, 0, 0};
+		}
+	}
 }
 
-void MapOverlay::LoadMapFile(std::string filename, Vector offsets, bool ztest)
+bool MapOverlay::LoadMapFile(std::string filename, bool ztest, const char** err)
 {
+	if (filename == lastLoadedFile && ztest == createdWithZTestMaterial && !meshes.empty())
+		return true; // no need to reload
+
 #define READ_BYTES(f, buffer, bytes) \
 	{ \
 		f.read((buffer), (bytes)); \
 		if (f.gcount() != (bytes)) \
 		{ \
-			Msg("Unexpected EOF.\n"); \
-			return; \
+			*err = "Unexpected EOF."; \
+			return false; \
 		} \
 	} \
 	while (0)
@@ -86,8 +106,8 @@ void MapOverlay::LoadMapFile(std::string filename, Vector offsets, bool ztest)
 		f.seekg((offset), std::ios::beg); \
 		if (!f) \
 		{ \
-			Msg("Unexpected EOF.\n"); \
-			return; \
+			*err = "Unexpected EOF."; \
+			return false; \
 		} \
 	} \
 	while (0)
@@ -95,23 +115,23 @@ void MapOverlay::LoadMapFile(std::string filename, Vector offsets, bool ztest)
 	std::ifstream mapFile(GetGameDir() + "\\maps\\" + filename + ".bsp", std::ios::binary);
 	if (!mapFile.is_open())
 	{
-		Msg("Cannot open file.\n");
-		return;
+		*err = "Cannot open file.";
+		return false;
 	}
 
 	dheader_t header;
 	READ_BYTES(mapFile, (char*)&header, sizeof(dheader_t));
 	if (header.ident != IDBSPHEADER)
 	{
-		Msg("Not a bsp file.\n");
-		return;
+		*err = "Not a bsp file.";
+		return false;
 	}
 
 	if (header.version != 20 && header.version != 19
 	    && !(utils::DoesGameLookLikeDMoMM() && (header.version >> 16) != 20))
 	{
-		Msg("Unsupported bsp version.\n");
-		return;
+		*err = "Unsupported bsp version.";
+		return false;
 	}
 
 	SEEK_TO_BYTE(mapFile, header.lumps[LUMP_PLANES].fileofs);
@@ -178,6 +198,8 @@ void MapOverlay::LoadMapFile(std::string filename, Vector offsets, bool ztest)
 	// Build meshes
 	meshes.clear();
 
+	static std::vector<VPlane> vplanes;
+
 	auto brushIndexIter = mapBrushesIndex.begin();
 	const auto brushIndexEnd = mapBrushesIndex.end();
 	while (brushIndexIter != brushIndexEnd)
@@ -193,7 +215,7 @@ void MapOverlay::LoadMapFile(std::string filename, Vector offsets, bool ztest)
 				    if ((brush.contents & CONTENTS_SOLID) == 0)
 					    continue;
 
-				    std::vector<VPlane> vplanes;
+				    vplanes.clear();
 				    for (int i = 0; i < brush.numsides; i++)
 				    {
 					    dbrushside_t brushside = brushsides[brush.firstside + i];
@@ -212,14 +234,6 @@ void MapOverlay::LoadMapFile(std::string filename, Vector offsets, bool ztest)
 				    if (!poly)
 					    continue;
 
-				    if (offsets != Vector(0))
-				    {
-					    for (int i = 0; i < poly->iVertexCount; i++)
-					    {
-						    poly->pVertices[i] += offsets;
-					    }
-				    }
-
 				    ShapeColor color = isBox ? SC_BOX_BRUSH : SC_COMPLEX_BRUSH;
 				    color.zTestFaces = ztest;
 				    if (!mb.AddCPolyhedron(poly, color))
@@ -231,26 +245,93 @@ void MapOverlay::LoadMapFile(std::string filename, Vector offsets, bool ztest)
 			    }
 		    }));
 	}
+	lastLoadedFile = std::move(filename);
+	createdWithZTestMaterial = ztest;
+	*err = nullptr;
+	return true;
 }
 
 void MapOverlay::ClearMeshes()
 {
 	meshes.clear();
+	lastLoadedFile.clear();
 }
 
 void MapOverlay::OnMeshRenderSignal(MeshRendererDelegate& mr)
 {
 	if (std::any_of(meshes.begin(), meshes.end(), [](auto& mesh) { return !mesh.Valid(); }))
-		meshes.clear();
+		ClearMeshes();
 
-	if (!meshes.empty())
+	for (const auto& mesh : meshes)
 	{
-		for (const auto& mesh : meshes)
-		{
-			mr.DrawMesh(mesh,
-			            [](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
-			            { RenderCallbackZFightFix(infoIn, infoOut); });
-		}
+		mr.DrawMesh(mesh,
+		            [](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+		            {
+			            PositionMatrix(spt_map_overlay.offset, infoOut.mat);
+			            RenderCallbackZFightFix(infoIn, infoOut);
+		            });
+	}
+}
+
+void MapOverlay::ImGuiCallback(bool open)
+{
+	if (!open)
+		return;
+
+	static SptImGui::AutocompletePersistData acPersist;
+	static bool ztest = true;
+
+	static double errMsgStartTime = -666;
+	static const char* errMsg;
+
+	ConCommand& cmd = spt_draw_map_overlay_command;
+	const char* cmdName = WrangleLegacyCommandName(cmd.GetName(), true, nullptr);
+
+	if (ImGui::Button("Clear"))
+		spt_map_overlay.ClearMeshes();
+	if (ImGui::BeginItemTooltip())
+	{
+		ImGui::Text("%s 0", cmdName);
+		ImGui::EndTooltip();
+	}
+
+	ImGui::SameLine();
+	if (ImGui::Button("Draw map"))
+	{
+		if (!spt_map_overlay.LoadMapFile(acPersist.textInput, ztest, &errMsg))
+			errMsgStartTime = ImGui::GetTime();
+	}
+	if (ImGui::BeginItemTooltip())
+	{
+		const Vector& v = spt_map_overlay.offset;
+		ImGui::Text("%s \"%s\" %g %g %g %d", cmdName, acPersist.textInput, v.x, v.y, v.z, ztest);
+		ImGui::EndTooltip();
+	}
+
+	if (errMsg && ImGui::GetTime() - errMsgStartTime < 2)
+	{
+		ImGui::PushStyleColor(ImGuiCol_Text, SPT_IMGUI_WARN_COLOR_YELLOW);
+		ImGui::SetTooltip("%s", errMsg);
+		ImGui::PopStyleColor();
+	}
+
+	ImGui::SameLine();
+	SptImGui::HelpMarker("%s", cmd.GetHelpText());
+
+	SptImGui::TextInputAutocomplete("enter map name",
+	                                "##map_overlay_autocomplete",
+	                                acPersist,
+	                                AUTOCOMPLETION_FUNCTION(spt_draw_map_overlay),
+	                                spt_draw_map_overlay_command.GetName());
+
+	Vector& v = spt_map_overlay.offset;
+	ImGui::DragFloat3("offset", v.Base(), 1.f, 0.f, 0.f, "%g", ImGuiSliderFlags_NoRoundToFormat);
+
+	ImGui::Checkbox("ztest", &ztest);
+	if (ImGui::BeginItemTooltip())
+	{
+		ImGui::TextUnformatted("If disabled, will draw on top of everything else.");
+		ImGui::EndTooltip();
 	}
 }
 
@@ -263,11 +344,11 @@ void MapOverlay::InitHooks() {}
 
 void MapOverlay::LoadFeature()
 {
-	if (spt_meshRenderer.signal.Works)
-	{
-		InitCommand(spt_draw_map_overlay);
-		spt_meshRenderer.signal.Connect(this, &MapOverlay::OnMeshRenderSignal);
-	}
+	if (!spt_meshRenderer.signal.Works)
+		return;
+	InitCommand(spt_draw_map_overlay);
+	spt_meshRenderer.signal.Connect(this, &MapOverlay::OnMeshRenderSignal);
+	SptImGui::RegisterTabCallback(SptImGuiGroup::Draw_MapOverlay, ImGuiCallback);
 }
 
 void MapOverlay::UnloadFeature() {}
