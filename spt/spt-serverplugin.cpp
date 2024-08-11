@@ -440,7 +440,7 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime)
 	        .count();
 	std::ostringstream out;
-	out << "SourcePauseTool version " SPT_VERSION " was loaded in " << loadTime << "ms.\n";
+	out << "SourcePauseTool version " << SPT_VERSION << " was loaded in " << loadTime << "ms.\n";
 
 	Msg("%s", std::string(out.str()).c_str());
 
@@ -485,7 +485,8 @@ void CSourcePauseTool::Unload(void)
 
 const char* CSourcePauseTool::GetPluginDescription(void)
 {
-	return "SourcePauseTool v" SPT_VERSION ", Ivan \"YaLTeR\" Molodetskikh";
+	extern const char* SPT_DESCRIPTION;
+	return SPT_DESCRIPTION;
 }
 
 void CSourcePauseTool::GameFrame(bool simulating)

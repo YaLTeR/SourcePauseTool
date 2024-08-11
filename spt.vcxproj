@@ -130,7 +130,7 @@
     <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <TargetName>spt</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">
@@ -140,7 +140,7 @@
     <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <TargetName>spt-2013</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">
@@ -150,7 +150,7 @@
     <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <TargetName>spt-bms</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">
@@ -160,7 +160,7 @@
     <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <TargetName>spt-oe</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -170,7 +170,7 @@
     <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <TargetName>spt</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">
@@ -180,7 +180,7 @@
     <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <TargetName>spt-2013</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">
@@ -190,7 +190,7 @@
     <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <TargetName>spt-bms</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">
@@ -210,7 +210,7 @@
     <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <TargetName>spt-oe</TargetName>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
@@ -283,9 +283,10 @@
     </Bscmake>
     <PostBuildEvent>
       <Message />
-      <Command>md "$(IntDir)..\builds"
-del "$(IntDir)..\builds\$(TargetFileName)"
-copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
+      <Command>if not exist "$(IntDir)..\builds" md "$(IntDir)..\builds"
+if exist "$(IntDir)..\builds\$(TargetFileName)" del "$(IntDir)..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"
+del "$(OutDir)spt-version.obj"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">
@@ -358,9 +359,10 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>md "$(IntDir)..\builds"
-del "$(IntDir)..\builds\$(TargetFileName)"
-copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
+      <Command>if not exist "$(IntDir)..\builds" md "$(IntDir)..\builds"
+if exist "$(IntDir)..\builds\$(TargetFileName)" del "$(IntDir)..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"
+del "$(OutDir)spt-version.obj"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug BMS|Win32'">
@@ -433,9 +435,10 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>md "$(IntDir)..\builds"
-del "$(IntDir)..\builds\$(TargetFileName)"
-copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
+      <Command>if not exist "$(IntDir)..\builds" md "$(IntDir)..\builds"
+if exist "$(IntDir)..\builds\$(TargetFileName)" del "$(IntDir)..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"
+del "$(OutDir)spt-version.obj"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug OE|Win32'">
@@ -508,9 +511,10 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>md "$(IntDir)..\builds"
-del "$(IntDir)..\builds\$(TargetFileName)"
-copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
+      <Command>if not exist "$(IntDir)..\builds" md "$(IntDir)..\builds"
+if exist "$(IntDir)..\builds\$(TargetFileName)" del "$(IntDir)..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"
+del "$(OutDir)spt-version.obj"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -588,9 +592,10 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     </Bscmake>
     <PostBuildEvent>
       <Message />
-      <Command>md "$(IntDir)..\builds"
-del "$(IntDir)..\builds\$(TargetFileName)"
-copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
+      <Command>if not exist "$(IntDir)..\builds" md "$(IntDir)..\builds"
+if exist "$(IntDir)..\builds\$(TargetFileName)" del "$(IntDir)..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"
+del "$(OutDir)spt-version.obj"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">
@@ -671,9 +676,10 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>md "$(IntDir)..\builds"
-del "$(IntDir)..\builds\$(TargetFileName)"
-copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
+      <Command>if not exist "$(IntDir)..\builds" md "$(IntDir)..\builds"
+if exist "$(IntDir)..\builds\$(TargetFileName)" del "$(IntDir)..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"
+del "$(OutDir)spt-version.obj"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release BMS|Win32'">
@@ -754,9 +760,10 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>md "$(IntDir)..\builds"
-del "$(IntDir)..\builds\$(TargetFileName)"
-copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
+      <Command>if not exist "$(IntDir)..\builds" md "$(IntDir)..\builds"
+if exist "$(IntDir)..\builds\$(TargetFileName)" del "$(IntDir)..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"
+del "$(OutDir)spt-version.obj"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug blank|Win32'">
@@ -916,9 +923,10 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>md "$(IntDir)..\builds"
-del "$(IntDir)..\builds\$(TargetFileName)"
-copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
+      <Command>if not exist "$(IntDir)..\builds" md "$(IntDir)..\builds"
+if exist "$(IntDir)..\builds\$(TargetFileName)" del "$(IntDir)..\builds\$(TargetFileName)"
+copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"
+del "$(OutDir)spt-version.obj"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -1330,6 +1338,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClCompile Include="spt\scripts\tracker.cpp" />
     <ClCompile Include="spt\scripts\variable_container.cpp" />
     <ClCompile Include="spt\spt-serverplugin.cpp" />
+    <ClCompile Include="spt\spt-version.cpp" />
     <ClCompile Include="spt\sptlib-wrapper.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">NotUsing</PrecompiledHeader>
