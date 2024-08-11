@@ -1,6 +1,6 @@
 #pragma once
 
-#define SPT_VERSION __DATE__ " " __TIME__
+extern const char* SPT_VERSION;
 
 #if defined(OE)
 #include "cdll_int.h"

@@ -355,6 +355,9 @@
     <ClCompile Include="spt\features\visualizations\drawline.cpp">
       <Filter>spt\features\visualizations</Filter>
     </ClCompile>
+    <ClCompile Include="spt\spt-version.cpp">
+      <Filter>spt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">

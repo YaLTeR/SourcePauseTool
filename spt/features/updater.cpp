@@ -258,8 +258,8 @@ static int GetPluginBuildNumber()
 {
 	// Use the way Source Engine calculates the build number to calculate SPT "build number"
 	int pluginBuildNumber = 0;
-	char sptVersion[] = SPT_VERSION;
-	sptVersion[11] = '\0';
+	char sptVersion[12];
+	snprintf(sptVersion, sizeof sptVersion, SPT_VERSION);
 	pluginBuildNumber = utils::DateToBuildNumber(sptVersion);
 	return pluginBuildNumber;
 }
