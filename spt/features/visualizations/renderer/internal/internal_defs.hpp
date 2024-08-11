@@ -12,11 +12,7 @@
 #include "materialsystem\imesh.h"
 #pragma warning(pop)
 
-#define VPROF_LEVEL 1
-#ifndef SSDK2007
-#define RAD_TELEMETRY_DISABLED
-#endif
-#include "vprof.h"
+#include "spt\utils\spt_vprof.hpp"
 
 #define VPROF_BUDGETGROUP_MESH_RENDERER _T("Mesh_Renderer")
 

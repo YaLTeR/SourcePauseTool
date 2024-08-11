@@ -726,6 +726,9 @@
     <ClInclude Include="patterns_archive.hpp">
       <Filter>spt</Filter>
     </ClInclude>
+    <ClInclude Include="spt\utils\spt_vprof.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\mathlib.lib">

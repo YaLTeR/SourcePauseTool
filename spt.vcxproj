@@ -1475,6 +1475,7 @@ copy "$(TargetPath)" "$(IntDir)..\builds\$(TargetFileName)"</Command>
     <ClInclude Include="spt\utils\math.hpp" />
     <ClInclude Include="spt\utils\portal_utils.hpp" />
     <ClInclude Include="spt\utils\signals.hpp" />
+    <ClInclude Include="spt\utils\spt_vprof.hpp" />
     <ClInclude Include="spt\utils\stdafx.hpp" />
     <ClInclude Include="spt\utils\string_utils.hpp" />
     <ClInclude Include="spt\utils\typeinfo.h" />
