@@ -352,7 +352,7 @@
     <ClCompile Include="spt\features\visualizations\oob_ents.cpp">
       <Filter>spt\features\visualizations</Filter>
     </ClCompile>
-    <ClCompile Include="spt\features\visualizations\drawline.cpp">
+    <ClCompile Include="spt\features\visualizations\draw_line.cpp">
       <Filter>spt\features\visualizations</Filter>
     </ClCompile>
     <ClCompile Include="spt\features\visualizations\imgui\imgui_interface.cpp">
