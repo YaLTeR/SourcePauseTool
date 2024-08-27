@@ -111,18 +111,24 @@ namespace patterns
 	    "83 EC 18 E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 08 89 4C 24 0C 8B 50 04 6A 00 89 54 24 14 8B 40 08 6A 00 8D 4C 24 08 51 8D 54 24 18 52 89 44 24 24",
 	    "1910503",
 	    "55 8B EC 83 EC ?? 56 8B F1 E8 ?? ?? ?? ?? E8 ?? ?? ?? ??");
-	PATTERNS(SV_Frame,
-	         "5135",
-	         "8B 0D ?? ?? ?? ?? 83 EC 08 85 C9 74 10 8B 44 24 0C 84 C0 74 08 8B 11 50 8B 42 78 FF D0 83 3D",
-	         "BMS-Retail-0.9",
-	         "55 8B EC FF 75 08 E8 ?? ?? ?? ?? F7 D8 59 1B C0 F7 D8 48 5D C3 3B 0D ?? ?? ?? ?? 75 02 F3 C3 E9 ?? ?? ?? ?? 51 C7 01 ?? ?? ?? ?? E8 ?? ?? ?? ?? 59 C3");
+	PATTERNS(
+	    SV_Frame,
+	    "5135",
+	    "8B 0D ?? ?? ?? ?? 83 EC 08 85 C9 74 10 8B 44 24 0C 84 C0 74 08 8B 11 50 8B 42 78 FF D0 83 3D",
+	    "BMS-Retail-0.9",
+	    "55 8B EC FF 75 08 E8 ?? ?? ?? ?? F7 D8 59 1B C0 F7 D8 48 5D C3 3B 0D ?? ?? ?? ?? 75 02 F3 C3 E9 ?? ?? ?? ?? 51 C7 01 ?? ?? ?? ?? E8 ?? ?? ?? ?? 59 C3");
 	PATTERNS(SetSignonState,
 	         "5135",
 	         "CC 56 8B F1 8B ?? ?? ?? ?? ?? 8B 01 8B 50 ?? FF D2 84 C0 75 ?? 8B",
 	         "1910503",
 	         "CC 55 8B EC 56 8B F1 8B ?? ?? ?? ?? ?? 8B 01 8B 50 ?? FF D2 84",
-			 "BMS-0.9",
+	         "BMS-0.9",
 	         "CC 55 8B EC 56 8B F1 8B 0D ?? ?? ?? ?? 8B 01 8B 40 ?? FF D0 84 C0");
+	PATTERNS(CEngine__Frame,
+	         "5135",
+	         "83 EC 08 56 8B F1 8B 0D ?? ?? ?? ?? 8B 01 8B 50 ?? FF D2",
+	         "7122284",
+	         "55 8B EC 83 EC 34 56 8B F1 8B 0D ?? ?? ?? ??");
 
 } // namespace patterns
 
@@ -136,6 +142,7 @@ void GenericFeature::InitHooks()
 	HOOK_FUNCTION(client, ControllerMove);
 	FIND_PATTERN(client, CHudDamageIndicator__GetDamagePosition);
 	HOOK_FUNCTION(engine, SetSignonState);
+	FIND_PATTERN(engine, CEngine__Frame);
 
 	if (interfaces::gm)
 	{
@@ -151,6 +158,14 @@ void GenericFeature::InitHooks()
 bool GenericFeature::ShouldLoadFeature()
 {
 	return true;
+}
+
+bool GenericFeature::IsActiveApp()
+{
+	if (!pGame)
+		return true; // Assume is active
+	auto game = *pGame;
+	return (*reinterpret_cast<bool(__fastcall***)(void*)>(game))[IsActiveApp_Offset](game);
 }
 
 Vector GenericFeature::GetCameraOrigin()
@@ -185,6 +200,23 @@ void GenericFeature::LoadFeature()
 			break;
 		}
 		DevMsg("[client.dll] Found MainViewOrigin at %p\n", ORIG_MainViewOrigin);
+	}
+
+	if (ORIG_CEngine__Frame)
+	{
+		int ptnNumber = GetPatternIndex((void**)&ORIG_CEngine__Frame);
+		switch (ptnNumber)
+		{
+		case 0: // 5135
+			pGame = *reinterpret_cast<void***>(ORIG_CEngine__Frame + 8);
+			IsActiveApp_Offset = 15;
+			break;
+		case 1: // 7122284
+			pGame = *reinterpret_cast<void***>(ORIG_CEngine__Frame + 11);
+			IsActiveApp_Offset = 16;
+			break;
+		}
+		DevMsg("[engine.dll] Found game interface at %p\n", pGame);
 	}
 }
 
@@ -289,7 +321,6 @@ IMPL_HOOK_THISCALL(GenericFeature, void, ProcessMovement, void*, void* pPlayer, 
 	spt_generic.ORIG_ProcessMovement(thisptr, pPlayer, pMove);
 	ProcessMovementPost_Signal(pPlayer, pMove);
 }
-
 
 IMPL_HOOK_THISCALL(GenericFeature, void, SetSignonState, void*, int state)
 {
