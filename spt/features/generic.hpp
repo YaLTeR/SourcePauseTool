@@ -33,6 +33,7 @@ public:
 	int signOnState;
 
 	Vector GetCameraOrigin();
+	bool IsActiveApp();
 	virtual bool ShouldLoadFeature() override;
 
 protected:
@@ -44,6 +45,9 @@ protected:
 private:
 	std::vector<patterns::MatchedPattern> MATCHES_Engine__SignOnState;
 	uintptr_t ORIG_CHudDamageIndicator__GetDamagePosition = 0;
+	uintptr_t ORIG_CEngine__Frame = 0;
+	void** pGame = nullptr;
+	int IsActiveApp_Offset;
 
 	static void __stdcall HOOKED_HudUpdate(bool bActive);
 	static bool __cdecl HOOKED_SV_ActivateServer();

@@ -6,6 +6,7 @@
 #include "spt\features\demo.hpp"
 #include "spt\features\playerio.hpp"
 #include "spt\features\overlay.hpp"
+#include "spt\features\generic.hpp"
 #include "spt\utils\convar.hpp"
 #include "spt\utils\ent_utils.hpp"
 #include "spt\utils\interfaces.hpp"
@@ -586,14 +587,17 @@ void Camera::HandleInput(bool active)
 			movement.z -= 1.0f;
 
 		int mx, my;
-		int dx, dy;
+		int dx = 0, dy = 0;
 
-		interfaces::vgui_input->GetCursorPos(mx, my);
+		if (spt_generic.IsActiveApp())
+		{
+			interfaces::vgui_input->GetCursorPos(mx, my);
 
-		dx = mx - oldCursor[0];
-		dy = my - oldCursor[1];
+			dx = mx - oldCursor[0];
+			dy = my - oldCursor[1];
 
-		interfaces::vgui_input->SetCursorPos(oldCursor[0], oldCursor[1]);
+			interfaces::vgui_input->SetCursorPos(oldCursor[0], oldCursor[1]);
+		}
 
 		// Convert to pitch/yaw
 		float sens = sensitivity ? sensitivity->GetFloat() : 3.0f;
