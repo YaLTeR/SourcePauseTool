@@ -1239,6 +1239,7 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClCompile Include="spt\features\visualizations\draw_seams.cpp" />
     <ClCompile Include="spt\features\visualizations\draw_world_collides.cpp" />
     <ClCompile Include="spt\features\visualizations\imgui\imgui_interface.cpp" />
+    <ClCompile Include="spt\features\visualizations\imgui\spt_imgui_widgets.cpp" />
     <ClCompile Include="spt\features\visualizations\map_overlay.cpp" />
     <ClCompile Include="spt\features\visualizations\mesh_test.cpp" />
     <ClCompile Include="spt\features\visualizations\oob_ents.cpp" />
@@ -1453,6 +1454,9 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="spt\features\tas.hpp" />
     <ClInclude Include="spt\features\tickrate.hpp" />
     <ClInclude Include="spt\features\tracing.hpp" />
+    <ClInclude Include="spt\features\visualizations\imgui\imgui_interface.hpp" />
+    <ClInclude Include="spt\features\visualizations\imgui\imgui_styles.hpp" />
+    <ClInclude Include="spt\features\visualizations\imgui\jetbrains_mono_bold.hpp" />
     <ClInclude Include="spt\features\visualizations\renderer\create_collide.hpp" />
     <ClInclude Include="spt\features\visualizations\renderer\internal\internal_defs.hpp" />
     <ClInclude Include="spt\features\visualizations\renderer\internal\materials_manager.hpp" />
