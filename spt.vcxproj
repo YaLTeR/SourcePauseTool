@@ -1238,6 +1238,7 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClCompile Include="spt\features\visualizations\draw_ent_collides.cpp" />
     <ClCompile Include="spt\features\visualizations\draw_seams.cpp" />
     <ClCompile Include="spt\features\visualizations\draw_world_collides.cpp" />
+    <ClCompile Include="spt\features\visualizations\gui_game_detection.cpp" />
     <ClCompile Include="spt\features\visualizations\imgui\imgui_interface.cpp" />
     <ClCompile Include="spt\features\visualizations\imgui\spt_imgui_widgets.cpp" />
     <ClCompile Include="spt\features\visualizations\map_overlay.cpp" />
