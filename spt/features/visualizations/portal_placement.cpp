@@ -22,6 +22,7 @@
 #include "spt\utils\math.hpp"
 #include "spt\utils\portal_utils.hpp"
 #include "spt\utils\game_detection.hpp"
+#include "imgui\imgui_interface.hpp"
 
 #define PORTAL_HALF_WIDTH 32.0f
 #define PORTAL_HALF_HEIGHT 54.0f
@@ -142,6 +143,10 @@ private:
 	                         bool bPortal2,
 	                         bool& fizzle, // out
 	                         CBaseCombatWeapon* portalGun) const;
+
+	static void ImGuiGunPlacementCallback(bool open);
+	static void ImGuiGridPlacementCallback(bool open);
+	static void ImGuiTextHudPortalPlacementCallback(ConVar& var);
 };
 
 static PortalPlacement spt_pp;
@@ -181,12 +186,6 @@ CON_COMMAND_F(
     "  blue  - portal placement success but the portal will fizzle 0.1s after landing",
     FCVAR_CHEAT)
 {
-	if (!interfaces::engine_server->PEntityOfEntIndex(1))
-	{
-		Warning("No server player\n");
-		return;
-	}
-
 	auto& grid = spt_pp.ppGrid;
 	int newFlags = PLACEMENT_GRID_ENABLED;
 
@@ -200,6 +199,11 @@ CON_COMMAND_F(
 	if (argVal == 0)
 	{
 		grid.Reset();
+		return;
+	}
+	if (!interfaces::engine_server->PEntityOfEntIndex(1))
+	{
+		Warning("No server player\n");
 		return;
 	}
 	if (argVal == 1)
@@ -559,10 +563,11 @@ static const wchar_t* PlacementResultToString(PortalPlacement::PlacementInfo& in
 
 void PortalPlacement::LoadFeature()
 {
+	bool hudCallbackEnabled = false;
 	if (spt_tracing.ORIG_TraceFirePortal && spt_tracing.ORIG_GetActiveWeapon)
 	{
 #ifdef SPT_HUD_ENABLED
-		AddHudCallback(
+		hudCallbackEnabled = AddHudCallback(
 		    "portal_placement",
 		    [](std::string args)
 		    {
@@ -601,7 +606,7 @@ void PortalPlacement::LoadFeature()
 				                                        L"Portal2: %s",
 				                                        PlacementResultToString(spt_pp.p2));
 			    }
-			    else
+			    else if (mode > 0)
 			    {
 				    spt_hud_feat.DrawColorTopHudElement(blueTextColor, L"Portal1: %f", res1);
 				    spt_hud_feat.DrawColorTopHudElement(orangeTextColor, L"Portal2: %f", res2);
@@ -625,6 +630,14 @@ void PortalPlacement::LoadFeature()
 			InitConcommandBase(y_spt_draw_pp_grid_ms_per_frame);
 
 			spt_meshRenderer.signal.Connect(this, &PortalPlacement::OnMeshRenderSignal);
+			SptImGui::RegisterSectionCallback(SptImGuiGroup::Draw_PpPlacement_Gun,
+			                                  ImGuiGunPlacementCallback);
+			SptImGui::RegisterSectionCallback(SptImGuiGroup::Draw_PpPlacement_Grid,
+			                                  ImGuiGridPlacementCallback);
+			if (hudCallbackEnabled)
+				SptImGui::RegisterHudCvarCallback(y_spt_hud_portal_placement,
+				                                  ImGuiTextHudPortalPlacementCallback,
+				                                  false);
 		}
 #endif
 	}
@@ -734,6 +747,110 @@ void PortalPlacement::PostPlacementChecks(QAngle& placedAngles,
 	{
 		fizzle = false;
 	}
+}
+
+void PortalPlacement::ImGuiGunPlacementCallback(bool open)
+{
+	if (!open)
+		return;
+
+	ImGui::BeginDisabled(!SptImGui::CvarCheckbox(y_spt_draw_pp, "Draw portal placement"));
+	SptImGui::CvarCheckbox(y_spt_draw_pp_blue, "Draw for blue portal");
+	SptImGui::CvarCheckbox(y_spt_draw_pp_orange, "Draw for orange portal");
+	SptImGui::CvarCheckbox(y_spt_draw_pp_failed, "Draw failed portal placement");
+	SptImGui::CvarCheckbox(y_spt_draw_pp_bbox, "Draw BBOX of placed portal");
+	ImGui::EndDisabled();
+	ImGuiTextHudPortalPlacementCallback(y_spt_hud_portal_placement);
+}
+
+void PortalPlacement::ImGuiGridPlacementCallback(bool open)
+{
+	if (!open)
+		return;
+
+	ConCommand& cmd = y_spt_draw_pp_grid_command;
+	const char* wrangledName = WrangleLegacyCommandName(cmd.GetName(), true, nullptr);
+	if (ImGui::Button("Clear grid"))
+	{
+		const char* strArgs[] = {wrangledName, "0"};
+		cmd.Dispatch({ARRAYSIZE(strArgs), strArgs});
+	}
+	ImGui::SetItemTooltip("%s 0", wrangledName);
+	ImGui::SameLine();
+
+	auto player = utils::GetServerPlayer();
+	bool disabled = !player || !spt_tracing.ORIG_GetActiveWeapon(player);
+	ImGui::BeginDisabled(disabled);
+
+	if (ImGui::Button("Draw for blue portal"))
+	{
+		const char* strArgs[] = {wrangledName, "1"};
+		cmd.Dispatch({ARRAYSIZE(strArgs), strArgs});
+	}
+	ImGui::SetItemTooltip("%s 1", wrangledName);
+	ImGui::SameLine();
+	if (ImGui::Button("Draw for orange portal"))
+	{
+		const char* strArgs[] = {wrangledName, "2"};
+		cmd.Dispatch({ARRAYSIZE(strArgs), strArgs});
+	}
+	ImGui::SetItemTooltip("%s 2", wrangledName);
+	ImGui::SameLine();
+	SptImGui::HelpMarker("Help text for %s:\n\n%s", wrangledName, cmd.GetHelpText());
+
+	// Neither V_snprintf nor snprintf are technically safe to use here lmao.
+	// Just use the "secure" version since that'll give an assert if buf is too small.
+
+	{
+		ConVar& c = y_spt_draw_pp_grid_width;
+		int oldVal = c.GetInt();
+		int newVal = oldVal;
+		char buf[64];
+		_snprintf_s(buf, sizeof buf, "%s %%d", WrangleLegacyCommandName(c.GetName(), true, nullptr));
+		ImGui::SliderInt("##grid_width", &newVal, 30, 500, buf, ImGuiSliderFlags_AlwaysClamp);
+		if (oldVal != newVal)
+			c.SetValue(newVal);
+		ImGui::SameLine();
+		SptImGui::HelpMarker("%s", c.GetHelpText());
+	}
+	{
+		ConVar& c = y_spt_draw_pp_grid_fov;
+		float oldVal = c.GetFloat();
+		float newVal = oldVal;
+		char buf[64];
+		_snprintf_s(buf, sizeof buf, "%s %%.1f", WrangleLegacyCommandName(c.GetName(), true, nullptr));
+		ImGui::SliderFloat("##grid_fov", &newVal, 5, 170, buf, ImGuiSliderFlags_AlwaysClamp);
+		if (oldVal != newVal)
+			c.SetValue(newVal);
+		ImGui::SameLine();
+		SptImGui::HelpMarker("%s", c.GetHelpText());
+	}
+	{
+		ConVar& c = y_spt_draw_pp_grid_ms_per_frame;
+		int oldVal = c.GetInt();
+		int newVal = oldVal;
+		char buf[64];
+		_snprintf_s(buf, sizeof buf, "%s %%d", WrangleLegacyCommandName(c.GetName(), true, nullptr));
+		ImGui::SliderInt("##grid_ms", &newVal, 1, 100, buf, ImGuiSliderFlags_AlwaysClamp);
+		if (oldVal != newVal)
+			c.SetValue(newVal);
+		ImGui::SameLine();
+		SptImGui::HelpMarker("%s", c.GetHelpText());
+	}
+	{
+		const char* opts[] = {"Draw at shoot locations", "Draw at bump locations"};
+		SptImGui::CvarCombo(y_spt_draw_pp_grid_type, "##grid_type", opts, ARRAYSIZE(opts));
+	}
+
+	ImGui::EndDisabled();
+	if (disabled)
+		ImGui::TextColored(SPT_IMGUI_WARN_COLOR_YELLOW, "! Player must exist and have a portal gun !");
+}
+
+void PortalPlacement::ImGuiTextHudPortalPlacementCallback(ConVar& var)
+{
+	const char* opts[] = {"Disabled", "Boolean result", "String result", "Float result"};
+	SptImGui::CvarCombo(var, "##hud_portal_placement", opts, ARRAYSIZE(opts));
 }
 
 #endif
