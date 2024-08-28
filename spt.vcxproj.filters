@@ -385,6 +385,9 @@
     <ClCompile Include="spt\spt-version.cpp">
       <Filter>spt</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\visualizations\gui_game_detection.cpp">
+      <Filter>spt\features\visualizations</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
