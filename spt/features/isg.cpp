@@ -2,12 +2,12 @@
 #include "hud.hpp"
 #include "..\feature.hpp"
 #include "..\utils\game_detection.hpp"
+#include "visualizations/imgui/imgui_interface.hpp"
 
 #include <functional>
 #include <memory>
 
 #include "convar.hpp"
-
 
 ConVar y_spt_hud_isg("y_spt_hud_isg", "0", FCVAR_CHEAT, "Is the ISG flag set?\n");
 
@@ -33,11 +33,6 @@ public:
 protected:
 	uint32_t ORIG_MiddleOfRecheck_ov_element = 0;
 
-	virtual bool ShouldLoadFeature() override
-	{
-		return true;
-	}
-
 	virtual void InitHooks() override
 	{
 		FIND_PATTERN(vphysics, MiddleOfRecheck_ov_element);
@@ -54,9 +49,13 @@ protected:
 	virtual void LoadFeature() override;
 
 	virtual void UnloadFeature() override;
+
+private:
+	void ImGuiCallback(bool open);
 };
 
 static ISGFeature spt_isg;
+
 CON_COMMAND_F(y_spt_set_isg, "Sets the state of ISG in the game (1 or 0)", FCVAR_DONTRECORD | FCVAR_CHEAT)
 {
 	if (args.ArgC() < 2)
@@ -80,17 +79,55 @@ bool IsISGActive()
 
 void ISGFeature::LoadFeature()
 {
-	if (ORIG_MiddleOfRecheck_ov_element)
-	{
-		InitCommand(y_spt_set_isg);
+	if (!ORIG_MiddleOfRecheck_ov_element)
+		return;
+
+	InitCommand(y_spt_set_isg);
+
+	bool hudCallbackEnabled = false;
 
 #ifdef SPT_HUD_ENABLED
-		AddHudCallback(
-		    "isg",
-		    [](std::string) { spt_hud_feat.DrawTopHudElement(L"isg: %d", IsISGActive()); },
-		    y_spt_hud_isg);
+	hudCallbackEnabled = AddHudCallback(
+	    "isg", [](std::string) { spt_hud_feat.DrawTopHudElement(L"isg: %d", IsISGActive()); }, y_spt_hud_isg);
 #endif
-	}
+
+	SptImGui::RegisterTabCallback(SptImGuiGroup::GameIo_ISG, [this](bool open) { ImGuiCallback(open); });
+	if (hudCallbackEnabled)
+		SptImGui::RegisterHudCvarCheckbox(y_spt_hud_isg);
 }
 
-void ISGFeature::UnloadFeature() {}
+void ISGFeature::UnloadFeature()
+{
+	ORIG_MiddleOfRecheck_ov_element = 0;
+}
+
+void ISGFeature::ImGuiCallback(bool open)
+{
+	if (!open)
+		return;
+	if (ImGui::TreeNode("Info"))
+	{
+		ImGui::TextWrapped(
+		    "Item Save Glitch is a game state which prevents the physics engine from handling rigid impacts, "
+		    "this causes many entities to phase through each other and a lot of other peculiar behavior. "
+		    "Once enabled, ISG cannot be disabled through normal means without restarting the game. SPT can "
+		    "control the state of ISG with a single flag.");
+		ImGui::TreePop();
+	}
+
+	SptImGui::CvarCheckbox(y_spt_hud_isg, "Show ISG state in HUD");
+	ImGui::BeginDisabled(*isgFlagPtr);
+	if (ImGui::Button("Enable ISG"))
+		*isgFlagPtr = true;
+	ImGui::EndDisabled();
+	ImGui::SameLine();
+	ImGui::BeginDisabled(!*isgFlagPtr);
+	if (ImGui::Button("Disable ISG"))
+		*isgFlagPtr = false;
+	ImGui::EndDisabled();
+	ImGui::SameLine();
+	ImGui::TextDisabled("ISG state: %d", *isgFlagPtr);
+	ImGui::SameLine();
+	SptImGui::HelpMarker("Can be set with %s.",
+	                     WrangleLegacyCommandName(y_spt_set_isg_command.GetName(), true, nullptr));
+}
