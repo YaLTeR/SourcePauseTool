@@ -379,6 +379,9 @@
     <ClCompile Include="thirdparty\imgui\imgui_impl_win32.cpp">
       <Filter>thirdparty\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\visualizations\imgui\spt_imgui_widgets.cpp">
+      <Filter>spt\features\visualizations\imgui</Filter>
+    </ClCompile>
     <ClCompile Include="spt\spt-version.cpp">
       <Filter>spt</Filter>
     </ClCompile>
@@ -798,8 +801,17 @@
     <ClInclude Include="SDK\shaderapi\shareddefs.h">
       <Filter>SDK\shaderapi</Filter>
     </ClInclude>
+    <ClInclude Include="spt\features\visualizations\imgui\imgui_interface.hpp">
+      <Filter>spt\features\visualizations\imgui</Filter>
+    </ClInclude>
     <ClInclude Include="spt\utils\spt_vprof.hpp">
       <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\imgui\jetbrains_mono_bold.hpp">
+      <Filter>spt\features\visualizations\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\imgui\imgui_styles.hpp">
+      <Filter>spt\features\visualizations\imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
