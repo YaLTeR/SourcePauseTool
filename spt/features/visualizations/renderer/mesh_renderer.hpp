@@ -136,6 +136,8 @@ private:
 	                   CRendering3dView*,
 	                   bool bInSkybox,
 	                   bool bShadowDepth);
+
+	static void ImGuiCallback(bool open);
 };
 
 inline MeshRendererFeature spt_meshRenderer;

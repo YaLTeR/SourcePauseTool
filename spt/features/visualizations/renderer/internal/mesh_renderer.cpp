@@ -35,6 +35,8 @@
 #include "interfaces.hpp"
 #include "signals.hpp"
 
+#include "spt/features/visualizations/imgui/imgui_interface.hpp"
+
 ConVar y_spt_draw_mesh_debug(
     "y_spt_draw_mesh_debug",
     "0",
@@ -85,7 +87,7 @@ namespace patterns
 	PATTERNS(CSkyBoxView__DrawInternal,
 	         "EZ2-1.0.0+original",
 	         "55 8B EC 81 EC 28 01 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 ?? 8B 45 ??",
-			 "5135-portal1",
+	         "5135-portal1",
 	         "83 EC 28 53 56 8B F1 8B 0D ?? ?? ?? ??",
 	         "7467727-hl2",
 	         "55 8B EC 83 EC 24 53 56 57 8B F9 8B 0D ?? ?? ?? ??");
@@ -129,6 +131,7 @@ void MeshRendererFeature::LoadFeature()
 	RenderViewPre_Signal.Connect(&g_meshRendererInternal, &MeshRendererInternal::OnRenderViewPre_Signal);
 	InitConcommandBase(y_spt_draw_mesh_debug);
 	InitCommand(y_spt_destroy_all_static_meshes);
+	SptImGui::RegisterSectionCallback(SptImGuiGroup::Dev_Mesh, MeshRendererFeature::ImGuiCallback);
 }
 
 void MeshRendererFeature::UnloadFeature()
@@ -137,6 +140,34 @@ void MeshRendererFeature::UnloadFeature()
 	g_meshRendererInternal.FrameCleanup();
 	g_meshMaterialMgr.Unload();
 	StaticMesh::DestroyAll();
+}
+
+void MeshRendererFeature::ImGuiCallback(bool open)
+{
+	if (!open)
+		return;
+	extern ConVar y_spt_draw_mesh_examples;
+	SptImGui::CvarCheckbox(y_spt_draw_mesh_examples, "Draw mesh examples");
+
+	static int lastDestroyedCount = 0;
+	static double lastDestroyedTime = -666.f;
+	if (SptImGui::CmdButton("Destroy all static meshes", y_spt_destroy_all_static_meshes_command))
+	{
+		lastDestroyedCount = StaticMesh::DestroyAll();
+		lastDestroyedTime = ImGui::GetTime();
+	}
+	bool emph = ImGui::GetTime() - lastDestroyedTime <= .5;
+	ImGui::TextColored(emph ? ImVec4{.8f, .8f, .3f, 1.f} : ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled),
+	                   "(%d mesh%s destroyed last time)",
+	                   lastDestroyedCount,
+	                   lastDestroyedCount == 1 ? "" : "es");
+
+	const char* const opts[] = {
+	    "Disabled",
+	    "Draw AABB for meshes",
+	    "Draw AABB for meshes & fused meshes",
+	};
+	SptImGui::CvarCombo(y_spt_draw_mesh_debug, "##draw_mesh_debug", opts, ARRAYSIZE(opts));
 }
 
 int MeshRendererFeature::CurrentPortalRenderDepth() const
