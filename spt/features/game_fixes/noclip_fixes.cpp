@@ -80,7 +80,7 @@ namespace patterns
 
     PATTERNS(CGameMovement__FullNoClipMove,
              "BMS 0.9",
-             "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ?? 89 6C 24 ?? 8B EC 83 EC 6C 56 8B F1",
+             "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ?? 89 6C 24 ?? 8B EC 83 EC 6C 56 8B F1 8B 0D ?? ?? ?? ??",
              "HL2 5135",
              "83 EC ?? A1 ?? ?? ?? ?? D9 40 2C 56 D8 4C 24 ?? 8B F1 8D 4C 24 ?? 51 8B 4E 08");
 } // namespace patterns
@@ -116,7 +116,7 @@ void NoclipFixesFeature::LoadFeature()
     void* serverBase;
     size_t serverSize = 0;
     MemUtils::GetModuleInfo(L"server.dll", &serverHandle, &serverBase, &serverSize);
-    ;
+
     for (auto match : MATCHES_Server__StringReferences)
     {
         if (nofixFound && gpGlobalsFound)
