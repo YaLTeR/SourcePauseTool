@@ -43,24 +43,21 @@ private:
 			ImGui::TableHeadersRow();
 			TableRow("Portal 1", DoesGameLookLikePortal());
 			TableRow("DMoMM", DoesGameLookLikeDMoMM());
-			TableRow("HLS", DoesGameLookLikeDMoMM());
-			TableRow("BMS (retail)", DoesGameLookLikeDMoMM());
-			TableRow("BMS (latest)", DoesGameLookLikeDMoMM());
-			TableRow("BMS (mod)", DoesGameLookLikeDMoMM());
-			TableRow("Estranged", DoesGameLookLikeDMoMM());
+			TableRow("HLS", DoesGameLookLikeHLS());
+			TableRow("BMS (retail)", DoesGameLookLikeBMSRetail());
+			TableRow("BMS (latest)", DoesGameLookLikeBMSLatest());
+			TableRow("BMS (mod)", DoesGameLookLikeBMSMod());
+			TableRow("Estranged", DoesGameLookLikeEstranged());
 			ImGui::EndTable();
 		}
 
-#ifdef SSDK2007
+#if defined(SSDK2007)
 		ImGui::Text("#define " _STR(SSDK2007) " %d", SSDK2007);
-#endif
-#ifdef SSDK2013
+#elif defined(SSDK2013)
 		ImGui::Text("#define " _STR(SSDK2013) " %d", SSDK2013);
-#endif
-#ifdef BMS
+#elif defined(BMS)
 		ImGui::Text("#define " _STR(BMS) " %d", BMS);
-#endif
-#ifdef OE
+#elif defined(OE)
 		ImGui::Text("#define " _STR(OE) " %d", OE);
 #endif
 	}
