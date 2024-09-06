@@ -297,9 +297,6 @@ static void HandleBackwardsCompatibility(FeatureCommand& featCmd, const char* cm
 		newCommand = new ConVarProxy((ConVar*)cmd, newName, ((ConVar_guts*)cmd)->m_nFlags);
 	}
 
-	FeatureCommand newCmd = {featCmd.owner, newCommand, true, allocatedName, false};
-	cmd_to_feature.push_back(newCmd);
-
 	// If a legacy command didn't originally have FCVAR_HIDDEN set, we need to hide it now and
 	// unhide it when unregistering because if the commands are initialized again, they would all be hidden
 	if (!cmd->IsFlagSet(FCVAR_HIDDEN))
@@ -307,6 +304,10 @@ static void HandleBackwardsCompatibility(FeatureCommand& featCmd, const char* cm
 		cmd->AddFlags(FCVAR_HIDDEN);
 		featCmd.unhideOnUnregister = true;
 	}
+
+	// After the push the featCmd reference can be invalid!!!
+	FeatureCommand newCmd = { featCmd.owner, newCommand, true, allocatedName, false };
+	cmd_to_feature.push_back(newCmd);
 }
 
 void Cvar_RegisterSPTCvars()
