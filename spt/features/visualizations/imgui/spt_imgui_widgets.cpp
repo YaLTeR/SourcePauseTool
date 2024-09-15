@@ -167,10 +167,10 @@ void SptImGui::TextInputAutocomplete(const char* inputTextLabel,
 				* results. If we change this to a more generic (non ConCommand) based function,
 				* feed the textbox input directly to the autocomplete func instead of prefixing it.
 				*/
-			    static ImGuiTextBuffer tmpBuf;
-			    tmpBuf.Buf.clear();
-			    tmpBuf.appendf("%s %s", ud.cmdName, data->Buf);
-			    pd.nAutocomplete = ud.autocompleteFn(tmpBuf.Buf.Data, pd.autocomplete);
+			    static char tmpBuf[SPT_MAX_CVAR_NAME_LEN + COMMAND_COMPLETION_ITEM_LENGTH + 2];
+			    snprintf(tmpBuf, sizeof tmpBuf, "%s %s", ud.cmdName, data->Buf);
+			    tmpBuf[sizeof(tmpBuf) - 1] = '\0';
+			    pd.nAutocomplete = ud.autocompleteFn(tmpBuf, pd.autocomplete);
 			    size_t nTrim = strlen(ud.cmdName) + 1;
 			    for (int i = 0; i < pd.nAutocomplete; i++)
 				    memmove(pd.autocomplete[i], pd.autocomplete[i] + nTrim, data->BufSize - nTrim);

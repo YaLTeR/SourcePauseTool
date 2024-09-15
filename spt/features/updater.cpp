@@ -254,16 +254,6 @@ std::string Updater::Request(const char* url)
 	return response;
 }
 
-static int GetPluginBuildNumber()
-{
-	// Use the way Source Engine calculates the build number to calculate SPT "build number"
-	int pluginBuildNumber = 0;
-	char sptVersion[12];
-	snprintf(sptVersion, sizeof sptVersion, SPT_VERSION);
-	pluginBuildNumber = utils::DateToBuildNumber(sptVersion);
-	return pluginBuildNumber;
-}
-
 bool Updater::FetchReleaseInfo()
 {
 	std::string data = Request("https://api.github.com/repos/YaLTeR/SourcePauseTool/releases/latest");
@@ -422,7 +412,6 @@ void Updater::UpdatePlugin()
 		return;
 	}
 
-
 	fs::copy(tmpPath, sptPath, ec);
 	if (ec)
 	{
@@ -475,7 +464,7 @@ int Updater::CheckUpdate()
 	}
 
 	int latestBuildNum = release.build;
-	int currentBuildNum = GetPluginBuildNumber();
+	int currentBuildNum = utils::DateToBuildNumber(SPT_VERSION);
 
 	DevMsg("Latest: %d\n", latestBuildNum);
 	DevMsg("Current: %d\n", currentBuildNum);
