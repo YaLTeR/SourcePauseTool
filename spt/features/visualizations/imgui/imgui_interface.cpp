@@ -414,28 +414,36 @@ private:
 	{
 		if (!open)
 			return;
+		int i = 0;
 		for (auto& cvarInfo : hudCvars)
 		{
+			ImGui::PushID(i);
+			Assert(cvarInfo.cb);
 			const char* name = ImGuiHudCvar::buffer.Buf.Data + cvarInfo.bufOffset;
-			if (cvarInfo.cb)
+			if (cvarInfo.putInCollapsible)
 			{
-				if (cvarInfo.putInCollapsible)
+				float oldIndent = *(float*)ImGui::GetStyleVarInfo(ImGuiStyleVar_IndentSpacing)
+				                       ->GetVarPtr(&ImGui::GetStyle());
+				ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 0.0f);
+				if (ImGui::TreeNodeEx(name, ImGuiTreeNodeFlags_Framed))
 				{
-					if (ImGui::TreeNodeEx(name, ImGuiTreeNodeFlags_Framed))
+					ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, oldIndent);
+					if (SptImGui::BeginBordered())
 					{
 						cvarInfo.cb(cvarInfo.var);
-						ImGui::TreePop();
+						SptImGui::EndBordered();
 					}
+					ImGui::PopStyleVar();
+					ImGui::TreePop();
 				}
-				else
-				{
-					cvarInfo.cb(cvarInfo.var);
-				}
+				ImGui::PopStyleVar();
 			}
 			else
 			{
-				SptImGui::CvarCheckbox(cvarInfo.var, "##checkbox");
+				cvarInfo.cb(cvarInfo.var);
 			}
+			ImGui::PopID();
+			i++;
 		}
 	}
 
@@ -1013,8 +1021,8 @@ bool SptImGui::RegisterWindowCallback(const SptImGuiWindowCallback& cb)
 
 void SptImGui::RegisterHudCvarCheckbox(ConVar& var)
 {
-	auto emp = SptImGuiFeature::hudCvars.emplace(var, SptImGuiHudTextCallback{nullptr}, false);
-	AssertMsg(emp.second, "each hud cvar should not be registered more than once to imgui");
+	RegisterHudCvarCallback(
+	    var, [](ConVar& cv) { SptImGui::CvarCheckbox(cv, "##checkbox"); }, false);
 }
 
 void SptImGui::RegisterHudCvarCallback(ConVar& var, const SptImGuiHudTextCallback& cb, bool putInCollapsible)
