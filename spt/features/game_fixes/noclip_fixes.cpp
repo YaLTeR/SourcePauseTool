@@ -230,9 +230,10 @@ void NoclipFixesFeature::ToggleNoclipNofix(bool enabled)
 
     if (enabled)
     {
-        MemUtils::ReplaceBytes((void*)PTR_nofixJumpInsc, 1, new uint8[1]{0xE9});
+        uint8 inst_jmp = 0xE9, inst_nop = 0x90;
+        MemUtils::ReplaceBytes((void*)PTR_nofixJumpInsc, 1, &inst_jmp);
         MemUtils::ReplaceBytes((void*)(PTR_nofixJumpInsc + 1), 4, (uint8*)&nofixJumpDistance);
-        MemUtils::ReplaceBytes((void*)(PTR_nofixJumpInsc + 5), 1, new uint8[1]{0x90});
+        MemUtils::ReplaceBytes((void*)(PTR_nofixJumpInsc + 5), 1, &inst_nop);
     }
     else
     {

@@ -81,13 +81,14 @@ void ConNotifyFeature::LoadFeature()
 	} \
  \
     const char* devVal = developer->GetString(); \
-    char* oldDev = new char[strlen(devVal)]; \
+    char* oldDev = new char[strlen(devVal) + 1]; \
     strcpy(oldDev, devVal); \
     developer->SetValue(true); \
  \
     spt_con_notify.ORIG_##funcName(__VA_ARGS__); \
  \
     developer->SetValue(oldDev); \
+    delete[] oldDev; \
     return;\
 }
 

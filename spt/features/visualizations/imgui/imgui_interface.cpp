@@ -638,7 +638,7 @@ protected:
 			ImGui::DestroyContext();
 		case LoadState::None:
 		default:
-			ImGuiHudCvar::buffer.Buf.resize(0);
+			ImGuiHudCvar::buffer.Buf.clear();
 			windowCallbacks.clear();
 			nLeafMainWndCallbacks = 0;
 			nRegisteredLeafMainWndCallbacks = 0;
