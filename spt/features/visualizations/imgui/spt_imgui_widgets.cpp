@@ -76,6 +76,22 @@ void SptImGui::HelpMarker(const char* fmt, ...)
 	va_end(va);
 }
 
+bool SptImGui::BeginBordered(const ImVec2& outer_size, float inner_width)
+{
+	if (ImGui::BeginTable("##table_border", 1, ImGuiTableFlags_BordersOuter, outer_size, inner_width))
+	{
+		ImGui::TableNextRow();
+		ImGui::TableNextColumn();
+		return true;
+	}
+	return false;
+}
+
+void SptImGui::EndBordered()
+{
+	ImGui::EndTable();
+}
+
 void SptImGui::TextInputAutocomplete(const char* inputTextLabel,
                                      const char* popupId,
                                      AutocompletePersistData& persist,

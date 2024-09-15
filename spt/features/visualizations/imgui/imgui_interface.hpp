@@ -274,6 +274,9 @@ public:
 	static int CvarCombo(ConVar& c, const char* label, const char* const* opts, size_t nOpts);
 	// same as internal imgui help marker - a tooltip with extra info (for cvars & commands)
 	static void HelpMarker(const char* fmt, ...);
+	// add a border around an item - this is just a table with a single row/column
+	static bool BeginBordered(const ImVec2& outer_size = {0.0f, 0.0f}, float inner_width = 0.0f);
+	static void EndBordered();
 
 	struct AutocompletePersistData
 	{
