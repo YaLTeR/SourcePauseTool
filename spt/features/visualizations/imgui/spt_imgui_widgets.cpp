@@ -130,7 +130,7 @@ void SptImGui::TextInputAutocomplete(const char* inputTextLabel,
 	                                | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackEdit
 	                                | ImGuiInputTextFlags_EnterReturnsTrue;
 	// The only way I've been able to overwrite the buffer (e.g. mouse pressed on autocomplete entry)
-	// is within the callback; setting the textInput directly doesn't seem to work...
+	// is within the callback; setting the textInput directly isn't currently supported by ImGui ;}.
 	if (persist.overwriteIdx >= 0)
 		textFlags |= ImGuiInputTextFlags_CallbackAlways;
 	persist.modified = false;
@@ -198,14 +198,26 @@ void SptImGui::TextInputAutocomplete(const char* inputTextLabel,
 	ImGuiWindow* navWindow = ImGui::GetCurrentContext()->NavWindow;
 
 	bool popupIsNav = navWindow && !strcmp(popupId, navWindow->Name);
+
+	// determine if we should display the "popup"
+
+	// no focused window or focused window is not root/popup window
 	if (!navWindow || (navWindow != textBoxWnd && !popupIsNav))
-		return; // focused window is not root window or popup window
+		return;
+	// nothing to autocomplete
 	if (persist.nAutocomplete == 0)
-		return; // nothing to autocomplete
-	if (!ImGui::IsItemActive() && !ImGui::IsItemDeactivated() && !popupIsNav)
-		return; // text box is not selected & was not just deseleted
+		return; 
+	/*
+	* - if the textbox is the active element display the popup
+	* - if the popup window is the nav window - great, keep it alive
+	* - the third condition is to handle the one frame transition between those two states:
+	*   (the textbox is not active AND the popup is not the nav window)
+	*/
+	if (!(popupIsNav || ImGui::IsItemActive() || ImGui::IsItemDeactivated()))
+		return;
+	// 1 entry to autocomplete but it's the same as what user typed in the text box
 	if (persist.nAutocomplete == 1 && !strcmp(persist.autocomplete[0], persist.textInput))
-		return; // 1 entry to autocomplete but it's the same as what user typed in the text box
+		return; 
 
 	ImGui::SetNextWindowPos(ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y));
 	float nDisplayItems, framePadding;

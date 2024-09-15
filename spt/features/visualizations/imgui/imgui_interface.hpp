@@ -264,13 +264,13 @@ public:
 
 	// SPT-related widgets
 
-	// a button for a con command with no args, does NOT invoke the command (because of OE compat)
+	// a button for a ConCommand with no args, does NOT invoke the command (because of OE compat)
 	static bool CmdButton(const char* label, ConCommand& cmd);
-	// display cvar & value - if the value has quotes, too bad!
+	// display cvar name & value, surrounds the value in quotes if it has a space (if the value already has quotes, too bad!)
 	static void CvarValue(const ConVar& c);
 	// a checkbox for a boolean cvar, returns value of cvar
 	static bool CvarCheckbox(ConVar& c, const char* label);
-	// a combo/dropdown box for a cvar with multiple integer options (does not use clipper), returns value of cvar
+	// a combo/dropdown box for a cvar with multiple integer options (does not use clipper - not optimized for huge lists), returns value of cvar
 	static int CvarCombo(ConVar& c, const char* label, const char* const* opts, size_t nOpts);
 	// same as internal imgui help marker - a tooltip with extra info (for cvars & commands)
 	static void HelpMarker(const char* fmt, ...);
@@ -294,7 +294,7 @@ public:
 		bool modified = false;     // public
 	};
 	/*
-	* A text input field with autocomplete for a specific ConCommand. To use, create a statiic
+	* A text input field with autocomplete for a specific ConCommand. To use, create a static
 	* AutocompletePersistData and pass it in here every time you call this widget. 7.25 display
 	* items is what BeginListBox() uses and is a reasonable default.
 	* 
