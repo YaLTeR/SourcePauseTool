@@ -2,6 +2,9 @@
 
 #include "convar.hpp"
 
+// max length including null terminator
+#define SPT_MAX_CVAR_NAME_LEN 64
+
 void Cvar_RegisterSPTCvars();
 void Cvar_UnregisterSPTCvars();
 void Cvar_InitConCommandBase(ConCommandBase& concommand, void* owner);
@@ -27,8 +30,8 @@ extern ConVar* _sv_bounce;
 extern ConVar* _sv_cheats;
 
 /*
-* Converts legacy SPT command names to new ones. Uses either a temporary string that is only
-* valid until the next call, or allocates a new string that must be deallocated manually.
+* Converts legacy SPT command names to new ones. Uses either a temporary string that is only valid
+* until the next call, or allocates a new string w/ new[] that must be deallocated manually.
 * 
 * Examples:
 * spt_hud_position -> spt_hud_position  (allocated=false)

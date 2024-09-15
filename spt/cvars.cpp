@@ -239,36 +239,22 @@ const char* WrangleLegacyCommandName(const char* name, bool useTempStorage, bool
 
 	size_t allocLen = newName ? strlen(newName) + 2 // ex: +y_spt_duckspam
 	                          : strlen(name) + 5;   // ex: tas_pause, +myprefix_something
+	AssertMsg(allocLen < SPT_MAX_CVAR_NAME_LEN, "spt: cvar name too long!");
 
-	// (re)allocate new string
-	char* allocStr;
-	if (useTempStorage)
-	{
-		if (allocLen > tmpLen)
-		{
-			delete[] tmpStr;
-			tmpStr = new char[allocLen];
-			tmpLen = allocLen;
-		}
-		allocStr = tmpStr;
-	}
-	else
-	{
-		allocStr = new char[allocLen];
-	}
+	static char tmpStorage[SPT_MAX_CVAR_NAME_LEN];
+	char* retStr = useTempStorage ? tmpStorage : new char[allocLen];
+	retStr[0] = name[0];
 
 	if (newName)
 	{
-		allocStr[0] = name[0];
-		strcpy(allocStr + 1, newName);
+		strcpy(retStr + 1, newName);
 	}
 	else
 	{
-		allocStr[0] = name[0];
-		strcpy(allocStr + plusMinus, "spt_");
-		strcat(allocStr, name + plusMinus);
+		strcpy(retStr + plusMinus, "spt_");
+		strcat(retStr, name + plusMinus);
 	}
-	return allocStr;
+	return retStr;
 }
 
 // Check if spt_ prefix is at the start. If not, create a new command and hide the old one with
@@ -306,7 +292,7 @@ static void HandleBackwardsCompatibility(FeatureCommand& featCmd, const char* cm
 	}
 
 	// After the push the featCmd reference can be invalid!!!
-	FeatureCommand newCmd = { featCmd.owner, newCommand, true, allocatedName, false };
+	FeatureCommand newCmd = {featCmd.owner, newCommand, true, allocatedName, false};
 	cmd_to_feature.push_back(newCmd);
 }
 
