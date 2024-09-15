@@ -10,7 +10,7 @@
 
 /*
 * Prefer using DECL_STATIC_HOOK_XXX over DECL_HOOK_XXX.
-* The difference is that with the latter you can do:
+* The difference is that with the former you can do:
 * 
 * IMPL_HOOK_XXX(SptFeature, void, GameFn, int arg1) {
 *   ORIG_GameFn(arg1);
