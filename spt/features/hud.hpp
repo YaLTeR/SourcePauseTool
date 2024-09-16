@@ -73,6 +73,12 @@ public:
 	virtual bool ShouldLoadFeature() override;
 	bool GetFont(const std::string& fontName, vgui::HFont& fontOut);
 
+	// call from LoadFeature or later
+	bool LoadingSuccessful() const
+	{
+		return loadingSuccessful;
+	}
+
 protected:
 	virtual void InitHooks() override;
 	virtual void PreHook() override;
