@@ -272,6 +272,8 @@ public:
 	static bool CvarCheckbox(ConVar& c, const char* label);
 	// a combo/dropdown box for a cvar with multiple integer options (does not use clipper - not optimized for huge lists), returns value of cvar
 	static int CvarCombo(ConVar& c, const char* label, const char* const* opts, size_t nOpts);
+	// a textbox for an integer in base 10 or 16, returns true if the value was modified
+	static bool InputTextInteger(const char* label, const char* hint, long long& val, int radix);
 	// same as internal imgui help marker - a tooltip with extra info (for cvars & commands)
 	static void HelpMarker(const char* fmt, ...);
 	// add a border around an item - this is just a table with a single row/column
