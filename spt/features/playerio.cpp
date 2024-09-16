@@ -15,6 +15,7 @@
 #include "spt\utils\portal_utils.hpp"
 #include "spt\utils\convar.hpp"
 #include "..\strafe\strafestuff.hpp"
+#include "visualizations/imgui/imgui_interface.hpp"
 
 #ifdef SSDK2007
 #include "mathlib\vmatrix.h"
@@ -901,7 +902,7 @@ void PlayerIOFeature::LoadFeature()
 		{
 			TickSignal.Connect(this, &PlayerIOFeature::OnTick);
 
-			AddHudCallback(
+			bool hudEnabled = AddHudCallback(
 			    "accel",
 			    [this](std::string)
 			    {
@@ -913,76 +914,115 @@ void PlayerIOFeature::LoadFeature()
 				    spt_hud_feat.DrawTopHudElement(L"accel(xy): %.3f", accel.Length2D());
 			    },
 			    y_spt_hud_accel);
+
+			if (hudEnabled)
+				SptImGui::RegisterHudCvarCheckbox(y_spt_hud_accel);
 		}
 
-		AddHudCallback(
-		    "position",
-		    [this](std::string args)
-		    {
-			    int mode = (args == "") ? spt_hud_position.GetInt() : std::stoi(args);
-			    Vector pos = (mode == 1) ? m_vecAbsOrigin.GetValue() + m_vecViewOffset.GetValue()
-			                             : m_vecAbsOrigin.GetValue();
-			    int precision = (mode == 1) ? 2 : mode;
+		{
+			bool hudEnabled = AddHudCallback(
+			    "position",
+			    [this](std::string args)
+			    {
+				    int mode = (args == "") ? spt_hud_position.GetInt() : std::stoi(args);
+				    Vector pos = (mode == 1) ? m_vecAbsOrigin.GetValue() + m_vecViewOffset.GetValue()
+				                             : m_vecAbsOrigin.GetValue();
+				    int precision = (mode == 1) ? 2 : mode;
 
-			    spt_hud_feat.DrawTopHudElement(L"pos: %.*f %.*f %.*f",
-			                                   precision,
-			                                   pos.x,
-			                                   precision,
-			                                   pos.y,
-			                                   precision,
-			                                   pos.z);
-		    },
-		    spt_hud_position);
+				    spt_hud_feat.DrawTopHudElement(L"pos: %.*f %.*f %.*f",
+				                                   precision,
+				                                   pos.x,
+				                                   precision,
+				                                   pos.y,
+				                                   precision,
+				                                   pos.z);
+			    },
+			    spt_hud_position);
 
-		AddHudCallback(
-		    "angles",
-		    [this](std::string args)
-		    {
-			    int mode = (args == "") ? spt_hud_angles.GetInt() : std::stoi(args);
-			    QAngle ang = utils::GetPlayerEyeAngles();
-			    int precision = (mode < 2) ? 2 : mode;
+			if (hudEnabled)
+			{
+				SptImGui::RegisterHudCvarCallback(
+				    spt_hud_position,
+				    [](ConVar& cv)
+				    {
+					    const char* opts[] = {
+					        "Disabled",
+					        "Eye position",
+					        "Player position (high precision)",
+					    };
+					    SptImGui::CvarCombo(cv, "##pos", opts, ARRAYSIZE(opts));
+				    },
+				    false);
+			}
+		}
 
-			    spt_hud_feat.DrawTopHudElement(L"ang: %.*f %.*f %.*f",
-			                                   precision,
-			                                   ang.x,
-			                                   precision,
-			                                   ang.y,
-			                                   precision,
-			                                   ang.z);
-		    },
-		    spt_hud_angles);
+		{
+			bool hudEnabled = AddHudCallback(
+			    "angles",
+			    [this](std::string args)
+			    {
+				    int mode = (args == "") ? spt_hud_angles.GetInt() : std::stoi(args);
+				    QAngle ang = utils::GetPlayerEyeAngles();
+				    int precision = (mode < 2) ? 2 : mode;
 
-		AddHudCallback(
-		    "velocity",
-		    [this](std::string args)
-		    {
-			    int mode = (args == "") ? y_spt_hud_velocity.GetInt() : std::stoi(args);
-			    Vector currentVel = GetPlayerVelocity();
-			    if (mode != 2)
-				    spt_hud_feat.DrawTopHudElement(L"vel(xyz): %.3f %.3f %.3f",
-				                                   currentVel.x,
-				                                   currentVel.y,
-				                                   currentVel.z);
-			    if (mode != 3)
-				    spt_hud_feat.DrawTopHudElement(L"vel(xy): %.3f", currentVel.Length2D());
-		    },
-		    y_spt_hud_velocity);
+				    spt_hud_feat.DrawTopHudElement(L"ang: %.*f %.*f %.*f",
+				                                   precision,
+				                                   ang.x,
+				                                   precision,
+				                                   ang.y,
+				                                   precision,
+				                                   ang.z);
+			    },
+			    spt_hud_angles);
 
-		AddHudCallback(
-		    "velocity_angles",
-		    [this](std::string)
-		    {
-			    Vector currentVel = GetPlayerVelocity();
-			    QAngle angles;
-			    VectorAngles(currentVel, Vector(0, 0, 1), angles);
-			    spt_hud_feat.DrawTopHudElement(L"vel(p/y/r): %.3f %.3f %.3f", angles.x, angles.y, angles.z);
-		    },
-		    y_spt_hud_velocity_angles);
+			if (hudEnabled)
+				SptImGui::RegisterHudCvarCheckbox(spt_hud_angles);
+		}
+
+		{
+			bool hudEnabled = AddHudCallback(
+			    "velocity",
+			    [this](std::string args)
+			    {
+				    int mode = (args == "") ? y_spt_hud_velocity.GetInt() : std::stoi(args);
+				    Vector currentVel = GetPlayerVelocity();
+				    if (mode != 2)
+					    spt_hud_feat.DrawTopHudElement(L"vel(xyz): %.3f %.3f %.3f",
+					                                   currentVel.x,
+					                                   currentVel.y,
+					                                   currentVel.z);
+				    if (mode != 3)
+					    spt_hud_feat.DrawTopHudElement(L"vel(xy): %.3f", currentVel.Length2D());
+			    },
+			    y_spt_hud_velocity);
+
+			if (hudEnabled)
+				SptImGui::RegisterHudCvarCheckbox(y_spt_hud_velocity);
+		}
+
+		{
+			bool hudEnabled = AddHudCallback(
+			    "velocity_angles",
+			    [this](std::string)
+			    {
+				    Vector currentVel = GetPlayerVelocity();
+				    QAngle angles;
+				    VectorAngles(currentVel, Vector(0, 0, 1), angles);
+				    spt_hud_feat.DrawTopHudElement(L"vel(p/y/r): %.3f %.3f %.3f",
+				                                   angles.x,
+				                                   angles.y,
+				                                   angles.z);
+			    },
+			    y_spt_hud_velocity_angles);
+
+			if (hudEnabled)
+				SptImGui::RegisterHudCvarCheckbox(y_spt_hud_velocity_angles);
+		}
 
 #ifdef SPT_PORTAL_UTILS
 		if (utils::DoesGameLookLikePortal())
 		{
-			AddHudCallback(
+			bool hudEnabled = AddHudCallback(
 			    "ag_sg_tester",
 			    [this](std::string)
 			    {
@@ -992,6 +1032,9 @@ void PlayerIOFeature::LoadFeature()
 				    spt_hud_feat.DrawTopHudElement(L"ag sg: %s", result.c_str());
 			    },
 			    y_spt_hud_ag_sg_tester);
+
+			if (hudEnabled)
+				SptImGui::RegisterHudCvarCheckbox(y_spt_hud_ag_sg_tester);
 		}
 #endif
 #endif
@@ -1027,12 +1070,41 @@ void PlayerIOFeature::LoadFeature()
 		    y_spt_hud_flags);
 
 		if (hasHudFlags)
+		{
 			InitCommand(y_spt_hud_flags_filter);
+
+			SptImGui::RegisterHudCvarCallback(
+			    y_spt_hud_flags,
+			    [](ConVar& cv)
+			    {
+				    ImGui::BeginDisabled(!SptImGui::CvarCheckbox(y_spt_hud_flags, "enabled"));
+				    ImGui::TextUnformatted("Flag filter");
+				    ImGui::SameLine();
+				    SptImGui::HelpMarker("Can be set with %s.",
+				                         WrangleLegacyCommandName(y_spt_hud_flags_filter_command
+				                                                      .GetName(),
+				                                                  true,
+				                                                  nullptr));
+				    if (ImGui::Button("Enable all"))
+					    hud_flags_filter = ~((decltype(hud_flags_filter))0);
+				    ImGui::SameLine();
+				    if (ImGui::Button("Disable all"))
+					    hud_flags_filter = 0;
+				    for (size_t i = 0; i < ARRAYSIZE(FLAGS); i++)
+				    {
+					    bool flag = hud_flags_filter & (1 << i);
+					    if (ImGui::Checkbox(FLAGS[i], &flag))
+						    hud_flags_filter = (hud_flags_filter & ~(1 << i)) | (flag << i);
+				    }
+				    ImGui::EndDisabled();
+			    },
+			    true);
+		}
 	}
 
 	if (m_MoveType.Found())
 	{
-		AddHudCallback(
+		bool hudEnabled = AddHudCallback(
 		    "moveflags",
 		    [this](std::string)
 		    {
@@ -1040,11 +1112,14 @@ void PlayerIOFeature::LoadFeature()
 			    DrawFlagsHud(L"Move type", MOVETYPE_FLAGS, ARRAYSIZE(MOVETYPE_FLAGS), flags);
 		    },
 		    y_spt_hud_moveflags);
+
+		if (hudEnabled)
+			SptImGui::RegisterHudCvarCheckbox(y_spt_hud_moveflags);
 	}
 
 	if (m_CollisionGroup.Found())
 	{
-		AddHudCallback(
+		bool hudEnabled = AddHudCallback(
 		    "collisionflags",
 		    [this](std::string)
 		    {
@@ -1052,11 +1127,14 @@ void PlayerIOFeature::LoadFeature()
 			    DrawFlagsHud(L"Collision group", COLLISION_GROUPS, ARRAYSIZE(COLLISION_GROUPS), flags);
 		    },
 		    y_spt_hud_collisionflags);
+
+		if (hudEnabled)
+			SptImGui::RegisterHudCvarCheckbox(y_spt_hud_collisionflags);
 	}
 
 	if (m_MoveCollide.Found())
 	{
-		AddHudCallback(
+		bool hudEnabled = AddHudCallback(
 		    "movecollideflags",
 		    [this](std::string)
 		    {
@@ -1064,6 +1142,9 @@ void PlayerIOFeature::LoadFeature()
 			    DrawFlagsHud(L"Move collide", MOVECOLLIDE_FLAGS, ARRAYSIZE(MOVECOLLIDE_FLAGS), flags);
 		    },
 		    y_spt_hud_movecollideflags);
+
+		if (hudEnabled)
+			SptImGui::RegisterHudCvarCheckbox(y_spt_hud_movecollideflags);
 	}
 #endif
 }
