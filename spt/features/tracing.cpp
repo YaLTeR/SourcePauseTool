@@ -12,6 +12,7 @@
 #include "..\strafe\strafestuff.hpp"
 #include "portal_utils.hpp"
 #include "ent_props.hpp"
+#include "visualizations/imgui/imgui_interface.hpp"
 
 #include "model_types.h"
 
@@ -543,7 +544,7 @@ void Tracing::LoadFeature()
 #ifdef SPT_HUD_ENABLED
 	if (interfaces::engineTraceClient)
 	{
-		AddHudCallback(
+		bool hudEnabled = AddHudCallback(
 		    "oob",
 		    [](std::string)
 		    {
@@ -554,6 +555,9 @@ void Tracing::LoadFeature()
 			    spt_hud_feat.DrawTopHudElement(L"oob: %d", oob);
 		    },
 		    y_spt_hud_oob);
+
+		if (hudEnabled)
+			SptImGui::RegisterHudCvarCheckbox(y_spt_hud_oob);
 	}
 #endif
 }

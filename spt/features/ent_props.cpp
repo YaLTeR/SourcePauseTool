@@ -10,6 +10,8 @@
 #include "string_utils.hpp"
 #include "spt\utils\portal_utils.hpp"
 #include "SPTLib\patterns.hpp"
+#include "visualizations/imgui/imgui_interface.hpp"
+
 #include <string>
 #include <unordered_map>
 
@@ -445,7 +447,7 @@ void EntProps::LoadFeature()
 #if defined(SPT_HUD_ENABLED) && defined(SPT_PORTAL_UTILS)
 	if (utils::DoesGameLookLikePortal())
 	{
-		AddHudCallback(
+		bool hudEnabled = AddHudCallback(
 		    "portal_bubble",
 		    [this](std::string)
 		    {
@@ -453,6 +455,9 @@ void EntProps::LoadFeature()
 			    spt_hud_feat.DrawTopHudElement(L"portal bubble: %d", in_bubble);
 		    },
 		    y_spt_hud_portal_bubble);
+
+		if (hudEnabled)
+			SptImGui::RegisterHudCvarCheckbox(y_spt_hud_portal_bubble);
 	}
 #endif
 

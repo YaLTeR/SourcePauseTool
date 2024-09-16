@@ -12,6 +12,7 @@
 #include "interfaces.hpp"
 #include "tracing.hpp"
 #include "signals.hpp"
+#include "visualizations/imgui/imgui_interface.hpp"
 
 ConVar tas_strafe("tas_strafe", "0", FCVAR_TAS_RESET);
 ConVar tas_strafe_type(
@@ -309,7 +310,7 @@ void TASFeature::LoadFeature()
 
 		AfterFramesSignal.Connect(&scripts::g_TASReader, &scripts::SourceTASReader::OnAfterFrames);
 #ifdef SPT_HUD_ENABLED
-		AddHudCallback(
+		bool hudEnabled = AddHudCallback(
 		    "script_progress",
 		    [this](std::string)
 		    {
@@ -318,6 +319,9 @@ void TASFeature::LoadFeature()
 			                                   scripts::g_TASReader.GetCurrentScriptLength());
 		    },
 		    y_spt_hud_script_progress);
+
+		if (hudEnabled)
+			SptImGui::RegisterHudCvarCheckbox(y_spt_hud_script_progress);
 #endif
 	}
 

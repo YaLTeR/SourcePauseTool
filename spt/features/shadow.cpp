@@ -6,6 +6,7 @@
 #include "ent_utils.hpp"
 #include "ent_props.hpp"
 #include "playerio.hpp"
+#include "visualizations/imgui/imgui_interface.hpp"
 
 ConVar y_spt_hud_shadow_info("y_spt_hud_shadow_info",
                              "0",
@@ -73,7 +74,7 @@ void ShadowPosition::LoadFeature()
 	if (ORIG_GetShadowPosition)
 	{
 #ifdef SPT_HUD_ENABLED
-		AddHudCallback(
+		bool hudEnabled = AddHudCallback(
 		    "shadow_info",
 		    [this](std::string)
 		    {
@@ -83,6 +84,9 @@ void ShadowPosition::LoadFeature()
 			    spt_hud_feat.DrawTopHudElement(L"shadow ang (pyr): %.3f %.3f %.3f", ang.x, ang.y, ang.z);
 		    },
 		    y_spt_hud_shadow_info);
+
+		if (hudEnabled)
+			SptImGui::RegisterHudCvarCheckbox(y_spt_hud_shadow_info);
 #endif
 	}
 

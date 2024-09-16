@@ -11,6 +11,7 @@
 #include "spt\features\ent_props.hpp"
 #include "spt\features\hud.hpp"
 #include "renderer\mesh_renderer.hpp"
+#include "imgui\imgui_interface.hpp"
 
 class HudOobEntsFeature : public FeatureWrapper<HudOobEntsFeature>
 {
@@ -70,8 +71,10 @@ void HudOobEntsFeature::LoadFeature()
 	if (!TickSignal.Works)
 		return;
 	TickSignal.Connect(this, &HudOobEntsFeature::OnTickSignal);
-	AddHudCallback(
+	bool hudEnabled = AddHudCallback(
 	    "hud oob ents", [this](std::string) { PrintEntsHud(); }, spt_hud_oob_ents);
+	if (hudEnabled)
+		SptImGui::RegisterHudCvarCheckbox(spt_hud_oob_ents);
 	InitCommand(spt_print_oob_ents);
 #ifdef SPT_MESH_RENDERING_ENABLED
 	if (spt_meshRenderer.signal.Works)
