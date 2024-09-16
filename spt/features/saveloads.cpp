@@ -4,6 +4,9 @@
 #include "signals.hpp"
 #include "convar.hpp"
 #include "..\features\afterticks.hpp"
+#include "spt\features\hud.hpp"
+#include "visualizations/imgui/imgui_interface.hpp"
+
 #include <format>
 
 static std::vector<const char*> _saveloadTypes = {"segment", "execute", "render"};
@@ -134,7 +137,7 @@ void SaveloadsFeature::LoadFeature()
 	InitCommand(y_spt_saveloads_stop);
 
 #ifdef SPT_HUD_ENABLED
-	AddHudCallback(
+	bool hudEnabled = AddHudCallback(
 	    "saveloads_showcurindex",
 	    [this](std::string)
 	    {
@@ -147,6 +150,9 @@ void SaveloadsFeature::LoadFeature()
 			    spt_hud_feat.DrawTopHudElement(L"SAVELOADS: Not executing");
 	    },
 	    y_spt_hud_saveloads_showcurindex);
+
+	if (hudEnabled)
+		SptImGui::RegisterHudCvarCheckbox(y_spt_hud_saveloads_showcurindex);
 #endif
 
 	SetSignonStateSignal.Connect(this, &SaveloadsFeature::OnSetSignonState);
