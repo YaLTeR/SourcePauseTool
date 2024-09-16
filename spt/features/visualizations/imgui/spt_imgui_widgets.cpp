@@ -1,4 +1,5 @@
 #include <stdafx.hpp>
+#include <inttypes.h>
 #include "imgui_interface.hpp"
 #include "thirdparty/imgui/imgui_internal.h"
 
@@ -59,6 +60,22 @@ int SptImGui::CvarCombo(ConVar& c, const char* label, const char* const* opts, s
 	ImGui::SameLine();
 	SptImGui::CvarValue(c);
 	return val;
+}
+
+bool SptImGui::InputTextInteger(const char* label, const char* hint, long long& val, int radix)
+{
+	Assert(radix == 10 || radix == 16);
+	char buf[24];
+	const char* fmtSpecifier = radix == 10 ? "%" PRId64 : "%" PRIx64;
+	snprintf(buf, sizeof buf, fmtSpecifier, val);
+	ImGui::SetNextItemWidth(ImGui::GetFontSize() * (sizeof(buf) - 1) * 0.6f);
+	ImGuiInputTextFlags flags =
+	    ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll;
+	flags |= radix == 10 ? ImGuiInputTextFlags_CharsDecimal : ImGuiInputTextFlags_CharsHexadecimal;
+	bool ret = ImGui::InputTextWithHint(label, hint, buf, sizeof buf, flags);
+	if (ret)
+		_snscanf_s(buf, sizeof buf, fmtSpecifier, &val);
+	return ret;
 }
 
 void SptImGui::HelpMarker(const char* fmt, ...)
@@ -222,7 +239,7 @@ void SptImGui::TextInputAutocomplete(const char* inputTextLabel,
 		return;
 	// nothing to autocomplete
 	if (persist.nAutocomplete == 0)
-		return; 
+		return;
 	/*
 	* - if the textbox is the active element display the popup
 	* - if the popup window is the nav window - great, keep it alive
@@ -233,7 +250,7 @@ void SptImGui::TextInputAutocomplete(const char* inputTextLabel,
 		return;
 	// 1 entry to autocomplete but it's the same as what user typed in the text box
 	if (persist.nAutocomplete == 1 && !strcmp(persist.autocomplete[0], persist.textInput))
-		return; 
+		return;
 
 	ImGui::SetNextWindowPos(ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y));
 	float nDisplayItems, framePadding;

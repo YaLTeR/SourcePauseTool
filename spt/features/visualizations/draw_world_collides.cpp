@@ -109,19 +109,9 @@ private:
 		if (newVal != oldVal)
 			c.SetValue(newVal);
 
-		static char buf[16];
-		strncpy(buf, spt_draw_world_collides_mask.GetString(), sizeof buf);
-		buf[sizeof(buf) - 1] = '\0';
-		// this prolly depends on the font size, idk of a better way tho..
-		ImGui::PushItemWidth(ImGui::GetFontSize() * (sizeof(buf) - 1) * 0.6f);
-		ImGui::InputTextWithHint("##cvar_mask",
-		                         "enter integer mask",
-		                         buf,
-		                         sizeof buf,
-		                         ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsUppercase
-		                             | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
-		ImGui::PopItemWidth();
-		spt_draw_world_collides_mask.SetValue(buf);
+		long long mask = strtoll(spt_draw_world_collides_mask.GetString(), nullptr, 10);
+		if (SptImGui::InputTextInteger("##cvar_mask", "enter integer mask", mask, 10))
+			spt_draw_world_collides_mask.SetValue((int)mask);
 		ImGui::SameLine();
 		SptImGui::CvarValue(spt_draw_world_collides_mask);
 
