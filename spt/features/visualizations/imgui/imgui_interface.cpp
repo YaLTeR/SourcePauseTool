@@ -7,6 +7,7 @@
 #include "interfaces.hpp"
 #include "spt/spt-serverplugin.hpp"
 #include "spt/utils/spt_vprof.hpp"
+#include "spt/features/hud.hpp"
 
 #include "thirdparty/imgui/imgui_internal.h"
 #include "thirdparty/imgui/imgui_impl_dx9.h"
@@ -414,6 +415,16 @@ private:
 	{
 		if (!open)
 			return;
+
+		// Maybe this callback should be in the HUD feature file? Something to think about..
+
+		extern ConVar y_spt_hud;
+		extern ConVar y_spt_hud_left;
+
+		ImGui::BeginDisabled(!SptImGui::CvarCheckbox(y_spt_hud, "enable text HUD"));
+		SptImGui::CvarCheckbox(y_spt_hud_left, "left HUD");
+		ImGui::Separator();
+
 		int i = 0;
 		for (auto& cvarInfo : hudCvars)
 		{
@@ -445,6 +456,8 @@ private:
 			ImGui::PopID();
 			i++;
 		}
+
+		ImGui::EndDisabled();
 	}
 
 	static void ReloadFontSize()
@@ -626,7 +639,10 @@ protected:
 		SptImGui::RegisterSectionCallback(SptImGuiGroup::Dev_ImGui, DevSectionCallback);
 		SptImGui::RegisterTabCallback(SptImGuiGroup::Settings, SettingsTabCallback);
 		SetupSettingsTabIniHandler();
-		SptImGui::RegisterTabCallback(SptImGuiGroup::Hud, HudTabCallback);
+#ifdef SPT_HUD_ENABLED
+		if (spt_hud_feat.LoadingSuccessful())
+			SptImGui::RegisterTabCallback(SptImGuiGroup::Hud, HudTabCallback);
+#endif
 	};
 
 	virtual void UnloadFeature()
