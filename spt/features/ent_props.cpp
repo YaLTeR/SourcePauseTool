@@ -11,9 +11,12 @@
 #include "spt\utils\portal_utils.hpp"
 #include "SPTLib\patterns.hpp"
 #include "visualizations/imgui/imgui_interface.hpp"
+#include "thirdparty/imgui/imgui_internal.h"
 
 #include <string>
 #include <unordered_map>
+#include <inttypes.h>
+#include <regex>
 
 ConVar y_spt_hud_portal_bubble("y_spt_hud_portal_bubble", "0", FCVAR_CHEAT, "Turns on portal bubble index hud.\n");
 ConVar y_spt_hud_ent_info(
@@ -492,7 +495,172 @@ void EntProps::LoadFeature()
 	if (result)
 	{
 		InitConcommandBase(y_spt_hud_ent_info);
+		SptImGui::RegisterHudCvarCallback(y_spt_hud_ent_info, ImGuiEntInfoCvarCallback, true);
 	}
+}
+
+void EntProps::ImGuiEntInfoCvarCallback(ConVar& var)
+{
+	SptImGui::CvarValue(var, SptImGui::CVF_ALWAYS_QUOTE);
+
+	const char* oldVal = var.GetString();
+	static ImGuiTextBuffer newVal;
+	newVal.Buf.resize(0);
+	newVal.append(""); // explicit null terminator
+	bool updateCvar = false;
+
+	int nEnts = 0;
+	int nRegexesForEnt = 0;
+
+	int i = 0;
+	int len = strlen(oldVal);
+
+	if (whiteSpacesOnly(oldVal))
+		i = len;
+
+	/*
+	* Goal:
+	* 
+	* - Parse the cvar value. The logic for this is intentially meant to be a duplicate of
+	*   utils::FillInfoArray(). The exact flow control is slightly different in order to handle
+	*   some ImGui state, but the parsed entity indices & regex should be the same.
+	* 
+	* - As we parse, reconstruct the cvar value from left to right. If the user interacts with the
+	*   GUI, edit the reconstructed value on the fly (e.g. add an extra regex, drop an ent index,
+	*   etc.) and set the cvar value at the end.
+	*/
+
+	// go up to len so that we can cleanup the stack ID, indent, etc. w/o duplicating code
+	while (i <= len && nEnts < MAX_ENTRIES)
+	{
+		bool atEnd = i >= len;
+		bool readEntityIndex = !atEnd && (i == 0 || oldVal[i] == ENT_SEPARATOR);
+		i += i > 0 || nEnts > 0;
+		int nextSepIdx = i;
+
+		// find the next separator
+		while (nextSepIdx < len && oldVal[nextSepIdx] != PROP_SEPARATOR && oldVal[nextSepIdx] != ENT_SEPARATOR)
+			++nextSepIdx;
+
+		// new entity index, we're at the end, or parse error - cleanup ID, indent, etc.
+		if ((readEntityIndex || atEnd) && nEnts > 0)
+		{
+			if (ImGui::SmallButton("+"))
+			{
+				newVal.append(",.*");
+				updateCvar = true;
+			}
+			ImGui::SetItemTooltip("add regex");
+			ImGui::PopID(); // pop nEnts ID
+			ImGui::Unindent();
+			SptImGui::EndBordered();
+		}
+
+		if (atEnd)
+			break;
+
+		// read an index or a regex
+
+		if (readEntityIndex)
+		{
+			SptImGui::BeginBordered();
+
+			long long entIndex = atoll(oldVal + i);
+			IClientEntity* ent = utils::GetClientEntity(entIndex);
+			nRegexesForEnt = 0;
+
+			if (SptImGui::InputTextInteger("entity index,", "", entIndex, 10))
+				updateCvar = true;
+
+			ImGui::SameLine();
+			if (ent)
+				ImGui::Text("(class name: %s)", ent->GetClientClass()->GetName());
+			else
+				ImGui::TextColored(SPT_IMGUI_WARN_COLOR_YELLOW, "(invalid entity)");
+
+			ImGui::PushID(nEnts++);
+
+			ImGui::SameLine();
+			bool includeEntInNewVal = !ImGui::SmallButton("-");
+			ImGui::SetItemTooltip("remove entity");
+			if (includeEntInNewVal)
+			{
+				// newVal.empty() instead of e.g. (i == 0) or (nEnts == 0) prevents weird parsing edge cases
+				newVal.appendf("%s%" PRId64, newVal.empty() ? "" : ";", entIndex);
+			}
+			else
+			{
+				/*
+				* Jump ahead to the next entity. Note that we still entered the ID & indent scope
+				* for this entity - that will be popped in the next loop. This jump means that the
+				* newVal will not get any data (including the index) associated with this entity.
+				* There does cause one broken frame because the button for the ent deletion must
+				* exist but I don't draw the regexes for that entity. This is fixable but I cbf.
+				*/
+				while (nextSepIdx < len && oldVal[nextSepIdx] != ENT_SEPARATOR)
+					++nextSepIdx;
+				updateCvar = true;
+			}
+			ImGui::Indent();
+		}
+		else
+		{
+			ImGui::PushID(nRegexesForEnt++);
+
+			const char* regexStart = oldVal + i;
+			int regexLen = nextSepIdx - i;
+			char regexBuf[INFO_BUFFER_SIZE];
+			strncpy_s(regexBuf, regexStart, regexLen);
+			// don't allow the characters: ;,"
+			if (ImGui::InputTextEx(
+			        "##regex",
+			        "enter regex",
+			        regexBuf,
+			        sizeof regexBuf,
+			        ImVec2{0, 0},
+			        ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_CallbackCharFilter,
+			        [](ImGuiInputTextCallbackData* data) -> int
+			        { return data->EventChar >= 256 || strchr(";,\"", (char)data->EventChar); },
+			        nullptr))
+			{
+				updateCvar = true;
+			}
+			if (ImGui::IsItemHovered() && regexBuf[0] != '\0')
+				ImGui::SetItemTooltip("enter regex");
+			ImGui::SameLine();
+			if (ImGui::SmallButton("-"))
+				updateCvar = true;
+			else
+				newVal.appendf(",%s", regexBuf);
+			ImGui::SetItemTooltip("remove regex");
+
+			// test if the regex is valid, report error if not
+			try
+			{
+				std::regex re{regexBuf};
+			}
+			catch (const std::regex_error& exp)
+			{
+				ImGui::SameLine();
+				ImGui::TextColored(SPT_IMGUI_WARN_COLOR_YELLOW, "(invalid regex)");
+				ImGui::SetItemTooltip("%s", exp.what());
+			}
+
+			ImGui::PopID();
+		}
+
+		i = nextSepIdx;
+	}
+
+	if (ImGui::SmallButton("+"))
+	{
+		newVal.appendf("%s-1,.*", nEnts == 0 ? "" : ";");
+		updateCvar = true;
+	}
+	ImGui::SetItemTooltip("add entity index");
+
+	if (updateCvar)
+		var.SetValue(newVal.c_str());
 }
 
 void** _InternalPlayerField::GetServerPtr() const

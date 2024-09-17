@@ -13,12 +13,12 @@ bool SptImGui::CmdButton(const char* label, ConCommand& cmd)
 	return ret;
 }
 
-void SptImGui::CvarValue(const ConVar& c)
+void SptImGui::CvarValue(const ConVar& c, CvarValueFlags flags)
 {
 	const char* v = c.GetString();
 	const char* surround = "";
-	if (strchr(v, ' '))
-		surround = " ";
+	if ((flags & CVF_ALWAYS_QUOTE) || !*v || strchr(v, ' '))
+		surround = "\"";
 	ImGui::TextDisabled("(%s %s%s%s)", WrangleLegacyCommandName(c.GetName(), true, nullptr), surround, v, surround);
 	ImGui::SameLine();
 	HelpMarker("%s", c.GetHelpText());
