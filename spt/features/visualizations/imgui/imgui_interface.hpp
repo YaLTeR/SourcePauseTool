@@ -175,7 +175,6 @@ namespace SptImGuiGroup
 
 	// features that access game state
 	inline Tab GameIo{"Game IO", &Root};
-	inline Tab GameIo_EntProps{"Ent props", &GameIo};
 	inline Tab GameIo_ISG{"ISG", &GameIo};
 
 	// hud cvars - use the RegisterHudCvarXXX functions below to add cvars
@@ -264,10 +263,17 @@ public:
 
 	// SPT-related widgets
 
+	enum CvarValueFlags
+	{
+		CVF_NONE = 0,
+		CVF_ALWAYS_QUOTE = 1,
+		// TODO: copy/reset widgets
+	};
+
 	// a button for a ConCommand with no args, does NOT invoke the command (because of OE compat)
 	static bool CmdButton(const char* label, ConCommand& cmd);
 	// display cvar name & value, surrounds the value in quotes if it has a space (if the value already has quotes, too bad!)
-	static void CvarValue(const ConVar& c);
+	static void CvarValue(const ConVar& c, CvarValueFlags flags = CVF_NONE);
 	// a checkbox for a boolean cvar, returns value of cvar
 	static bool CvarCheckbox(ConVar& c, const char* label);
 	// a combo/dropdown box for a cvar with multiple integer options (does not use clipper - not optimized for huge lists), returns value of cvar

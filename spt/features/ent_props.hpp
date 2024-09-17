@@ -83,6 +83,8 @@ protected:
 	std::vector<patterns::MatchedPattern> clientPatterns;
 	std::vector<utils::DatamapWrapper*> wrappers;
 	std::unordered_map<std::string, utils::DatamapWrapper*> nameToMapWrapper;
+
+	static void ImGuiEntInfoCvarCallback(ConVar& var);
 };
 
 extern EntProps spt_entprops;

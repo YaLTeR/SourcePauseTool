@@ -36,6 +36,8 @@ namespace utils
 {
 	IClientEntity* GetClientEntity(int index)
 	{
+		if (index >= interfaces::entList->GetHighestEntityIndex())
+			return nullptr;
 		return interfaces::entList->GetClientEntity(index + 1);
 	}
 
@@ -318,31 +320,8 @@ namespace utils
 
 		while (i < argSize && entries < maxEntries)
 		{
-			bool readEntityIndex = false;
-
-			// Read entity index
-			if (args[i] == entSep)
-			{
-				++i;
-				readEntityIndex = true;
-			}
-			// Also read if at the start of the string. Note: does not increment the index since we're at the start of the string.
-			else if (i == 0)
-			{
-				readEntityIndex = true;
-			}
-			else if (args[i] == sep)
-			{
-				++i;
-			}
-			else // error occurred
-			{
-				i = argSize;
-				arr = (wchar_t*)L"error occurred in parsing";
-				entries = 1;
-				break;
-			}
-
+			bool readEntityIndex = i == 0 || args[i] == entSep;
+			i += i > 0 || entries > 0; // i is at a separtor from the previous loop, go to next char
 			int endIndex = i;
 
 			// Go to the next separator
