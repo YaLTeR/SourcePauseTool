@@ -33,7 +33,6 @@ namespace interfaces
 	extern IVDebugOverlay* debugOverlay;
 	extern IMaterialSystem* materialSystem;
 	extern IInputSystem* inputSystem;
-	extern ICvar* g_pCVar;
 	extern IGameMovement* gm;
 	extern IClientEntityList* entList;
 	extern IVModelInfo* modelInfo;

@@ -60,11 +60,6 @@ struct ConVar_guts : public ConCommandBase_guts
 #endif
 };
 
-// this method name is different in OE
-#ifdef OE
-#define IsFlagSet IsBitSet
-#endif
-
 class ConVarProxy : public ConVar
 {
 public:

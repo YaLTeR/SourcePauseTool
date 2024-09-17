@@ -104,12 +104,12 @@ int FileAutoCompleteList::AutoCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 #ifdef OE
 ConCommand* FindCommand(const char* name)
 {
-	if (!interfaces::g_pCVar)
+	if (!g_pCVar)
 		return NULL;
-	const ConCommandBase* cmd = interfaces::g_pCVar->GetCommands();
+	const ConCommandBase* cmd = g_pCVar->GetCommands();
 	for (; cmd; cmd = cmd->GetNext())
 	{
-		if (!Q_stricmp(name, cmd->GetName()))
+		if (!stricmp(name, cmd->GetName()))
 			break;
 	}
 	if (!cmd || !cmd->IsCommand())

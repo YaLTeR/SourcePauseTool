@@ -818,17 +818,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\lib\public\mathlib.lib">
-      <Filter>SDK includes &amp; libs</Filter>
-    </Library>
-    <Library Include="..\..\lib\public\tier0.lib">
-      <Filter>SDK includes &amp; libs</Filter>
-    </Library>
-    <Library Include="..\..\lib\public\tier1.lib">
-      <Filter>SDK includes &amp; libs</Filter>
-    </Library>
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="SDK includes &amp; libs">
       <UniqueIdentifier>{eade2e26-4b70-429d-ac6b-01135e887da7}</UniqueIdentifier>
     </Filter>

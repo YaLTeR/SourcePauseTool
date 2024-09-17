@@ -688,7 +688,6 @@ IMPL_HOOK_THISCALL(SptImGuiFeature, void, CShaderDeviceDx8__Present, void*)
 {
 	if (Loaded())
 	{
-		VPROF_BUDGET(__FUNCTION__, _T("SPT_ImGui"));
 		auto& io = ImGui::GetIO();
 		inImGuiUpdateSection = true;
 

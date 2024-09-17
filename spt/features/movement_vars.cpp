@@ -61,12 +61,12 @@ bool VarChanger::ShouldLoadFeature()
 
 void VarChanger::LoadFeature()
 {
-	if (interfaces::g_pCVar)
+	if (g_pCVar)
 	{
-		_cl_forwardspeed = interfaces::g_pCVar->FindVar("cl_forwardspeed");
-		_cl_sidespeed = interfaces::g_pCVar->FindVar("cl_sidespeed");
-		_cl_backspeed = interfaces::g_pCVar->FindVar("cl_backspeed");
-		_sv_maxspeed = interfaces::g_pCVar->FindVar("sv_maxspeed");
+		_cl_forwardspeed = g_pCVar->FindVar("cl_forwardspeed");
+		_cl_sidespeed = g_pCVar->FindVar("cl_sidespeed");
+		_cl_backspeed = g_pCVar->FindVar("cl_backspeed");
+		_sv_maxspeed = g_pCVar->FindVar("sv_maxspeed");
 	}
 
 	if (ProcessMovementPre_Signal.Works && _cl_forwardspeed && _cl_sidespeed && _cl_backspeed && _sv_maxspeed)

@@ -6,16 +6,7 @@
 #include "mathlib/mathlib.h"
 #endif
 
-#if defined(SSDK2007)
-#include "SDK\orangebox\public\vphysics_interface.h"
-#elif defined(SSDK2013)
-#include "SDK\sdk2013\public\vphysics_interface.h"
-#elif defined(BMS)
-#include "SDK\bms\public\vphysics_interface.h"
-#else
-// just compile please :)
 #define METERS_PER_INCH (0.0254f)
-#endif
 
 /*
 * Source uses units in inches, ivp uses units in meters. Source uses xyz, ivp

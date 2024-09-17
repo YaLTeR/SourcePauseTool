@@ -23,31 +23,21 @@ struct FeatureCommand
 	bool unhideOnUnregister;
 };
 static std::vector<FeatureCommand> cmd_to_feature;
-static bool first_time_init = true;
 static ConCommandBase** pluginCommandListHead = nullptr;
 
 void Cvar_InitConCommandBase(ConCommandBase& concommand, void* owner)
 {
 	auto found = std::find_if(cmd_to_feature.begin(),
-	                          cmd_to_feature.end(),
-	                          [concommand](const FeatureCommand& fc) { return fc.command == &concommand; });
+		cmd_to_feature.end(),
+		[concommand](const FeatureCommand& fc) { return fc.command == &concommand; });
 	if (found != cmd_to_feature.end())
 	{
 		Warning("Two commands trying to init concommand %s!\n", concommand.GetName());
 		return;
 	}
 
-	FeatureCommand cmd = {owner, &concommand, false, false, false};
+	FeatureCommand cmd = { owner, &concommand, false, false, false };
 	cmd_to_feature.push_back(cmd);
-	// Add command to command list since it got wiped after registering commands the first time
-	if (!first_time_init)
-	{
-		if (pluginCommandListHead && !concommand.IsFlagSet(FCVAR_UNREGISTERED))
-		{
-			reinterpret_cast<ConCommandBase_guts&>(concommand).m_pNext = *pluginCommandListHead;
-			*pluginCommandListHead = &concommand;
-		}
-	}
 }
 
 void FormatConCmd(const char* fmt, ...)
@@ -62,9 +52,9 @@ void FormatConCmd(const char* fmt, ...)
 	EngineConCmd(BUFFER);
 }
 
-typedef ICvar*(__cdecl* _GetCvarIF)();
+typedef ICvar* (__cdecl* _GetCvarIF)();
 
-extern "C" ICvar* GetCVarIF()
+extern "C" ICvar * GetCVarIF()
 {
 	static ICvar* ptr = nullptr;
 
@@ -88,136 +78,26 @@ extern "C" ICvar* GetCVarIF()
 	}
 }
 
-static void RemoveCommandFromList(ConCommandBase** head, ConCommandBase* command)
+static void RemoveCommandFromList(ConCommandBase* command)
 {
-	if (head == NULL)
-		return;
-
-	ConCommandBase_guts* pPrev = NULL;
-	for (ConCommandBase_guts* pCommand = *(ConCommandBase_guts**)head; pCommand;
-	     pCommand = (ConCommandBase_guts*)pCommand->m_pNext)
+	ConCommandBase* pPrev = NULL;
+	for (ConCommandBase* pCommand = ConCommandBase::s_pConCommandBases; pCommand;
+		pCommand = pCommand->m_pNext)
 	{
-		if (pCommand != (ConCommandBase_guts*)command)
+		if (pCommand != (ConCommandBase*)command)
 		{
 			pPrev = pCommand;
 			continue;
 		}
 
 		if (pPrev == NULL)
-			*head = pCommand->m_pNext;
+			ConCommandBase::s_pConCommandBases = pCommand->m_pNext;
 		else
 			pPrev->m_pNext = pCommand->m_pNext;
 
 		pCommand->m_pNext = NULL;
 		break;
 	}
-}
-
-#ifdef OE
-static ConCommandBase** GetGlobalCommandListHead()
-{
-	// According to the SDK, ICvar::GetCommands is position 9 on the vtable
-	void** icvarVtable = *(void***)interfaces::g_pCVar;
-	uint8_t* addr = (uint8_t*)icvarVtable[9];
-	// Follow along thunked function
-	if (*addr == X86_JMPIW)
-	{
-		uint32_t offset = *(uint32_t*)(addr + 1);
-		addr += x86_len(addr) + offset;
-	}
-	// Check if it's the right instruction
-	if (*addr == X86_MOVEAXII)
-		return *(ConCommandBase***)(addr + 1);
-	return NULL;
-}
-
-static void UnregisterConCommand(ConCommandBase* pCommandToRemove)
-{
-	static bool searchedForList = false;
-	static ConCommandBase** globalCommandListHead = nullptr;
-
-	// Look for the global command list head once
-	if (!searchedForList)
-	{
-		globalCommandListHead = GetGlobalCommandListHead();
-		searchedForList = true;
-	}
-
-	if (!globalCommandListHead)
-		return;
-
-	// Not registered? Don't bother
-	if (!pCommandToRemove->IsRegistered())
-		return;
-
-	reinterpret_cast<ConCommandBase_guts*>(pCommandToRemove)->m_bRegistered = false;
-	RemoveCommandFromList(globalCommandListHead, pCommandToRemove);
-}
-
-class CPluginConVarAccessor : public IConCommandBaseAccessor
-{
-public:
-	virtual bool RegisterConCommandBase(ConCommandBase* pCommand)
-	{
-		pCommand->AddFlags(FCVAR_PLUGIN); // just because
-
-		// Unlink from plugin only list
-		// Necessary because RegisterConCommandBase skips the command if it's next isn't null
-		pCommand->SetNext(0);
-
-		// Link to engine's list instead
-		interfaces::g_pCVar->RegisterConCommandBase(pCommand);
-		return true;
-	}
-};
-
-static CPluginConVarAccessor g_ConVarAccessor;
-#endif // OE
-
-// Returns the address of ConCommandBase::s_pConCommandBases
-// This is where commands are stored before being registered
-static ConCommandBase** GetPluginCommandListHead()
-{
-#ifdef OE
-	// First thing that happens in this function is loading a register with the list head
-	uint8_t* registerAddr = (uint8_t*)ConCommandBaseMgr::OneTimeInit;
-#else
-	// Close to the end of ConVar_Register, the list head is set to null
-	// There's a convenient jump close to the start of the function that takes
-	// us a couple instructions past that point
-	uint8_t* registerAddr = (uint8_t*)ConVar_Register;
-#endif
-	// Not sure if it's only a debug build thing, but the function address might be
-	// in a jmp table. Follow the jmp if that's the case
-	if (*registerAddr == X86_JMPIW)
-	{
-		uint32_t offset = *(uint32_t*)(registerAddr + 1);
-		registerAddr += x86_len(registerAddr) + offset;
-	}
-#ifdef OE
-	return *(ConCommandBase***)(registerAddr + 2);
-#else
-	int jzOffset = 0, _len = 0;
-	for (uint8_t* addr = registerAddr; _len != -1 && addr - registerAddr < 32; _len = x86_len(addr), addr += _len)
-	{
-		// Check for a JZ (both short jump and near jump opcodes)
-		if (addr[0] == X86_JZ)
-			jzOffset = addr[1];
-		else if (addr[0] == X86_2BYTE && addr[1] == X86_2B_JZII)
-			jzOffset = *(uint32_t*)(addr + 2);
-
-		if (jzOffset)
-		{
-			// Take the ride down the jump and go back a couple instructions
-			addr += x86_len(addr) + jzOffset - 11;
-			// Make sure that we landed on the instruction we wanted
-			if (addr[0] != X86_MOVMIW)
-				return NULL;
-			return *(ConCommandBase***)(addr + 2);
-		}
-	}
-	return NULL;
-#endif
 }
 
 const char* WrangleLegacyCommandName(const char* name, bool useTempStorage, bool* allocated)
@@ -238,7 +118,7 @@ const char* WrangleLegacyCommandName(const char* name, bool useTempStorage, bool
 		*allocated = true;
 
 	size_t allocLen = newName ? strlen(newName) + 2 // ex: +y_spt_duckspam
-	                          : strlen(name) + 5;   // ex: tas_pause, +myprefix_something
+		: strlen(name) + 5;   // ex: tas_pause, +myprefix_something
 	AssertMsg(allocLen < SPT_MAX_CVAR_NAME_LEN, "spt: cvar name too long!");
 
 	static char tmpStorage[SPT_MAX_CVAR_NAME_LEN];
@@ -278,10 +158,10 @@ static void HandleBackwardsCompatibility(FeatureCommand& featCmd, const char* cm
 	{
 		ConCommand_guts* cmdGuts = reinterpret_cast<ConCommand_guts*>(cmd);
 		newCommand = new ConCommand(newName,
-		                            cmdGuts->m_fnCommandCallback,
-		                            cmdGuts->m_pszHelpString,
-		                            cmdGuts->m_nFlags,
-		                            cmdGuts->m_fnCompletionCallback);
+			cmdGuts->m_fnCommandCallback,
+			cmdGuts->m_pszHelpString,
+			cmdGuts->m_nFlags,
+			cmdGuts->m_fnCompletionCallback);
 	}
 	else
 	{
@@ -297,24 +177,17 @@ static void HandleBackwardsCompatibility(FeatureCommand& featCmd, const char* cm
 	}
 
 	// After the push the featCmd reference can be invalid!!!
-	FeatureCommand newCmd = {featCmd.owner, newCommand, true, allocatedName, false};
+	FeatureCommand newCmd = { featCmd.owner, newCommand, true, allocatedName, false };
 	cmd_to_feature.push_back(newCmd);
 }
 
 void Cvar_RegisterSPTCvars()
 {
-	static bool searchedForList = false;
-	if (!interfaces::g_pCVar)
+	if (!g_pCVar)
 		return;
 
-	if (!searchedForList)
-	{
-		pluginCommandListHead = GetPluginCommandListHead();
-		searchedForList = true;
-	}
-	if (!pluginCommandListHead)
-		return;
-	ConCommandBase* cmd = *pluginCommandListHead;
+	ConCommandBase* cmd = ConCommandBase::s_pConCommandBases;
+
 	while (cmd != NULL)
 	{
 		const char* cmdName = cmd->GetName();
@@ -325,59 +198,140 @@ void Cvar_RegisterSPTCvars()
 		}
 
 		auto inittedCmd = std::find_if(cmd_to_feature.begin(),
-		                               cmd_to_feature.end(),
-		                               [cmd](const FeatureCommand& fc) { return fc.command == cmd; });
-		// This will only ever happen on first time init
+			cmd_to_feature.end(),
+			[cmd](const FeatureCommand& fc) { return fc.command == cmd; });
+
 		if (inittedCmd == cmd_to_feature.end())
 		{
 			DevWarning("Command %s was unloaded, because it was not initialized!\n", cmdName);
 			ConCommandBase* todelete = cmd;
 			cmd = (ConCommandBase*)cmd->GetNext();
-			RemoveCommandFromList(pluginCommandListHead, todelete);
+			RemoveCommandFromList(todelete);
 			continue;
 		}
-		HandleBackwardsCompatibility(*inittedCmd, cmdName);
+		else
+		{
 #ifdef OE
-		if (cmd->IsBitSet(FCVAR_HIDDEN))
-			spt_cvarstuff.hidden_cvars.push_back(cmd);
+			if (cmd->IsFlagSet(FCVAR_HIDDEN))
+				spt_cvarstuff.hidden_cvars.push_back(cmd);
 #endif
-		cmd = (ConCommandBase*)cmd->GetNext();
-	}
-#ifndef OE
-	ConVar_Register(0);
-#else
-	ConCommandBaseMgr::OneTimeInit(&g_ConVarAccessor);
-	// Clear the list head like newer engines do and reset s_pAccessor so the list doesn't break
-	// next time SPT commands are registered
-	*pluginCommandListHead = NULL;
-	ConCommandBaseMgr::OneTimeInit(NULL);
-#endif
+			cmd = (ConCommandBase*)cmd->GetNext();
+		}
 
-	first_time_init = false;
+		HandleBackwardsCompatibility(*inittedCmd, cmdName);
+	}
+
+	for (auto& featCmd : cmd_to_feature)
+	{
+		auto regcmd = featCmd.command;
+		if (strlen(regcmd->GetName()) > 0) {
+#ifdef OE
+			regcmd->AddFlags(FCVAR_PLUGIN);
+			// Unlink from plugin list
+			// Necessary because RegisterConCommandBase skips the command if it's next isn't null
+			regcmd->SetNext(NULL);
+#endif
+			g_pCVar->RegisterConCommand(regcmd);
+			if (regcmd->m_bRegistered) {
+				Msg("command %s was registered\n", regcmd->GetName());
+			}
+		}
+	}
 }
+
+static ConCommandBase** GetGlobalCommandListHead()
+{
+	// According to the SDK, ICvar::GetCommands is position 9 on the vtable
+	void** icvarVtable = *(void***)g_pCVar;
+	uint8_t* addr = (uint8_t*)icvarVtable[9];
+	// Follow along thunked function
+	if (*addr == X86_JMPIW)
+	{
+		uint32_t offset = *(uint32_t*)(addr + 1);
+		addr += x86_len(addr) + offset;
+	}
+	// Check if it's the right instruction
+	if (*addr == X86_MOVEAXII)
+		return *(ConCommandBase***)(addr + 1);
+	return NULL;
+}
+
+static void RemoveCommandFromList(ConCommandBase** head, ConCommandBase* command)
+{
+	if (head == NULL)
+		return;
+
+	ConCommandBase* pPrev = NULL;
+	for (ConCommandBase* pCommand = *head; pCommand;
+		pCommand = pCommand->m_pNext)
+	{
+		if (pCommand != command)
+		{
+			pPrev = pCommand;
+			continue;
+		}
+
+		if (pPrev == NULL)
+			*head = pCommand->m_pNext;
+		else
+			pPrev->m_pNext = pCommand->m_pNext;
+
+		pCommand->m_pNext = NULL;
+		break;
+	}
+}
+
+static void UnregisterConCommand(ConCommandBase* pCommandToRemove)
+{
+#ifdef OE
+	static bool searchedForList = false;
+	static ConCommandBase** globalCommandListHead = nullptr;
+	Msg("Unregistering %s\n", pCommandToRemove->GetName());
+
+	// Look for the global command list head once
+	if (!searchedForList)
+	{
+		globalCommandListHead = GetGlobalCommandListHead();
+		searchedForList = true;
+	}
+
+	if (!globalCommandListHead)
+		return;
+
+	pCommandToRemove->m_bRegistered = false;
+	RemoveCommandFromList(globalCommandListHead, pCommandToRemove);
+#else
+	g_pCVar->UnregisterConCommand(pCommandToRemove);
+#endif
+}
+
 
 void Cvar_UnregisterSPTCvars()
 {
-	if (!interfaces::g_pCVar)
+	if (!g_pCVar)
 		return;
+
+	ConCommandBase::s_pConCommandBases = NULL;
 
 	for (auto& cmd : cmd_to_feature)
 	{
-#ifdef OE
 		UnregisterConCommand(cmd.command);
-#else
-		interfaces::g_pCVar->UnregisterConCommand(cmd.command);
-#endif
-		ConCommandBase_guts* cmdGuts = reinterpret_cast<ConCommandBase_guts*>(cmd.command);
 		if (cmd.dynamicCommand)
 		{
 			if (cmd.dynamicName)
-				delete[] cmdGuts->m_pszName;
+				delete[] cmd.command->m_pszName;
 			delete cmd.command;
 		}
+		else
+		{
+			// Add back to plugin list
+			cmd.command->m_pNext = ConCommandBase::s_pConCommandBases;
+			ConCommandBase::s_pConCommandBases = cmd.command;
+		}
+
 		// Refer to comment in HandleBackwardsCompatibility
 		if (cmd.unhideOnUnregister)
-			cmdGuts->m_nFlags &= ~FCVAR_HIDDEN;
+			cmd.command->m_nFlags &= ~FCVAR_HIDDEN;
 	}
 
 	cmd_to_feature.clear();
@@ -398,10 +352,10 @@ void ReplaceAutoCompleteSuggest()
 
 	void* temp;
 	Feature::AddVFTableHook(VFTableHook(dummy->vfptr,
-	                                    vtidx_AutoCompleteSuggest,
-	                                    cmd->vfptr[vtidx_AutoCompleteSuggest],
-	                                    &temp),
-	                        "spt-2013");
+		vtidx_AutoCompleteSuggest,
+		cmd->vfptr[vtidx_AutoCompleteSuggest],
+		&temp),
+		"spt-2013");
 }
 
 #endif

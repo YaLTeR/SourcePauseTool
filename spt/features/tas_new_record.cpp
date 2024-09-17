@@ -67,7 +67,7 @@ static bool IsRecordable(const CCommand& command)
 
 	if (command.ArgC() == 0)
 		return false;
-	else if (interfaces::g_pCVar == nullptr)
+	else if (g_pCVar == nullptr)
 		return true;
 
 	const char* cmd = command.Arg(0);
@@ -79,7 +79,7 @@ static bool IsRecordable(const CCommand& command)
 	}
 
 	// Make sure the command is not an alias
-	return interfaces::g_pCVar->FindCommandBase(cmd) != nullptr;
+	return g_pCVar->FindCommandBase(cmd) != nullptr;
 }
 
 CON_COMMAND(tas_experimental_record, "Record gameplay to .srctas script.")
