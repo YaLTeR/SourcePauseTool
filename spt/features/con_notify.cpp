@@ -1,5 +1,6 @@
 #include "stdafx.hpp"
 #include "..\feature.hpp"
+#include "visualizations\imgui\imgui_interface.hpp"
 
 ConVar spt_con_notify_cvar("spt_con_notify", 
                            "0", 
@@ -69,6 +70,8 @@ void ConNotifyFeature::LoadFeature()
 	    return;
 
     InitConcommandBase(spt_con_notify_cvar);
+    SptImGuiGroup::QoL_ConNotify.RegisterUserCallback(
+        []() { SptImGui::CvarCheckbox(spt_con_notify_cvar, "##checkbox"); });
 }
 
 // just turn on developer before entering these functions

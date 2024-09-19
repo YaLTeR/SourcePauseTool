@@ -3,8 +3,9 @@
 #include "convar.hpp"
 #include "..\autojump.hpp"
 #include "interfaces.hpp"
+#include "..\visualizations\imgui\imgui_interface.hpp"
 
-#ifndef  OE
+#ifndef OE
 
 static void FreeOOBCVarCallback(IConVar* pConVar, const char* pOldValue, float flOldValue);
 
@@ -111,6 +112,8 @@ void FreeOobFeature::LoadFeature()
 				INIT_BYTE_REPLACE(SecondJump, cur);
 
 				InitConcommandBase(y_spt_free_oob);
+				SptImGuiGroup::Cheats_FreeOob.RegisterUserCallback(
+				    []() { SptImGui::CvarCheckbox(y_spt_free_oob, "##checkbox"); });
 				return;
 			}
 
@@ -139,4 +142,3 @@ void FreeOobFeature::Toggle(bool enabled)
 	}
 }
 #endif // ! OE
-

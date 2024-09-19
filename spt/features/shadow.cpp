@@ -20,7 +20,7 @@ CON_COMMAND_F(y_spt_set_shadow_roll, "Sets the player's physics shadow roll in d
 		Warning("Must provide a roll in degrees.\n");
 		return;
 	}
-	spt_player_shadow.SetPlayerHavokPos(spt_playerio.m_vecAbsOrigin.GetValue(), QAngle(0, 0, atof(args.Arg(1))));
+	spt_player_shadow.SetPlayerHavokRoll(atof(args.Arg(1)));
 }
 
 ShadowPosition spt_player_shadow;
@@ -91,7 +91,22 @@ void ShadowPosition::LoadFeature()
 	}
 
 	if (ORIG_beam_object_to_new_position)
+	{
 		InitCommand(y_spt_set_shadow_roll);
+
+		SptImGuiGroup::Cheats_PlayerShadow.RegisterUserCallback(
+		    []()
+		    {
+			    static double df = 0.f;
+			    SptImGui::InputDouble("shadow roll in degrees", &df);
+			    ImGui::SameLine();
+			    if (ImGui::Button("set"))
+				    spt_player_shadow.SetPlayerHavokRoll((float)df);
+			    ImGui::SameLine();
+			    SptImGui::CmdHelpMarkerWithName(y_spt_set_shadow_roll_command);
+				SptImGui::CvarCheckbox(y_spt_hud_shadow_info, "##checkbox_hud");
+		    });
+	}
 }
 
 void ShadowPosition::GetPlayerHavokPos(Vector* worldPosition, QAngle* angles)
@@ -100,6 +115,11 @@ void ShadowPosition::GetPlayerHavokPos(Vector* worldPosition, QAngle* angles)
 		*worldPosition = spt_player_shadow.PlayerHavokPos;
 	if (angles)
 		*angles = spt_player_shadow.PlayerHavokAngles;
+}
+
+void ShadowPosition::SetPlayerHavokRoll(float roll)
+{
+	SetPlayerHavokPos(spt_playerio.m_vecAbsOrigin.GetValue(), QAngle{0, 0, roll});
 }
 
 void ShadowPosition::SetPlayerHavokPos(const Vector& worldPosition, const QAngle& angles)

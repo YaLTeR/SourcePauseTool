@@ -81,6 +81,19 @@ void HudOobEntsFeature::LoadFeature()
 	{
 		InitConcommandBase(spt_draw_oob_ents);
 		spt_meshRenderer.signal.Connect(this, &HudOobEntsFeature::DrawEntsPos);
+
+		SptImGuiGroup::Draw_Misc_OobEnts.RegisterUserCallback(
+		    []()
+		    {
+			    const char* opts[] = {
+			        "Disabled",
+			        "OOB entities",
+			        "OOB entities + no z-test",
+			        "All entities + no z-test",
+			    };
+			    SptImGui::CvarCombo(spt_draw_oob_ents, "entity position indicator", opts, ARRAYSIZE(opts));
+			    SptImGui::CvarCheckbox(spt_hud_oob_ents, "##checkbox");
+		    });
 	}
 #endif
 }

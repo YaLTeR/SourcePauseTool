@@ -2,7 +2,7 @@
 #include "..\feature.hpp"
 #include "..\generic.hpp"
 #include "signals.hpp"
-
+#include "..\visualizations\imgui\imgui_interface.hpp"
 
 ConVar y_spt_fast_loads(
     "y_spt_fast_loads",
@@ -42,11 +42,13 @@ bool FastLoads::ShouldLoadFeature()
 
 void FastLoads::LoadFeature()
 {
-	if (SetSignonStateSignal.Works)
-	{
-		InitConcommandBase(y_spt_fast_loads);
-		SetSignonStateSignal.Connect(this, &FastLoads::OnLoad);
-	}
+	if (!SetSignonStateSignal.Works)
+		return;
+	InitConcommandBase(y_spt_fast_loads);
+	SetSignonStateSignal.Connect(this, &FastLoads::OnLoad);
+
+	SptImGuiGroup::QoL_FastLoads.RegisterUserCallback(
+	    []() { SptImGui::CvarInputTextInteger(y_spt_fast_loads, "fast loads value", "fps_max value"); });
 }
 
 void FastLoads::OnLoad(void* thisptr, int state)

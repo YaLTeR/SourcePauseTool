@@ -333,6 +333,7 @@ private:
 				{
 					imguiStyle = style;
 					reloadImguiStyle = true;
+					ImGui::MarkIniSettingsDirty();
 				}
 				if (selected)
 					ImGui::SetItemDefaultFocus();
@@ -632,7 +633,7 @@ protected:
 		SetupSettingsTabIniHandler();
 #ifdef SPT_HUD_ENABLED
 		if (spt_hud_feat.LoadingSuccessful())
-			SptImGuiGroup::Hud.RegisterUserCallback(TextHudTabCallback);
+			SptImGuiGroup::Hud_TextHud.RegisterUserCallback(TextHudTabCallback);
 #endif
 	};
 

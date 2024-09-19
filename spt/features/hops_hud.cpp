@@ -12,6 +12,7 @@
 #include "signals.hpp"
 #include "playerio.hpp"
 #include "property_getter.hpp"
+#include "visualizations\imgui\imgui_interface.hpp"
 
 #undef min
 #undef max
@@ -510,7 +511,7 @@ void HopsHud::LoadFeature()
 			OngroundSignal.Connect(this, &HopsHud::OnGround);
 			InitConcommandBase(y_spt_jhud_hops);
 		}
-		
+
 		if (TickSignal.Works || OngroundSignal.Works)
 		{
 			JumpSignal.Connect(this, &HopsHud::OnJump);
@@ -526,6 +527,27 @@ void HopsHud::LoadFeature()
 		TickSignal.Connect(ljstats::OnTick);
 		InitConcommandBase(y_spt_jhud_ljstats);
 	}
+
+	SptImGuiGroup::Hud_JHud.RegisterUserCallback(
+	    []()
+	    {
+		    bool hudVel = SptImGui::CvarCheckbox(y_spt_jhud_velocity, "##checkbox_vel");
+		    bool hudHops = SptImGui::CvarCheckbox(y_spt_jhud_hops, "##checkbox_hops");
+		    bool hudStats = SptImGui::CvarCheckbox(y_spt_jhud_ljstats, "##checkbox_stats");
+
+		    bool enablePos = hudVel || hudHops || hudStats;
+		    ImGui::BeginDisabled(!enablePos);
+		    ConVar* cvars[] = {&y_spt_jhud_x, &y_spt_jhud_y};
+		    float f[ARRAYSIZE(cvars)];
+		    ImGui::BeginGroup();
+		    SptImGui::CvarsDragScalar(cvars, f, ARRAYSIZE(cvars), true, "HUD pos");
+		    ImGui::SameLine();
+		    SptImGui::HelpMarker("Can be set with spt_jhud_x/y");
+		    ImGui::EndGroup();
+		    ImGui::EndDisabled();
+		    if (!enablePos)
+			    ImGui::SetItemTooltip("no jump HUD vars enabled");
+	    });
 }
 
 void HopsHud::UnloadFeature() {}

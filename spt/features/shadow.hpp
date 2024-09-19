@@ -51,6 +51,7 @@ public:
 	*/
 
 	void GetPlayerHavokPos(Vector* worldPosition, QAngle* angles);
+	void SetPlayerHavokRoll(float roll);
 	void SetPlayerHavokPos(const Vector& worldPosition, const QAngle& angles);
 
 	/*

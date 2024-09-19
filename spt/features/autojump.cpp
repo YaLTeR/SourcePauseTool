@@ -7,6 +7,7 @@
 #include "dbg.h"
 #include "signals.hpp"
 #include "game_detection.hpp"
+#include "visualizations\imgui\imgui_interface.hpp"
 
 #ifdef OE
 #include "mathlib.h"
@@ -187,6 +188,15 @@ void AutojumpFeature::LoadFeature()
 		else
 			// dmomm
 			off_player_ptr = 4;
+
+		SptImGuiGroup::Cheats_Jumping.RegisterUserCallback(
+		    []()
+		    {
+			    SptImGui::CvarCheckbox(y_spt_autojump, "##checkbox_autojump");
+			    SptImGui::CvarCheckbox(_y_spt_autojump_ensure_legit, "##checkbox_legit");
+			    const char* opts[] = {"Default", "ABH jumpboost", "OE jumpboost", "No jumpboost"};
+			    SptImGui::CvarCombo(y_spt_jumpboost, "jumpboost type", opts, ARRAYSIZE(opts));
+		    });
 	}
 	else
 	{
@@ -202,6 +212,8 @@ void AutojumpFeature::LoadFeature()
 	if (utils::DoesGameLookLikePortal() && ORIG_CGameMovement__AirMove && ORIG_CPortalGameMovement__AirMove)
 	{
 		InitConcommandBase(y_spt_aircontrol);
+		SptImGuiGroup::Cheats_HL2AirControl.RegisterUserCallback(
+		    []() { SptImGui::CvarCheckbox(y_spt_aircontrol, "##checkbox"); });
 	}
 }
 

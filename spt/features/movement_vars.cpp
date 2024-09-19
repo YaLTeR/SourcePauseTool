@@ -5,13 +5,14 @@
 #include "convar.hpp"
 #include "interfaces.hpp"
 #include "signals.hpp"
+#include "visualizations\imgui\imgui_interface.hpp"
 
 static void Change_Maxspeed(CON_COMMAND_CALLBACK_ARGS);
 
 static ConVar* _cl_forwardspeed = nullptr;
 static ConVar* _cl_sidespeed = nullptr;
 static ConVar* _cl_backspeed = nullptr;
-static ConVar* _sv_maxspeed = nullptr;
+static ConVar* _sv_maxspeed_cvar = nullptr;
 
 ConVar spt_player_maxspeed(
     "spt_player_maxspeed",
@@ -29,14 +30,14 @@ static void Change_Maxspeed(CON_COMMAND_CALLBACK_ARGS)
 		SET_DEFAULT(_cl_forwardspeed);
 		SET_DEFAULT(_cl_sidespeed);
 		SET_DEFAULT(_cl_backspeed);
-		SET_DEFAULT(_sv_maxspeed);
+		SET_DEFAULT(_sv_maxspeed_cvar);
 	}
 	else
 	{
 		_cl_forwardspeed->SetValue(maxspeed);
 		_cl_sidespeed->SetValue(maxspeed);
 		_cl_backspeed->SetValue(maxspeed);
-		_sv_maxspeed->SetValue(maxspeed);
+		_sv_maxspeed_cvar->SetValue(maxspeed);
 	}
 }
 
@@ -66,13 +67,16 @@ void VarChanger::LoadFeature()
 		_cl_forwardspeed = g_pCVar->FindVar("cl_forwardspeed");
 		_cl_sidespeed = g_pCVar->FindVar("cl_sidespeed");
 		_cl_backspeed = g_pCVar->FindVar("cl_backspeed");
-		_sv_maxspeed = g_pCVar->FindVar("sv_maxspeed");
+		_sv_maxspeed_cvar = g_pCVar->FindVar("sv_maxspeed");
 	}
 
-	if (ProcessMovementPre_Signal.Works && _cl_forwardspeed && _cl_sidespeed && _cl_backspeed && _sv_maxspeed)
+	if (ProcessMovementPre_Signal.Works && _cl_forwardspeed && _cl_sidespeed && _cl_backspeed && _sv_maxspeed_cvar)
 	{
 		ProcessMovementPre_Signal.Connect(ProcessMovementPre);
 		InitConcommandBase(spt_player_maxspeed);
+		SptImGuiGroup::Cheats_MaxSpeed.RegisterUserCallback(
+		    []()
+		    { SptImGui::CvarDouble(spt_player_maxspeed, "override max speed value", "enter float value"); });
 	}
 }
 

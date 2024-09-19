@@ -7,6 +7,7 @@
 #include "signals.hpp"
 #include "..\autojump.hpp"
 #include "SDK\hl_movedata.h"
+#include "..\visualizations\imgui\imgui_interface.hpp"
 
 #ifdef OE
 static void NoclipNofixCVarCallback(ConVar* pConVar, const char* pOldValue);
@@ -201,6 +202,19 @@ void NoclipFixesFeature::LoadFeature()
             }
         }
     }
+
+    SptImGuiGroup::QoL_Noclip.RegisterUserCallback(
+        []()
+        {
+            SptImGui::CvarCheckbox(y_spt_noclip_nofix, "##checkbox_nofix");
+            SptImGui::CvarCheckbox(spt_noclip_noslowfly, "##checkbox_noslowfly");
+            SptImGui::CvarCheckbox(spt_noclip_persist, "##checkbox_persist");
+#ifndef OE
+            // whoever decided to put this in a different file deserves stale bread
+            extern ConVar y_spt_portal_no_ground_snap;
+            SptImGui::CvarCheckbox(y_spt_portal_no_ground_snap, "##checkbox_no_ground_snap");
+#endif
+        });
 }
 
 void NoclipFixesFeature::OnTick()

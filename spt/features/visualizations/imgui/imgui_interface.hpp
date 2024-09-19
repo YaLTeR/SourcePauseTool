@@ -179,13 +179,41 @@ namespace SptImGuiGroup
 	inline Tab Draw_PpPlacement{"Portal placement", &Draw};
 	inline Section Draw_PpPlacement_Gun{"Gun portal placement", &Draw_PpPlacement};
 	inline Section Draw_PpPlacement_Grid{"Portal placement grid", &Draw_PpPlacement};
+	inline Tab Draw_Misc{"Misc.", &Draw};
+	inline Section Draw_Misc_OobEnts{"OOB entities", &Draw_Misc};
+	inline Section Draw_Misc_Seams{"Seamshots", &Draw_Misc};
+	inline Section Draw_Misc_LeafVis{"Leaf vis", &Draw_Misc};
 
-	// features that access game state
-	inline Tab GameIo{"Game IO", &Root};
-	inline Tab GameIo_ISG{"ISG", &GameIo};
+	// quality of life and/or purely visual stuff
+	inline Tab QoL{"QoL", &Root};
+	inline Section QoL_Demo{"Demo utils", &QoL};
+	inline Section QoL_MultiInstance{"Multiple game instances", &QoL};
+	inline Section QoL_Noclip{"Noclip", &QoL}; // QoL instead of in cheats cuz noclip is cheating anyways :)
+	inline Section QoL_NoSleep{"No sleep", &QoL};
+	inline Section QoL_Visual{"Visual fixes", &QoL};
+	inline Section QoL_ConNotify{"Console notify", &QoL};
+	inline Section QoL_FastLoads{"Fast loads", &QoL};
+	inline Section QoL_Timer{"Timer", &QoL};
 
-	// hud cvars - use the RegisterHudCvarXXX functions below to add cvars
-	inline Tab Hud{"Text HUD", &Root};
+	// cheats - stuff that changes gameplay or cannot be done via normal means
+	inline Tab Cheats{"Cheats", &Root};
+	inline Section Cheats_Jumping{"Jumping", &Cheats};
+	inline Section Cheats_HL2AirControl{"HL2 air control", &Cheats};
+	inline Section Cheats_ISG{"ISG", &Cheats};
+	inline Section Cheats_SnapshotOverflow{"Snapshot overflow fix", &Cheats};
+	inline Section Cheats_VagCrash{"Prevent VAG crash", &Cheats};
+	inline Section Cheats_PlayerShadow{"Player shadow", &Cheats};
+	inline Section Cheats_Pause{"Pause on load", &Cheats};
+	inline Section Cheats_FreeOob{"Free OOB", &Cheats};
+	inline Section Cheats_PlayerCollisionGroup{"Player collision group", &Cheats};
+	inline Section Cheats_MaxSpeed{"Max speed", &Cheats};
+	inline Section Cheats_Tickrate{"Tickrate", &Cheats};
+
+	// spt_hud and friends
+	inline Tab Hud{"HUD", &Root};
+	inline Tab Hud_TextHud{"Text HUD", &Hud}; // use the RegisterHudCvarXXX functions below to add cvars here
+	inline Tab Hud_IHud{"Input HUD", &Hud};
+	inline Tab Hud_JHud{"Jump HUD", &Hud};
 
 	// development/debugging features
 	inline Tab Dev{"DEV", &Root};
@@ -276,13 +304,15 @@ public:
 	enum CvarValueFlags
 	{
 		CVF_NONE = 0,
-		CVF_ALWAYS_QUOTE = 1,
+		CVF_ALWAYS_QUOTE = 1 << 0, // always quote cvar value (default will only quote if the value has spaces)
+		CVF_NO_WRANGLE = 1 << 1,   // don't wrangle the name (use for non-spt cvars)
+
 		// TODO: copy/reset widgets
 	};
 
 	// a button for a ConCommand with no args, does NOT invoke the command (because of OE compat)
 	static bool CmdButton(const char* label, ConCommand& cmd);
-	// display cvar name & value, surrounds the value in quotes if it has a space (if the value already has quotes, too bad!)
+	// display cvar name & value
 	static void CvarValue(const ConVar& c, CvarValueFlags flags = CVF_NONE);
 	// a checkbox for a boolean cvar, returns value of cvar
 	static bool CvarCheckbox(ConVar& c, const char* label);
@@ -290,11 +320,40 @@ public:
 	static int CvarCombo(ConVar& c, const char* label, const char* const* opts, size_t nOpts);
 	// a textbox for an integer in base 10 or 16, returns true if the value was modified
 	static bool InputTextInteger(const char* label, const char* hint, long long& val, int radix);
-	// same as internal imgui help marker - a tooltip with extra info (for cvars & commands)
+	// a textbox for a cvar which can take on any long long value, returns the value
+	static long long CvarInputTextInteger(ConVar& c, const char* label, const char* hint, int radix = 10);
+	// wrapper of SptImGui::DragInt
+	static long long CvarDragInt(ConVar& c, const char* label, const char* format = nullptr);
+	// wrapper of ImGui::InputDouble, returns true if the value was changed
+	static bool InputDouble(const char* label, double* f);
+	// wrapper of SptImGui::InputDouble
+	static double CvarDouble(ConVar& c, const char* label, const char* hint);
+	// uses DragScalarN, puts everything in a CmdGroup scope using the first cvar, does not provide help text
+	// sets mins/maxs from the first cvar (if present)
+	static void CvarsDragScalar(
+	    ConVar* const* cvars,
+	    void* data, // isFloat=true: floats, isFloat=false: long longs; will be filled by this function
+	    int n,
+	    bool isFloat,
+	    const char* label,
+	    float speed = 1.f,
+	    const char* format = nullptr);
+	// same as internal imgui help marker - a tooltip with extra info
 	static void HelpMarker(const char* fmt, ...);
+	// a help marker that says "Help text for <cvar_name>:\n\n<help_text>"
+	static void CmdHelpMarkerWithName(const ConCommandBase& c);
 	// add a border around an item - this is just a table with a single row/column
 	static bool BeginBordered(const ImVec2& outer_size = {0.0f, 0.0f}, float inner_width = 0.0f);
 	static void EndBordered();
+	/*
+	* A scope for cvar/cmd widgets. Puts the whole widget into a group and disables it if the
+	* cvar/cmd is not registered. Does not check if the cvar is enabled & does not create a new
+	* ID scope. All of the above CvarXXX/CmdXXX widgets do this internally. The text HUD tab does
+	* not do add this for you - instead you should check the return of AddHudCallback (refer to the
+	* comments for the RegisterHudCvarXXX functions above).
+	*/
+	static void BeginCmdGroup(const ConCommandBase& cmdBase);
+	static void EndCmdGroup();
 
 	struct AutocompletePersistData
 	{

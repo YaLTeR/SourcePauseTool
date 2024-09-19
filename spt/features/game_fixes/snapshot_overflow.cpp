@@ -1,5 +1,6 @@
 #include "stdafx.hpp"
 #include "..\feature.hpp"
+#include "..\visualizations\imgui\imgui_interface.hpp"
 
 ConVar spt_prevent_snapshot_overflow("spt_prevent_snapshot_overflow",
                                      "0",
@@ -83,6 +84,9 @@ protected:
 			    extern SnapshotOverflow spt_snapShotOverflow;
 			    spt_snapShotOverflow.SetOverwrite(((ConVar*)var)->GetBool());
 		    });
+
+		SptImGuiGroup::Cheats_SnapshotOverflow.RegisterUserCallback(
+		    []() { SptImGui::CvarCheckbox(spt_prevent_snapshot_overflow, "##checkbox"); });
 	};
 
 	virtual void UnloadFeature() override
