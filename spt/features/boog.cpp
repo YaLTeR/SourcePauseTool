@@ -10,6 +10,7 @@
 #include "playerio.hpp"
 #include "signals.hpp"
 #include "game_detection.hpp"
+#include "visualizations\imgui\imgui_interface.hpp"
 
 ConVar y_spt_hud_edgebug("y_spt_hud_edgebug",
                          "0",
@@ -177,6 +178,17 @@ void BoogFeature::LoadFeature()
 		{
 			InitConcommandBase(y_spt_hud_edgebug);
 			InitConcommandBase(y_spt_hud_edgebug_sec);
+
+			SptImGui::RegisterHudCvarCallback(
+			    y_spt_hud_edgebug,
+			    [](ConVar& var)
+			    {
+				    SptImGui::CvarCheckbox(y_spt_hud_edgebug, "##checkbox");
+				    SptImGui::CvarDouble(y_spt_hud_edgebug_sec,
+				                        "edgebug display time",
+				                        "enter time in seconds");
+			    },
+			    true);
 		}
 	}
 }

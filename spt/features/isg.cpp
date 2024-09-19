@@ -91,7 +91,7 @@ void ISGFeature::LoadFeature()
 	    "isg", [](std::string) { spt_hud_feat.DrawTopHudElement(L"isg: %d", IsISGActive()); }, y_spt_hud_isg);
 #endif
 
-	SptImGuiGroup::GameIo_ISG.RegisterUserCallback(ImGuiCallback);
+	SptImGuiGroup::Cheats_ISG.RegisterUserCallback(ImGuiCallback);
 	if (hudCallbackEnabled)
 		SptImGui::RegisterHudCvarCheckbox(y_spt_hud_isg);
 }

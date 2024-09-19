@@ -3,7 +3,7 @@
 #include "generic.hpp"
 #include "convar.hpp"
 #include "signals.hpp"
-#include "dbg.h"
+#include "visualizations\imgui\imgui_interface.hpp"
 
 ConVar y_spt_pause("y_spt_pause", "0", FCVAR_ARCHIVE);
 
@@ -136,6 +136,17 @@ void PauseFeature::LoadFeature()
 		}
 
 		InitConcommandBase(y_spt_pause);
+
+		SptImGuiGroup::Cheats_Pause.RegisterUserCallback(
+		    [pause1_works, pause2_works]()
+		    {
+			    const char* opts[] = {
+			        "Disabled",
+			        pause1_works ? "Pause after load" : "N/A",
+			        pause2_works ? "Pause during load" : "N/A",
+			    };
+			    SptImGui::CvarCombo(y_spt_pause, "##combo", opts, ARRAYSIZE(opts));
+		    });
 	}
 }
 
@@ -150,7 +161,7 @@ void PauseFeature::SV_ActivateServer(bool result)
 
 	if (spt_generic.ORIG_SetPaused && pM_bLoadgame && pGameServer)
 	{
-		if ((y_spt_pause.GetInt() == 2) && *pM_bLoadgame)
+		if ((y_spt_pause.GetInt() >= 2) && *pM_bLoadgame)
 		{
 			spt_generic.ORIG_SetPaused((void*)pGameServer, 0, true);
 			DevMsg("Pausing...\n");

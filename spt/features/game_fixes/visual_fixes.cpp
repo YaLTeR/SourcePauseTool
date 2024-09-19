@@ -4,7 +4,7 @@
 #include "convar.hpp"
 #include "ent_utils.hpp"
 #include "signals.hpp"
-#include "dbg.h"
+#include "..\visualizations\imgui\imgui_interface.hpp"
 
 typedef void(__cdecl* _DoImageSpaceMotionBlur)(void* view, int x, int y, int w, int h);
 typedef void(__fastcall* _CViewEffects__Fade)(void* thisptr, int edx, void* data);
@@ -22,13 +22,11 @@ ConVar y_spt_disable_tone_map_reset(
     FCVAR_ARCHIVE,
     "Prevents the tone map getting reset (during each load), useful for keeping colors the same between demos.");
 
-#ifndef OE
 // Implemented as a fix for https://github.com/MattMcNam/SetSequence
 ConVar y_spt_override_tpose("y_spt_override_tpose",
                             "0",
                             FCVAR_DONTRECORD,
                             "Override Chell's t-pose animation with the given sequence, use 17 for standing in air.");
-#endif
 
 ConVar spt_viewmodel_offset_x("spt_viewmodel_offset_x", "0.0", FCVAR_ARCHIVE, "The viewmodel offset from default in X");
 ConVar spt_viewmodel_offset_y("spt_viewmodel_offset_y", "0.0", FCVAR_ARCHIVE, "The viewmodel offset from default in Y");
@@ -222,6 +220,21 @@ void VisualFixes::LoadFeature()
 		InitConcommandBase(spt_viewmodel_offset_y);
 		InitConcommandBase(spt_viewmodel_offset_z);
 	}
+
+	SptImGuiGroup::QoL_Visual.RegisterUserCallback(
+	    []()
+	    {
+		    SptImGui::CvarCheckbox(y_spt_disable_fade, "##checkbox_fade");
+		    SptImGui::CvarCheckbox(y_spt_disable_shake, "##checkbox_shake");
+		    SptImGui::CvarCheckbox(y_spt_disable_tone_map_reset, "##checkbox_tone_map");
+		    SptImGui::CvarInputTextInteger(y_spt_override_tpose, "T-pose sequence override", "");
+
+		    ConVar* cvars[] = {&spt_viewmodel_offset_x, &spt_viewmodel_offset_y, &spt_viewmodel_offset_z};
+		    float f[ARRAYSIZE(cvars)];
+		    SptImGui::CvarsDragScalar(cvars, f, ARRAYSIZE(cvars), true, "viewmodel offset", 0.05f);
+		    ImGui::SameLine();
+		    SptImGui::HelpMarker("Can be set with spt_viewmodel_offset_x/y/z");
+	    });
 }
 
 void VisualFixes::UnloadFeature() {}

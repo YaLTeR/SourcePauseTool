@@ -6,8 +6,7 @@
 #include "..\utils\game_detection.hpp"
 #include "..\cvars.hpp"
 #include "signals.hpp"
-
-#include "dbg.h"
+#include "..\visualizations\imgui\imgui_interface.hpp"
 
 ConVar y_spt_prevent_vag_crash(
     "y_spt_prevent_vag_crash",
@@ -66,6 +65,9 @@ void VAG::LoadFeature()
 	{
 		InitConcommandBase(y_spt_prevent_vag_crash);
 		VagCrashSignal.Works = true;
+
+		SptImGuiGroup::Cheats_VagCrash.RegisterUserCallback(
+			[]() { SptImGui::CvarCheckbox(y_spt_prevent_vag_crash, "##checkbox"); });
 	}
 	recursiveTeleportCount = 0;
 }

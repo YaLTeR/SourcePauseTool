@@ -7,7 +7,7 @@
 #include "..\scripts\srctas_reader.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "..\utils\game_detection.hpp"
-#include "dbg.h"
+#include "visualizations\imgui\imgui_interface.hpp"
 
 DemoStuff spt_demostuff;
 
@@ -360,4 +360,11 @@ void DemoStuff::LoadFeature()
 	{
 		InitConcommandBase(y_spt_demo_block_cmd);
 	}
+
+	SptImGuiGroup::QoL_Demo.RegisterUserCallback(
+	    []()
+	    {
+		    SptImGui::CvarCheckbox(y_spt_demo_block_cmd, "##checkbox");
+		    SptImGui::CvarInputTextInteger(y_spt_pause_demo_on_tick, "pause demo on tick", "enter tick value");
+	    });
 }

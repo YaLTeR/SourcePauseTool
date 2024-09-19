@@ -2,7 +2,7 @@
 #include "..\spt-serverplugin.hpp"
 #include "tickrate.hpp"
 #include "convar.hpp"
-#include "dbg.h"
+#include "visualizations\imgui\imgui_interface.hpp"
 
 TickrateMod spt_tickrate;
 
@@ -82,6 +82,40 @@ void TickrateMod::LoadFeature()
 		DevMsg("Found interval_per_tick at %p.\n", pIntervalPerTick);
 
 		if (pIntervalPerTick)
+		{
 			InitCommand(_y_spt_tickrate);
+
+			SptImGuiGroup::Cheats_Tickrate.RegisterUserCallback(
+			    []()
+			    {
+				    ImGui::Text("Current tickrate: %g", spt_tickrate.GetTickrate());
+				    static double df = DEFAULT_TICK_INTERVAL;
+				    SptImGui::InputDouble("new tickrate", &df);
+				    ImGui::SameLine();
+				    if (ImGui::Button("set"))
+				    {
+					    /*
+					    * KILLME: the game stores the interval internally as a float, but the
+					    * comparisons in game are done with the macros which are doubles.
+					    */
+					    float f = (float)df;
+					    if (f == (float)MAXIMUM_TICK_INTERVAL)
+						    f = nexttowardf(f, -HUGE_VALL);
+					    else if (f == (float)MINIMUM_TICK_INTERVAL)
+						    f = nexttowardf(f, HUGE_VALL);
+					    spt_tickrate.SetTickrate(f);
+				    }
+				    ImGui::SameLine();
+				    SptImGui::CmdHelpMarkerWithName(_y_spt_tickrate_command);
+				    if (df < MINIMUM_TICK_INTERVAL || df > MAXIMUM_TICK_INTERVAL)
+				    {
+					    ImGui::TextColored(
+					        SPT_IMGUI_WARN_COLOR_YELLOW,
+					        "Warning: this value is outside [%.3f,%.3f], it may crash the game.",
+					        MINIMUM_TICK_INTERVAL,
+					        MAXIMUM_TICK_INTERVAL);
+				    }
+			    });
+		}
 	}
 }

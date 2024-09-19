@@ -15,6 +15,7 @@
 #include "spt\features\generic.hpp"
 #include "spt\utils\portal_utils.hpp"
 #include "spt\utils\interfaces.hpp"
+#include "imgui\imgui_interface.hpp"
 
 ConVar y_spt_draw_seams("y_spt_draw_seams", "0", FCVAR_CHEAT, "Draws seamshot stuff");
 
@@ -27,6 +28,8 @@ protected:
 		{
 			InitConcommandBase(y_spt_draw_seams);
 			spt_meshRenderer.signal.Connect(this, &DrawSeamsFeature::OnMeshRenderSignal);
+			SptImGuiGroup::Draw_Misc_Seams.RegisterUserCallback(
+			    []() { SptImGui::CvarCheckbox(y_spt_draw_seams, "##checkbox"); });
 		}
 	}
 

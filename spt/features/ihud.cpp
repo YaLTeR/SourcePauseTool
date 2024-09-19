@@ -11,6 +11,7 @@
 #include "spt\utils\interfaces.hpp"
 #include "spt\utils\signals.hpp"
 #include "spt\utils\game_detection.hpp"
+#include "visualizations\imgui\imgui_interface.hpp"
 
 #include "basehandle.h"
 #include "Color.h"
@@ -107,8 +108,15 @@ private:
 InputHud spt_ihud;
 
 ConVar y_spt_ihud("y_spt_ihud", "0", 0, "Draws movement inputs of client.");
-ConVar y_spt_ihud_grid_size("y_spt_ihud_grid_size", "60", 0, "Grid size of input HUD.");
-ConVar y_spt_ihud_grid_padding("y_spt_ihud_grid_padding", "2", 0, "Padding between grids of input HUD.");
+ConVar y_spt_ihud_grid_size("y_spt_ihud_grid_size", "60", 0, "Grid size of input HUD.", true, 15.f, false, 0.f);
+ConVar y_spt_ihud_grid_padding("y_spt_ihud_grid_padding",
+                               "2",
+                               0,
+                               "Padding between grids of input HUD.",
+                               true,
+                               0.f,
+                               false,
+                               0.f);
 ConVar y_spt_ihud_x("y_spt_ihud_x", "2", 0, "X position of input HUD.", true, 0.0f, true, 100.0f);
 ConVar y_spt_ihud_y("y_spt_ihud_y", "2", 0, "Y position of input HUD.", true, 0.0f, true, 100.0f);
 
@@ -601,6 +609,28 @@ void InputHud::LoadFeature()
 		InitConcommandBase(y_spt_ihud_grid_padding);
 		InitConcommandBase(y_spt_ihud_x);
 		InitConcommandBase(y_spt_ihud_y);
+
+		SptImGuiGroup::Hud_IHud.RegisterUserCallback(
+		    []()
+		    {
+			    ImGui::BeginDisabled(!SptImGui::CvarCheckbox(y_spt_ihud, "##enabled"));
+			    ConVar* var = &y_spt_ihud_grid_size;
+			    long long varVal;
+			    SptImGui::CvarsDragScalar(&var, &varVal, 1, false, "grid size");
+			    ImGui::SameLine();
+			    SptImGui::CmdHelpMarkerWithName(*var);
+			    var = &y_spt_ihud_grid_padding;
+			    SptImGui::CvarsDragScalar(&var, &varVal, 1, false, "grid padding");
+			    ImGui::SameLine();
+			    SptImGui::CmdHelpMarkerWithName(*var);
+
+			    ConVar* cvars[] = {&y_spt_ihud_x, &y_spt_ihud_y};
+			    float f[ARRAYSIZE(cvars)];
+			    SptImGui::CvarsDragScalar(cvars, f, ARRAYSIZE(cvars), true, "IHUD pos");
+			    ImGui::SameLine();
+			    SptImGui::HelpMarker("Can be set with spt_ihud_x/y");
+			    ImGui::EndDisabled();
+		    });
 	}
 
 	const int IN_ATTACK = (1 << 0);

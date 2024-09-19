@@ -3,29 +3,78 @@
 #include "imgui_interface.hpp"
 #include "thirdparty/imgui/imgui_internal.h"
 
+// for float/integer text inputs have a constant width
+#define SPT_IMGUI_NUMBER_INPUT_N_CHARS 25
+#define SPT_SET_NUMBER_INPUT_ITEM_WIDTH(maxChars) ImGui::SetNextItemWidth(ImGui::GetFontSize() * (maxChars) * 0.5f)
+
+// A stack based storage for a single ImGui context for data of arbitrary length.
+// When popped, the pointer to the data remains valid until Push/Pop is called again.
+class
+{
+	std::vector<char> userStorage;
+	std::vector<size_t> userStorageOffsets;
+	bool lastUserStorageWasPop = false;
+
+	void InvalidatePoppedData()
+	{
+		if (lastUserStorageWasPop)
+		{
+			userStorage.resize(userStorageOffsets.back());
+			userStorageOffsets.pop_back();
+			lastUserStorageWasPop = false;
+		}
+	}
+
+public:
+	void Push(const void* data, size_t len)
+	{
+		InvalidatePoppedData();
+		userStorageOffsets.push_back(userStorage.size());
+		userStorage.resize(userStorage.size() + len);
+		memcpy(userStorage.data() + userStorageOffsets.back(), data, len);
+	}
+
+	void* Pop(size_t* len)
+	{
+		InvalidatePoppedData();
+		Assert(!userStorage.empty() && !userStorageOffsets.empty());
+		if (len)
+			*len = userStorageOffsets.back();
+		lastUserStorageWasPop = true;
+		return userStorage.data() + userStorageOffsets.back();
+	}
+
+} static g_SptImGuiUserStorage;
+
 bool SptImGui::CmdButton(const char* label, ConCommand& cmd)
 {
+	BeginCmdGroup(cmd);
 	bool ret = ImGui::Button(label);
 	ImGui::SameLine();
 	ImGui::TextDisabled("(%s)", WrangleLegacyCommandName(cmd.GetName(), true, nullptr));
 	ImGui::SameLine();
 	HelpMarker("%s", cmd.GetHelpText());
+	EndCmdGroup();
 	return ret;
 }
 
 void SptImGui::CvarValue(const ConVar& c, CvarValueFlags flags)
 {
+	BeginCmdGroup(c);
 	const char* v = c.GetString();
 	const char* surround = "";
 	if ((flags & CVF_ALWAYS_QUOTE) || !*v || strchr(v, ' '))
 		surround = "\"";
-	ImGui::TextDisabled("(%s %s%s%s)", WrangleLegacyCommandName(c.GetName(), true, nullptr), surround, v, surround);
+	const char* name = flags & CVF_NO_WRANGLE ? c.GetName() : WrangleLegacyCommandName(c.GetName(), true, nullptr);
+	ImGui::TextDisabled("(%s %s%s%s)", name, surround, v, surround);
 	ImGui::SameLine();
 	HelpMarker("%s", c.GetHelpText());
+	EndCmdGroup();
 }
 
 bool SptImGui::CvarCheckbox(ConVar& c, const char* label)
 {
+	BeginCmdGroup(c);
 	bool oldVal = c.GetBool();
 	bool newVal = oldVal;
 	ImGui::Checkbox(label, &newVal);
@@ -33,12 +82,14 @@ bool SptImGui::CvarCheckbox(ConVar& c, const char* label)
 		c.SetValue(newVal); // only set value if it was changed to not spam cvar callbacks
 	ImGui::SameLine();
 	CvarValue(c);
+	EndCmdGroup();
 	return newVal;
 }
 
 int SptImGui::CvarCombo(ConVar& c, const char* label, const char* const* opts, size_t nOpts)
 {
 	Assert(nOpts >= 1);
+	BeginCmdGroup(c);
 	int val = clamp(c.GetInt(), 0, (int)nOpts - 1);
 
 	if (ImGui::BeginCombo(label, opts[val], ImGuiComboFlags_WidthFitPreview))
@@ -58,17 +109,18 @@ int SptImGui::CvarCombo(ConVar& c, const char* label, const char* const* opts, s
 		ImGui::EndCombo();
 	}
 	ImGui::SameLine();
-	SptImGui::CvarValue(c);
+	CvarValue(c);
+	EndCmdGroup();
 	return val;
 }
 
 bool SptImGui::InputTextInteger(const char* label, const char* hint, long long& val, int radix)
 {
 	Assert(radix == 10 || radix == 16);
-	char buf[24];
+	char buf[SPT_IMGUI_NUMBER_INPUT_N_CHARS];
 	const char* fmtSpecifier = radix == 10 ? "%" PRId64 : "%" PRIx64;
 	snprintf(buf, sizeof buf, fmtSpecifier, val);
-	ImGui::SetNextItemWidth(ImGui::GetFontSize() * (sizeof(buf) - 1) * 0.6f);
+	SPT_SET_NUMBER_INPUT_ITEM_WIDTH(sizeof buf);
 	ImGuiInputTextFlags flags =
 	    ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll;
 	flags |= radix == 10 ? ImGuiInputTextFlags_CharsDecimal : ImGuiInputTextFlags_CharsHexadecimal;
@@ -76,6 +128,142 @@ bool SptImGui::InputTextInteger(const char* label, const char* hint, long long& 
 	if (ret)
 		_snscanf_s(buf, sizeof buf, fmtSpecifier, &val);
 	return ret;
+}
+
+long long SptImGui::CvarInputTextInteger(ConVar& c, const char* label, const char* hint, int radix)
+{
+	// don't use c.GetInt() since that's cast from a float
+	Assert(radix == 10 || radix == 16);
+	BeginCmdGroup(c);
+	long long val = strtoll(c.GetString(), nullptr, radix);
+	if (InputTextInteger(label, hint, val, radix))
+	{
+		char buf[24];
+		snprintf(buf, sizeof buf, radix == 10 ? "%" PRId64 : "%" PRIx64, val);
+		c.SetValue(buf);
+	}
+	ImGui::SameLine();
+	CmdHelpMarkerWithName(c);
+	EndCmdGroup();
+	return val;
+}
+
+long long SptImGui::CvarDragInt(ConVar& c, const char* label, const char* format)
+{
+	BeginCmdGroup(c);
+	long long val = strtoll(c.GetString(), nullptr, 10);
+	float fMin, fMax;
+	long long llMin, llMax;
+	void *pMin = nullptr, *pMax = nullptr;
+	if (c.GetMin(fMin))
+	{
+		llMin = static_cast<long long>(fMin);
+		pMin = &llMin;
+	}
+	if (c.GetMin(fMax))
+	{
+		llMax = static_cast<long long>(fMax);
+		pMax = &llMax;
+	}
+	SPT_SET_NUMBER_INPUT_ITEM_WIDTH(SPT_IMGUI_NUMBER_INPUT_N_CHARS);
+	if (ImGui::DragScalar(label, ImGuiDataType_S64, &val, 1.f, pMin, pMax, format))
+	{
+		char buf[SPT_IMGUI_NUMBER_INPUT_N_CHARS];
+		sprintf_s(buf, "%" PRId64, val);
+		c.SetValue(buf);
+	}
+	ImGui::SameLine();
+	if (*label)
+		CmdHelpMarkerWithName(c);
+	else
+		CvarValue(c);
+	EndCmdGroup();
+	return val;
+}
+
+bool SptImGui::InputDouble(const char* label, double* f)
+{
+	SPT_SET_NUMBER_INPUT_ITEM_WIDTH(SPT_IMGUI_NUMBER_INPUT_N_CHARS);
+	return ImGui::InputDouble(label, f, 0.0, 0.0, "%g");
+}
+
+double SptImGui::CvarDouble(ConVar& c, const char* label, const char* hint)
+{
+	BeginCmdGroup(c);
+	double val = atof(c.GetString());
+	if (SptImGui::InputDouble(label, &val))
+	{
+		char buf[SPT_IMGUI_NUMBER_INPUT_N_CHARS];
+		sprintf_s(buf, "%f", val);
+		c.SetValue(buf);
+	}
+	ImGui::SameLine();
+	CmdHelpMarkerWithName(c);
+	EndCmdGroup();
+	return val;
+}
+
+void SptImGui::CvarsDragScalar(ConVar* const* cvars,
+                               void* data,
+                               int n,
+                               bool isFloat,
+                               const char* label,
+                               float speed,
+                               const char* format)
+{
+	Assert(cvars && data && n > 0);
+
+	for (int i = 0; i < n; i++)
+	{
+		// cvars do string -> float -> int, so always use strtoll
+		if (isFloat)
+			((float*)data)[i] = cvars[i]->GetFloat();
+		else
+			((long long*)data)[i] = strtoll(cvars[i]->GetString(), nullptr, 10);
+	}
+
+	// use the mins/maxs from the first cvar if they exist
+	float fMin, fMax;
+	long long llMin, llMax;
+	void *pMin = nullptr, *pMax = nullptr;
+	if (cvars[0]->GetMin(fMin))
+	{
+		if (isFloat)
+		{
+			pMin = &fMin;
+		}
+		else
+		{
+			llMin = static_cast<long long>(fMin);
+			pMin = &llMin;
+		}
+	}
+	if (cvars[0]->GetMax(fMax))
+	{
+		if (isFloat)
+		{
+			pMax = &fMax;
+		}
+		else
+		{
+			llMax = static_cast<long long>(fMax);
+			pMax = &llMax;
+		}
+	}
+
+	SptImGui::BeginCmdGroup(*cvars[0]);
+	ImGuiDataType dataType = isFloat ? ImGuiDataType_Float : ImGuiDataType_S64;
+	if (ImGui::DragScalarN(label, dataType, data, n, speed, pMin, pMax, format, ImGuiSliderFlags_NoRoundToFormat))
+	{
+		for (int i = 0; i < n; i++)
+		{
+			if (isFloat)
+				cvars[i]->SetValue(((float*)data)[i]);
+			else
+				cvars[i]->SetValue((int)(((long long*)data)[i]));
+		}
+	}
+	SptImGui::EndCmdGroup();
 }
 
 void SptImGui::HelpMarker(const char* fmt, ...)
@@ -93,6 +281,11 @@ void SptImGui::HelpMarker(const char* fmt, ...)
 	va_end(va);
 }
 
+void SptImGui::CmdHelpMarkerWithName(const ConCommandBase& c)
+{
+	HelpMarker("Help text for %s:\n\n%s", WrangleLegacyCommandName(c.GetName(), true, nullptr), c.GetHelpText());
+}
+
 bool SptImGui::BeginBordered(const ImVec2& outer_size, float inner_width)
 {
 	if (ImGui::BeginTable("##table_border", 1, ImGuiTableFlags_BordersOuter, outer_size, inner_width))
@@ -107,6 +300,27 @@ bool SptImGui::BeginBordered(const ImVec2& outer_size, float inner_width)
 void SptImGui::EndBordered()
 {
 	ImGui::EndTable();
+}
+
+void SptImGui::BeginCmdGroup(const ConCommandBase& cmdBase)
+{
+	ImGui::BeginGroup();
+	ImGui::BeginDisabled(!cmdBase.IsRegistered());
+	auto adr = &cmdBase; // assume the command has a constant address
+	g_SptImGuiUserStorage.Push(&adr, sizeof adr);
+}
+
+void SptImGui::EndCmdGroup()
+{
+	const ConCommandBase* cmdBase = *static_cast<const ConCommandBase**>(g_SptImGuiUserStorage.Pop(nullptr));
+	ImGui::EndDisabled();
+	ImGui::EndGroup();
+	if (!cmdBase->IsRegistered())
+	{
+		ImGui::SetItemTooltip("%s \"%s\" was not initialized",
+		                      cmdBase->IsCommand() ? "ConCommand" : "ConVar",
+		                      WrangleLegacyCommandName(cmdBase->GetName(), true, nullptr));
+	}
 }
 
 void SptImGui::TextInputAutocomplete(const char* inputTextLabel,

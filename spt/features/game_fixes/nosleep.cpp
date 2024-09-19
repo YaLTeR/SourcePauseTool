@@ -1,6 +1,7 @@
 #include "stdafx.hpp"
 #include "..\feature.hpp"
 #include "convar.hpp"
+#include "..\visualizations\imgui\imgui_interface.hpp"
 
 ConVar y_spt_focus_nosleep("y_spt_focus_nosleep", "0", 0, "Improves FPS while alt-tabbed.");
 
@@ -47,6 +48,8 @@ void NoSleepFeature::LoadFeature()
 	if (ORIG_CInputSystem__SleepUntilInput)
 	{
 		InitConcommandBase(y_spt_focus_nosleep);
+		SptImGuiGroup::QoL_NoSleep.RegisterUserCallback(
+		    []() { SptImGui::CvarCheckbox(y_spt_focus_nosleep, "##checkbox"); });
 	}
 }
 
