@@ -54,7 +54,8 @@ void FreeOobFeature::LoadFeature()
 
 	// we assume TryPlayerMove is 2 entries below CheckJumpButton in the vftable.
 	uintptr_t cjbPtr = (uintptr_t)spt_autojump.ptrCheckJumpButton;
-	for (uintptr_t vftEntry = (uintptr_t)serverBase; vftEntry <= (uintptr_t)serverBase + serverSize; vftEntry++)
+	uintptr_t end = (uintptr_t)serverBase + serverSize - 4;
+	for (uintptr_t vftEntry = (uintptr_t)serverBase; vftEntry <= end; vftEntry += 4)
 	{
 		auto funcPtr = *(uintptr_t*)vftEntry;
 
