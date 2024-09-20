@@ -137,7 +137,7 @@ private:
 	                   bool bInSkybox,
 	                   bool bShadowDepth);
 
-	static void ImGuiCallback(bool open);
+	static void ImGuiCallback();
 };
 
 inline MeshRendererFeature spt_meshRenderer;

@@ -11,7 +11,7 @@ class GameDetectionFeatureGui : public FeatureWrapper<GameDetectionFeatureGui>
 protected:
 	virtual void LoadFeature()
 	{
-		SptImGui::RegisterSectionCallback(SptImGuiGroup::Dev_GameDetection, ImGuiCallback);
+		SptImGuiGroup::Dev_GameDetection.RegisterUserCallback(ImGuiCallback);
 	}
 
 private:
@@ -28,10 +28,8 @@ private:
 		ImGui::EndDisabled();
 	}
 
-	static void ImGuiCallback(bool open)
+	static void ImGuiCallback()
 	{
-		if (!open)
-			return;
 		using namespace utils;
 		ImGui::Text("Detected game build number: %d", GetBuildNumber());
 		ImGuiTableFlags tableFlags =

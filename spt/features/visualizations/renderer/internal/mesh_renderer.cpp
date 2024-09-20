@@ -131,7 +131,7 @@ void MeshRendererFeature::LoadFeature()
 	RenderViewPre_Signal.Connect(&g_meshRendererInternal, &MeshRendererInternal::OnRenderViewPre_Signal);
 	InitConcommandBase(y_spt_draw_mesh_debug);
 	InitCommand(y_spt_destroy_all_static_meshes);
-	SptImGui::RegisterSectionCallback(SptImGuiGroup::Dev_Mesh, MeshRendererFeature::ImGuiCallback);
+	SptImGuiGroup::Dev_Mesh.RegisterUserCallback(MeshRendererFeature::ImGuiCallback);
 }
 
 void MeshRendererFeature::UnloadFeature()
@@ -142,10 +142,8 @@ void MeshRendererFeature::UnloadFeature()
 	StaticMesh::DestroyAll();
 }
 
-void MeshRendererFeature::ImGuiCallback(bool open)
+void MeshRendererFeature::ImGuiCallback()
 {
-	if (!open)
-		return;
 	extern ConVar y_spt_draw_mesh_examples;
 	SptImGui::CvarCheckbox(y_spt_draw_mesh_examples, "Draw mesh examples");
 

@@ -65,7 +65,7 @@ protected:
 				    spt_DrawWorldCollides_feat.cache.Clear();
 		    });
 
-		SptImGui::RegisterSectionCallback(SptImGuiGroup::Draw_Collides_World, ImGuiCallback);
+		SptImGuiGroup::Draw_Collides_World.RegisterUserCallback(ImGuiCallback);
 	};
 
 	virtual void UnloadFeature() override
@@ -88,10 +88,8 @@ protected:
 	} cache;
 
 private:
-	static void ImGuiCallback(bool open)
+	static void ImGuiCallback()
 	{
-		if (!open)
-			return;
 		// copied from the draw world collides callback
 		ConVar& c = spt_draw_world_collides;
 		int oldVal = c.GetInt();

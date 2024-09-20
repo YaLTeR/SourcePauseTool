@@ -51,7 +51,7 @@ protected:
 	virtual void UnloadFeature() override;
 
 private:
-	void ImGuiCallback(bool open);
+	static void ImGuiCallback();
 };
 
 static ISGFeature spt_isg;
@@ -91,7 +91,7 @@ void ISGFeature::LoadFeature()
 	    "isg", [](std::string) { spt_hud_feat.DrawTopHudElement(L"isg: %d", IsISGActive()); }, y_spt_hud_isg);
 #endif
 
-	SptImGui::RegisterTabCallback(SptImGuiGroup::GameIo_ISG, [this](bool open) { ImGuiCallback(open); });
+	SptImGuiGroup::GameIo_ISG.RegisterUserCallback(ImGuiCallback);
 	if (hudCallbackEnabled)
 		SptImGui::RegisterHudCvarCheckbox(y_spt_hud_isg);
 }
@@ -101,10 +101,8 @@ void ISGFeature::UnloadFeature()
 	ORIG_MiddleOfRecheck_ov_element = 0;
 }
 
-void ISGFeature::ImGuiCallback(bool open)
+void ISGFeature::ImGuiCallback()
 {
-	if (!open)
-		return;
 	if (ImGui::TreeNode("Info"))
 	{
 		ImGui::TextWrapped(
@@ -116,17 +114,17 @@ void ISGFeature::ImGuiCallback(bool open)
 	}
 
 	SptImGui::CvarCheckbox(y_spt_hud_isg, "Show ISG state in HUD");
-	ImGui::BeginDisabled(*isgFlagPtr);
+	ImGui::BeginDisabled(*spt_isg.isgFlagPtr);
 	if (ImGui::Button("Enable ISG"))
-		*isgFlagPtr = true;
+		*spt_isg.isgFlagPtr = true;
 	ImGui::EndDisabled();
 	ImGui::SameLine();
-	ImGui::BeginDisabled(!*isgFlagPtr);
+	ImGui::BeginDisabled(!*spt_isg.isgFlagPtr);
 	if (ImGui::Button("Disable ISG"))
-		*isgFlagPtr = false;
+		*spt_isg.isgFlagPtr = false;
 	ImGui::EndDisabled();
 	ImGui::SameLine();
-	ImGui::TextDisabled("ISG state: %d", *isgFlagPtr);
+	ImGui::TextDisabled("ISG state: %d", *spt_isg.isgFlagPtr);
 	ImGui::SameLine();
 	SptImGui::HelpMarker("Can be set with %s.",
 	                     WrangleLegacyCommandName(y_spt_set_isg_command.GetName(), true, nullptr));

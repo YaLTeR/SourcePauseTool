@@ -38,7 +38,7 @@ protected:
 
 private:
 	void OnMeshRenderSignal(MeshRendererDelegate& mr);
-	static void ImGuiCallback(bool open);
+	static void ImGuiCallback();
 
 	std::vector<StaticMesh> meshes;
 };
@@ -273,11 +273,8 @@ void MapOverlay::OnMeshRenderSignal(MeshRendererDelegate& mr)
 	}
 }
 
-void MapOverlay::ImGuiCallback(bool open)
+void MapOverlay::ImGuiCallback()
 {
-	if (!open)
-		return;
-
 	static SptImGui::AutocompletePersistData acPersist;
 	static bool ztest = true;
 
@@ -348,7 +345,7 @@ void MapOverlay::LoadFeature()
 		return;
 	InitCommand(spt_draw_map_overlay);
 	spt_meshRenderer.signal.Connect(this, &MapOverlay::OnMeshRenderSignal);
-	SptImGui::RegisterTabCallback(SptImGuiGroup::Draw_MapOverlay, ImGuiCallback);
+	SptImGuiGroup::Draw_MapOverlay.RegisterUserCallback(ImGuiCallback);
 }
 
 void MapOverlay::UnloadFeature() {}
