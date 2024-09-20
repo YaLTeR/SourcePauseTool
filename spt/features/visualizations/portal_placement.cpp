@@ -144,8 +144,8 @@ private:
 	                         bool& fizzle, // out
 	                         CBaseCombatWeapon* portalGun) const;
 
-	static void ImGuiGunPlacementCallback(bool open);
-	static void ImGuiGridPlacementCallback(bool open);
+	static void ImGuiGunPlacementCallback();
+	static void ImGuiGridPlacementCallback();
 	static void ImGuiTextHudPortalPlacementCallback(ConVar& var);
 };
 
@@ -630,10 +630,8 @@ void PortalPlacement::LoadFeature()
 			InitConcommandBase(y_spt_draw_pp_grid_ms_per_frame);
 
 			spt_meshRenderer.signal.Connect(this, &PortalPlacement::OnMeshRenderSignal);
-			SptImGui::RegisterSectionCallback(SptImGuiGroup::Draw_PpPlacement_Gun,
-			                                  ImGuiGunPlacementCallback);
-			SptImGui::RegisterSectionCallback(SptImGuiGroup::Draw_PpPlacement_Grid,
-			                                  ImGuiGridPlacementCallback);
+			SptImGuiGroup::Draw_PpPlacement_Gun.RegisterUserCallback(ImGuiGunPlacementCallback);
+			SptImGuiGroup::Draw_PpPlacement_Grid.RegisterUserCallback(ImGuiGridPlacementCallback);
 			if (hudCallbackEnabled)
 				SptImGui::RegisterHudCvarCallback(y_spt_hud_portal_placement,
 				                                  ImGuiTextHudPortalPlacementCallback,
@@ -749,11 +747,8 @@ void PortalPlacement::PostPlacementChecks(QAngle& placedAngles,
 	}
 }
 
-void PortalPlacement::ImGuiGunPlacementCallback(bool open)
+void PortalPlacement::ImGuiGunPlacementCallback()
 {
-	if (!open)
-		return;
-
 	ImGui::BeginDisabled(!SptImGui::CvarCheckbox(y_spt_draw_pp, "Draw portal placement"));
 	SptImGui::CvarCheckbox(y_spt_draw_pp_blue, "Draw for blue portal");
 	SptImGui::CvarCheckbox(y_spt_draw_pp_orange, "Draw for orange portal");
@@ -763,11 +758,8 @@ void PortalPlacement::ImGuiGunPlacementCallback(bool open)
 	ImGuiTextHudPortalPlacementCallback(y_spt_hud_portal_placement);
 }
 
-void PortalPlacement::ImGuiGridPlacementCallback(bool open)
+void PortalPlacement::ImGuiGridPlacementCallback()
 {
-	if (!open)
-		return;
-
 	ConCommand& cmd = y_spt_draw_pp_grid_command;
 	const char* wrangledName = WrangleLegacyCommandName(cmd.GetName(), true, nullptr);
 	if (ImGui::Button("Clear grid"))

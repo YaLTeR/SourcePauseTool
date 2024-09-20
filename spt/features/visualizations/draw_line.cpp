@@ -26,7 +26,7 @@ protected:
 
 private:
 	void OnMeshRenderSignal(MeshRendererDelegate& mr);
-	static void ImGuiCallback(bool open);
+	static void ImGuiCallback();
 };
 
 static DrawLine feat_drawline;
@@ -111,11 +111,8 @@ void DrawLine::OnMeshRenderSignal(MeshRendererDelegate& mr)
 	}
 }
 
-void DrawLine::ImGuiCallback(bool open)
+void DrawLine::ImGuiCallback()
 {
-	if (!open)
-		return;
-
 	auto& lines = feat_drawline.lines;
 	bool& recompute = feat_drawline.should_recompute_meshes;
 
@@ -380,7 +377,7 @@ void DrawLine::LoadFeature()
 
 	InitCommand(spt_draw_line);
 	spt_meshRenderer.signal.Connect(this, &DrawLine::OnMeshRenderSignal);
-	SptImGui::RegisterTabCallback(SptImGuiGroup::Draw_Lines, ImGuiCallback);
+	SptImGuiGroup::Draw_Lines.RegisterUserCallback(ImGuiCallback);
 }
 
 #endif

@@ -116,7 +116,7 @@ protected:
 		    });
 		ClearCache();
 
-		SptImGui::RegisterSectionCallback(SptImGuiGroup::Draw_Collides_Ents, ImGuiCallback);
+		SptImGuiGroup::Draw_Collides_Ents.RegisterUserCallback(ImGuiCallback);
 	};
 
 	virtual void UnloadFeature() override
@@ -382,10 +382,8 @@ private:
 		}
 	}
 
-	static void ImGuiCallback(bool open)
+	static void ImGuiCallback()
 	{
-		if (!open)
-			return;
 		ConVar& c = spt_draw_ent_collides;
 		int oldVal = c.GetInt();
 		bool enabled = !!oldVal;

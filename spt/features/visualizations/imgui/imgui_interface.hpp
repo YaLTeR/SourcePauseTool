@@ -63,22 +63,16 @@ struct ImGuiWindow;
 *   good approach would be to use var.GetInt() and clamp the value to [0, 3],
 *   then only update the cvar if the user selects something in the widget.
 * 
-* - Just because a tab/section callback is called with open=false, that does
-*   not necessarily mean that it is not open. It may mean that the tab is off
-*   the screen and is clipped by ImGui. Let me know if you need to
-*   differenciate between open and clipped.
-* 
-* - Callbacks will not be triggered one-to-one with e.g. SV_FrameSignal, some
-*   frames may be dropped (e.g. dx9 device was lost or feature is disabled).
-*   Don't use the imgui callbacks to update feature internals if you want to
-*   e.g. check for something regularly.
+* - Don't rely on the imgui callbacks to update feature internals if you want
+*   to check for something regularly, use e.g. SV_FrameSignal. The ImGui
+*   callbacks are not guaranteed to be called every frame.
 * 
 * - With the currently implementation of input events, ImGui will not see key
 *   & mouse events when there is no game UI open.
 */
 
-using SptImGuiTabCallback = std::function<void(bool open)>;
-using SptImGuiSectionCallback = SptImGuiTabCallback;
+using SptImGuiTabCallback = std::function<void()>;
+using SptImGuiSectionCallback = std::function<void()>;
 using SptImGuiWindowCallback = std::function<void()>;
 using SptImGuiHudTextCallback = std::function<void(ConVar& var)>;
 
@@ -97,7 +91,9 @@ using SptImGuiHudTextCallback = std::function<void(ConVar& var)>;
 * children have callbacks, the parent tab won't be rendered). This is to prevent a
 * bunch of empty sections/tabs from showing up when features fail to load. It also
 * makes it really easy to see at a glance which features are supported in the current
-* SPT/game version.
+* SPT/game version. In some cases, it can be easier to disable a section of the GUI
+* instead of preventing it from being drawn if e.g. a cvar isn't initialized. See the
+* BeginCmdGroup()/EndCmdGroup() functions below.
 * 
 * On the contrary, if you've registered a callback, it will always be rendered even
 * if you don't draw anything. This means you should always draw something! If your
@@ -106,6 +102,16 @@ using SptImGuiHudTextCallback = std::function<void(ConVar& var)>;
 * (e.g. player has no portal gun or server is not active), draw the full UI of the
 * feature within an ImGui::BeginDisabled block (and preferably let the user know why
 * the feature is disabled in the UI).
+* 
+* The RegisterUserCallback() functions return true if the internal feature is loaded.
+* If the return value is false, the callback will *not* be called. Tab/Section
+* callbacks will only be called if that tab is visible. If you want to display a
+* separate window for your feature, use RegisterWindowCallback().
+* 
+* You shoudn't rely on any particular order for the ImGui callbacks. Section callbacks
+* will be called from top to bottom and window callbacks are called in the order they
+* were registered in. Since this (usually) depends on feature initialization order it
+* may change as files are moved around.
 */
 namespace SptImGuiGroup
 {
@@ -117,9 +123,11 @@ namespace SptImGuiGroup
 		friend class SptImGui;
 		const char* name;
 		Tab* parent;
-		SptImGuiTabCallback cb;
-		bool hasAnyChildUserCallbacks = false;
-		bool allChildrenRegistered = false;
+		SptImGuiTabCallback userCb;
+		// These counts are recursive (including self). Leaf count is calculated in the constructor
+		// during static initialization; the registered count is updated during runtime.
+		int nLeafUserCallbacks;
+		int nRegisteredUserCallbacks;
 		std::vector<class Section*> childSections;
 		std::vector<Tab*> childTabs;
 
@@ -127,12 +135,12 @@ namespace SptImGuiGroup
 		Tab() = delete;
 		Tab(Tab&) = delete;
 		Tab(const char* name, Tab* parent);
+		// call from PreHook() or later!
+		bool RegisterUserCallback(const SptImGuiTabCallback& cb);
 
 	private:
-		int CountLeafNodes() const;
-		void SetupRenderCallbackRecursive();
-		void RenderCallback(bool open) const;
-		bool SetUserCallback(const SptImGuiTabCallback& cb);
+		void Draw() const;
+		void DrawChildrenRecursive() const;
 		void ClearCallbacksRecursive();
 	};
 
@@ -143,7 +151,7 @@ namespace SptImGuiGroup
 		friend class Tab;
 		friend class SptImGuiFeature;
 		friend class SptImGui;
-		SptImGuiSectionCallback cb;
+		SptImGuiSectionCallback userCb;
 		const char* name;
 		Tab* parent;
 
@@ -151,9 +159,8 @@ namespace SptImGuiGroup
 		Section() = delete;
 		Section(Section&) = delete;
 		Section(const char* name, Tab* parent);
-
-	private:
-		bool SetUserCallback(const SptImGuiTabCallback& cb);
+		// call from PreHook() or later!
+		bool RegisterUserCallback(const SptImGuiSectionCallback& cb);
 	};
 
 	// dummy tab, should be first - has the callback for rendering the window
@@ -165,8 +172,8 @@ namespace SptImGuiGroup
 	// drawing visualizations
 	inline Tab Draw{"Drawing", &Root};
 	inline Tab Draw_Collides{"Collision", &Draw};
-	inline Section Draw_Collides_World{"World Collides", &Draw_Collides};
-	inline Section Draw_Collides_Ents{"Entity Collides", &Draw_Collides};
+	inline Section Draw_Collides_World{"World collides", &Draw_Collides};
+	inline Section Draw_Collides_Ents{"Entity collides", &Draw_Collides};
 	inline Tab Draw_MapOverlay{"Map overlay", &Draw};
 	inline Tab Draw_Lines{"Draw lines", &Draw};
 	inline Tab Draw_PpPlacement{"Portal placement", &Draw};
@@ -234,10 +241,6 @@ class SptImGui
 public:
 	// true if the imgui feature works and is loaded
 	static bool Loaded();
-	// register a callback for an associated tab in the main window
-	static bool RegisterTabCallback(SptImGuiGroup::Tab& tab, const SptImGuiTabCallback& cb);
-	// register a callback for a section within a tab - use for really small or simple features that can be displayed along-side others
-	static bool RegisterSectionCallback(SptImGuiGroup::Section& section, const SptImGuiSectionCallback& cb);
 	// use this if you want a separate window for your feature
 	static bool RegisterWindowCallback(const SptImGuiWindowCallback& cb);
 
@@ -246,6 +249,13 @@ public:
 	* For anything more complicated create a draw callback - if it's more than 1 line tall, put
 	* it in a collapsible. You can (and should) reuse this callback for drawing the cvar logic
 	* within the dedicated tab/section for your feature.
+	* 
+	* Your logic should be:
+	* 
+	* if (AddHudCallback(..., var))
+	*   RegisterHudCvarXXX(var, ...);
+	* 
+	* This ensures that the cvar will only show up in the HUD tab of the cvar was initialized.
 	*/
 	static void RegisterHudCvarCheckbox(ConVar& var);
 	static void RegisterHudCvarCallback(ConVar& var, const SptImGuiHudTextCallback& cb, bool putInCollapsible);

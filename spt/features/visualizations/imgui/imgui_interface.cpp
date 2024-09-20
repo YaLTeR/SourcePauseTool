@@ -59,8 +59,6 @@ public:
 	inline static bool inImGuiUpdateSection = false;
 	inline static bool doWindowCallbacks = false;
 	inline static std::vector<SptImGuiWindowCallback> windowCallbacks;
-	inline static int nLeafMainWndCallbacks = 0;
-	inline static int nRegisteredLeafMainWndCallbacks = 0;
 	inline static std::set<ImGuiHudCvar> hudCvars;
 
 private:
@@ -172,8 +170,7 @@ private:
 			}
 			ImGui::EndMenuBar();
 		}
-		if (SptImGuiGroup::Root.cb)
-			SptImGuiGroup::Root.cb(beginReturn);
+		SptImGuiGroup::Root.Draw();
 		if (hasBegin)
 			ImGui::End();
 	}
@@ -293,14 +290,16 @@ private:
 			ImGui::ShowDemoWindow(&showExampleWindow);
 	}
 
-	static void DevSectionCallback(bool open)
+	static void DevSectionCallback()
 	{
-		if (!open)
-			return;
-		int nNonRegistered = nLeafMainWndCallbacks - nRegisteredLeafMainWndCallbacks;
 		char buf[70];
-		snprintf(buf, sizeof buf, "Draw all %d non-registered callback(s)###non_registered", nNonRegistered);
-		ImGui::BeginDisabled(nNonRegistered == 0);
+		snprintf(buf,
+		         sizeof buf,
+		         "Draw %d/%d non-registered callback(s)###non_registered",
+		         SptImGuiGroup::Root.nLeafUserCallbacks - SptImGuiGroup::Root.nRegisteredUserCallbacks,
+		         SptImGuiGroup::Root.nLeafUserCallbacks);
+		ImGui::BeginDisabled(SptImGuiGroup::Root.nLeafUserCallbacks
+		                     == SptImGuiGroup::Root.nRegisteredUserCallbacks);
 		ImGui::Checkbox(buf, &drawNonRegisteredCallbacks);
 		ImGui::SameLine();
 		SptImGui::HelpMarker("%s",
@@ -312,10 +311,8 @@ private:
 		ImGui::Checkbox("Show ImGui example window", &showExampleWindow);
 	}
 
-	static void SettingsTabCallback(bool open)
+	static void SettingsTabCallback()
 	{
-		if (!open)
-			return;
 		if (ImGui::SliderInt("Font size (pixels)",
 		                     &fontSize,
 		                     minFontSize,
@@ -411,11 +408,8 @@ private:
 		ImGui::AddSettingsHandler(&handler);
 	}
 
-	static void HudTabCallback(bool open)
+	static void TextHudTabCallback()
 	{
-		if (!open)
-			return;
-
 		// Maybe this callback should be in the HUD feature file? Something to think about..
 
 		extern ConVar y_spt_hud;
@@ -621,9 +615,6 @@ protected:
 
 		DevMsg("Initialized Dear ImGui.\n");
 
-		// initialize the tab->cb fields so that we can check if the callback is set when we start registration
-		SptImGuiGroup::Root.SetupRenderCallbackRecursive();
-		nLeafMainWndCallbacks = SptImGuiGroup::Root.CountLeafNodes();
 		// these settings should be loaded from the .ini file by imgui anyways, but idk if that's guaranteed
 		SetDefaultSettings();
 	};
@@ -636,12 +627,12 @@ protected:
 		SptImGui::RegisterWindowCallback(MainWindowCallback);
 		SptImGui::RegisterWindowCallback(AboutWindowCallback);
 		SptImGui::RegisterWindowCallback(ExampleWindowCallback);
-		SptImGui::RegisterSectionCallback(SptImGuiGroup::Dev_ImGui, DevSectionCallback);
-		SptImGui::RegisterTabCallback(SptImGuiGroup::Settings, SettingsTabCallback);
+		SptImGuiGroup::Dev_ImGui.RegisterUserCallback(DevSectionCallback);
+		SptImGuiGroup::Settings.RegisterUserCallback(SettingsTabCallback);
 		SetupSettingsTabIniHandler();
 #ifdef SPT_HUD_ENABLED
 		if (spt_hud_feat.LoadingSuccessful())
-			SptImGui::RegisterTabCallback(SptImGuiGroup::Hud, HudTabCallback);
+			SptImGuiGroup::Hud.RegisterUserCallback(TextHudTabCallback);
 #endif
 	};
 
@@ -664,8 +655,6 @@ protected:
 		default:
 			ImGuiHudCvar::buffer.Buf.clear();
 			windowCallbacks.clear();
-			nLeafMainWndCallbacks = 0;
-			nRegisteredLeafMainWndCallbacks = 0;
 			origWndProc = nullptr;
 			dx9Device = nullptr;
 			gameWnd = nullptr;
@@ -682,7 +671,7 @@ public:
 	{
 		return loadState == LoadState::Loaded;
 	}
-} static _feat_spt_imgui{};
+} static spt_imgui_feat;
 
 IMPL_HOOK_THISCALL(SptImGuiFeature, void, CShaderDeviceDx8__Present, void*)
 {
@@ -792,29 +781,26 @@ namespace SptImGuiGroup
 		Assert(name);
 		AssertMsg(parent, "spt: every section should be in a tab!");
 		AssertMsg(initializingTabs, outOfPlaceCtorMsg);
+		AssertMsg(parent->childTabs.empty(), "spt: cannot have child tabs & sections in a single tab!");
+		if (!parent->childSections.empty())
+			for (Tab* t = parent; t; t = t->parent)
+				t->nLeafUserCallbacks++;
 		parent->childSections.push_back(this);
 	}
 
-	bool Section::SetUserCallback(const SptImGuiTabCallback& newCb)
+	bool Section::RegisterUserCallback(const SptImGuiSectionCallback& cb)
 	{
-		Assert(newCb);
-		if (cb)
+		if (!spt_imgui_feat.Loaded())
+			return false;
+		Assert(cb);
+		if (userCb)
 		{
 			AssertMsg(0, "spt: section already has callback!");
 			return false;
 		}
-		cb = newCb;
+		userCb = cb;
 		for (Tab* t = parent; t; t = t->parent)
-			t->hasAnyChildUserCallbacks = true;
-		bool reg = std::all_of(parent->childSections.cbegin(),
-		                       parent->childSections.cend(),
-		                       [](Section* x) { return x->cb; });
-		parent->allChildrenRegistered = reg;
-		for (Tab* t = parent->parent; t && reg; t = t->parent)
-			reg = t->allChildrenRegistered = std::all_of(t->childTabs.cbegin(),
-			                                             t->childTabs.cend(),
-			                                             [](Tab* x) { return x->allChildrenRegistered; });
-		SptImGuiFeature::nRegisteredLeafMainWndCallbacks++;
+			t->nRegisteredUserCallbacks++;
 		return true;
 	}
 
@@ -826,6 +812,7 @@ namespace SptImGuiGroup
 			{
 				AssertMsg(!initializingTabs, outOfPlaceCtorMsg);
 				initializingTabs = true;
+				nLeafUserCallbacks = 1;
 			}
 			else if (this == &_DummyLast)
 			{
@@ -834,7 +821,7 @@ namespace SptImGuiGroup
 			}
 			else
 			{
-				AssertMsg(0, "spt: every Tab should have a parent!");
+				AssertMsg(0, "spt: every tab should have a parent!");
 			}
 		}
 		else if (!initializingTabs)
@@ -844,61 +831,53 @@ namespace SptImGuiGroup
 		else
 		{
 			Assert(name);
+			AssertMsg(parent->childSections.empty(),
+			          "spt: cannot have child tabs & sections in a single tab!");
+			nLeafUserCallbacks = 1;
+			if (!parent->childTabs.empty())
+				for (Tab* t = parent; t; t = t->parent)
+					t->nLeafUserCallbacks++;
 			parent->childTabs.push_back(this);
 		}
 	}
 
-	bool Tab::SetUserCallback(const SptImGuiTabCallback& newCb)
+	bool Tab::RegisterUserCallback(const SptImGuiTabCallback& cb)
 	{
-		Assert(newCb);
-		if (cb)
+		if (!spt_imgui_feat.Loaded())
+			return false;
+		Assert(cb);
+		if (userCb)
 		{
 			AssertMsg(0, "spt: tab already has callback!");
 			return false;
 		}
-		cb = newCb;
+		else if (!childTabs.empty() || !childSections.empty())
+		{
+			AssertMsg(0, "spt: no user callback allowed (tab has child tabs or sections)!");
+			return false;
+		}
+		userCb = cb;
 		for (Tab* t = this; t; t = t->parent)
-			t->hasAnyChildUserCallbacks = true;
-		allChildrenRegistered = true;
-		bool reg = true;
-		for (Tab* t = parent; t && reg; t = t->parent)
-			reg = t->allChildrenRegistered = std::all_of(t->childTabs.cbegin(),
-			                                             t->childTabs.cend(),
-			                                             [](Tab* x) { return x->allChildrenRegistered; });
-		SptImGuiFeature::nRegisteredLeafMainWndCallbacks++;
+			t->nRegisteredUserCallbacks++;
 		return true;
 	}
 
 	void Tab::ClearCallbacksRecursive()
 	{
-		cb = nullptr;
-		hasAnyChildUserCallbacks = false;
-		allChildrenRegistered = false;
+		userCb = nullptr;
+		nRegisteredUserCallbacks = 0;
 		for (Section* s : childSections)
-			s->cb = nullptr;
+			s->userCb = nullptr;
 		for (Tab* t : childTabs)
 			t->ClearCallbacksRecursive();
 	}
 
-	// calculates how many total user defined callbacks this tab and all its children can have
-	int Tab::CountLeafNodes() const
+	void Tab::Draw() const
 	{
-		if (childSections.empty() && childTabs.empty())
-			return 1;
-		return childSections.size()
-		       + std::accumulate(childTabs.cbegin(),
-		                         childTabs.cend(),
-		                         0,
-		                         [](int x, const Tab* t) { return t->CountLeafNodes() + x; });
-	}
-
-	// recursively set the draw callback to render the subtabs or sections in this tab
-	void Tab::SetupRenderCallbackRecursive()
-	{
-		if (!childTabs.empty() || !childSections.empty())
-			cb = [this](bool open) { RenderCallback(open); };
-		for (Tab* child : childTabs)
-			child->SetupRenderCallbackRecursive();
+		if (userCb)
+			userCb();
+		else if (!childTabs.empty() || !childSections.empty())
+			DrawChildrenRecursive();
 	}
 
 	/*
@@ -906,39 +885,29 @@ namespace SptImGuiGroup
 	* - if there are child tabs, make a new tab bar and draw the child tabs recursively
 	* - if there are child sections, draw each section and call the appropritate callback
 	* 
-	* By default, if a tab does not (recursively) have any user defined callbacks, it will not be drawn.
-	* However, all user defined callbacks will still be called with open=false. This allows them to update
-	* the feature state and display separate imgui windows not registered with a window callback. If
-	* drawNonRegisteredCallbacks is set, then all tabs & sections w/o user defined callbacks will be drawn
+	* If drawNonRegisteredCallbacks is set, then tabs & sections w/o user defined callbacks will be drawn
 	* and an appropriate message will be displayed.
-	* 
-	* Every section/tab is surrounded by a Push/Pop ID which allows their names to not be unique.
 	*/
-	void Tab::RenderCallback(bool open) const
+	void Tab::DrawChildrenRecursive() const
 	{
 		AssertMsg(childTabs.empty() || childSections.empty(),
 		          "spt: child tabs or sections expected, not both!");
+
 		if (!childTabs.empty())
 		{
 			ImGuiTabBarFlags tabBarFlags = ImGuiTabBarFlags_FittingPolicyScroll
 			                               | ImGuiTabBarFlags_TabListPopupButton
 			                               | ImGuiTabBarFlags_DrawSelectedOverline;
-			bool openTabBar = open ? ImGui::BeginTabBar("[tab bar]", tabBarFlags) : false;
-			// call BeginTabItem if necessary and traverse child tabs
+			if (!ImGui::BeginTabBar("[tab bar]", tabBarFlags))
+				return;
 			for (size_t i = 0; i < childTabs.size(); i++)
 			{
 				const Tab* child = childTabs[i];
-				bool drawAsNonRegistered = false;
-				if (!child->hasAnyChildUserCallbacks)
-				{
-					if (SptImGuiFeature::drawNonRegisteredCallbacks)
-						drawAsNonRegistered = open;
-					else
-						continue;
-				}
-				bool drawAsPartiallyRegistered = !drawAsNonRegistered
-				                                 && SptImGuiFeature::drawNonRegisteredCallbacks
-				                                 && !child->allChildrenRegistered;
+				bool anyRegistered = child->nRegisteredUserCallbacks;
+				bool allRegistered = child->nRegisteredUserCallbacks == child->nLeafUserCallbacks;
+				if (!anyRegistered && !SptImGuiFeature::drawNonRegisteredCallbacks)
+					continue;
+				// Create new ID scope to allow multiple tabs with the same name.
 				// Make sure to push the actual index of the tab item INCLUDING the
 				// disabled tabs. This ensures that the current selected tab will not
 				// spontaneously switch if a new tab is drawn/registered.
@@ -946,61 +915,53 @@ namespace SptImGuiGroup
 				// Unfortunately this will also color the text in the tab list dropdown
 				// of the tab bar if this is the first tab item. This might be a minor
 				// bug in imgui but this isn't meant to be super pretty anyways.
-				if (drawAsNonRegistered)
-					ImGui::PushStyleColor(ImGuiCol_Text, SPT_IMGUI_WARN_COLOR_RED);
-				else if (drawAsPartiallyRegistered)
-					ImGui::PushStyleColor(ImGuiCol_Text, SPT_IMGUI_WARN_COLOR_YELLOW);
-				// It may seem like we can add the ImGuiTabItemFlags_NoPushId flag here,
-				// but that actually breaks things if you have a GUI element that has
-				// the same label as the tab item. The tab item should really have a
-				// different ID scope than the callback.
-				bool openTabItem = open ? ImGui::BeginTabItem(child->name) : false;
-				if (drawAsNonRegistered && openTabItem && !child->cb)
-					ImGui::Text("This tab doesn't have an associated callback!");
-				if (drawAsNonRegistered || drawAsPartiallyRegistered)
-					ImGui::PopStyleColor(1);
-				if (child->cb)
-					child->cb(openTabItem);
-				if (openTabItem)
+				if (SptImGuiFeature::drawNonRegisteredCallbacks)
+				{
+					if (!anyRegistered)
+						ImGui::PushStyleColor(ImGuiCol_Text, SPT_IMGUI_WARN_COLOR_RED);
+					else if (!allRegistered)
+						ImGui::PushStyleColor(ImGuiCol_Text, SPT_IMGUI_WARN_COLOR_YELLOW);
+				}
+				// don't use ImGuiTabItemFlags_NoPushId - that breaks if there's an item with the same name as the tab item
+				if (ImGui::BeginTabItem(child->name))
+				{
+					if (!anyRegistered)
+						ImGui::Text("This tab doesn't have an associated callback!");
+					if (!allRegistered && SptImGuiFeature::drawNonRegisteredCallbacks)
+						ImGui::PopStyleColor();
+					child->Draw();
 					ImGui::EndTabItem();
+				}
+				else if (!allRegistered && SptImGuiFeature::drawNonRegisteredCallbacks)
+				{
+					ImGui::PopStyleColor();
+				}
 				ImGui::PopID();
 			}
-			if (openTabBar)
-				ImGui::EndTabBar();
+			ImGui::EndTabBar();
 		}
-		else if (!childSections.empty())
+		else
 		{
 			for (size_t i = 0; i < childSections.size(); i++)
 			{
 				const Section* section = childSections[i];
-				bool drawAsNonRegistered = false;
-				if (!section->cb)
+				if (!section->userCb && !SptImGuiFeature::drawNonRegisteredCallbacks)
+					continue;
+				if (section->userCb)
 				{
-					if (SptImGuiFeature::drawNonRegisteredCallbacks)
-						drawAsNonRegistered = true;
-					else
-						continue;
-				}
-				if (open)
-				{
-					if (drawAsNonRegistered)
-					{
-						ImGui::PushStyleColor(ImGuiCol_Text, SPT_IMGUI_WARN_COLOR_RED);
-						ImGui::PushStyleColor(ImGuiCol_Separator, SPT_IMGUI_WARN_COLOR_RED);
-					}
 					ImGui::SeparatorText(section->name);
-					if (drawAsNonRegistered)
-					{
-						ImGui::Text("This section doesn't have an associated callback!");
-						ImGui::PopStyleColor(2);
-					}
-				}
-				if (section->cb)
-				{
 					// same logic here - push the index from within the entire section list
 					ImGui::PushID(i);
-					section->cb(open);
+					section->userCb();
 					ImGui::PopID();
+				}
+				else
+				{
+					ImGui::PushStyleColor(ImGuiCol_Text, SPT_IMGUI_WARN_COLOR_RED);
+					ImGui::PushStyleColor(ImGuiCol_Separator, SPT_IMGUI_WARN_COLOR_RED);
+					ImGui::SeparatorText(section->name);
+					ImGui::Text("This section doesn't have an associated callback!");
+					ImGui::PopStyleColor(2);
 				}
 			}
 		}
@@ -1010,20 +971,6 @@ namespace SptImGuiGroup
 bool SptImGui::Loaded()
 {
 	return SptImGuiFeature::Loaded();
-}
-
-bool SptImGui::RegisterTabCallback(SptImGuiGroup::Tab& tab, const SptImGuiTabCallback& cb)
-{
-	if (!Loaded())
-		return false;
-	return tab.SetUserCallback(cb);
-}
-
-bool SptImGui::RegisterSectionCallback(SptImGuiGroup::Section& section, const SptImGuiSectionCallback& cb)
-{
-	if (!Loaded())
-		return false;
-	return section.SetUserCallback(cb);
 }
 
 bool SptImGui::RegisterWindowCallback(const SptImGuiWindowCallback& cb)
