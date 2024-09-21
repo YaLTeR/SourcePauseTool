@@ -265,6 +265,11 @@ static void HandleBackwardsCompatibility(FeatureCommand& featCmd, const char* cm
 	bool allocatedName;
 	const char* newName = WrangleLegacyCommandName(cmdName, false, &allocatedName);
 
+	// Only register spt_ variants for legacy commands, new spt_ commands don't need them
+	if (newName == cmdName) {
+		return;
+	}
+
 	// New commands are added to the beginning of the linked list, so it's safe to do this
 	// while iterating through the list. s_pAccessor needs to be NULL here or else the
 	// constructor calls below will break the local command list
