@@ -158,21 +158,24 @@ private:
 			showMainWindow = true;
 			ImGui::SetNextWindowFocus();
 		}
-		bool hasBegin = showMainWindow;
-		bool beginReturn =
-		    hasBegin && ImGui::Begin(SptImGuiGroup::Root.name, &showMainWindow, ImGuiWindowFlags_MenuBar);
-		if (beginReturn && ImGui::BeginMenuBar())
+		else if (!showMainWindow)
 		{
-			if (ImGui::BeginMenu("Menu"))
-			{
-				ImGui::MenuItem("About SPT", NULL, &showAboutWindow);
-				ImGui::EndMenu();
-			}
-			ImGui::EndMenuBar();
+			return;
 		}
-		SptImGuiGroup::Root.Draw();
-		if (hasBegin)
-			ImGui::End();
+		if (ImGui::Begin(SptImGuiGroup::Root.name, &showMainWindow, ImGuiWindowFlags_MenuBar))
+		{
+			if (ImGui::BeginMenuBar())
+			{
+				if (ImGui::BeginMenu("Menu"))
+				{
+					ImGui::MenuItem("About SPT", NULL, &showAboutWindow);
+					ImGui::EndMenu();
+				}
+				ImGui::EndMenuBar();
+			}
+			SptImGuiGroup::Root.Draw();
+		}
+		ImGui::End();
 	}
 
 	static void AboutWindowCallback()
@@ -930,7 +933,10 @@ namespace SptImGuiGroup
 						ImGui::Text("This tab doesn't have an associated callback!");
 					if (!allRegistered && SptImGuiFeature::drawNonRegisteredCallbacks)
 						ImGui::PopStyleColor();
-					child->Draw();
+					// keep the tab bar at the top of the window
+					if (ImGui::BeginChild("##tab"))
+						child->Draw();
+					ImGui::EndChild();
 					ImGui::EndTabItem();
 				}
 				else if (!allRegistered && SptImGuiFeature::drawNonRegisteredCallbacks)
