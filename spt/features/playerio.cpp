@@ -997,7 +997,16 @@ void PlayerIOFeature::LoadFeature()
 			    y_spt_hud_velocity);
 
 			if (hudEnabled)
-				SptImGui::RegisterHudCvarCheckbox(y_spt_hud_velocity);
+			{
+				SptImGui::RegisterHudCvarCallback(
+				    y_spt_hud_velocity,
+				    [](ConVar& var)
+				    {
+					    const char* opts[] = {"Disabled", "xyz & xy vel", "xy vel", "xyz vel"};
+					    SptImGui::CvarCombo(var, "##combo", opts, ARRAYSIZE(opts));
+				    },
+				    false);
+			}
 		}
 
 		{
