@@ -48,7 +48,8 @@ namespace scripts2
 
 		if (result == LoadResult::Success)
 		{
-			spt_afterframes.AddAfterFramesEntry(afterframes_entry_t(0, "spt_cvar fps_max 0; mat_norendering 1"));
+			spt_afterframes.AddAfterFramesEntry(
+			    afterframes_entry_t(0, "spt_cvar fps_max 0; mat_norendering 1"));
 			tickTime = spt_tickrate.GetTickrate();
 			snprintf(buffer, ARRAYSIZE(buffer), "spt_cvar fps_max %.6f; mat_norendering 0", 1 / tickTime);
 			int resumeTick = GetCurrentScriptLength() - resumeTicks;
@@ -89,7 +90,7 @@ namespace scripts2
 		}
 	}
 
-	LoadResult SourceTASReader::CommonExecuteScript(bool search) 
+	LoadResult SourceTASReader::CommonExecuteScript(bool search)
 	{
 		LoadResult result = LoadResult::Success;
 		try
@@ -128,7 +129,7 @@ namespace scripts2
 						ParseVariables();
 					else
 						throw std::exception(
-							"Unexpected section order in file. Expected order is props - variables - frames");
+						    "Unexpected section order in file. Expected order is props - variables - frames");
 				}
 
 				Execute();
@@ -261,7 +262,7 @@ namespace scripts2
 	void SourceTASReader::ResetConvars()
 	{
 #ifndef OE
-		ConCommandBase* cmd = interfaces::g_pCVar->GetCommands();
+		ConCommandBase* cmd = g_pCVar->GetCommands();
 
 		// Loops through the console variables and commands
 		while (cmd != NULL)
@@ -270,7 +271,7 @@ namespace scripts2
 			// Reset any variables that have been marked to be reset for TASes
 			if (!cmd->IsCommand() && name != NULL && cmd->IsFlagSet(FCVAR_TAS_RESET))
 			{
-				auto convar = interfaces::g_pCVar->FindVar(name);
+				auto convar = g_pCVar->FindVar(name);
 				DevMsg("Trying to reset variable %s\n", name);
 
 				// convar found
@@ -296,7 +297,7 @@ namespace scripts2
 		// Reset any variables selected above
 		for (int i = 0; i < RESET_VARS_COUNT; ++i)
 		{
-			auto resetCmd = interfaces::g_pCVar->FindVar(RESET_VARS[i]);
+			auto resetCmd = g_pCVar->FindVar(RESET_VARS[i]);
 			if (resetCmd != NULL)
 			{
 				DevMsg("Resetting var %s to value %s\n", resetCmd->GetName(), resetCmd->GetDefault());
@@ -601,4 +602,4 @@ namespace scripts2
 
 		return os.str();
 	}
-} // namespace scripts
+} // namespace scripts2

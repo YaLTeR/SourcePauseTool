@@ -39,7 +39,7 @@ bool AutocompleteFeature::ShouldLoadFeature()
 {
 	if (utils::DoesGameLookLikeDMoMM())
 		return false;
-	return !!(interfaces::g_pCVar);
+	return !!(g_pCVar);
 }
 
 void AutocompleteFeature::InitHooks() {}
@@ -47,9 +47,9 @@ void AutocompleteFeature::InitHooks() {}
 void AutocompleteFeature::LoadFeature()
 {
 #ifndef OE
-	playdemoCommand = reinterpret_cast<ConCommand_guts*>(interfaces::g_pCVar->FindCommand("playdemo"));
-	loadCommand = reinterpret_cast<ConCommand_guts*>(interfaces::g_pCVar->FindCommand("load"));
-	execCommand = reinterpret_cast<ConCommand_guts*>(interfaces::g_pCVar->FindCommand("exec"));
+	playdemoCommand = reinterpret_cast<ConCommand_guts*>(g_pCVar->FindCommand("playdemo"));
+	loadCommand = reinterpret_cast<ConCommand_guts*>(g_pCVar->FindCommand("load"));
+	execCommand = reinterpret_cast<ConCommand_guts*>(g_pCVar->FindCommand("exec"));
 #else
 	playdemoCommand = reinterpret_cast<ConCommand_guts*>(FindCommand("playdemo"));
 	loadCommand = reinterpret_cast<ConCommand_guts*>(FindCommand("load"));

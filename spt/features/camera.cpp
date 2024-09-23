@@ -1126,7 +1126,7 @@ void Camera::LoadFeature()
 #endif
 		}
 
-		sensitivity = interfaces::g_pCVar->FindVar("sensitivity");
+		sensitivity = g_pCVar->FindVar("sensitivity");
 	}
 }
 
