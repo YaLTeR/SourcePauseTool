@@ -179,54 +179,78 @@ enum SpewRetval_t
 typedef SpewRetval_t (*SpewOutputFunc_t)( SpewType_t spewType, const tchar *pMsg );
 
 /* Used to redirect spew output */
-DBG_INTERFACE void   SpewOutputFunc( SpewOutputFunc_t func );
+typedef void (*_SpewOutputFunc)(SpewOutputFunc_t func);
+extern _SpewOutputFunc SpewOutputFunc;
 
 /* Used to get the current spew output function */
-DBG_INTERFACE SpewOutputFunc_t GetSpewOutputFunc( void );
+typedef SpewOutputFunc_t (*_GetSpewOutputFunc)(void);
+extern _GetSpewOutputFunc GetSpewOutputFunc;
 
 /* This is the default spew fun, which is used if you don't specify one */
-DBG_INTERFACE SpewRetval_t DefaultSpewFunc( SpewType_t type, const tchar *pMsg );
+typedef SpewRetval_t (*_DefaultSpewFunc)(SpewType_t type, const tchar *pMsg);
+extern _DefaultSpewFunc DefaultSpewFunc;
 
 /* Same as the default spew func, but returns SPEW_ABORT for asserts */
-DBG_INTERFACE SpewRetval_t DefaultSpewFuncAbortOnAsserts( SpewType_t type, const tchar *pMsg );
+typedef SpewRetval_t (*_DefaultSpewFuncAbortOnAsserts)(SpewType_t type, const tchar *pMsg);
+extern _DefaultSpewFuncAbortOnAsserts DefaultSpewFuncAbortOnAsserts;
 
 /* Should be called only inside a SpewOutputFunc_t, returns groupname, level, color */
-DBG_INTERFACE const tchar* GetSpewOutputGroup( void );
-DBG_INTERFACE int GetSpewOutputLevel( void );
-DBG_INTERFACE const Color* GetSpewOutputColor( void );
+typedef const tchar* (*_GetSpewOutputGroup)(void);
+extern _GetSpewOutputGroup GetSpewOutputGroup;
+typedef int (*_GetSpewOutputLevel)(void);
+extern _GetSpewOutputLevel GetSpewOutputLevel;
+typedef const Color* (*_GetSpewOutputColor)(void);
+extern _GetSpewOutputColor GetSpewOutputColor;
 
 /* Used to manage spew groups and subgroups */
-DBG_INTERFACE void   SpewActivate( const tchar* pGroupName, int level );
-DBG_INTERFACE bool   IsSpewActive( const tchar* pGroupName, int level );
+typedef void (*_SpewActivate)(const tchar* pGroupName, int level);
+extern _SpewActivate SpewActivate;
+typedef bool (*_IsSpewActive)(const tchar* pGroupName, int level);
+extern _IsSpewActive IsSpewActive;
 
 /* Used to display messages, should never be called directly. */
-DBG_INTERFACE void   _SpewInfo( SpewType_t type, const tchar* pFile, int line );
-DBG_INTERFACE SpewRetval_t   _SpewMessage( PRINTF_FORMAT_STRING const tchar* pMsg, ... ) FMTFUNCTION( 1, 2 );
-DBG_INTERFACE SpewRetval_t   _DSpewMessage( const tchar *pGroupName, int level, PRINTF_FORMAT_STRING const tchar* pMsg, ... ) FMTFUNCTION( 3, 4 );
-DBG_INTERFACE SpewRetval_t   ColorSpewMessage( SpewType_t type, const Color *pColor, PRINTF_FORMAT_STRING const tchar* pMsg, ... ) FMTFUNCTION( 3, 4 );
-DBG_INTERFACE void _ExitOnFatalAssert( const tchar* pFile, int line );
-DBG_INTERFACE bool ShouldUseNewAssertDialog();
+typedef void (*__SpewInfo)(SpewType_t type, const tchar* pFile, int line);
+extern __SpewInfo _SpewInfo;
+typedef SpewRetval_t (*__SpewMessage)(PRINTF_FORMAT_STRING const tchar* pMsg, ...);
+extern __SpewMessage _SpewMessage;
+typedef SpewRetval_t (*__DSpewMessage)(const tchar *pGroupName, int level, PRINTF_FORMAT_STRING const tchar* pMsg, ...);
+extern __DSpewMessage _DSpewMessage;
+typedef SpewRetval_t (*_ColorSpewMessage)(SpewType_t type, const Color *pColor, PRINTF_FORMAT_STRING const tchar* pMsg, ...);
+extern _ColorSpewMessage ColorSpewMessage;
+typedef void (*__ExitOnFatalAssert)(const tchar* pFile, int line);
+extern __ExitOnFatalAssert _ExitOnFatalAssert;
+typedef bool (*_ShouldUseNewAssertDialog)();
+extern _ShouldUseNewAssertDialog ShouldUseNewAssertDialog;
 
-DBG_INTERFACE bool SetupWin32ConsoleIO();
+typedef bool (*_SetupWin32ConsoleIO)();
+extern _SetupWin32ConsoleIO SetupWin32ConsoleIO;
 
 // Returns true if they want to break in the debugger.
-DBG_INTERFACE bool DoNewAssertDialog( const tchar *pFile, int line, const tchar *pExpression );
+typedef bool (*_DoNewAssertDialog)(const tchar *pFile, int line, const tchar *pExpression);
+extern _DoNewAssertDialog DoNewAssertDialog;
 
 // Allows the assert dialogs to be turned off from code
-DBG_INTERFACE bool AreAllAssertsDisabled();
-DBG_INTERFACE void SetAllAssertsDisabled( bool bAssertsEnabled );
+typedef bool (*_AreAllAssertsDisabled)();
+extern _AreAllAssertsDisabled AreAllAssertsDisabled;
+typedef void (*_SetAllAssertsDisabled)(bool bAssertsEnabled);
+extern _SetAllAssertsDisabled SetAllAssertsDisabled;
 
 // Provides a callback that is called on asserts regardless of spew levels
 typedef void (*AssertFailedNotifyFunc_t)( const char *pchFile, int nLine, const char *pchMessage );
-DBG_INTERFACE void SetAssertFailedNotifyFunc( AssertFailedNotifyFunc_t func );
-DBG_INTERFACE void CallAssertFailedNotifyFunc( const char *pchFile, int nLine, const char *pchMessage );
+typedef void (*_SetAssertFailedNotifyFunc)(AssertFailedNotifyFunc_t func);
+extern _SetAssertFailedNotifyFunc SetAssertFailedNotifyFunc;
+typedef void (*_CallAssertFailedNotifyFunc)(const char *pchFile, int nLine, const char *pchMessage);
+extern _CallAssertFailedNotifyFunc CallAssertFailedNotifyFunc;
 
 /* True if -hushasserts was passed on command line. */
-DBG_INTERFACE bool HushAsserts();
+typedef bool (*_HushAsserts)();
+extern _HushAsserts HushAsserts;
 
 #if defined( USE_SDL )
-DBG_INTERFACE void SetAssertDialogParent( struct SDL_Window *window );
-DBG_INTERFACE struct SDL_Window * GetAssertDialogParent();
+typedef void (*_SetAssertDialogParent)(struct SDL_Window *window);
+extern _SetAssertDialogParent SetAssertDialogParent;
+typedef struct SDL_Window * (*_GetAssertDialogParent)();
+extern _GetAssertDialogParent GetAssertDialogParent;
 #endif
 
 /* Used to define macros, never use these directly. */
@@ -245,8 +269,36 @@ DBG_INTERFACE struct SDL_Window * GetAssertDialogParent();
 	#define DBGFLAG_ASSERTFATAL
 	#define DBGFLAG_ASSERTDEBUG
 #else
-	#define  _AssertMsg( _exp, _msg, _executeExp, _bFatal )
-	#define  _AssertMsgOnce( _exp, _msg, _bFatal )
+	#define  _AssertMsg( _exp, _msg, _executeExp, _bFatal )	\
+		do {																\
+			if (!(_exp)) 													\
+			{ 																\
+				_SpewInfo( SPEW_ASSERT, __TFILE__, __LINE__ );				\
+				SpewRetval_t retAssert = _SpewMessage("%s", static_cast<const char*>( _msg ));	\
+				CallAssertFailedNotifyFunc( __TFILE__, __LINE__, _msg );					\
+				_executeExp; 												\
+				if ( retAssert == SPEW_DEBUGGER)									\
+				{															\
+					if ( !ShouldUseNewAssertDialog() || DoNewAssertDialog( __TFILE__, __LINE__, _msg ) ) \
+					{														\
+						DebuggerBreak();									\
+					}														\
+					if ( _bFatal )											\
+					{														\
+						_ExitOnFatalAssert( __TFILE__, __LINE__ );			\
+					}														\
+				}															\
+			}																\
+		} while (0)
+
+	#define  _AssertMsgOnce( _exp, _msg, _bFatal ) \
+		do {																\
+			static bool fAsserted;											\
+			if (!fAsserted )												\
+			{ 																\
+				_AssertMsg( _exp, _msg, (fAsserted = true), _bFatal );		\
+			}																\
+		} while (0)
 #endif
 
 /* Spew macros... */
@@ -407,7 +459,8 @@ inline void Error(...) { std::terminate(); }
 	}
 
 
-DBG_INTERFACE void COM_TimestampedLog( PRINTF_FORMAT_STRING char const *fmt, ... ) FMTFUNCTION( 1, 2 );
+typedef void (*_COM_TimestampedLog)(PRINTF_FORMAT_STRING char const *fmt, ...);
+extern _COM_TimestampedLog COM_TimestampedLog;
 
 /* Code macros, debugger interface */
 
@@ -499,12 +552,11 @@ inline DEST_POINTER_TYPE assert_cast(SOURCE_POINTER_TYPE* pSource)
 //-----------------------------------------------------------------------------
 // Templates to assist in validating pointers:
 
-// Have to use these stubs so we don't have to include windows.h here.
-
-DBG_INTERFACE void _AssertValidReadPtr( void* ptr, int count = 1 );
-DBG_INTERFACE void _AssertValidWritePtr( void* ptr, int count = 1 );
-DBG_INTERFACE void _AssertValidReadWritePtr( void* ptr, int count = 1 );
-DBG_INTERFACE void AssertValidStringPtr( const tchar* ptr, int maxchar = 0xFFFFFF );
+// uncrafted - these don't do anything in the release build of tier0.dll anyway
+FORCEINLINE void _AssertValidReadPtr(void* ptr, int count = 1) {}
+FORCEINLINE void _AssertValidWritePtr(void* ptr, int count = 1) {}
+FORCEINLINE void _AssertValidReadWritePtr(void* ptr, int count = 1) {}
+FORCEINLINE void AssertValidStringPtr(void* ptr, int maxchar) {}
 
 FORCEINLINE void AssertValidReadPtr( const void* ptr, int count = 1 )			 { }
 FORCEINLINE void AssertValidWritePtr( const void* ptr, int count = 1 )		     { }

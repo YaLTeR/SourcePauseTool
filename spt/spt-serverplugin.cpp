@@ -248,11 +248,22 @@ static void GrabTier0Stuff()
 	if (moduleHandle != NULL)
 	{
 		SetFuncIfFound((void**)&ConColorMsg, GetProcAddress(moduleHandle, "ConColorMsg"));
+		// unmangled versions don't print anything
 		SetFuncIfFound((void**)&ConMsg, GetProcAddress(moduleHandle, "?ConMsg@@YAXPBDZZ"));
 		SetFuncIfFound((void**)&DevMsg, GetProcAddress(moduleHandle, "?DevMsg@@YAXPBDZZ"));
 		SetFuncIfFound((void**)&DevWarning, GetProcAddress(moduleHandle, "?DevWarning@@YAXPBDZZ"));
 		SetFuncIfFound((void**)&Msg, GetProcAddress(moduleHandle, "Msg"));
 		SetFuncIfFound((void**)&Warning, GetProcAddress(moduleHandle, "Warning"));
+		SetFuncIfFound((void**)&_SpewInfo, GetProcAddress(moduleHandle, "_SpewInfo"));
+		SetFuncIfFound((void**)&_SpewMessage, GetProcAddress(moduleHandle, "_SpewMessage"));
+		SetFuncIfFound((void**)&_ExitOnFatalAssert, GetProcAddress(moduleHandle, "_ExitOnFatalAssert"));
+		SetFuncIfFound((void**)&ShouldUseNewAssertDialog,
+		               GetProcAddress(moduleHandle, "ShouldUseNewAssertDialog"));
+		SetFuncIfFound((void**)&DoNewAssertDialog, GetProcAddress(moduleHandle, "DoNewAssertDialog"));
+#if defined(SSDK2013) || defined(BMS)
+		SetFuncIfFound((void**)&CallAssertFailedNotifyFunc,
+		               GetProcAddress(moduleHandle, "CallAssertFailedNotifyFunc"));
+#endif
 	}
 	if (moduleHandleVstdlib != NULL)
 	{

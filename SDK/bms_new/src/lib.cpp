@@ -26,6 +26,13 @@ IKeyValuesSystem* KeyValuesSystem() {
 	return KeyValuesSystem_impl();
 }
 
+__SpewInfo _SpewInfo = nullptr;
+__SpewMessage _SpewMessage = nullptr;
+__ExitOnFatalAssert _ExitOnFatalAssert = nullptr;
+_ShouldUseNewAssertDialog ShouldUseNewAssertDialog = nullptr;
+_DoNewAssertDialog DoNewAssertDialog = nullptr;
+_CallAssertFailedNotifyFunc CallAssertFailedNotifyFunc = nullptr;
+
 //-----------------------------------------------------------------------------
 // Purpose: returns a pointer to a function, given a module
 // Input  : module - windows HMODULE from Sys_LoadModule() 

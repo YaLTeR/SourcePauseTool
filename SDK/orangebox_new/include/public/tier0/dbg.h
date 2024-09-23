@@ -187,32 +187,48 @@ typedef SpewRetval_t (*SpewOutputFunc_t)( SpewType_t spewType, const tchar *pMsg
 #endif
 
 /* Used to redirect spew output */
-DBG_INTERFACE void   SpewOutputFunc( SpewOutputFunc_t func );
+typedef void (*_SpewOutputFunc)(SpewOutputFunc_t func);
+extern _SpewOutputFunc SpewOutputFunc;
 
 /* Used to get the current spew output function */
-DBG_INTERFACE SpewOutputFunc_t GetSpewOutputFunc( void );
+typedef SpewOutputFunc_t (*_GetSpewOutputFunc)(void);
+extern _GetSpewOutputFunc GetSpewOutputFunc;
 
 /* Should be called only inside a SpewOutputFunc_t, returns groupname, level, color */
-DBG_INTERFACE const tchar* GetSpewOutputGroup( void );
-DBG_INTERFACE int GetSpewOutputLevel( void );
-DBG_INTERFACE const Color& GetSpewOutputColor( void );
+typedef const tchar* (*_GetSpewOutputGroup)(void);
+extern _GetSpewOutputGroup GetSpewOutputGroup;
+typedef int (*_GetSpewOutputLevel)(void);
+extern _GetSpewOutputLevel GetSpewOutputLevel;
+typedef const Color& (*_GetSpewOutputColor)(void);
+extern _GetSpewOutputColor GetSpewOutputColor;
 
 /* Used to manage spew groups and subgroups */
-DBG_INTERFACE void   SpewActivate( const tchar* pGroupName, int level );
-DBG_INTERFACE bool   IsSpewActive( const tchar* pGroupName, int level );
+typedef void (*_SpewActivate)(const tchar* pGroupName, int level);
+extern _SpewActivate SpewActivate;
+typedef bool (*_IsSpewActive)(const tchar* pGroupName, int level);
+extern _IsSpewActive IsSpewActive;
 
 /* Used to display messages, should never be called directly. */
-DBG_INTERFACE void   _SpewInfo( SpewType_t type, const tchar* pFile, int line );
-DBG_INTERFACE SpewRetval_t   _SpewMessage( const tchar* pMsg, ... );
-DBG_INTERFACE SpewRetval_t   _DSpewMessage( const tchar *pGroupName, int level, const tchar* pMsg, ... );
-DBG_INTERFACE SpewRetval_t   ColorSpewMessage( SpewType_t type, const Color *pColor, const tchar* pMsg, ... );
-DBG_INTERFACE void _ExitOnFatalAssert( const tchar* pFile, int line );
-DBG_INTERFACE bool ShouldUseNewAssertDialog();
+typedef void (*__SpewInfo)(SpewType_t type, const tchar* pFile, int line);
+extern __SpewInfo _SpewInfo;
+typedef SpewRetval_t (*__SpewMessage)(const tchar* pMsg, ...);
+extern __SpewMessage _SpewMessage;
+typedef SpewRetval_t (*__DSpewMessage)(const tchar* pGroupName, int level, const tchar* pMsg, ...);
+extern __DSpewMessage _DSpewMessage;
+typedef SpewRetval_t (*_ColorSpewMessage)(SpewType_t type, const Color* pColor, const tchar* pMsg, ...);
+extern _ColorSpewMessage ColorSpewMessage;
+typedef void (*__ExitOnFatalAssert)(const tchar* pFile, int line);
+extern __ExitOnFatalAssert _ExitOnFatalAssert;
+typedef bool (*_ShouldUseNewAssertDialog)();
+extern _ShouldUseNewAssertDialog ShouldUseNewAssertDialog;
 
-DBG_INTERFACE bool SetupWin32ConsoleIO();
+typedef bool (*_SetupWin32ConsoleIO)();
+extern _SetupWin32ConsoleIO SetupWin32ConsoleIO;
 
 // Returns true if they want to break in the debugger.
-DBG_INTERFACE bool DoNewAssertDialog( const tchar *pFile, int line, const tchar *pExpression );
+// DBG_INTERFACE bool DoNewAssertDialog( const tchar *pFile, int line, const tchar *pExpression );
+typedef bool (*_DoNewAssertDialog)(const tchar* pFile, int line, const tchar* pExpression);
+extern _DoNewAssertDialog DoNewAssertDialog;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -305,6 +321,30 @@ DBG_INTERFACE bool DoNewAssertDialog( const tchar *pFile, int line, const tchar 
 // Assert is used to detect an important but survivable error.
 // It's only turned on when DBGFLAG_ASSERT is true.
 
+#ifdef DBGFLAG_ASSERT
+
+#define  Assert( _exp )           							_AssertMsg( _exp, _T("Assertion Failed: ") _T(#_exp), ((void)0), false )
+#define  AssertMsg( _exp, _msg )  							_AssertMsg( _exp, _msg, ((void)0), false )
+#define  AssertOnce( _exp )       							_AssertMsgOnce( _exp, _T("Assertion Failed: ") _T(#_exp), false )
+#define  AssertMsgOnce( _exp, _msg )  						_AssertMsgOnce( _exp, _msg, false )
+#define  AssertFunc( _exp, _f )   							_AssertMsg( _exp, _T("Assertion Failed: ") _T(#_exp), _f, false )
+#define  AssertEquals( _exp, _expectedValue )              	AssertMsg2( (_exp) == (_expectedValue), _T("Expected %d but got %d!"), (_expectedValue), (_exp) ) 
+#define  AssertFloatEquals( _exp, _expectedValue, _tol )  	AssertMsg2( fabs((_exp) - (_expectedValue)) <= (_tol), _T("Expected %f but got %f!"), (_expectedValue), (_exp) )
+#define  Verify( _exp )           							Assert( _exp )
+#define  VerifyEquals( _exp, _expectedValue )           	AssertEquals( _exp, _expectedValue )
+
+#define  AssertMsg1( _exp, _msg, a1 )									AssertMsg( _exp, (const tchar *)(CDbgFmtMsg( _msg, a1 )) )
+#define  AssertMsg2( _exp, _msg, a1, a2 )								AssertMsg( _exp, (const tchar *)(CDbgFmtMsg( _msg, a1, a2 )) )
+#define  AssertMsg3( _exp, _msg, a1, a2, a3 )							AssertMsg( _exp, (const tchar *)(CDbgFmtMsg( _msg, a1, a2, a3 )) )
+#define  AssertMsg4( _exp, _msg, a1, a2, a3, a4 )						AssertMsg( _exp, (const tchar *)(CDbgFmtMsg( _msg, a1, a2, a3, a4 )) )
+#define  AssertMsg5( _exp, _msg, a1, a2, a3, a4, a5 )					AssertMsg( _exp, (const tchar *)(CDbgFmtMsg( _msg, a1, a2, a3, a4, a5 )) )
+#define  AssertMsg6( _exp, _msg, a1, a2, a3, a4, a5, a6 )				AssertMsg( _exp, (const tchar *)(CDbgFmtMsg( _msg, a1, a2, a3, a4, a5, a6 )) )
+#define  AssertMsg7( _exp, _msg, a1, a2, a3, a4, a5, a6, a7 )			AssertMsg( _exp, (const tchar *)(CDbgFmtMsg( _msg, a1, a2, a3, a4, a5, a6, a7 )) )
+#define  AssertMsg8( _exp, _msg, a1, a2, a3, a4, a5, a6, a7, a8 )		AssertMsg( _exp, (const tchar *)(CDbgFmtMsg( _msg, a1, a2, a3, a4, a5, a6, a7, a8 )) )
+#define  AssertMsg9( _exp, _msg, a1, a2, a3, a4, a5, a6, a7, a8, a9 )	AssertMsg( _exp, (const tchar *)(CDbgFmtMsg( _msg, a1, a2, a3, a4, a5, a6, a7, a8, a9 )) )
+
+#else // DBGFLAG_ASSERT
+
 #define  Assert( _exp )										((void)0)
 #define  AssertOnce( _exp )									((void)0)
 #define  AssertMsg( _exp, _msg )							((void)0)
@@ -325,6 +365,8 @@ DBG_INTERFACE bool DoNewAssertDialog( const tchar *pFile, int line, const tchar 
 #define  AssertMsg7( _exp, _msg, a1, a2, a3, a4, a5, a6, a7 )			((void)0)
 #define  AssertMsg8( _exp, _msg, a1, a2, a3, a4, a5, a6, a7, a8 )		((void)0)
 #define  AssertMsg9( _exp, _msg, a1, a2, a3, a4, a5, a6, a7, a8, a9 )	((void)0)
+
+#endif // DBGFLAG_ASSERT
 
 typedef void (*PrintFunc)(const char* msg, ...);
 typedef void (*ColorFunc)(int level, const Color& c, const char* msg, ...);
@@ -350,7 +392,8 @@ inline void Error(...) { DebugBreak(); }
 		Error msg;			\
 	}
 
-DBG_INTERFACE void COM_TimestampedLog( char const *fmt, ... );
+typedef void (*_COM_TimestampedLog)(char const* fmt, ...);
+extern _COM_TimestampedLog COM_TimestampedLog;
 
 /* Code macros, debugger interface */
 
@@ -429,12 +472,13 @@ inline DEST_POINTER_TYPE assert_cast(SOURCE_POINTER_TYPE* pSource)
 //-----------------------------------------------------------------------------
 // Templates to assist in validating pointers:
 
-// Have to use these stubs so we don't have to include windows.h here.
-DBG_INTERFACE void _AssertValidReadPtr( void* ptr, int count = 1 );
-DBG_INTERFACE void _AssertValidWritePtr( void* ptr, int count = 1 );
-DBG_INTERFACE void _AssertValidReadWritePtr( void* ptr, int count = 1 );
+// uncrafted - these don't do anything in the release build of tier0.dll anyway
+FORCEINLINE void _AssertValidReadPtr(void* ptr, int count = 1) {}
+FORCEINLINE void _AssertValidWritePtr(void* ptr, int count = 1) {}
+FORCEINLINE void _AssertValidReadWritePtr(void* ptr, int count = 1) {}
+FORCEINLINE void AssertValidStringPtr(void* ptr, int maxchar) {}
 
-DBG_INTERFACE  void AssertValidStringPtr( const tchar* ptr, int maxchar = 0xFFFFFF );
+
 template<class T> inline void AssertValidReadPtr( T* ptr, int count = 1 )		     { _AssertValidReadPtr( (void*)ptr, count ); }
 template<class T> inline void AssertValidWritePtr( T* ptr, int count = 1 )		     { _AssertValidWritePtr( (void*)ptr, count ); }
 template<class T> inline void AssertValidReadWritePtr( T* ptr, int count = 1 )	     { _AssertValidReadWritePtr( (void*)ptr, count ); }

@@ -175,37 +175,70 @@ enum SpewRetval_t
 typedef SpewRetval_t (*SpewOutputFunc_t)( SpewType_t spewType, tchar const *pMsg );
 
 /* Used to redirect spew output */
-DBG_INTERFACE void   SpewOutputFunc( SpewOutputFunc_t func );
+typedef void (*_SpewOutputFunc)(SpewOutputFunc_t func);
+extern _SpewOutputFunc SpewOutputFunc;
 
 /* Used ot get the current spew output function */
-DBG_INTERFACE SpewOutputFunc_t GetSpewOutputFunc( void );
+typedef SpewOutputFunc_t (*_GetSpewOutputFunc)(void);
+extern _GetSpewOutputFunc GetSpewOutputFunc;
 
 /* Used to manage spew groups and subgroups */
-DBG_INTERFACE void   SpewActivate( tchar const* pGroupName, int level );
-DBG_INTERFACE bool   IsSpewActive( tchar const* pGroupName, int level );
+typedef void (*_SpewActivate)(tchar const* pGroupName, int level);
+extern _SpewActivate SpewActivate;
+typedef bool (*_IsSpewActive)(tchar const* pGroupName, int level);
+extern _IsSpewActive IsSpewActive;
 
 /* Used to display messages, should never be called directly. */
-DBG_INTERFACE void   _SpewInfo( SpewType_t type, tchar const* pFile, int line );
-DBG_INTERFACE SpewRetval_t   _SpewMessage( tchar const* pMsg, ... );
-DBG_INTERFACE SpewRetval_t   _DSpewMessage( tchar const *pGroupName, int level, tchar const* pMsg, ... );
-DBG_INTERFACE void _ExitOnFatalAssert( tchar const* pFile, int line );
+typedef void (*__SpewInfo)(SpewType_t type, tchar const* pFile, int line);
+extern __SpewInfo _SpewInfo;
+typedef SpewRetval_t (*__SpewMessage)(tchar const* pMsg, ...);
+extern __SpewMessage _SpewMessage;
+typedef SpewRetval_t (*__DSpewMessage)(tchar const *pGroupName, int level, tchar const* pMsg, ...);
+extern __DSpewMessage _DSpewMessage;
+typedef void (*__ExitOnFatalAssert)(tchar const* pFile, int line);
+extern __ExitOnFatalAssert _ExitOnFatalAssert;
 #ifndef _XBOX
-DBG_INTERFACE bool ShouldUseNewAssertDialog();
+typedef bool (*_ShouldUseNewAssertDialog)();
+extern _ShouldUseNewAssertDialog ShouldUseNewAssertDialog;
 #else
 #define ShouldUseNewAssertDialog()	0
 #endif
 
 #ifndef _XBOX
 // Returns true if they want to break in the debugger.
-DBG_INTERFACE bool DoNewAssertDialog( const tchar *pFile, int line, const tchar *pExpression );
+typedef bool (*_DoNewAssertDialog)(const tchar *pFile, int line, const tchar *pExpression);
+extern _DoNewAssertDialog DoNewAssertDialog;
 #else
 #define DoNewAssertDialog(a,b,c)	0
 #endif
 
 /* Used to define macros, never use these directly. */
 
-#define  _AssertMsg( _exp, _msg, _executeExp, _bFatal )
-#define  _AssertMsgOnce( _exp, _msg, _bFatal )
+#define  _AssertMsg( _exp, _msg, _executeExp, _bFatal )	\
+	do {																\
+		if (!(_exp)) 													\
+		{ 																\
+			_SpewInfo( SPEW_ASSERT, __TFILE__, __LINE__ );				\
+			SpewRetval_t ret = _SpewMessage("%s", _msg);	\
+			_executeExp; 												\
+			if ( ret == SPEW_DEBUGGER)									\
+			{															\
+				if ( !ShouldUseNewAssertDialog() || DoNewAssertDialog( __TFILE__, __LINE__, _msg ) ) \
+					DebuggerBreak();									\
+				if ( _bFatal )											\
+					_ExitOnFatalAssert( __TFILE__, __LINE__ );			\
+			}															\
+		}																\
+	} while (0)
+
+#define  _AssertMsgOnce( _exp, _msg, _bFatal ) \
+	do {																\
+		static bool fAsserted;											\
+		if (!fAsserted )												\
+		{ 																\
+			_AssertMsg( _exp, _msg, (fAsserted = true), _bFatal );		\
+		}																\
+	} while (0)
 
 /* Spew macros... */
 
@@ -399,12 +432,12 @@ inline DEST_POINTER_TYPE assert_cast(SOURCE_POINTER_TYPE* pSource)
 //-----------------------------------------------------------------------------
 // Templates to assist in validating pointers:
 
-// Have to use these stubs so we don't have to include windows.h here.
-DBG_INTERFACE void _AssertValidReadPtr( void* ptr, int count = 1 );
-DBG_INTERFACE void _AssertValidWritePtr( void* ptr, int count = 1 );
-DBG_INTERFACE void _AssertValidReadWritePtr( void* ptr, int count = 1 );
+// uncrafted - these don't do anything in the release build of tier0.dll anyway
+FORCEINLINE void _AssertValidReadPtr(void* ptr, int count = 1) {}
+FORCEINLINE void _AssertValidWritePtr(void* ptr, int count = 1) {}
+FORCEINLINE void _AssertValidReadWritePtr(void* ptr, int count = 1) {}
+FORCEINLINE void AssertValidStringPtr(void* ptr, int maxchar) {}
 
-DBG_INTERFACE  void AssertValidStringPtr( const tchar* ptr, int maxchar = 0xFFFFFF );
 template<class T> inline void AssertValidReadPtr( T* ptr, int count = 1 )		     { _AssertValidReadPtr( (void*)ptr, count ); }
 template<class T> inline void AssertValidWritePtr( T* ptr, int count = 1 )		     { _AssertValidWritePtr( (void*)ptr, count ); }
 template<class T> inline void AssertValidReadWritePtr( T* ptr, int count = 1 )	     { _AssertValidReadWritePtr( (void*)ptr, count ); }
