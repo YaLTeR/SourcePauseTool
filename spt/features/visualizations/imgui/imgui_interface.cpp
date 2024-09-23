@@ -688,7 +688,7 @@ IMPL_HOOK_THISCALL(SptImGuiFeature, void, CShaderDeviceDx8__Present, void*)
 {
 	if (Loaded())
 	{
-		VPROF_BUDGET(__FUNCTION__, _T("SPT_ImGui"));
+		SPT_VPROF_BUDGET(__FUNCTION__, _T("SPT_ImGui"));
 		auto& io = ImGui::GetIO();
 		inImGuiUpdateSection = true;
 
@@ -1037,8 +1037,7 @@ bool SptImGui::RegisterWindowCallback(const SptImGuiWindowCallback& cb)
 
 void SptImGui::RegisterHudCvarCheckbox(ConVar& var)
 {
-	RegisterHudCvarCallback(
-	    var, [](ConVar& cv) { SptImGui::CvarCheckbox(cv, "##checkbox"); }, false);
+	RegisterHudCvarCallback(var, [](ConVar& cv) { SptImGui::CvarCheckbox(cv, "##checkbox"); }, false);
 }
 
 void SptImGui::RegisterHudCvarCallback(ConVar& var, const SptImGuiHudTextCallback& cb, bool putInCollapsible)

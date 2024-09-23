@@ -13,3 +13,7 @@
 #define RAD_TELEMETRY_DISABLED
 #endif
 #include "vprof.h"
+
+// TODO: setup the appropriate functions from tier0 and get this working again
+// #define SPT_VPROF_BUDGET(name, group) VPROF_BUDGET(name, group)
+#define SPT_VPROF_BUDGET(name, group) (void)0

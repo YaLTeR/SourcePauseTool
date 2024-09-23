@@ -5,6 +5,7 @@
 #include <sstream>
 #include <time.h>
 
+#include "vstdlib/IKeyValuesSystem.h"
 #include <SPTLib\Hooks.hpp>
 #include "spt-serverplugin.hpp"
 #include "..\sptlib-wrapper.hpp"
@@ -58,7 +59,6 @@ namespace interfaces
 	IVDebugOverlay* debugOverlay = nullptr;
 	IMaterialSystem* materialSystem = nullptr;
 	IInputSystem* inputSystem = nullptr;
-	ICvar* g_pCVar = nullptr;
 	IGameMovement* gm = nullptr;
 	IClientEntityList* entList;
 	IVModelInfo* modelInfo;
@@ -92,7 +92,7 @@ extern ConVar tas_reset_surface_friction;
 // useful helper func
 inline bool FStrEq(const char* sz1, const char* sz2)
 {
-	return (Q_stricmp(sz1, sz2) == 0);
+	return (stricmp(sz1, sz2) == 0);
 }
 
 void CallServerCommand(const char* cmd)
@@ -132,22 +132,17 @@ void DefaultFOVChangeCallback(ConVar* var, char const* pOldString)
 	}
 }
 
-//
-// The plugin is a static singleton that is exported as an interface
-//
-#ifdef OE
 CSourcePauseTool g_SourcePauseTool;
-EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CSourcePauseTool,
-                                  IServerPluginCallbacks,
-                                  INTERFACEVERSION_ISERVERPLUGINCALLBACKS_VERSION_1,
-                                  g_SourcePauseTool);
-#else
-CSourcePauseTool g_SourcePauseTool;
-EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CSourcePauseTool,
-                                  IServerPluginCallbacks,
-                                  INTERFACEVERSION_ISERVERPLUGINCALLBACKS,
-                                  g_SourcePauseTool);
-#endif
+
+extern "C" __declspec(dllexport) const void* CreateInterface(const char* pName, int* pReturnCode)
+{
+	if (pReturnCode)
+	{
+		*pReturnCode = 2007;
+	}
+
+	return &g_SourcePauseTool;
+}
 
 class SDKVersion
 {
@@ -234,9 +229,54 @@ static SDKVersion CheckSDKVersion(CreateInterfaceFn interfaceFactory)
 	return SDKVersion::SDK_2007;
 }
 
+static void SetFuncIfFound(void** pTarget, void* func, bool critical = false)
+{
+	if (func)
+	{
+		*pTarget = func;
+	}
+	else if (critical)
+	{
+		DebugBreak();
+	}
+}
+
+static void GrabTier0Stuff()
+{
+	HMODULE moduleHandle = GetModuleHandleA("tier0.dll");
+	HMODULE moduleHandleVstdlib = GetModuleHandleA("vstdlib.dll");
+	if (moduleHandle != NULL)
+	{
+		SetFuncIfFound((void**)&ConColorMsg, GetProcAddress(moduleHandle, "ConColorMsg"));
+		// unmangled versions don't print anything
+		SetFuncIfFound((void**)&ConMsg, GetProcAddress(moduleHandle, "?ConMsg@@YAXPBDZZ"));
+		SetFuncIfFound((void**)&DevMsg, GetProcAddress(moduleHandle, "?DevMsg@@YAXPBDZZ"));
+		SetFuncIfFound((void**)&DevWarning, GetProcAddress(moduleHandle, "?DevWarning@@YAXPBDZZ"));
+		SetFuncIfFound((void**)&Msg, GetProcAddress(moduleHandle, "Msg"));
+		SetFuncIfFound((void**)&Warning, GetProcAddress(moduleHandle, "Warning"));
+		SetFuncIfFound((void**)&_SpewInfo, GetProcAddress(moduleHandle, "_SpewInfo"));
+		SetFuncIfFound((void**)&_SpewMessage, GetProcAddress(moduleHandle, "_SpewMessage"));
+		SetFuncIfFound((void**)&_ExitOnFatalAssert, GetProcAddress(moduleHandle, "_ExitOnFatalAssert"));
+		SetFuncIfFound((void**)&ShouldUseNewAssertDialog,
+		               GetProcAddress(moduleHandle, "ShouldUseNewAssertDialog"));
+		SetFuncIfFound((void**)&DoNewAssertDialog, GetProcAddress(moduleHandle, "DoNewAssertDialog"));
+#if defined(SSDK2013) || defined(BMS)
+		SetFuncIfFound((void**)&CallAssertFailedNotifyFunc,
+		               GetProcAddress(moduleHandle, "CallAssertFailedNotifyFunc"));
+#endif
+	}
+	if (moduleHandleVstdlib != NULL)
+	{
+		SetFuncIfFound((void**)&KeyValuesSystem_impl,
+		               GetProcAddress(moduleHandleVstdlib, "KeyValuesSystem"),
+		               true);
+	}
+}
+
 bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory)
 {
 	auto startTime = std::chrono::high_resolution_clock::now();
+	GrabTier0Stuff();
 
 	SDKVersion detectedVersion = CheckSDKVersion(interfaceFactory);
 	if (detectedVersion != sptSDKVersion)
@@ -267,10 +307,8 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	}
 	pluginLoaded = true;
 
-	ConnectTier1Libraries(&interfaceFactory, 1);
-
 	interfaces::gm = (IGameMovement*)gameServerFactory(INTERFACENAME_GAMEMOVEMENT, NULL);
-	interfaces::g_pCVar = g_pCVar;
+	g_pCVar = (ICvar*)interfaceFactory(CVAR_INTERFACE_VERSION, NULL);
 	interfaces::engine_server = (IVEngineServer*)interfaceFactory(INTERFACEVERSION_VENGINESERVER, NULL);
 #ifdef BMS
 	interfaces::engine_client = (IVEngineClient*)interfaceFactory("VEngineClient015", NULL);
@@ -479,7 +517,6 @@ void CSourcePauseTool::Unload(void)
 #endif
 
 	Cvar_UnregisterSPTCvars();
-	DisconnectTier1Libraries();
 	Feature::UnloadFeatures();
 	Hooks::Free();
 	pluginLoaded = false;
@@ -540,33 +577,51 @@ void CSourcePauseTool::ClientSettingsChanged(edict_t* pEdict)
 }
 
 // override new/delete operators to use the game's allocator
+// These news and deletes start happening before any of the normal code is ran because of globals, so we gotta always check if we have memalloc
+static bool s_hasMemAlloc = false;
+
+static void GetMemAlloc()
+{
+	if (s_hasMemAlloc)
+		return;
+	s_hasMemAlloc = true;
+	HMODULE moduleHandle = GetModuleHandleA("tier0.dll");
+	// We get the address of the pointer via GetProcAddress, so have to dereference it
+	g_pMemAlloc = *(IMemAlloc**)GetProcAddress(moduleHandle, "g_pMemAlloc");
+}
 
 void* __cdecl operator new(unsigned int nSize)
 {
+	GetMemAlloc();
 	return g_pMemAlloc->Alloc(nSize);
 }
 
 void* __cdecl operator new[](unsigned int nSize)
 {
+	GetMemAlloc();
 	return g_pMemAlloc->Alloc(nSize);
 }
 
 void* __cdecl operator new(unsigned int nSize, int nBlockUse, const char* pFileName, int nLine)
 {
+	GetMemAlloc();
 	return g_pMemAlloc->Alloc(nSize, pFileName, nLine);
 }
 
 void* __cdecl operator new[](unsigned int nSize, int nBlockUse, const char* pFileName, int nLine)
 {
+	GetMemAlloc();
 	return g_pMemAlloc->Alloc(nSize, pFileName, nLine);
 }
 
 void __cdecl operator delete(void* pMem)
 {
+	GetMemAlloc();
 	g_pMemAlloc->Free(pMem);
 }
 
 void __cdecl operator delete[](void* pMem)
 {
+	GetMemAlloc();
 	g_pMemAlloc->Free(pMem);
 }

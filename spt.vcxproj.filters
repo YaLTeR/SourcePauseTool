@@ -388,6 +388,9 @@
     <ClCompile Include="spt\features\visualizations\gui_game_detection.cpp">
       <Filter>spt\features\visualizations</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\grass.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -816,17 +819,6 @@
     <ClInclude Include="spt\features\visualizations\imgui\imgui_styles.hpp">
       <Filter>spt\features\visualizations\imgui</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="..\..\lib\public\mathlib.lib">
-      <Filter>SDK includes &amp; libs</Filter>
-    </Library>
-    <Library Include="..\..\lib\public\tier0.lib">
-      <Filter>SDK includes &amp; libs</Filter>
-    </Library>
-    <Library Include="..\..\lib\public\tier1.lib">
-      <Filter>SDK includes &amp; libs</Filter>
-    </Library>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SDK includes &amp; libs">

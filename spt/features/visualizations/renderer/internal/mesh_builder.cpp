@@ -99,6 +99,8 @@ IMeshWrapper MeshBuilderInternal::Fuser::CreateIMeshFromInterval(ConstCompIntrvl
 	if (totalVerts == 0 || totalIndices == 0)
 		return IMeshWrapper{};
 
+	SPT_VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
+
 #ifdef DEBUG
 	Assert(totalVerts <= maxVerts);
 	Assert(totalIndices <= maxIndices);
@@ -116,8 +118,6 @@ IMeshWrapper MeshBuilderInternal::Fuser::CreateIMeshFromInterval(ConstCompIntrvl
 
 	if (!material)
 		return IMeshWrapper{};
-
-	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 
 	CMatRenderContextPtr context{interfaces::materialSystem};
 	context->Bind(material);
@@ -307,7 +307,7 @@ MeshPositionInfo MeshBuilderInternal::TmpMesh::CalcPosInfo()
 
 StaticMesh MeshBuilderPro::CreateStaticMesh(const MeshCreateFunc& createFunc)
 {
-	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
+	SPT_VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	auto& tmpMesh = g_meshBuilderInternal.tmpMesh;
 	tmpMesh.Create(createFunc, false);
 
@@ -335,7 +335,7 @@ StaticMesh MeshBuilderPro::CreateStaticMesh(const MeshCreateFunc& createFunc)
 
 DynamicMesh MeshBuilderPro::CreateDynamicMesh(const MeshCreateFunc& createFunc)
 {
-	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
+	SPT_VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	auto& tmpMesh = g_meshBuilderInternal.tmpMesh;
 	tmpMesh.Create(createFunc, true);
 

@@ -22,6 +22,7 @@
 
 //---- Define assertion handler. Defaults to calling assert().
 // If your macro uses multiple statements, make sure is enclosed in a 'do { .. } while (0)' block so it can be used as a single statement.
+
 #define IM_ASSERT(_EXPR)  Assert(_EXPR)
 //#define IM_ASSERT(_EXPR)  ((void)(_EXPR))     // Disable asserts
 
@@ -35,7 +36,7 @@
 
 //---- Don't define obsolete functions/enums/behaviors. Consider enabling from time to time after updating to clean your code of obsolete function/names.
 #define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
-#define IMGUI_DISABLE_OBSOLETE_KEYIO                      // 1.87+ disable legacy io.KeyMap[]+io.KeysDown[] in favor io.AddKeyEvent(). This is automatically done by IMGUI_DISABLE_OBSOLETE_FUNCTIONS.
+#define IMGUI_DISABLE_OBSOLETE_KEYIO // 1.87+ disable legacy io.KeyMap[]+io.KeysDown[] in favor io.AddKeyEvent(). This is automatically done by IMGUI_DISABLE_OBSOLETE_FUNCTIONS.
 
 //---- Disable all of Dear ImGui or don't implement standard windows/tools.
 // It is very strongly recommended to NOT disable the demo windows and debug tool during development. They are extremely useful in day to day work. Please read comments in imgui_demo.cpp.
@@ -67,7 +68,14 @@
 
 //---- Pack colors to BGRA8 instead of RGBA8 (to avoid converting from one to another)
 #define IMGUI_USE_BGRA_PACKED_COLOR
-#define IMGUI_OVERRIDE_DRAWVERT_STRUCT_LAYOUT struct ImDrawVert { ImVec2 pos; float z; ImU32 col; ImVec2 uv; }
+#define IMGUI_OVERRIDE_DRAWVERT_STRUCT_LAYOUT \
+	struct ImDrawVert \
+	{ \
+		ImVec2 pos; \
+		float z; \
+		ImU32 col; \
+		ImVec2 uv; \
+	}
 
 //---- Use 32-bit for ImWchar (default is 16-bit) to support Unicode planes 1-16. (e.g. point beyond 0xFFFF like emoticons, dingbats, symbols, shapes, ancient languages, etc...)
 //#define IMGUI_USE_WCHAR32
@@ -105,13 +113,19 @@
 
 #ifndef OE
 
-#define IM_VEC2_CLASS_EXTRA                                                     \
-        constexpr ImVec2(const Vector2D& f) : x(f.x), y(f.y) {}                 \
-        operator Vector2D() const { return Vector2D(x,y); }
+#define IM_VEC2_CLASS_EXTRA \
+	constexpr ImVec2(const Vector2D& f) : x(f.x), y(f.y) {} \
+	operator Vector2D() const \
+	{ \
+		return Vector2D(x, y); \
+	}
 
-#define IM_VEC4_CLASS_EXTRA                                                     \
-        constexpr ImVec4(const Vector4D& f) : x(f.x), y(f.y), z(f.z), w(f.w) {} \
-        operator Vector4D() const { return Vector4D(x,y,z,w); }
+#define IM_VEC4_CLASS_EXTRA \
+	constexpr ImVec4(const Vector4D& f) : x(f.x), y(f.y), z(f.z), w(f.w) {} \
+	operator Vector4D() const \
+	{ \
+		return Vector4D(x, y, z, w); \
+	}
 
 #endif
 
@@ -132,7 +146,7 @@
 
 //---- Debug Tools: Macro to break in Debugger (we provide a default implementation of this in the codebase)
 // (use 'Metrics->Tools->Item Picker' to pick widgets with the mouse and break into them for easy debugging.)
-#define IM_DEBUG_BREAK()  IM_ASSERT(0)
+#define IM_DEBUG_BREAK() IM_ASSERT(0)
 //#define IM_DEBUG_BREAK  __debugbreak()
 
 //---- Debug Tools: Enable slower asserts

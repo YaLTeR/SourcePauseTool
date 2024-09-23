@@ -329,7 +329,7 @@ void MeshRendererInternal::OnRenderViewPre_Signal(void* thisptr, CViewSetup* cam
 	// ensure we only run once per frame
 	if (spt_overlay.renderingOverlay || !spt_meshRenderer.signal.Works)
 		return;
-	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
+	SPT_VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	FrameCleanup();
 	frameNum++;
 	inSignal = true;
@@ -361,7 +361,7 @@ void MeshRendererInternal::OnDrawOpaques(CRendering3dView* renderingView)
 	if (renderingSkyBox)
 		return;
 
-	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
+	SPT_VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	SetupViewInfo(renderingView);
 
 	// push a new debug slice, the corresponding pop is at the end of DrawTranslucents
@@ -379,7 +379,7 @@ void MeshRendererInternal::OnDrawTranslucents(CRendering3dView* renderingView)
 	if (renderingSkyBox)
 		return;
 
-	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
+	SPT_VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	SetupViewInfo(renderingView);
 
 	static std::vector<MeshComponent> components;
@@ -427,8 +427,7 @@ void MeshRendererInternal::OnDrawTranslucents(CRendering3dView* renderingView)
 
 void MeshRendererInternal::CollectRenderableComponents(std::vector<MeshComponent>& components, bool opaques)
 {
-	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
-
+	SPT_VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	// go through all components of all queued meshes and return those that are eligable for rendering right now
 	for (MeshUnitWrapper& unitWrapper : queuedUnitWrappers)
 	{
@@ -541,8 +540,7 @@ void MeshRendererInternal::DrawAll(ConstCompIntrvl fullIntrvl, bool addDebugMesh
 	if (std::distance(fullIntrvl.first, fullIntrvl.second) == 0)
 		return;
 
-	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
-
+	SPT_VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	/*
 	* We create a subinterval of fullInterval: intrvl. Our goal is to give intervals to the builder that can be
 	* fused together. Static meshes can't be fused (they're already IMesh* objects), so we render those one at a
