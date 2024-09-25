@@ -31,7 +31,7 @@ float TickrateMod::GetTickrate()
 	if (pIntervalPerTick)
 		return *pIntervalPerTick;
 
-	return 0.0f;
+	return 0.015f;
 }
 
 void TickrateMod::SetTickrate(float tickrate)
