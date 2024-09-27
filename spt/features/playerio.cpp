@@ -146,7 +146,8 @@ void PlayerIOFeature::PreHook()
 		CreateMoveSignal.Works = true;
 
 		// 20th Anniversary update
-		if (!utils::DoesGameLookLikeHLS() && !utils::DoesGameLookLikePortal()  && utils::GetBuildNumber() >= 9350000)
+		if (!utils::DoesGameLookLikeHLS() && !utils::DoesGameLookLikePortal()
+		    && utils::GetBuildNumber() >= 9350000)
 		{
 			offM_pCommands = 228;
 		}
@@ -621,7 +622,7 @@ CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 }
 
 #ifdef SPT_PORTAL_UTILS
-CON_COMMAND(y_spt_find_portals, "Prints info for all portals")
+CON_COMMAND(y_spt_print_portals, "Prints info for all portals")
 {
 	bool found = false;
 	for (int i = 0; i < MAX_EDICTS; ++i)
@@ -636,14 +637,18 @@ CON_COMMAND(y_spt_find_portals, "Prints info for all portals")
 			bool closed = (remoteIdx & INDEX_MASK) == INDEX_MASK;
 			auto openStr = closed ? (activated ? "a closed" : "an invisible") : "an open";
 			const auto& origin = utils::GetPortalPosition(ent);
+			const auto& angles = utils::GetPortalAngles(ent);
 
-			Msg("SPT: There's %s %s portal with index %d at %.8f %.8f %.8f.\n",
+			Msg("SPT: There's %s %s portal with index %d at %.9f %.9f %.9f with angles %.9f %.9f %.9f.\n",
 			    openStr,
 			    color,
 			    i,
 			    origin.x,
 			    origin.y,
-			    origin.z);
+			    origin.z,
+			    angles.x,
+			    angles.y,
+			    angles.z);
 		}
 	}
 	if (!found)
@@ -1086,7 +1091,7 @@ void PlayerIOFeature::LoadFeature()
 	if (utils::DoesGameLookLikePortal() && interfaces::engine_server
 	    && offServerAbsOrigin != utils::INVALID_DATAMAP_OFFSET)
 	{
-		InitCommand(y_spt_find_portals);
+		InitCommand(y_spt_print_portals);
 	}
 #endif
 

@@ -55,34 +55,6 @@ namespace utils
 		}
 	}
 
-#ifdef SPT_PORTAL_UTILS
-
-	void PrintAllPortals()
-	{
-		int maxIndex = interfaces::entList->GetHighestEntityIndex();
-
-		for (int i = 0; i <= maxIndex; ++i)
-		{
-			auto ent = GetClientEntity(i);
-			if (!invalidPortal(ent))
-			{
-				auto& pos = ent->GetAbsOrigin();
-				auto& angles = ent->GetAbsAngles();
-				Msg("%d : %s, position (%.3f, %.3f, %.3f), angles (%.3f, %.3f, %.3f)\n",
-				    i,
-				    ent->GetClientClass()->m_pNetworkName,
-				    pos.x,
-				    pos.y,
-				    pos.z,
-				    angles.x,
-				    angles.y,
-				    angles.z);
-			}
-		}
-	}
-
-#endif
-
 	IClientEntity* GetPlayer()
 	{
 		return GetClientEntity(0);

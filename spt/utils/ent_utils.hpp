@@ -26,7 +26,6 @@ namespace utils
 	void GetAllProps(RecvTable* table, void* ptr, std::vector<propValue>& props);
 	IClientEntity* GetClientEntity(int index);
 	void PrintAllClientEntities();
-	void PrintAllPortals();
 	IClientEntity* GetPlayer();
 	const char* GetModelName(IClientEntity* ent);
 	void PrintAllProps(int index);
