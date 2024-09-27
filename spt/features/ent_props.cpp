@@ -407,13 +407,6 @@ CON_COMMAND(y_spt_print_ents, "Prints all client entity indices and their corres
 	utils::PrintAllClientEntities();
 }
 
-#ifdef SPT_PORTAL_UTILS
-CON_COMMAND(y_spt_print_portals, "Prints all portal indexes, their position and angles.")
-{
-	utils::PrintAllPortals();
-}
-#endif
-
 CON_COMMAND(y_spt_print_ent_props, "Prints all props for a given entity index.")
 {
 	if (args.ArgC() < 2)
@@ -443,10 +436,7 @@ void EntProps::LoadFeature()
 	InitCommand(y_spt_canjb);
 	InitCommand(y_spt_print_ents);
 	InitCommand(y_spt_print_ent_props);
-#ifdef SPT_PORTAL_UTILS
-	if (utils::DoesGameLookLikePortal())
-		InitCommand(y_spt_print_portals);
-#endif
+
 #if defined(SPT_HUD_ENABLED) && defined(SPT_PORTAL_UTILS)
 	if (utils::DoesGameLookLikePortal())
 	{
