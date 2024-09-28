@@ -34,7 +34,8 @@ protected:
 
 	virtual void LoadFeature() override;
 
-	virtual void UnloadFeature() override;
+private:
+	static void ImGuiCallback();
 };
 
 CollisionGroup spt_collisiongroup;
@@ -64,28 +65,69 @@ CON_COMMAND_F(y_spt_set_collision_group,
 	spt_collisiongroup.ORIG_SetCollisionGroup(playerPtr, collide);
 }
 
+#ifndef STR
+#define STR(x) #x
+#endif
+
 void CollisionGroup::LoadFeature()
 {
 	if (ORIG_SetCollisionGroup)
 	{
 		InitCommand(y_spt_set_collision_group);
-		SptImGuiGroup::Cheats_PlayerCollisionGroup.RegisterUserCallback(
-		    []()
-		    {
-			    static long long val = 5;
-			    SptImGui::InputTextInteger("value", "enter integer", val, 10);
-			    ImGui::SameLine();
-			    auto playerPtr = utils::GetServerPlayer();
-			    ImGui::BeginDisabled(!playerPtr);
-			    if (ImGui::Button("set"))
-				    spt_collisiongroup.ORIG_SetCollisionGroup(playerPtr, (int)val);
-			    ImGui::EndDisabled();
-			    if (!playerPtr)
-				    ImGui::SetItemTooltip("server player not available");
-			    ImGui::SameLine();
-			    SptImGui::CmdHelpMarkerWithName(y_spt_set_collision_group_command);
-		    });
+		SptImGuiGroup::Cheats_PlayerCollisionGroup.RegisterUserCallback(ImGuiCallback);
 	}
 }
 
-void CollisionGroup::UnloadFeature() {}
+void CollisionGroup::ImGuiCallback()
+{
+	const char* groups[LAST_SHARED_COLLISION_GROUP] = {
+	    STR(COLLISION_GROUP_NONE),
+	    STR(COLLISION_GROUP_DEBRIS),
+	    STR(COLLISION_GROUP_DEBRIS_TRIGGER),
+	    STR(COLLISION_GROUP_INTERACTIVE_DEBRIS),
+	    STR(COLLISION_GROUP_INTERACTIVE),
+	    STR(COLLISION_GROUP_PLAYER),
+	    STR(COLLISION_GROUP_BREAKABLE_GLASS),
+	    STR(COLLISION_GROUP_VEHICLE),
+	    STR(COLLISION_GROUP_PLAYER_MOVEMENT),
+	    STR(COLLISION_GROUP_NPC),
+	    STR(COLLISION_GROUP_IN_VEHICLE),
+	    STR(COLLISION_GROUP_WEAPON),
+	    STR(COLLISION_GROUP_VEHICLE_CLIP),
+	    STR(COLLISION_GROUP_PROJECTILE),
+	    STR(COLLISION_GROUP_DOOR_BLOCKER),
+	    STR(COLLISION_GROUP_PASSABLE_DOOR),
+	    STR(COLLISION_GROUP_DISSOLVING),
+	    STR(COLLISION_GROUP_PUSHAWAY),
+	    STR(COLLISION_GROUP_NPC_ACTOR),
+#ifndef OE
+	    STR(COLLISION_GROUP_NPC_SCRIPTED),
+#endif
+	};
+
+	static int val = 5;
+	if (ImGui::BeginCombo("##combo", groups[val], ImGuiComboFlags_WidthFitPreview))
+	{
+		for (int i = 0; i < LAST_SHARED_COLLISION_GROUP; i++)
+		{
+			char buf[64];
+			sprintf_s(buf, "%02d: %s", i, groups[i]);
+			const bool is_selected = (val == i);
+			if (ImGui::Selectable(buf, is_selected))
+				val = i;
+			if (is_selected)
+				ImGui::SetItemDefaultFocus();
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::SameLine();
+	auto playerPtr = utils::GetServerPlayer();
+	ImGui::BeginDisabled(!playerPtr);
+	if (ImGui::Button("set"))
+		spt_collisiongroup.ORIG_SetCollisionGroup(playerPtr, val);
+	ImGui::EndDisabled();
+	if (!playerPtr)
+		ImGui::SetItemTooltip("server player not available");
+	ImGui::SameLine();
+	SptImGui::CmdHelpMarkerWithName(y_spt_set_collision_group_command);
+}
