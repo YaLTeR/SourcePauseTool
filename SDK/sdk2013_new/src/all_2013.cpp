@@ -35,6 +35,7 @@
 #include "tier1/utlbuffer.h"
 #include <KeyValues.h>
 #include <vstdlib/IKeyValuesSystem.h>
+#include "memdbgon.h"
 
 #include "characterset.cpp"
 #include "checksum_md5.cpp"

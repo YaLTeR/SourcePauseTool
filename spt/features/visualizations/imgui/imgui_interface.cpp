@@ -46,6 +46,14 @@ struct ImGuiHudCvar
 	}
 };
 
+static void* alloc_func(size_t sz, void* user_data) {
+	return g_pMemAlloc->Alloc(sz);
+}
+
+static void free_func(void* ptr, void* user_data) {
+	g_pMemAlloc->Free(ptr);
+}
+
 class SptImGuiFeature : public FeatureWrapper<SptImGuiFeature>
 {
 	// welcome to inline static hell
@@ -584,6 +592,8 @@ protected:
 
 		if (!IMGUI_CHECKVERSION())
 			return;
+
+		ImGui::SetAllocatorFunctions(alloc_func, free_func, NULL);
 		if (!ImGui::CreateContext())
 			return;
 

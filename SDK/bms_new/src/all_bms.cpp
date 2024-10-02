@@ -34,6 +34,7 @@
 #include "tier1/utlbuffer.h"
 #include <KeyValues.h>
 #include <vstdlib/IKeyValuesSystem.h>
+#include "memdbgon.h"
 
 
 #include "characterset.cpp"

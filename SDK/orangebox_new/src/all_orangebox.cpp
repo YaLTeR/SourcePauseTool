@@ -28,6 +28,7 @@
 #define NOMINMAX
 #include <direct.h>
 #include <windows.h>
+#include "memdbgon.h"
 
 #include "checksum_md5.cpp"
 #include "cpu.cpp"
