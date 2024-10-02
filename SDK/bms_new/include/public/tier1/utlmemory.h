@@ -301,7 +301,7 @@ public:
 
 	}
 	CUtlMemoryConservative( T* pMemory, int numElements )								{ Assert( 0 ); }
-	~CUtlMemoryConservative()								{ if ( m_pMemory ) free( m_pMemory ); }
+	~CUtlMemoryConservative()								{ if ( m_pMemory ) g_pMemAlloc->Free( m_pMemory ); }
 
 	// Can we use this index?
 	bool IsIdxValid( int i ) const							{ return ( IsDebug() ) ? ( i >= 0 && i < NumAllocated() ) : ( i >= 0 ); }
@@ -348,7 +348,7 @@ public:
 
 	FORCEINLINE void ReAlloc( size_t sz )
 	{
-		m_pMemory = (T*)realloc( m_pMemory, sz );
+		m_pMemory = (T*)g_pMemAlloc->Realloc( m_pMemory, sz );
 		RememberAllocSize( sz );
 	}
 	// Grows the memory, so that at least allocated + num elements are allocated
@@ -368,7 +368,7 @@ public:
 	// Memory deallocation
 	void Purge()
 	{
-		free( m_pMemory ); 
+		g_pMemAlloc->Free( m_pMemory ); 
 		RememberAllocSize( 0 );
 		m_pMemory = NULL; 
 	}
@@ -421,7 +421,7 @@ CUtlMemory<T,I>::CUtlMemory( int nGrowSize, int nInitAllocationCount ) : m_pMemo
 	{
 		UTLMEMORY_TRACK_ALLOC();
 		MEM_ALLOC_CREDIT_CLASS();
-		m_pMemory = (T*)malloc( m_nAllocationCount * sizeof(T) );
+		m_pMemory = (T*)g_pMemAlloc->Alloc( m_nAllocationCount * sizeof(T) );
 	}
 }
 
@@ -460,7 +460,7 @@ void CUtlMemory<T,I>::Init( int nGrowSize /*= 0*/, int nInitSize /*= 0*/ )
 	{
 		UTLMEMORY_TRACK_ALLOC();
 		MEM_ALLOC_CREDIT_CLASS();
-		m_pMemory = (T*)malloc( m_nAllocationCount * sizeof(T) );
+		m_pMemory = (T*)g_pMemAlloc->Alloc( m_nAllocationCount * sizeof(T) );
 	}
 }
 
@@ -492,7 +492,7 @@ void CUtlMemory<T,I>::ConvertToGrowableMemory( int nGrowSize )
 		MEM_ALLOC_CREDIT_CLASS();
 
 		int nNumBytes = m_nAllocationCount * sizeof(T);
-		T *pMemory = (T*)malloc( nNumBytes );
+		T *pMemory = (T*)g_pMemAlloc->Alloc( nNumBytes );
 		memcpy( (void*)pMemory, (void*)m_pMemory, nNumBytes ); 
 		m_pMemory = pMemory;
 	}
@@ -740,13 +740,13 @@ void CUtlMemory<T,I>::Grow( int num )
 	if (m_pMemory)
 	{
 		MEM_ALLOC_CREDIT_CLASS();
-		m_pMemory = (T*)realloc( m_pMemory, m_nAllocationCount * sizeof(T) );
+		m_pMemory = (T*)g_pMemAlloc->Realloc( m_pMemory, m_nAllocationCount * sizeof(T) );
 		Assert( m_pMemory );
 	}
 	else
 	{
 		MEM_ALLOC_CREDIT_CLASS();
-		m_pMemory = (T*)malloc( m_nAllocationCount * sizeof(T) );
+		m_pMemory = (T*)g_pMemAlloc->Alloc( m_nAllocationCount * sizeof(T) );
 		Assert( m_pMemory );
 	}
 }
@@ -777,12 +777,12 @@ inline void CUtlMemory<T,I>::EnsureCapacity( int num )
 	if (m_pMemory)
 	{
 		MEM_ALLOC_CREDIT_CLASS();
-		m_pMemory = (T*)realloc( m_pMemory, m_nAllocationCount * sizeof(T) );
+		m_pMemory = (T*)g_pMemAlloc->Realloc( m_pMemory, m_nAllocationCount * sizeof(T) );
 	}
 	else
 	{
 		MEM_ALLOC_CREDIT_CLASS();
-		m_pMemory = (T*)malloc( m_nAllocationCount * sizeof(T) );
+		m_pMemory = (T*)g_pMemAlloc->Alloc( m_nAllocationCount * sizeof(T) );
 	}
 }
 
@@ -852,7 +852,7 @@ void CUtlMemory<T,I>::Purge( int numElements )
 
 	// Allocation count > 0, shrink it down.
 	MEM_ALLOC_CREDIT_CLASS();
-	m_pMemory = (T*)realloc( m_pMemory, m_nAllocationCount * sizeof(T) );
+	m_pMemory = (T*)g_pMemAlloc->Realloc( m_pMemory, m_nAllocationCount * sizeof(T) );
 }
 
 //-----------------------------------------------------------------------------

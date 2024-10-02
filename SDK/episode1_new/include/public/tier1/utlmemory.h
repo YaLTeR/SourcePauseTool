@@ -195,7 +195,7 @@ CUtlMemory<T>::CUtlMemory( int nGrowSize, int nInitAllocationCount ) : m_pMemory
 	{
 		UTLMEMORY_TRACK_ALLOC();
 		MEM_ALLOC_CREDIT_CLASS();
-		m_pMemory = (T*)malloc( m_nAllocationCount * sizeof(T) );
+		m_pMemory = (T*)g_pMemAlloc->Alloc( m_nAllocationCount * sizeof(T) );
 	}
 }
 
@@ -250,7 +250,7 @@ void CUtlMemory<T>::ConvertToGrowableMemory( int nGrowSize )
 		MEM_ALLOC_CREDIT_CLASS();
 
 		int nNumBytes = m_nAllocationCount * sizeof(T);
-		T *pMemory = (T*)malloc( nNumBytes );
+		T *pMemory = (T*)g_pMemAlloc->Alloc( nNumBytes );
 		memcpy( pMemory, m_pMemory, nNumBytes ); 
 		m_pMemory = pMemory;
 	}
@@ -457,13 +457,13 @@ void CUtlMemory<T>::Grow( int num )
 	if (m_pMemory)
 	{
 		MEM_ALLOC_CREDIT_CLASS();
-		m_pMemory = (T*)realloc( m_pMemory, m_nAllocationCount * sizeof(T) );
+		m_pMemory = (T*)g_pMemAlloc->Realloc( m_pMemory, m_nAllocationCount * sizeof(T) );
 		Assert( m_pMemory );
 	}
 	else
 	{
 		MEM_ALLOC_CREDIT_CLASS();
-		m_pMemory = (T*)malloc( m_nAllocationCount * sizeof(T) );
+		m_pMemory = (T*)g_pMemAlloc->Alloc( m_nAllocationCount * sizeof(T) );
 		Assert( m_pMemory );
 	}
 }
@@ -494,12 +494,12 @@ inline void CUtlMemory<T>::EnsureCapacity( int num )
 	if (m_pMemory)
 	{
 		MEM_ALLOC_CREDIT_CLASS();
-		m_pMemory = (T*)realloc( m_pMemory, m_nAllocationCount * sizeof(T) );
+		m_pMemory = (T*)g_pMemAlloc->Realloc( m_pMemory, m_nAllocationCount * sizeof(T) );
 	}
 	else
 	{
 		MEM_ALLOC_CREDIT_CLASS();
-		m_pMemory = (T*)malloc( m_nAllocationCount * sizeof(T) );
+		m_pMemory = (T*)g_pMemAlloc->Alloc( m_nAllocationCount * sizeof(T) );
 	}
 }
 
@@ -515,7 +515,7 @@ void CUtlMemory<T>::Purge()
 		if (m_pMemory)
 		{
 			UTLMEMORY_TRACK_FREE();
-			free( (void*)m_pMemory );
+			g_pMemAlloc->Free( (void*)m_pMemory );
 			m_pMemory = 0;
 		}
 		m_nAllocationCount = 0;
@@ -569,7 +569,7 @@ void CUtlMemory<T>::Purge( int numElements )
 
 	// Allocation count > 0, shrink it down.
 	MEM_ALLOC_CREDIT_CLASS();
-	m_pMemory = (T*)realloc( m_pMemory, m_nAllocationCount * sizeof(T) );
+	m_pMemory = (T*)g_pMemAlloc->Realloc( m_pMemory, m_nAllocationCount * sizeof(T) );
 }
 
 //-----------------------------------------------------------------------------
@@ -638,7 +638,7 @@ CUtlMemoryAligned<T, nAlignment>::CUtlMemoryAligned( int nGrowSize, int nInitAll
 	{
 		UTLMEMORY_TRACK_ALLOC();
 		MEM_ALLOC_CREDIT_CLASS();
-		m_pMemoryBase = malloc( nInitAllocationCount * sizeof(T) + (nAlignment - 1) );
+		m_pMemoryBase = g_pMemAlloc->Alloc( nInitAllocationCount * sizeof(T) + (nAlignment - 1) );
 		CUtlMemory<T>::m_pMemory = (T*)Align( m_pMemoryBase );
 	}
 }
@@ -730,13 +730,13 @@ void CUtlMemoryAligned<T, nAlignment>::Grow( int num )
 	if (m_pMemoryBase)
 	{
 		MEM_ALLOC_CREDIT_CLASS();
-		m_pMemoryBase = realloc( m_pMemoryBase, CUtlMemory<T>::m_nAllocationCount * sizeof(T) + (nAlignment - 1) );
+		m_pMemoryBase = g_pMemAlloc->Realloc( m_pMemoryBase, CUtlMemory<T>::m_nAllocationCount * sizeof(T) + (nAlignment - 1) );
 		Assert( m_pMemoryBase );
 	}
 	else
 	{
 		MEM_ALLOC_CREDIT_CLASS();
-		m_pMemoryBase = malloc( CUtlMemory<T>::m_nAllocationCount * sizeof(T) + (nAlignment - 1) );
+		m_pMemoryBase = g_pMemAlloc->Alloc( CUtlMemory<T>::m_nAllocationCount * sizeof(T) + (nAlignment - 1) );
 		Assert( m_pMemoryBase );
 	}
 	CUtlMemory<T>::m_pMemory = (T*)Align( m_pMemoryBase );
@@ -768,12 +768,12 @@ inline void CUtlMemoryAligned<T, nAlignment>::EnsureCapacity( int num )
 	if (m_pMemoryBase)
 	{
 		MEM_ALLOC_CREDIT_CLASS();
-		m_pMemoryBase = realloc( m_pMemoryBase, CUtlMemory<T>::m_nAllocationCount * sizeof(T) + (nAlignment - 1) );
+		m_pMemoryBase = g_pMemAlloc->Realloc( m_pMemoryBase, CUtlMemory<T>::m_nAllocationCount * sizeof(T) + (nAlignment - 1) );
 	}
 	else
 	{
 		MEM_ALLOC_CREDIT_CLASS();
-		m_pMemoryBase = malloc( CUtlMemory<T>::m_nAllocationCount * sizeof(T) + (nAlignment - 1) );
+		m_pMemoryBase = g_pMemAlloc->Alloc( CUtlMemory<T>::m_nAllocationCount * sizeof(T) + (nAlignment - 1) );
 	}
 	CUtlMemory<T>::m_pMemory = (T*)Align( m_pMemoryBase );
 }
@@ -790,7 +790,7 @@ void CUtlMemoryAligned<T, nAlignment>::Purge()
 		if (m_pMemoryBase)
 		{
 			UTLMEMORY_TRACK_FREE();
-			free( (void*)m_pMemoryBase );
+			g_pMemAlloc->Free( (void*)m_pMemoryBase );
 			m_pMemoryBase = 0;
 			CUtlMemory<T>::m_pMemory = 0;
 		}
