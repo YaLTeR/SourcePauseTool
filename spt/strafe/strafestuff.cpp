@@ -175,7 +175,8 @@ namespace Strafe
 
 	bool CanUnduck(const PlayerData& player)
 	{
-		if ((player.DuckPressed && !tas_strafe_autojb.GetBool()) || !tas_strafe_use_tracing.GetBool())
+		if ((player.DuckPressed && !tas_strafe_autojb.GetBool()) || !tas_strafe_use_tracing.GetBool()
+		    || !utils::GetServerPlayer())
 			return false;
 		else
 		{
@@ -194,7 +195,8 @@ namespace Strafe
 		// Check ground.
 		int strafe_version = tas_strafe_version.GetInt();
 
-		if (!tas_strafe_use_tracing.GetBool() || strafe_version == 0 || !CanTrace())
+		if (!tas_strafe_use_tracing.GetBool() || strafe_version == 0 || !CanTrace()
+		    || !utils::GetServerPlayer())
 		{
 			if (spt_playerio.IsGroundEntitySet())
 				return PositionType::GROUND;
