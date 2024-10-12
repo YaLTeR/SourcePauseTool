@@ -55,6 +55,11 @@ namespace Strafe
 		if (!tas_strafe_use_tracing.GetBool())
 			return false;
 
+#if defined(SSDK2013)
+		if (tas_strafe_version.GetInt() <= 6)
+			return false;
+#endif
+
 		if (tas_strafe_version.GetInt() == 1)
 		{
 			return spt_tracing.ORIG_UTIL_TraceRay != nullptr;
@@ -261,24 +266,13 @@ namespace Strafe
 				return PositionType::GROUND;
 			}
 
-			if (utils::DoesGameLookLikePortal())
-				spt_tracing.ORIG_TracePlayerBBoxForGround2(bumpOrigin,
-				                                           point,
-				                                           mins,
-				                                           maxs,
-				                                           utils::GetServerPlayer(),
-				                                           MASK_PLAYERSOLID,
-				                                           COLLISION_GROUP_PLAYER_MOVEMENT,
-				                                           pm);
-			else
-				spt_tracing.ORIG_TracePlayerBBoxForGround(bumpOrigin,
-				                                          point,
-				                                          mins,
-				                                          maxs,
-				                                          utils::GetServerPlayer(),
-				                                          MASK_PLAYERSOLID,
-				                                          COLLISION_GROUP_PLAYER_MOVEMENT,
-				                                          pm);
+			spt_tracing.TracePlayerBBoxForGround(bumpOrigin,
+			                                     point,
+			                                     mins,
+			                                     maxs,
+			                                     MASK_PLAYERSOLID,
+			                                     COLLISION_GROUP_PLAYER_MOVEMENT,
+			                                     pm);
 
 			UnsetMoveData();
 

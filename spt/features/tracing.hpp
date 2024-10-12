@@ -66,28 +66,6 @@ public:
 	                  int collisionGroup,
 	                  trace_t* ptr);
 
-	DECL_MEMBER_CDECL(void,
-	                  TracePlayerBBoxForGround,
-	                  const Vector& start,
-	                  const Vector& end,
-	                  const Vector& mins,
-	                  const Vector& maxs,
-	                  IHandleEntity* player,
-	                  unsigned int fMask,
-	                  int collisionGroup,
-	                  trace_t& pm);
-
-	DECL_MEMBER_CDECL(void,
-	                  TracePlayerBBoxForGround2,
-	                  const Vector& start,
-	                  const Vector& end,
-	                  const Vector& mins,
-	                  const Vector& maxs,
-	                  IHandleEntity* player,
-	                  unsigned int fMask,
-	                  int collisionGroup,
-	                  trace_t& pm);
-
 	DECL_HOOK_THISCALL(CBaseCombatWeapon*, GetActiveWeapon, IServerUnknown*);
 
 	DECL_MEMBER_THISCALL(float,
@@ -104,6 +82,8 @@ public:
 
 	bool CanTracePlayerBBox();
 
+	// Always SetMoveData() before calling this
+	// This function requires server player
 	void TracePlayerBBox(const Vector& start,
 	                     const Vector& end,
 	                     const Vector& mins,
@@ -111,6 +91,16 @@ public:
 	                     unsigned int fMask,
 	                     int collisionGroup,
 	                     trace_t& pm);
+
+	// Always SetMoveData() before calling this
+	// This function requires server player
+	void TracePlayerBBoxForGround(const Vector& start,
+	                              const Vector& end,
+	                              const Vector& mins,
+	                              const Vector& maxs,
+	                              unsigned int fMask,
+	                              int collisionGroup,
+	                              trace_t& pm);
 
 	// Traces a line, returns more detailed info if the world was hit. hitInfo.bspData is only guaranteed to be
 	// set if a brush or displacement was hit. If hooks aren't found this may return incorrect results.
@@ -175,8 +165,13 @@ private:
 	                     int collisionGroup,
 	                     trace_t& pm);
 
+#if defined(SSDK2013)
+	DECL_HOOK_THISCALL(void, CGameMovement__GetPlayerMins, IGameMovement*, Vector*);
+	DECL_HOOK_THISCALL(void, CGameMovement__GetPlayerMaxs, IGameMovement*, Vector*);
+#else
 	DECL_HOOK_THISCALL(const Vector&, CGameMovement__GetPlayerMins, IGameMovement*);
 	DECL_HOOK_THISCALL(const Vector&, CGameMovement__GetPlayerMaxs, IGameMovement*);
+#endif
 
 	DECL_HOOK_FASTCALL(void,
 	                   CM_ClipBoxToBrush_1,
@@ -189,6 +184,39 @@ private:
 	                   CDispCollTree* pDispTree,
 	                   float startFrac,
 	                   float endFrac);
+
+#if defined(SSDK2013)
+	DECL_MEMBER_THISCALL(void,
+	                     TracePlayerBBoxForGround,
+	                     IGameMovement*,
+	                     const Vector& start,
+	                     const Vector& end,
+	                     unsigned int fMask,
+	                     int collisionGroup,
+	                     trace_t& pm);
+#else
+	DECL_MEMBER_CDECL(void,
+	                  TracePlayerBBoxForGround,
+	                  const Vector& start,
+	                  const Vector& end,
+	                  const Vector& mins,
+	                  const Vector& maxs,
+	                  IHandleEntity* player,
+	                  unsigned int fMask,
+	                  int collisionGroup,
+	                  trace_t& pm);
+#endif
+
+	DECL_MEMBER_CDECL(void,
+	                  TracePlayerBBoxForGround2,
+	                  const Vector& start,
+	                  const Vector& end,
+	                  const Vector& mins,
+	                  const Vector& maxs,
+	                  IHandleEntity* player,
+	                  unsigned int fMask,
+	                  int collisionGroup,
+	                  trace_t& pm);
 };
 
 extern Tracing spt_tracing;
