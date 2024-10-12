@@ -33,24 +33,49 @@ namespace patterns
 	    "8B 44 24 10 8B 4C 24 0C 83 EC 0C 56 50 51 8D 4C 24 0C E8 ?? ?? ?? ?? 8B 74 24 24 8B 0D ?? ?? ?? ?? 8B 11 8B 52 10",
 	    "7462488",
 	    "55 8B EC 83 EC 10 8D 4D ?? 56 FF 75 ?? FF 75 ??");
-	PATTERNS(CGameMovement__TracePlayerBBox, "5135", "55 8B EC 83 E4 F0 83 EC 5C 56 8B F1 8B 06 8B 50 24");
-	PATTERNS(CPortalGameMovement__TracePlayerBBox,
+	PATTERNS(CGameMovement__TracePlayerBBox,
 	         "5135",
-	         "55 8B EC 83 E4 F0 81 EC C4 00 00 00 53 56 8B F1 8B 46 ?? 83 C0 04 8B 00 83 F8 FF 57");
+	         "55 8B EC 83 E4 F0 83 EC 5C 56 8B F1 8B 06 8B 50 24",
+	         "7122284",
+	         "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ?? 89 6C 24 ?? 8B EC 83 EC 7C 56");
+	PATTERNS(
+	    CPortalGameMovement__TracePlayerBBox,
+	    "5135",
+	    "55 8B EC 83 E4 F0 81 EC C4 00 00 00 53 56 8B F1 8B 46 ?? 83 C0 04 8B 00 83 F8 FF 57",
+	    "1910503",
+	    "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ?? 89 6C 24 ?? 8B EC 81 EC E8 00 00 00 56 8B F1 8B 46 ??",
+	    "7122284",
+	    "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ?? 89 6C 24 ?? 8B EC 81 EC E8 00 00 00 56 8B F1 57 8B 46 ??");
 	PATTERNS(TracePlayerBBoxForGround,
 	         "5135",
-	         "55 8B EC 83 E4 F0 81 EC 84 00 00 00 53 56 8B 75 24 8B 46 0C D9 46 2C 8B 4E 10");
+	         "55 8B EC 83 E4 F0 81 EC 84 00 00 00 53 56 8B 75 24 8B 46 0C D9 46 2C 8B 4E 10",
+	         "1910503",
+	         "55 8B EC 83 EC 3C 53 56 57 8B F9 8B 07 8B 50 ??",
+	         "7122284",
+	         "55 8B EC 83 EC 3C 53 56 57 8B F9 8D 4D ??");
 	PATTERNS(TracePlayerBBoxForGround2,
 	         "5135",
-	         "55 8B EC 83 E4 F0 8B 4D 18 8B 01 8B 50 08 81 EC 84 00 00 00 53 56 57 FF D2");
+	         "55 8B EC 83 E4 F0 8B 4D 18 8B 01 8B 50 08 81 EC 84 00 00 00 53 56 57 FF D2",
+	         "1910503",
+	         "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ?? 89 6C 24 ?? 8B EC 8B 4B ?? 8B 01 8B 50 ??",
+	         "7122284",
+	         "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ?? 89 6C 24 ?? 8B EC 8B 4B ?? 81 EC 98 00 00 00");
 	PATTERNS(
 	    CGameMovement__GetPlayerMins,
 	    "4104",
-	    "8B 41 ?? 8B 88 ?? ?? ?? ?? C1 E9 03 F6 C1 01 8B 0D ?? ?? ?? ?? 8B 11 74 09 8B 42 ?? FF D0 83 C0 48 C3");
+	    "8B 41 ?? 8B 88 ?? ?? ?? ?? C1 E9 03 F6 C1 01 8B 0D ?? ?? ?? ?? 8B 11 74 09 8B 42 ?? FF D0 83 C0 48 C3",
+	    "1910503",
+	    "55 8B EC 83 EC 10 8B 41 ?? 8B 88 ?? ?? ?? ?? F3 0F 10 80 ?? ?? ?? ?? C1 E9 03 F6 C1 01 8B 0D ?? ?? ?? ?? 8B 11 F3 0F 11 45 ?? 74 ?? 8B 42 ?? FF D0 8B 4D ?? F3 0F 10 45 ?? F3 0F 10 48 48",
+	    "7122284",
+	    "55 8B EC 83 EC 10 8B 49 ?? 8B 81 ?? ?? ?? ?? F3 0F 10 81 ?? ?? ?? ?? C1 E8 03 F3 0F 11 45 ?? A8 01 74 ?? 8B 0D ?? ?? ?? ?? 8B 01 FF 50 ?? F3 0F 10 4D ?? 8B C8 8B 45 ?? F3 0F 10 41 48");
 	PATTERNS(
 	    CGameMovement__GetPlayerMaxs,
 	    "4104",
-	    "8B 41 ?? 8B 88 ?? ?? ?? ?? C1 E9 03 F6 C1 01 8B 0D ?? ?? ?? ?? 8B 11 74 09 8B 42 ?? FF D0 83 C0 54 C3");
+	    "8B 41 ?? 8B 88 ?? ?? ?? ?? C1 E9 03 F6 C1 01 8B 0D ?? ?? ?? ?? 8B 11 74 09 8B 42 ?? FF D0 83 C0 54 C3",
+	    "1910503",
+	    "55 8B EC 83 EC 10 8B 41 ?? 8B 88 ?? ?? ?? ?? F3 0F 10 80 ?? ?? ?? ?? C1 E9 03 F6 C1 01 8B 0D ?? ?? ?? ?? 8B 11 F3 0F 11 45 ?? 74 ?? 8B 42 ?? FF D0 8B 4D ?? F3 0F 10 45 ?? F3 0F 10 48 54",
+	    "7122284",
+	    "55 8B EC 83 EC 10 8B 49 ?? 8B 81 ?? ?? ?? ?? F3 0F 10 81 ?? ?? ?? ?? C1 E8 03 F3 0F 11 45 ?? A8 01 74 ?? 8B 0D ?? ?? ?? ?? 8B 01 FF 50 ?? F3 0F 10 4D ?? 8B C8 8B 45 ?? F3 0F 10 41 54");
 	PATTERNS(GetActiveWeapon,
 	         "5135",
 	         "8B 81 d8 07 00 00 83 F8 FF 74 ?? 8B 15 ?? ?? ?? ?? 8B C8",
@@ -126,6 +151,69 @@ void Tracing::TracePlayerBBox(const Vector& start,
 		ORIG_CGameMovement__TracePlayerBBox(interfaces::gm, start, end, fMask, collisionGroup, pm);
 	overrideMinMax = false;
 }
+
+#if defined(SSDK2013)
+void Tracing::TracePlayerBBoxForGround(const Vector& start,
+                                       const Vector& end,
+                                       const Vector& mins,
+                                       const Vector& maxs,
+                                       unsigned int fMask,
+                                       int collisionGroup,
+                                       trace_t& pm)
+{
+	if (utils::DoesGameLookLikePortal())
+	{
+		ORIG_TracePlayerBBoxForGround2(start,
+		                               end,
+		                               mins,
+		                               maxs,
+		                               utils::GetServerPlayer(),
+		                               fMask,
+		                               collisionGroup,
+		                               pm);
+	}
+	else
+	{
+		overrideMinMax = true;
+		_mins = mins;
+		_maxs = maxs;
+		ORIG_TracePlayerBBoxForGround(interfaces::gm, start, end, fMask, collisionGroup, pm);
+		overrideMinMax = false;
+	}
+}
+#else
+void Tracing::TracePlayerBBoxForGround(const Vector& start,
+                                       const Vector& end,
+                                       const Vector& mins,
+                                       const Vector& maxs,
+                                       unsigned int fMask,
+                                       int collisionGroup,
+                                       trace_t& pm)
+{
+	if (utils::DoesGameLookLikePortal())
+	{
+		ORIG_TracePlayerBBoxForGround2(start,
+		                               end,
+		                               mins,
+		                               maxs,
+		                               utils::GetServerPlayer(),
+		                               fMask,
+		                               collisionGroup,
+		                               pm);
+	}
+	else
+	{
+		ORIG_TracePlayerBBoxForGround(start,
+		                              end,
+		                              mins,
+		                              maxs,
+		                              utils::GetServerPlayer(),
+		                              fMask,
+		                              collisionGroup,
+		                              pm);
+	}
+}
+#endif
 
 WorldHitInfo Tracing::TraceLineWithWorldInfoServer(const Ray_t& ray,
                                                    unsigned int fMask,
@@ -385,7 +473,27 @@ bool Tracing::ShouldLoadFeature()
 }
 
 void Tracing::UnloadFeature() {}
+#if defined(SSDK2013)
+IMPL_HOOK_THISCALL(Tracing, void, CGameMovement__GetPlayerMins, IGameMovement*, Vector* out)
+{
+	if (spt_tracing.overrideMinMax)
+	{
+		*out = spt_tracing._mins;
+	}
+	else
+		spt_tracing.ORIG_CGameMovement__GetPlayerMins(thisptr, out);
+}
 
+IMPL_HOOK_THISCALL(Tracing, void, CGameMovement__GetPlayerMaxs, IGameMovement*, Vector* out)
+{
+	if (spt_tracing.overrideMinMax)
+	{
+		*out = spt_tracing._maxs;
+	}
+	else
+		spt_tracing.ORIG_CGameMovement__GetPlayerMaxs(thisptr, out);
+}
+#else
 IMPL_HOOK_THISCALL(Tracing, const Vector&, CGameMovement__GetPlayerMins, IGameMovement*)
 {
 	if (spt_tracing.overrideMinMax)
@@ -405,7 +513,7 @@ IMPL_HOOK_THISCALL(Tracing, const Vector&, CGameMovement__GetPlayerMaxs, IGameMo
 	else
 		return spt_tracing.ORIG_CGameMovement__GetPlayerMaxs(thisptr);
 }
-
+#endif
 #ifdef SPT_TRACE_PORTAL_ENABLED
 double trace_fire_portal(QAngle angles, Vector& normal)
 {
