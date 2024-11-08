@@ -1,4 +1,5 @@
 #include "stdafx.hpp"
+#include "game_detection.hpp"
 #include "..\feature.hpp"
 #include "visualizations\imgui\imgui_interface.hpp"
 
@@ -49,7 +50,14 @@ static ConNotifyFeature spt_con_notify;
 
 bool ConNotifyFeature::ShouldLoadFeature()
 {
-    return true;
+    if (utils::DoesGameLookLikeSteampipe()) 
+    {
+        return false;
+    }
+    else 
+    {
+        return true;
+    }
 }
 
 void ConNotifyFeature::InitHooks()
@@ -83,15 +91,12 @@ void ConNotifyFeature::LoadFeature()
         return;\
 	} \
  \
-    const char* devVal = developer->GetString(); \
-    char* oldDev = new char[strlen(devVal) + 1]; \
-    strcpy(oldDev, devVal); \
+    auto oldDev = developer->GetFloat(); \
     developer->SetValue(true); \
  \
     spt_con_notify.ORIG_##funcName(__VA_ARGS__); \
  \
     developer->SetValue(oldDev); \
-    delete[] oldDev; \
     return;\
 }
 
