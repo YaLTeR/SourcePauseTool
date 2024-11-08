@@ -105,6 +105,15 @@ namespace utils
 		return result;
 	}
 
+	bool DoesGameLookLikeSteampipe()
+	{
+#ifdef SSDK2013
+		return true;
+#else
+		return false;
+#endif
+	}
+
 	bool DoesGameLookLikeEstranged()
 	{
 		static bool cached = false, result = false;

@@ -8,6 +8,7 @@ namespace utils
 	bool DoesGameLookLikeBMSRetail();
 	bool DoesGameLookLikeBMSLatest();
 	bool DoesGameLookLikeBMSMod();
+	bool DoesGameLookLikeSteampipe();
 	bool DoesGameLookLikeEstranged();
 	int DateToBuildNumber(const char* date_str);
 	int GetBuildNumber();
