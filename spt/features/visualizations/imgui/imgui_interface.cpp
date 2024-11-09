@@ -1006,6 +1006,8 @@ void SptImGui::RegisterHudCvarCheckbox(ConVar& var)
 
 void SptImGui::RegisterHudCvarCallback(ConVar& var, const SptImGuiHudTextCallback& cb, bool putInCollapsible)
 {
+	if (!Loaded())
+		return;
 	Assert(cb);
 	auto emp = SptImGuiFeature::hudCvars.emplace(var, cb, putInCollapsible);
 	AssertMsg(emp.second, "each hud cvar should not be registered more than once to imgui");
