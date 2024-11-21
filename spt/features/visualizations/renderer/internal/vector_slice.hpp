@@ -32,7 +32,7 @@ struct VectorSlice
 	{
 		if (this != &other)
 		{
-			memcpy(this, &other, sizeof VectorSlice<T>);
+			memcpy(this, &other, sizeof(VectorSlice<T>));
 			other._clear();
 		}
 		return *this;
