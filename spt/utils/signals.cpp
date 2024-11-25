@@ -10,6 +10,7 @@ Gallant::Signal1<bool> OngroundSignal;
 Gallant::Signal2<void*, bool> SetPausedSignal;
 Gallant::Signal1<bool> SV_ActivateServerSignal;
 Gallant::Signal1<uintptr_t> CreateMoveSignal;
+Gallant::Signal1<uintptr_t> DecodeUserCmdFromBufferSignal;
 Gallant::Signal0<void> VagCrashSignal;
 Gallant::Signal0<void> DemoStartPlaybackSignal;
 Gallant::Signal1<bool> SV_FrameSignal;
@@ -17,7 +18,6 @@ Gallant::Signal2<void*, void*> ProcessMovementPost_Signal;
 Gallant::Signal2<void*, void*> ProcessMovementPre_Signal;
 Gallant::Signal2<void*, CViewSetup*> RenderViewPre_Signal;
 Gallant::Signal2<void*, int> SetSignonStateSignal;
-
 
 // Plugin callbacks
 Gallant::Signal0<void> TickSignal;
