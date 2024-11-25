@@ -214,6 +214,7 @@ namespace SptImGuiGroup
 	inline Tab Hud_TextHud{"Text HUD", &Hud}; // use the RegisterHudCvarXXX functions below to add cvars here
 	inline Tab Hud_IHud{"Input HUD", &Hud};
 	inline Tab Hud_JHud{"Jump HUD", &Hud};
+	inline Tab Hud_StrafeHud{"Strafe HUD", &Hud};
 
 	// development/debugging features
 	inline Tab Dev{"DEV", &Root};
