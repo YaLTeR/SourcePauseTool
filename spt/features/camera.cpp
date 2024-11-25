@@ -148,7 +148,7 @@ ConVar y_spt_cam_control(
     "1 = Drive mode\n"
     "    Camera is separated and can be controlled by user input.\n"
     "    Use +forward, +back, +moveright, +moveleft, +moveup, +movedown, +duck, +speed keys to drive camera.\n"
-    "    In-game: Requires sv_cheats 1. Set spt_cam_drive 1 to enable drive mode.\n"
+    "    In-game: Set spt_cam_drive 1 to enable drive mode.\n"
     "    Demo playback: Hold right mouse button to enable drive mode.\n"
     "2 = Cinematic mode\n"
     "    Camera is controlled by predefined path.\n"
@@ -167,6 +167,8 @@ ConVar y_spt_cam_path_interp("y_spt_cam_path_interp",
 ConVar y_spt_cam_path_draw("y_spt_cam_path_draw", "0", FCVAR_CHEAT, "Draws the current camera path.");
 
 ConVar _y_spt_force_fov("_y_spt_force_fov", "0", 0, "Force FOV to some value.");
+
+ConVar spt_cam_draw_player("spt_cam_draw_player", "1", 0, "Draws player model when camera control enabled.");
 
 // black mesa broke cl_mousenable and cl_mouselook so we'll need this...
 ConVar y_spt_mousemove(
@@ -410,8 +412,7 @@ void Camera::InitHooks()
 
 bool Camera::CanOverrideView() const
 {
-	// Requires sv_cheats if not playing demo
-	return interfaces::engine_client->IsInGame() && _sv_cheats->GetBool() || spt_demostuff.Demo_IsPlayingBack();
+	return interfaces::engine_client->IsInGame() || spt_demostuff.Demo_IsPlayingBack();
 }
 
 bool Camera::CanInput() const
@@ -986,6 +987,9 @@ void Camera::RecomputeInterpPath() {}
 
 bool Camera::ShouldDrawPlayerModel()
 {
+	if (!spt_cam_draw_player.GetBool())
+		return false;
+
 	int controlType = y_spt_cam_control.GetInt();
 	if (!CanOverrideView())
 		return false;
@@ -1102,6 +1106,7 @@ void Camera::LoadFeature()
 		InitConcommandBase(y_spt_cam_drive);
 		InitConcommandBase(y_spt_cam_drive_speed);
 		InitConcommandBase(_y_spt_force_fov);
+		InitConcommandBase(spt_cam_draw_player);
 		InitCommand(y_spt_cam_drive_ent);
 		InitCommand(y_spt_cam_setpos);
 		InitCommand(y_spt_cam_setang);
