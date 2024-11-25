@@ -23,18 +23,9 @@ typedef void*(__cdecl* _GetLocalPlayer)();
 class PlayerIOFeature : public FeatureWrapper<PlayerIOFeature>
 {
 private:
-	void __fastcall HOOKED_CreateMove_Func(void* thisptr,
-	                                       int edx,
-	                                       int sequence_number,
-	                                       float input_sample_frametime,
-	                                       bool active);
-	static void __fastcall HOOKED_CreateMove(void* thisptr,
-	                                         int edx,
-	                                         int sequence_number,
-	                                         float input_sample_frametime,
-	                                         bool active);
-	int __fastcall HOOKED_GetButtonBits_Func(void* thisptr, int edx, int bResetState);
-	static int __fastcall HOOKED_GetButtonBits(void* thisptr, int edx, int bResetState);
+	DECL_HOOK_THISCALL(void, CreateMove, void*, int sequence_number, float input_sample_frametime, bool active);
+	DECL_HOOK_THISCALL(void, DecodeUserCmdFromBuffer, void*, bf_read& buf, int sequence_number);
+	DECL_HOOK_THISCALL(int, GetButtonBits, void*, int bResetState);
 
 public:
 	virtual bool ShouldLoadFeature() override;
@@ -60,10 +51,8 @@ public:
 	int spamButtons = 0;
 	ptrdiff_t offServerAbsOrigin = 0;
 	uintptr_t pCmd = 0;
-	_CreateMove ORIG_CreateMove = nullptr;
 
 	_GetGroundEntity ORIG_GetGroundEntity = nullptr;
-	_GetButtonBits ORIG_GetButtonBits = nullptr;
 	Vector currentVelocity;
 	Vector previousVelocity;
 

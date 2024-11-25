@@ -98,6 +98,14 @@ namespace patterns
 	    "dmomm",
 	    "83 EC 10 53 8B 5C 24 ?? 55 56 8B F1");
 	PATTERNS(
+	    DecodeUserCmdFromBuffer,
+	    "5135",
+	    "83 EC 54 33 C0 D9 EE 89 44 24 ?? D9 54 24 ?? 89 44 24 ??",
+	    "7197370",
+	    "55 8B EC 83 EC 54 56 8B F1 C7 45 ?? ?? ?? ?? ?? 8D 4D ?? C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 E8 ?? ?? ?? ?? 8B 4D ??",
+	    "4044",
+	    "83 EC 54 53 57 8D 44 24 ?? 50 8B 44 24 ?? 99");
+	PATTERNS(
 	    GetGroundEntity,
 	    "5135",
 	    "8B 81 EC 01 00 00 83 F8 FF 74 20 8B 15 ?? ?? ?? ?? 8B C8 81 E1 FF 0F 00 00 C1 E1 04 8D 4C",
@@ -114,6 +122,7 @@ namespace patterns
 void PlayerIOFeature::InitHooks()
 {
 	HOOK_FUNCTION(client, CreateMove);
+	HOOK_FUNCTION(client, DecodeUserCmdFromBuffer);
 	HOOK_FUNCTION(client, GetButtonBits);
 	FIND_PATTERN(client, GetGroundEntity);
 }
@@ -169,6 +178,11 @@ void PlayerIOFeature::PreHook()
 
 		offForwardmove = 24;
 		offSidemove = 28;
+	}
+
+	if (ORIG_DecodeUserCmdFromBuffer)
+	{
+		DecodeUserCmdFromBufferSignal.Works = true;
 	}
 
 	GetPlayerFields();
@@ -284,38 +298,48 @@ Strafe::MovementVars PlayerIOFeature::GetMovementVars()
 	return vars;
 }
 
-void __fastcall PlayerIOFeature::HOOKED_CreateMove_Func(void* thisptr,
-                                                        int edx,
-                                                        int sequence_number,
-                                                        float input_sample_frametime,
-                                                        bool active)
+IMPL_HOOK_THISCALL(PlayerIOFeature,
+                   void,
+                   CreateMove,
+                   void*,
+                   int sequence_number,
+                   float input_sample_frametime,
+                   bool active)
 {
-	auto m_pCommands = *reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(thisptr) + offM_pCommands);
-	pCmd = m_pCommands + sizeofCUserCmd * (sequence_number % 90);
+	auto m_pCommands =
+	    *reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(thisptr) + spt_playerio.offM_pCommands);
+	auto pCmd = m_pCommands + spt_playerio.sizeofCUserCmd * (sequence_number % 90);
+	spt_playerio.pCmd = pCmd;
 
-	ORIG_CreateMove(thisptr, edx, sequence_number, input_sample_frametime, active);
+	spt_playerio.ORIG_CreateMove(thisptr, sequence_number, input_sample_frametime, active);
 
 	CreateMoveSignal(pCmd);
 
-	pCmd = 0;
+	spt_playerio.pCmd = 0;
 }
 
-void __fastcall PlayerIOFeature::HOOKED_CreateMove(void* thisptr,
-                                                   int edx,
-                                                   int sequence_number,
-                                                   float input_sample_frametime,
-                                                   bool active)
+IMPL_HOOK_THISCALL(PlayerIOFeature, void, DecodeUserCmdFromBuffer, void*, bf_read& buf, int sequence_number)
 {
-	spt_playerio.HOOKED_CreateMove_Func(thisptr, edx, sequence_number, input_sample_frametime, active);
+	spt_playerio.ORIG_DecodeUserCmdFromBuffer(thisptr, buf, sequence_number);
+
+	auto m_pCommands =
+	    *reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(thisptr) + spt_playerio.offM_pCommands);
+	auto pCmd = m_pCommands + spt_playerio.sizeofCUserCmd * (sequence_number % 90);
+
+	DecodeUserCmdFromBufferSignal(pCmd);
 }
 
-int __fastcall PlayerIOFeature::HOOKED_GetButtonBits_Func(void* thisptr, int edx, int bResetState)
+IMPL_HOOK_THISCALL(PlayerIOFeature, int, GetButtonBits, void*, int bResetState)
 {
-	int rv = ORIG_GetButtonBits(thisptr, edx, bResetState);
+	int rv = spt_playerio.ORIG_GetButtonBits(thisptr, bResetState);
 
 	if (bResetState == 1)
 	{
 		static int keyPressed = 0;
+		int spamButtons = spt_playerio.spamButtons;
+		bool& forceJump = spt_playerio.forceJump;
+		bool& forceUnduck = spt_playerio.forceUnduck;
+
 		keyPressed = (keyPressed ^ spamButtons) & spamButtons;
 		rv |= keyPressed;
 
@@ -335,11 +359,6 @@ int __fastcall PlayerIOFeature::HOOKED_GetButtonBits_Func(void* thisptr, int edx
 	return rv;
 }
 
-int __fastcall PlayerIOFeature::HOOKED_GetButtonBits(void* thisptr, int edx, int bResetState)
-{
-	return spt_playerio.HOOKED_GetButtonBits_Func(thisptr, edx, bResetState);
-}
-
 bool PlayerIOFeature::GetFlagsDucking()
 {
 	return m_fFlags.GetValue() & FL_DUCKING;
@@ -354,7 +373,7 @@ Strafe::PlayerData PlayerIOFeature::GetPlayerData()
 	const int IN_DUCK = 1 << 2;
 
 	data.Ducking = GetFlagsDucking();
-	data.DuckPressed = (ORIG_GetButtonBits(cinput_thisptr, 0, 0) & IN_DUCK);
+	data.DuckPressed = (ORIG_GetButtonBits(cinput_thisptr, 0) & IN_DUCK);
 	data.UnduckedOrigin = m_vecAbsOrigin.GetValue();
 	data.Velocity = GetPlayerVelocity();
 	data.Basevelocity = Vector();
@@ -454,7 +473,7 @@ bool PlayerIOFeature::IsGroundEntitySet()
 bool PlayerIOFeature::TryJump()
 {
 	const int IN_JUMP = (1 << 1);
-	return ORIG_GetButtonBits(cinput_thisptr, 0, 0) & IN_JUMP;
+	return ORIG_GetButtonBits(cinput_thisptr, 0) & IN_JUMP;
 }
 
 bool PlayerIOFeature::PlayerIOAddressesFound()

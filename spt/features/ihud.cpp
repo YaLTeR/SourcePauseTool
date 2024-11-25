@@ -70,13 +70,10 @@ protected:
 
 	virtual void LoadFeature() override;
 
-	virtual void PreHook() override;
-
 	virtual void UnloadFeature() override;
 
 private:
-	DECL_HOOK_THISCALL(void, DecodeUserCmdFromBuffer, void*, bf_read& buf, int sequence_number);
-	void CreateMove(uintptr_t pCmd);
+	void SetData(uintptr_t pCmd);
 	void DrawRectAndCenterTxt(Color buttonColor,
 	                          int x0,
 	                          int y0,
@@ -101,8 +98,6 @@ private:
 	int buttonBits = 0;
 
 	bool awaitingFrameDraw = false;
-
-	bool loadingSuccessful = false;
 };
 
 InputHud spt_ihud;
@@ -564,22 +559,7 @@ CON_COMMAND(y_spt_ihud_add_key, "Add custom key to ihud.")
 }
 #endif
 
-namespace patterns
-{
-	PATTERNS(
-	    DecodeUserCmdFromBuffer,
-	    "5135",
-	    "83 EC 54 33 C0 D9 EE 89 44 24 ?? D9 54 24 ?? 89 44 24 ??",
-	    "7197370",
-	    "55 8B EC 83 EC 54 56 8B F1 C7 45 ?? ?? ?? ?? ?? 8D 4D ?? C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 C7 45 ?? 00 00 00 00 E8 ?? ?? ?? ?? 8B 4D ??",
-	    "4044",
-	    "83 EC 54 53 57 8D 44 24 ?? 50 8B 44 24 ?? 99");
-}
-
-void InputHud::InitHooks()
-{
-	HOOK_FUNCTION(client, DecodeUserCmdFromBuffer);
-}
+void InputHud::InitHooks() {}
 
 bool InputHud::ShouldLoadFeature()
 {
@@ -588,10 +568,11 @@ bool InputHud::ShouldLoadFeature()
 
 void InputHud::LoadFeature()
 {
-	if (!loadingSuccessful)
+	if (!(CreateMoveSignal.Works && DecodeUserCmdFromBufferSignal.Works))
 		return;
-	if (CreateMoveSignal.Works)
-		CreateMoveSignal.Connect(this, &InputHud::CreateMove);
+
+	CreateMoveSignal.Connect(this, &InputHud::SetData);
+	DecodeUserCmdFromBufferSignal.Connect(this, &InputHud::SetData);
 
 	bool result = spt_hud_feat.AddHudDefaultGroup(HudCallback(
 	    std::bind(&InputHud::DrawInputHud, this), []() { return y_spt_ihud.GetBool(); }, false));
@@ -664,26 +645,7 @@ void InputHud::LoadFeature()
 	anglesSetting = {true, false, L"", font, 4, 1, 0, 0, background, highlight, textcolor, texthighlight, 0};
 }
 
-void InputHud::PreHook()
-{
-	loadingSuccessful = !!(ORIG_DecodeUserCmdFromBuffer);
-}
-
 void InputHud::UnloadFeature() {}
-
-void InputHud::SetInputInfo(int button, Vector movement)
-{
-	if (awaitingFrameDraw)
-	{
-		buttonBits |= button;
-	}
-	else
-	{
-		buttonBits = button;
-	}
-	inputMovement = movement;
-	awaitingFrameDraw = true;
-}
 
 bool InputHud::ModifySetting(const char* element, const char* param, const char* value)
 {
@@ -1057,21 +1019,20 @@ void InputHud::DrawButton(Button button)
 	                     button.text.c_str());
 }
 
-IMPL_HOOK_THISCALL(InputHud, void, DecodeUserCmdFromBuffer, void*, bf_read& buf, int sequence_number)
-{
-	spt_ihud.ORIG_DecodeUserCmdFromBuffer(thisptr, buf, sequence_number);
-
-	auto m_pCommands =
-	    *reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(thisptr) + spt_playerio.offM_pCommands);
-	auto pCmd = m_pCommands + spt_playerio.sizeofCUserCmd * (sequence_number % 90);
-	auto cmd = reinterpret_cast<CUserCmd*>(pCmd);
-	spt_ihud.SetInputInfo(cmd->buttons, Vector(cmd->sidemove, cmd->forwardmove, cmd->upmove));
-}
-
-void InputHud::CreateMove(uintptr_t pCmd)
+void InputHud::SetData(uintptr_t pCmd)
 {
 	auto cmd = reinterpret_cast<CUserCmd*>(pCmd);
-	spt_ihud.SetInputInfo(cmd->buttons, Vector(cmd->sidemove, cmd->forwardmove, cmd->upmove));
+
+	if (awaitingFrameDraw)
+	{
+		buttonBits |= cmd->buttons;
+	}
+	else
+	{
+		buttonBits = cmd->buttons;
+	}
+	inputMovement = Vector(cmd->sidemove, cmd->forwardmove, cmd->upmove);
+	awaitingFrameDraw = true;
 }
 
 std::string InputHud::Button::ToString() const
