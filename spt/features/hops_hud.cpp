@@ -13,13 +13,22 @@
 #include "playerio.hpp"
 #include "property_getter.hpp"
 #include "visualizations\imgui\imgui_interface.hpp"
+#include "..\strafe\strafestuff.hpp"
+
+#ifdef OE
+#include "..\game_shared\usercmd.h"
+#else
+#include "usercmd.h"
+#endif
 
 #undef min
 #undef max
+#undef clamp
 
 ConVar y_spt_jhud_hops("y_spt_jhud_hops", "0", FCVAR_CHEAT, "Turns on the hop practice Jump HUD.");
 ConVar y_spt_jhud_ljstats("y_spt_jhud_ljstats", "0", FCVAR_CHEAT, "Turns on the LJ stats Jump HUD.");
 ConVar y_spt_jhud_velocity("y_spt_jhud_velocity", "0", FCVAR_CHEAT, "Turns on the velocity Jump HUD.");
+ConVar spt_jhud_strafe("spt_jhud_strafe", "0", FCVAR_CHEAT, "Turns on the strafe percentage Jump HUD.");
 ConVar y_spt_jhud_x("y_spt_jhud_x", "0", FCVAR_CHEAT, "Jump HUD x offset.");
 ConVar y_spt_jhud_y("y_spt_jhud_y", "100", FCVAR_CHEAT, "Jump HUD y offset.");
 
@@ -404,6 +413,7 @@ public:
 	void OnTick();
 	void OnJump();
 	void OnGround(bool onground);
+	void OnInput(uintptr_t pCmd);
 	void CalculateAbhVel();
 	void DrawHopHud();
 	bool ShouldDraw();
@@ -437,6 +447,10 @@ private:
 	float prevVel = 0.0f;
 	float currVel = 0.0f;
 
+	// strafe hud
+	bool strafeLeft = false;
+	float strafeAccuracy = 0.0f;
+
 	vgui::HFont hopsFont = 0;
 };
 
@@ -449,7 +463,8 @@ bool HopsHud::ShouldLoadFeature()
 
 bool HopsHud::ShouldDraw()
 {
-	return y_spt_jhud_hops.GetBool() || y_spt_jhud_ljstats.GetBool() || y_spt_jhud_velocity.GetBool();
+	return y_spt_jhud_hops.GetBool() || y_spt_jhud_ljstats.GetBool() || y_spt_jhud_velocity.GetBool()
+	       || spt_jhud_strafe.GetBool();
 }
 
 void HopsHud::PrintStrafeCol(std::function<void(const ljstats::SegmentStats&, wchar_t*, int, int)> func,
@@ -528,14 +543,22 @@ void HopsHud::LoadFeature()
 		InitConcommandBase(y_spt_jhud_ljstats);
 	}
 
+	if (CreateMoveSignal.Works && DecodeUserCmdFromBufferSignal.Works)
+	{
+		CreateMoveSignal.Connect(this, &HopsHud::OnInput);
+		DecodeUserCmdFromBufferSignal.Connect(this, &HopsHud::OnInput);
+		InitConcommandBase(spt_jhud_strafe);
+	}
+
 	SptImGuiGroup::Hud_JHud.RegisterUserCallback(
 	    []()
 	    {
 		    bool hudVel = SptImGui::CvarCheckbox(y_spt_jhud_velocity, "##checkbox_vel");
 		    bool hudHops = SptImGui::CvarCheckbox(y_spt_jhud_hops, "##checkbox_hops");
 		    bool hudStats = SptImGui::CvarCheckbox(y_spt_jhud_ljstats, "##checkbox_stats");
+		    bool hudStrafe = SptImGui::CvarCheckbox(spt_jhud_strafe, "##checkbox_strafe");
 
-		    bool enablePos = hudVel || hudHops || hudStats;
+		    bool enablePos = hudVel || hudHops || hudStats || hudStrafe;
 		    ImGui::BeginDisabled(!enablePos);
 		    ConVar* cvars[] = {&y_spt_jhud_x, &y_spt_jhud_y};
 		    float f[ARRAYSIZE(cvars)];
@@ -577,6 +600,9 @@ void HopsHud::DrawHopHud()
 	const Color orange(255, 160, 32, 255);
 	const Color white(255, 255, 255, 255);
 
+	const Color barEmptyColor(60, 60, 60, 255);
+	const Color barFillColor(white);
+
 	auto surface = interfaces::surface;
 	auto renderView = spt_hud_feat.renderView;
 
@@ -600,6 +626,31 @@ void HopsHud::DrawHopHud()
 
 		swprintf_s(buffer, BUFFER_SIZE, L"Percentage: %.3f", percentage);
 		DrawBuffer();
+	}
+
+	if (spt_jhud_strafe.GetBool())
+	{
+		swprintf_s(buffer, BUFFER_SIZE, L"Accuracy: %5.1f%%", strafeAccuracy * 100.0f);
+		DrawBuffer();
+
+		int tw, th;
+		surface->GetTextSize(hopsFont, L"####################", tw, th);
+		surface->DrawSetColor(barEmptyColor);
+
+		const int x1 = x - tw / 2;
+		const int y1 = y;
+		const int x2 = x + tw / 2;
+		const int y2 = y + th;
+		surface->DrawFilledRect(x1, y1, x2, y2);
+
+		const int barWidth = tw * strafeAccuracy;
+		surface->DrawSetColor(barFillColor);
+		if (strafeLeft)
+			surface->DrawFilledRect(x2 + MARGIN - barWidth, y1 + MARGIN, x2 - MARGIN, y2 - MARGIN);
+		else
+			surface->DrawFilledRect(x1 + MARGIN, y1 + MARGIN, x1 - MARGIN + barWidth, y2 - MARGIN);
+
+		y += (th + MARGIN);
 	}
 
 	if (y_spt_jhud_velocity.GetBool())
@@ -741,6 +792,65 @@ void HopsHud::OnGround(bool onground)
 		}
 		++sinceLanded;
 	}
+}
+
+void HopsHud::OnInput(uintptr_t pCmd)
+{
+	if (!spt_jhud_strafe.GetBool())
+		return;
+
+	const CUserCmd* cmd = reinterpret_cast<CUserCmd*>(pCmd);
+	const float forwardmove = cmd->forwardmove;
+	const float sidemove = cmd->sidemove;
+
+	if (forwardmove == 0.0f && sidemove == 0.0f)
+	{
+		strafeAccuracy = 0.0f;
+		return;
+	}
+
+	auto player = spt_playerio.GetPlayerData();
+	const auto vars = spt_playerio.GetMovementVars();
+	const float playerYaw = utils::GetPlayerEyeAngles().y * utils::M_DEG2RAD;
+	QAngle velAngles;
+	VectorAngles(player.Velocity, Vector(0, 0, 1), velAngles);
+	const float velYaw = velAngles.y * utils::M_DEG2RAD;
+
+	// WishDir
+	const float relAng = playerYaw - velYaw;
+	strafeLeft = (std::cosf(relAng) * sidemove - std::sinf(relAng) * forwardmove < 0.0f);
+
+	const float wishDirYaw = std::atan2f(forwardmove, sidemove) - M_PI / 2.0f + playerYaw;
+
+	// Calculate accuracy
+	Strafe::Friction(player, vars.OnGround, vars);
+	const Vector oldVel = player.Velocity;
+	const float oldVelLen = oldVel.Length2D();
+	double wishspeed = vars.Maxspeed;
+	if (vars.ReduceWishspeed)
+		wishspeed *= 0.33333333f;
+
+	// Current strafe angle
+	Strafe::VectorFME(player,
+	                  vars,
+	                  vars.OnGround,
+	                  wishspeed,
+	                  Vector2D(std::cosf(wishDirYaw), std::sinf(wishDirYaw)));
+	const float currentAccel = player.Velocity.Length2D() - oldVelLen;
+
+	// Best strafe angle
+	player.Velocity = oldVel;
+	const float bestYaw =
+	    Strafe::MaxAccelIntoYawTheta(player, vars, vars.OnGround, wishspeed, velYaw, playerYaw) + velYaw;
+	Strafe::VectorFME(player, vars, vars.OnGround, wishspeed, Vector2D(std::cos(bestYaw), std::sinf(bestYaw)));
+	const float bestAccel = player.Velocity.Length2D() - oldVelLen;
+
+	if (bestAccel == 0.0f)
+		strafeAccuracy = 0.0f;
+	else
+		strafeAccuracy = currentAccel / bestAccel;
+
+	strafeAccuracy = std::clamp(strafeAccuracy, 0.0f, 1.0f);
 }
 
 void HopsHud::CalculateAbhVel()
