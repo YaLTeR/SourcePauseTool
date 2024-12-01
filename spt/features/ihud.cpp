@@ -222,7 +222,7 @@ CON_COMMAND_F_COMPLETION(y_spt_ihud_modify,
 		{
 			if (argc == 3)
 			{
-				Msg("%s: enabled = %s\n", button.enabled ? "true" : "false");
+				Msg("%s: enabled = %s\n", name.c_str(), button.enabled ? "true" : "false");
 			}
 			else if (argc == 4)
 			{
