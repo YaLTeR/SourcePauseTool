@@ -24,7 +24,6 @@ class ShadowPosition : public FeatureWrapper<ShadowPosition>
 {
 protected:
 	static int __fastcall HOOKED_GetShadowPosition(void* thisptr, int _, Vector* worldPosition, QAngle* angles);
-	_GetShadowPosition ORIG_GetShadowPosition = nullptr;
 
 	_beam_object_to_new_position ORIG_beam_object_to_new_position = nullptr;
 
@@ -60,6 +59,9 @@ public:
 	* 4 bytes from this pointer.
 	*/
 	IPhysicsPlayerController* GetPlayerController();
+
+	// Get shadow position is public so other features can check if it's available
+	_GetShadowPosition ORIG_GetShadowPosition = nullptr;
 };
 
 extern ShadowPosition spt_player_shadow;

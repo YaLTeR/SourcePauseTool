@@ -394,6 +394,9 @@
     <ClCompile Include="spt\features\strafehud.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\qccmd.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
