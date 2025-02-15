@@ -397,6 +397,9 @@
     <ClCompile Include="spt\features\qccmd.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\game_fixes\caption_fix.cpp">
+      <Filter>spt\features\game_fixes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
