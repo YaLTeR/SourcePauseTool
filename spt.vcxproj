@@ -1195,6 +1195,7 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClCompile Include="spt\features\ent_props.cpp" />
     <ClCompile Include="spt\features\fov.cpp" />
     <ClCompile Include="spt\features\game_fixes\bms_flashlight_fix.cpp" />
+    <ClCompile Include="spt\features\game_fixes\caption_fix.cpp" />
     <ClCompile Include="spt\features\game_fixes\fastload.cpp" />
     <ClCompile Include="spt\features\game_fixes\free_oob.cpp" />
     <ClCompile Include="spt\features\game_fixes\hardlock.cpp" />
