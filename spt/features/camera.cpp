@@ -637,7 +637,7 @@ void Camera::HandleDriveEntityMode(bool active)
 	if (!active)
 		return;
 
-	IClientEntity* ent = utils::GetClientEntity(driveEntInfo.entIndex);
+	IClientEntity* ent = utils::spt_clientEntList.GetEnt(driveEntInfo.entIndex);
 	driveEntExists = !!(ent);
 	if (!driveEntExists)
 	{

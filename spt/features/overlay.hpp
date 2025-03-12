@@ -16,6 +16,8 @@ enum SkyboxVisibility_t;
 #include "view_shared.h"
 #endif
 
+#include "spt\utils\ent_list.hpp"
+
 // Overlay hook stuff, could combine with overlay renderer as well
 class Overlay : public FeatureWrapper<Overlay>
 {
@@ -37,6 +39,8 @@ public:
 	                   void*,
 	                   CViewSetup* cameraView,
 	                   bool drawViewmodel);
+
+	const utils::PortalInfo* GetOverlayPortal();
 
 protected:
 	virtual void InitHooks() override;

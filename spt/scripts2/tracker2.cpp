@@ -67,12 +67,14 @@ namespace scripts2
 
 	std::string PosTracker::GenerateTestData() const
 	{
-		return GenerateVectorData(spt_playerio.GetPlayerEyePos(), decimals);
+		extern ConVar tas_strafe_version;
+		return GenerateVectorData(spt_playerio.GetPlayerEyePos(tas_strafe_version.GetInt() >= 8), decimals);
 	}
 
 	ValidationResult PosTracker::Validate(const std::string& expectedValue) const
 	{
-		return VectorValidation(spt_playerio.GetPlayerEyePos(), expectedValue, decimals);
+		extern ConVar tas_strafe_version;
+		return VectorValidation(spt_playerio.GetPlayerEyePos(tas_strafe_version.GetInt() >= 8), expectedValue, decimals);
 	}
 
 	std::string PosTracker::TrackerName() const

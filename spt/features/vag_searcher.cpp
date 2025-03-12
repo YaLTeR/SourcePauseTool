@@ -10,11 +10,7 @@
 #include "spt\utils\game_detection.hpp"
 #include "spt\utils\signals.hpp"
 #include "spt\sptlib-wrapper.hpp"
-
-#include "icliententity.h"
-
-extern IClientEntity* getPortal(const char* arg, bool verbose);
-extern IClientEntity* GetLinkedPortal(IClientEntity* portal);
+#include "spt\utils\portal_utils.hpp"
 
 extern ConVar y_spt_prevent_vag_crash;
 extern ConVar _y_spt_overlay_portal;
@@ -63,8 +59,7 @@ private:
 	int max_iteration = 35;
 	int iteration = 0;
 	bool crash;
-	IClientEntity* enter_portal = NULL;
-	IClientEntity* exit_portal = NULL;
+	const utils::PortalInfo* enter_portal = NULL;
 	int entry_index;
 	int exit_index;
 	Vector entry_origin;
@@ -81,11 +76,11 @@ private:
 
 VagSearcher spt_vag_searcher;
 
-ConVar y_spt_vag_search_portal(
-    "y_spt_vag_search_portal",
-    "overlay",
-    FCVAR_CHEAT,
-    "Chooses the portal for the VAG search. Valid options are overlay/blue/orange/portal index. This is the portal you enter.\n");
+ConVar y_spt_vag_search_portal("y_spt_vag_search_portal",
+                               "overlay",
+                               FCVAR_CHEAT,
+                               "Chooses the portal for the VAG search. Valid options are:\n"
+                               "" SPT_PORTAL_SELECT_DESCRIPTION_OVERLAY_PREFIX "" SPT_PORTAL_SELECT_DESCRIPTION);
 
 CON_COMMAND(y_spt_vag_search, "Search VAG")
 {
@@ -97,35 +92,19 @@ void VagSearcher::StartSearch()
 	if (IsIterating())
 		return;
 
-	if (strcmp(y_spt_vag_search_portal.GetString(), "overlay") == 0)
-	{
-		enter_portal = getPortal(_y_spt_overlay_portal.GetString(), false);
-	}
-	else
-	{
-		enter_portal = getPortal(y_spt_vag_search_portal.GetString(), false);
-	}
+	enter_portal = getPortal(y_spt_vag_search_portal.GetString(), true, false);
 
-	if (!enter_portal)
+	if (!enter_portal || !enter_portal->linkedHandle.IsValid())
 	{
-		Msg("Entry portal not found, maybe try using index.\n");
+		Msg("Entry portal not found, maybe try using a color or index.\n");
 		return;
 	}
 
-	exit_portal = GetLinkedPortal(enter_portal);
-	if (!exit_portal)
-	{
-		Msg("Exit portal not found, maybe try using index.\n");
-		return;
-	}
+	entry_index = enter_portal->handle.GetEntryIndex();
 
-	entry_index = enter_portal->entindex();
-	exit_index = exit_portal->entindex();
-
-	if (spt_propertyGetter.GetProperty<int>(entry_index - 1, "m_bActivated") == 0
-	    || spt_propertyGetter.GetProperty<int>(exit_index - 1, "m_bActivated") == 0)
+	if (!enter_portal->isOpen)
 	{
-		Msg("Portal not activated.\n");
+		Msg("Portal not open.\n");
 		return;
 	}
 
@@ -168,12 +147,12 @@ void VagSearcher::StartIterations()
 		y_spt_prevent_vag_crash.SetValue(1);
 	}
 
-	entry_origin = utils::GetPortalPosition(enter_portal);
-	auto angle = utils::GetPortalAngles(enter_portal);
+	entry_origin = enter_portal->pos;
+	auto angle = enter_portal->ang;
 	AngleVectors(angle, &entry_norm);
 
-	exit_origin = utils::GetPortalPosition(exit_portal);
-	is_crouched = (spt_propertyGetter.GetProperty<int>(0, "m_fFlags") & 2) != 0;
+	exit_origin = enter_portal->linkedPos;
+	is_crouched = (spt_propertyGetter.GetProperty<int>(1, "m_fFlags") & 2) != 0;
 	// change z pos so player center is where the portal center is
 	player_half_height = is_crouched ? 18 : 36;
 	player_setpos = entry_origin;
@@ -213,10 +192,10 @@ VagSearcher::VagSearchResult VagSearcher::RunIteration()
 		crash = false;
 		return WOULD_CAUSE_CRASH;
 	}
-	auto new_player_pos = spt_propertyGetter.GetProperty<Vector>(0, "m_vecOrigin");
+	auto new_player_pos = spt_propertyGetter.GetProperty<Vector>(1, "m_vecOrigin");
 	new_player_pos.z += player_half_height;
 
-	auto player_portal_idx = spt_propertyGetter.GetProperty<int>(0, "m_hPortalEnvironment") & 0xfff;
+	auto player_portal_idx = spt_propertyGetter.GetProperty<int>(1, "m_hPortalEnvironment") & 0xfff;
 
 	DevMsg("Player pos: %f %f %f\n", new_player_pos.x, new_player_pos.y, new_player_pos.z);
 	if (player_portal_idx == entry_index)

@@ -8,6 +8,8 @@
 #include "playerio.hpp"
 #include "visualizations/imgui/imgui_interface.hpp"
 
+#include "vphysics_interface.h"
+
 ConVar y_spt_hud_shadow_info("y_spt_hud_shadow_info",
                              "0",
                              FCVAR_CHEAT,
@@ -104,7 +106,7 @@ void ShadowPosition::LoadFeature()
 				    spt_player_shadow.SetPlayerHavokRoll((float)df);
 			    ImGui::SameLine();
 			    SptImGui::CmdHelpMarkerWithName(y_spt_set_shadow_roll_command);
-				SptImGui::CvarCheckbox(y_spt_hud_shadow_info, "##checkbox_hud");
+			    SptImGui::CvarCheckbox(y_spt_hud_shadow_info, "##checkbox_hud");
 		    });
 	}
 }
@@ -147,24 +149,16 @@ void ShadowPosition::SetPlayerHavokPos(const Vector& worldPosition, const QAngle
 	}
 	else
 	{
-		// get virtual function at offset 0x30
-		typedef void(__thiscall * _EnableCollisions)(IPhysicsObject * thisptr, bool enable);
-		_EnableCollisions EnableCollisions = ((_EnableCollisions**)cPhysObject)[0][12];
-		EnableCollisions(cPhysObject, false);
+		cPhysObject->EnableCollisions(false);
 		ORIG_beam_object_to_new_position(pivp, &quat, &pos, true);
-		EnableCollisions(cPhysObject, true);
+		cPhysObject->EnableCollisions(true);
 	}
 }
 
 IPhysicsPlayerController* ShadowPosition::GetPlayerController()
 {
-	auto player = utils::GetServerPlayer();
-	if (!player)
-		return nullptr;
-	int off = spt_entprops.GetPlayerOffset("m_oldOrigin", true);
-	if (off == utils::INVALID_DATAMAP_OFFSET)
-		return nullptr;
-	// this is the closest field that's in the datamap, go back 3 pointers
-	off -= 12;
-	return ((IPhysicsPlayerController**)player)[off / 4];
+	constexpr int fOff = -3 * (int)sizeof(void*);
+	static utils::CachedField<IPhysicsPlayerController*, "CBasePlayer", "m_oldOrigin", true, true, fOff> fCont;
+	auto ppController = fCont.GetPtrPlayer();
+	return ppController ? *ppController : nullptr;
 }

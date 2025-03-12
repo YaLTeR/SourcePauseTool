@@ -34,7 +34,7 @@ namespace interfaces
 	extern IMaterialSystem* materialSystem;
 	extern IInputSystem* inputSystem;
 	extern IGameMovement* gm;
-	extern IClientEntityList* entList;
+	extern IClientEntityList* entListClient;
 	extern IVModelInfo* modelInfo;
 	extern IBaseClientDLL* clientInterface;
 	extern IEngineTrace* engineTraceClient;

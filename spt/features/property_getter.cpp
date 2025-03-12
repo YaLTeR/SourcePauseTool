@@ -1,8 +1,10 @@
 #include "stdafx.hpp"
 
-#include "property_getter.hpp"
 #include <vector>
+
+#include "property_getter.hpp"
 #include "ent_utils.hpp"
+#include "spt\utils\ent_list.hpp"
 
 PropMap PropertyGetterFeature::FindOffsets(IClientEntity* ent)
 {
@@ -42,7 +44,7 @@ int PropertyGetterFeature::GetOffset(int entindex, const std::string& key)
 
 RecvProp* PropertyGetterFeature::GetRecvProp(int entindex, const std::string& key)
 {
-	auto ent = utils::GetClientEntity(entindex);
+	auto ent = utils::spt_clientEntList.GetEnt(entindex);
 	std::string className = ent->GetClientClass()->m_pNetworkName;
 
 	if (classToOffsetsMap.find(className) == classToOffsetsMap.end())

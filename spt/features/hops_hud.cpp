@@ -860,14 +860,13 @@ void HopsHud::CalculateAbhVel()
 {
 	auto vel = spt_playerio.GetPlayerVelocity().Length2D();
 	auto ducked = spt_playerio.m_fFlags.GetValue() & FL_DUCKING;
-	auto sprinting = spt_propertyGetter.GetProperty<bool>(0, "m_fIsSprinting");
 	auto vars = spt_playerio.GetMovementVars();
 
 	float modifier;
 
 	if (ducked)
 		modifier = 0.1;
-	else if (sprinting)
+	else if (spt_propertyGetter.GetProperty<bool>(1, "m_fIsSprinting"))
 		modifier = 0.5;
 	else
 		modifier = 1;

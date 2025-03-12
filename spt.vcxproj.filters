@@ -397,6 +397,12 @@
     <ClCompile Include="spt\features\game_fixes\caption_fix.cpp">
       <Filter>spt\features\game_fixes</Filter>
     </ClCompile>
+    <ClCompile Include="spt\utils\ent_list_client.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\utils\ent_list_server.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
     <ClCompile Include="spt\features\create_collide.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
@@ -824,6 +830,9 @@
     </ClInclude>
     <ClInclude Include="spt\features\visualizations\imgui\imgui_styles.hpp">
       <Filter>spt\features\visualizations\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\ent_list.hpp">
+      <Filter>spt\utils</Filter>
     </ClInclude>
     <ClInclude Include="spt\features\create_collide.hpp">
       <Filter>spt\features</Filter>

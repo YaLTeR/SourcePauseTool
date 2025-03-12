@@ -7,6 +7,7 @@
 #include "afterticks.hpp"
 #include "ent_utils.hpp"
 #include "game_detection.hpp"
+#include "spt\utils\ent_list.hpp"
 
 ConVar spt_on_portalled_pause_for("spt_on_portalled_pause_for",
                                   "0",
@@ -65,7 +66,7 @@ IMPL_HOOK_THISCALL(PortalledPause, void, TeleportTouchingEntity, void*, void* pO
 {
 	spt_portalled_pause_feat.ORIG_TeleportTouchingEntity(thisptr, pOther);
 
-	if (pOther != utils::GetServerPlayer())
+	if (pOther != utils::spt_serverEntList.GetPlayer())
 		return;
 
 	const auto pauseFor = spt_on_portalled_pause_for.GetInt();

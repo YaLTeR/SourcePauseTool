@@ -16,6 +16,7 @@
 #include "spt\utils\convar.hpp"
 #include "..\strafe\strafestuff.hpp"
 #include "visualizations/imgui/imgui_interface.hpp"
+#include "overlay.hpp"
 
 #ifdef SSDK2007
 #include "mathlib\vmatrix.h"
@@ -395,8 +396,12 @@ Vector PlayerIOFeature::GetPlayerVelocity()
 	return m_vecAbsVelocity.GetValue();
 }
 
-Vector PlayerIOFeature::GetPlayerEyePos()
+Vector PlayerIOFeature::GetPlayerEyePos(bool newVersion)
 {
+	if (newVersion)
+		return utils::GetPlayerEyePosition();
+
+	// incorrect for cases with roll - uncrafted
 	Vector rval = m_vecAbsOrigin.GetValue();
 	constexpr float duckOffset = 28;
 	constexpr float standingOffset = 64;
@@ -455,7 +460,7 @@ bool PlayerIOFeature::IsGroundEntitySet()
 	if (tas_strafe_version.GetInt() <= 4)
 	{
 		// This is bugged around portals, here for backwards compat
-		auto player = spt_entprops.GetPlayer(false);
+		auto player = utils::spt_clientEntList.GetPlayer();
 		if (ORIG_GetGroundEntity == nullptr || !player)
 			return false;
 		else
@@ -626,34 +631,24 @@ CON_COMMAND(_y_spt_getvel, "Gets the last velocity of the player.")
 #ifdef SPT_PORTAL_UTILS
 CON_COMMAND(y_spt_print_portals, "Prints info for all portals")
 {
-	bool found = false;
-	for (int i = 0; i < MAX_EDICTS; ++i)
+	auto& portalList = utils::GetPortalList();
+	for (auto& portal : portalList)
 	{
-		auto ent = utils::GetClientEntity(i);
-		if (!invalidPortal(ent))
-		{
-			found = true;
-			auto color = spt_propertyGetter.GetProperty<bool>(i, "m_bIsPortal2") ? "orange" : "blue";
-			int remoteIdx = spt_propertyGetter.GetProperty<int>(i, "m_hLinkedPortal");
-			bool activated = spt_propertyGetter.GetProperty<bool>(i, "m_bActivated");
-			bool closed = (remoteIdx & INDEX_MASK) == INDEX_MASK;
-			auto openStr = closed ? (activated ? "a closed" : "an invisible") : "an open";
-			const auto& origin = utils::GetPortalPosition(ent);
-			const auto& angles = utils::GetPortalAngles(ent);
-
-			Msg("SPT: There's %s %s portal with index %d at %.9f %.9f %.9f with angles %.9f %.9f %.9f.\n",
-			    openStr,
-			    color,
-			    i,
-			    origin.x,
-			    origin.y,
-			    origin.z,
-			    angles.x,
-			    angles.y,
-			    angles.z);
-		}
+		const char* colorStr = portal.isOrange ? "orange" : "blue";
+		const char* openStr = portal.isOpen ? "an open" : (portal.isActivated ? "a closed" : "an invisible");
+		Msg("SPT: There's %s %s portal with index %d (linked=%d) at %.9g %.9g %.9g with angles %.9g %.9g %.9g.\n",
+		    openStr,
+		    colorStr,
+		    portal.handle.GetEntryIndex(),
+		    portal.linkedHandle.IsValid() ? portal.linkedHandle.GetEntryIndex() : -1,
+		    portal.pos.x,
+		    portal.pos.y,
+		    portal.pos.z,
+		    portal.ang.x,
+		    portal.ang.y,
+		    portal.ang.z);
 	}
-	if (!found)
+	if (portalList.empty())
 		Msg("SPT: No portals!\n");
 }
 #endif
@@ -1069,9 +1064,11 @@ void PlayerIOFeature::LoadFeature()
 			    "ag_sg_tester",
 			    [this](std::string)
 			    {
-				    Vector v = spt_playerio.GetPlayerEyePos();
+				    // use player center
+				    Vector v = spt_playerio.m_vecAbsOrigin.GetValue();
+				    v += spt_playerio.GetFlagsDucking() ? Vector{0, 0, 18} : Vector{0, 0, 36};
 				    QAngle q;
-				    std::wstring result = calculateWillAGSG(v, q);
+				    std::wstring result = calculateWillAGSG(spt_overlay.GetOverlayPortal(), v, q);
 				    spt_hud_feat.DrawTopHudElement(L"ag sg: %s", result.c_str());
 			    },
 			    y_spt_hud_ag_sg_tester);

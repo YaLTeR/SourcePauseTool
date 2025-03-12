@@ -2,6 +2,7 @@
 
 #include "..\feature.hpp"
 #include "datamap_wrapper.hpp"
+#include "spt\utils\ent_list.hpp"
 
 enum class PropMode
 {
@@ -67,7 +68,6 @@ public:
 	PropMode ResolveMode(PropMode mode);
 	void PrintDatamaps();
 	void WalkDatamap(std::string key);
-	void* GetPlayer(bool server);
 
 protected:
 	bool tablesProcessed = false;
@@ -140,7 +140,7 @@ namespace utils
 	* additionalOffset can be used when the exact field you're looking for does not exist;
 	* you can instead reference a nearby field and add an offset from that in bytes.
 	*/
-	template<typename T, _tstring map, _tstring field, bool server, bool error, int additionalOffset = 0>
+	template<typename T, _tstring map, _tstring field, bool server, bool error = false, int additionalOffset = 0>
 	struct CachedField
 	{
 		int _off = INVALID_DATAMAP_OFFSET;
@@ -177,17 +177,63 @@ namespace utils
 
 		T* GetPtr(const void* ent)
 		{
-			Assert(ent);
-			if (!ent)
-				return nullptr;
-			if (!Exists())
+			if (!ent || !Exists()) [[unlikely]]
 				return nullptr;
 			return reinterpret_cast<T*>(reinterpret_cast<uint32_t>(ent) + _off + additionalOffset);
 		}
 
+		template<typename = std::enable_if_t<!error>>
+		T& GetValueOrDefault(const void* ent, T def = T{})
+		{
+			T* ptr = GetPtr(ent);
+			return ptr ? *ptr : def;
+		}
+
 		T* GetPtrPlayer()
 		{
-			return GetPtr(spt_entprops.GetPlayer(server));
+			if constexpr (server)
+				return GetPtr(utils::spt_serverEntList.GetPlayer());
+			return GetPtr(utils::spt_clientEntList.GetPlayer());
+		}
+
+		template<typename = std::enable_if_t<!error>>
+		T& GetValueOrDefaultPlayer(T def = T{})
+		{
+			T* ptr = GetPtrPlayer();
+			return ptr ? *ptr : def;
+		}
+	};
+
+	/*
+	* Usage:
+	* static CachedField1<...> f1;
+	* static CachedField1<...> f2;
+	* static CachedField1<...> f3;
+	* 
+	* static CachedFields fs{f1, f2, f3};
+	* if (!fs.HasAll()) return; // or whatever
+	* auto [p1, p2, p3] = fs.GetAllPtrs(ent);
+	*/
+	template<typename... Fields>
+	struct CachedFields
+	{
+		std::tuple<Fields&...> _fields;
+
+		CachedFields(Fields&... fields) : _fields{fields...} {}
+
+		bool HasAll()
+		{
+			return (std::get<Fields&>(_fields).Exists() && ...);
+		}
+
+		auto GetAllPtrs(const void* ent)
+		{
+			return std::make_tuple(std::get<Fields&>(_fields).GetPtr(ent)...);
+		}
+
+		auto GetAllPtrsPlayer()
+		{
+			return std::make_tuple(std::get<Fields&>(_fields).GetPtrPlayer()...);
 		}
 	};
 } // namespace utils

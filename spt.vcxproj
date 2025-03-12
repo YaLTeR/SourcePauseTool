@@ -448,7 +448,7 @@ del "$(OutDir)spt-version.obj"</Command>
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>spt\utils;thirdparty\curl\include;.;SDK\episode1_new\include\common;SDK\episode1_new\include\public;SDK\episode1_new\include\public\tier0;SDK\episode1_new\include\public\tier1;SDK\episode1_new\include\game\server;SDK\episode1_new\include\game\client;SDK\episode1_new\include\game\shared;SPTLib\Windows\minhook\include;SPTLib\Windows\Minhook\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>spt\utils;thirdparty\curl\include;.;SDK\episode1_new\include\common;SDK\episode1_new\include\public;SDK\episode1_new\include\public\tier0;SDK\episode1_new\include\public\tier1;SDK\episode1_new\include\game_shared;SPTLib\Windows\minhook\include;SPTLib\Windows\Minhook\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>OE;WIN32;_WIN32;_DEBUG;DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;sptONLY;_MBCS;%(PreprocessorDefinitions);TARGET_NAME="$(TargetName).dll"</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -855,7 +855,7 @@ del "$(OutDir)spt-version.obj"</Command>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>spt\utils;thirdparty\curl\include;.;SDK\episode1_new\include\common;SDK\episode1_new\include\public;SDK\episode1_new\include\public\tier0;SDK\episode1_new\include\public\tier1;SDK\episode1_new\include\game\server;SDK\episode1_new\include\game\client;SDK\episode1_new\include\game\shared;SPTLib\Windows\minhook\include;SPTLib\Windows\Minhook\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>spt\utils;thirdparty\curl\include;.;SDK\episode1_new\include\common;SDK\episode1_new\include\public;SDK\episode1_new\include\public\tier0;SDK\episode1_new\include\public\tier1;SDK\episode1_new\include\game_shared;SPTLib\Windows\minhook\include;SPTLib\Windows\Minhook\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>OE;WIN32;_WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;sptONLY;_MBCS;%(PreprocessorDefinitions);TARGET_NAME="$(TargetName).dll"</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -1362,6 +1362,8 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClCompile Include="spt\strafe\strafestuff.cpp" />
     <ClCompile Include="spt\utils\convar.cpp" />
     <ClCompile Include="spt\utils\datamap_wrapper.cpp" />
+    <ClCompile Include="spt\utils\ent_list_client.cpp" />
+    <ClCompile Include="spt\utils\ent_list_server.cpp" />
     <ClCompile Include="spt\utils\ent_utils.cpp" />
     <ClCompile Include="spt\utils\file.cpp" />
     <ClCompile Include="spt\utils\game_detection.cpp" />
@@ -1496,6 +1498,7 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="spt\utils\convar.hpp" />
     <ClInclude Include="spt\utils\custom_interfaces.hpp" />
     <ClInclude Include="spt\utils\datamap_wrapper.hpp" />
+    <ClInclude Include="spt\utils\ent_list.hpp" />
     <ClInclude Include="spt\utils\ent_utils.hpp" />
     <ClInclude Include="spt\utils\file.hpp" />
     <ClInclude Include="spt\utils\game_detection.hpp" />

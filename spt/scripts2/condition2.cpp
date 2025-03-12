@@ -47,13 +47,13 @@ namespace scripts2
 
 	bool PosSpeedCondition::IsTrue(int tick, int totalTicks) const
 	{
-		if (!utils::playerEntityAvailable())
+		if (!utils::spt_clientEntList.GetPlayer())
 			return false;
 
 		Vector v;
 
 		if (isPos)
-			v = spt_playerio.GetPlayerEyePos();
+			v = spt_playerio.GetPlayerEyePos(true);
 		else
 			v = spt_playerio.GetPlayerVelocity();
 
@@ -104,19 +104,19 @@ namespace scripts2
 
 	bool AliveCondition::IsTrue(int tick, int totalTicks) const
 	{
-		return !utils::playerEntityAvailable() || spt_propertyGetter.GetProperty<int>(0, "m_iHealth") > 0;
+		return !utils::spt_clientEntList.GetPlayer() || spt_propertyGetter.GetProperty<int>(1, "m_iHealth") > 0;
 	}
 
 	bool AliveCondition::ShouldTerminate(int tick, int totalTicks) const
 	{
-		return utils::playerEntityAvailable() && spt_propertyGetter.GetProperty<int>(0, "m_iHealth") <= 0;
+		return utils::spt_clientEntList.GetPlayer() && spt_propertyGetter.GetProperty<int>(1, "m_iHealth") <= 0;
 	}
 
 	LoadCondition::LoadCondition() {}
 
 	bool LoadCondition::IsTrue(int tick, int totalTicks) const
 	{
-		return !utils::playerEntityAvailable();
+		return !utils::spt_clientEntList.GetPlayer();
 	}
 
 	bool LoadCondition::ShouldTerminate(int tick, int totalTicks) const
@@ -132,7 +132,7 @@ namespace scripts2
 
 	bool VelAngleCondition::IsTrue(int tick, int totalTicks) const
 	{
-		if (!utils::playerEntityAvailable())
+		if (!utils::spt_clientEntList.GetPlayer())
 			return false;
 
 		Vector v = spt_playerio.GetPlayerVelocity();
@@ -158,7 +158,7 @@ namespace scripts2
 
 	bool PBubbleCondition::IsTrue(int tick, int totalTicks) const
 	{
-		return (GetEnvironmentPortal() == NULL) ^ searchForInBubble;
+		return !utils::GetEnvironmentPortal() ^ searchForInBubble;
 	}
 
 	bool PBubbleCondition::ShouldTerminate(int tick, int totalTicks) const

@@ -35,7 +35,7 @@ public:
 	bool GetFlagsDucking();
 	Strafe::PlayerData GetPlayerData();
 	Vector GetPlayerVelocity();
-	Vector GetPlayerEyePos();
+	Vector GetPlayerEyePos(bool newVersion);
 	double GetDuckJumpTime();
 	bool IsGroundEntitySet();
 	bool TryJump();

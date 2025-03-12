@@ -161,7 +161,7 @@ void DrawSeamsFeature::OnMeshRenderSignal(MeshRendererDelegate& mr)
 {
 	if (!y_spt_draw_seams.GetBool())
 		return;
-	auto player = utils::GetServerPlayer();
+	auto player = utils::spt_serverEntList.GetPlayer();
 	if (!player)
 		return;
 
@@ -169,9 +169,8 @@ void DrawSeamsFeature::OnMeshRenderSignal(MeshRendererDelegate& mr)
 	static utils::CachedField<QAngle, "CBasePlayer", "pl.v_angle", true, true> vangle;
 	QAngle angles = *vangle.GetPtrPlayer();
 
-	auto env = GetEnvironmentPortal();
-	if (env)
-		transformThroughPortal(env, cameraPosition, angles, cameraPosition, angles);
+	auto env = utils::GetEnvironmentPortal();
+	transformThroughPortal(env, cameraPosition, angles, cameraPosition, angles);
 
 	Vector dir;
 	AngleVectors(angles, &dir);
