@@ -219,9 +219,9 @@ extern _DoNewAssertDialog DoNewAssertDialog;
 		if (!(_exp)) 													\
 		{ 																\
 			_SpewInfo( SPEW_ASSERT, __TFILE__, __LINE__ );				\
-			SpewRetval_t ret = _SpewMessage("%s", _msg);	\
+			SpewRetval_t _ret = _SpewMessage("%s", _msg);	\
 			_executeExp; 												\
-			if ( ret == SPEW_DEBUGGER)									\
+			if ( _ret == SPEW_DEBUGGER)									\
 			{															\
 				if ( !ShouldUseNewAssertDialog() || DoNewAssertDialog( __TFILE__, __LINE__, _msg ) ) \
 					DebuggerBreak();									\
