@@ -24,7 +24,8 @@ ConVar y_spt_draw_vag_entry_portal(
     "y_spt_draw_vag_entry_portal",
     "overlay",
     FCVAR_CHEAT,
-    "Chooses the portal for the VAG trace. Valid options are overlay/blue/orange/portal index. This is the portal you enter.");
+    "Chooses the portal for the VAG trace, this is the portal you enter. Valid options are:\n"
+    "" SPT_PORTAL_SELECT_DESCRIPTION_OVERLAY_PREFIX "" SPT_PORTAL_SELECT_DESCRIPTION);
 
 ConVar y_spt_draw_vag_lock_entry("y_spt_draw_vag_lock_entry",
                                  "1",
@@ -54,28 +55,10 @@ class VagTrace : public FeatureWrapper<VagTrace>
 public:
 	Vector target{0};
 
-	struct PortalInfo
-	{
-		int index;
-		bool isOrange;
-		Vector pos;
-		QAngle ang;
-
-		bool operator==(const PortalInfo& p) const
-		{
-			return index == p.index && isOrange == p.isOrange && pos == p.pos && ang == p.ang;
-		}
-
-		bool operator!=(const PortalInfo& p) const
-		{
-			return !(*this == p);
-		}
-	};
-
 	struct
 	{
 		std::string lastPortalType;
-		PortalInfo entryPortal, exitPortal;
+		utils::PortalInfo entryPortal;
 
 		matrix3x4_t entryMat, exitMat, entryInvMat, exitInvMat, entryTpMat, exitTpMat;
 		Vector entryNorm, exitNorm;
@@ -107,18 +90,6 @@ public:
 
 	} cache;
 
-	static bool GetPortalInfo(int index, PortalInfo& info)
-	{
-		IClientEntity* portal = utils::GetClientEntity(index);
-		if (!portal)
-			return false;
-		info.index = index;
-		info.pos = portal->GetAbsOrigin();
-		info.ang = portal->GetAbsAngles();
-		info.isOrange = strstr(utils::GetModelName(portal), "portal2");
-		return true;
-	}
-
 	bool ShouldLoadFeature() override
 	{
 		return utils::DoesGameLookLikePortal();
@@ -132,16 +103,8 @@ public:
 	* This is an attempt to keep things somewhat modular - the data calculation and drawing are done separately.
 	*/
 
-	enum struct CacheCheckResult
-	{
-		CacheValid,
-		CacheInvalid,
-		NoValidPortals
-	};
-
 	void OnMeshRenderSignal(MeshRendererDelegate& mr);
 
-	CacheCheckResult CheckCache();
 	void RecomputeCache();
 	bool CalcFreeEntryPortalPos(const matrix3x4_t& entryRotMat, Vector& entryPosOut);
 	void CalcFreeExitPortalPos(const matrix3x4_t& exitRotMat, Vector& exitPosOut);
@@ -154,8 +117,8 @@ static VagTrace spt_vag_trace;
 
 CON_COMMAND(y_spt_draw_vag_target_set, "Set VAG target\n")
 {
-	spt_vag_trace.target = spt_playerio.GetPlayerEyePos();
-	spt_vag_trace.cache.entryPortal.index = -1; // invalidate cache
+	spt_vag_trace.target = spt_playerio.GetPlayerEyePos(true);
+	spt_vag_trace.cache.entryPortal.Invalidate();
 }
 
 void VagTrace::LoadFeature()
@@ -194,15 +157,16 @@ void VagTrace::OnMeshRenderSignal(MeshRendererDelegate& mr)
 		            { MatrixSetColumn(target, 3, infoOut.mat); });
 	}
 
-	switch (CheckCache())
+	const utils::PortalInfo* newPortal = getPortal(y_spt_draw_vag_entry_portal.GetString(), true, false);
+	if (!newPortal)
 	{
-	case CacheCheckResult::CacheValid:
-		break;
-	case CacheCheckResult::CacheInvalid:
-		RecomputeCache();
-		break;
-	case CacheCheckResult::NoValidPortals:
+		cache.entryPortal.Invalidate();
 		return;
+	}
+	if (cache.entryPortal != *newPortal)
+	{
+		cache.entryPortal = *newPortal;
+		RecomputeCache();
 	}
 
 	if (y_spt_draw_vag_trace.GetBool())
@@ -211,81 +175,12 @@ void VagTrace::OnMeshRenderSignal(MeshRendererDelegate& mr)
 		DrawTargetTrace(mr);
 }
 
-VagTrace::CacheCheckResult VagTrace::CheckCache()
-{
-	extern ConVar _y_spt_overlay_portal;
-
-	PortalInfo curEntryPortal, curExitPortal;
-
-	const char* usePortalStr = strcmp(y_spt_draw_vag_entry_portal.GetString(), "overlay")
-	                               ? y_spt_draw_vag_entry_portal.GetString()
-	                               : _y_spt_overlay_portal.GetString();
-	bool usingAuto = !strcmp(usePortalStr, "auto");
-	IClientEntity* envPortal = usingAuto ? GetEnvironmentPortal() : nullptr;
-	if (usingAuto && envPortal)
-		GetPortalInfo(envPortal->entindex(), curEntryPortal); // using auto => curEntryPortal has player's env
-
-	// check if we can use our cached portals
-
-	if (usePortalStr != cache.lastPortalType)
-	{
-		curEntryPortal.index = -1; // cvar value changed
-		curExitPortal.index = -1;
-	}
-	else if (usingAuto && (!envPortal || curEntryPortal != cache.entryPortal))
-	{
-		curEntryPortal.index = -1; // using auto but not in env or env portal doesn't match cache
-		curExitPortal.index = -1;
-	}
-	else if (!GetPortalInfo(cache.entryPortal.index, curEntryPortal) || curEntryPortal != cache.entryPortal)
-	{
-		curEntryPortal.index = -1; // last entry portal doesn't match cache
-		curExitPortal.index = -1;
-	}
-	else if (!GetPortalInfo(cache.exitPortal.index, curExitPortal) || curExitPortal != cache.exitPortal)
-	{
-		curExitPortal.index = -1; // last linked portal doesn't match
-	}
-
-	IClientEntity *entryPortalEnt, *exitPortalEnt;
-
-	// cached entry is invalid, search all ents for a new portal
-	if (curEntryPortal.index == -1)
-	{
-		entryPortalEnt = getPortal(usePortalStr, false);
-		if (entryPortalEnt)
-			GetPortalInfo(entryPortalEnt->entindex() - 1, cache.entryPortal);
-		else
-			return CacheCheckResult::NoValidPortals;
-	}
-	else
-	{
-		entryPortalEnt = utils::GetClientEntity(cache.entryPortal.index);
-		Assert(entryPortalEnt);
-	}
-
-	// cached exit is invalid
-	if (curExitPortal.index == -1)
-	{
-		exitPortalEnt = utils::FindLinkedPortal(entryPortalEnt);
-		if (exitPortalEnt)
-			GetPortalInfo(exitPortalEnt->entindex() - 1, cache.exitPortal);
-		else
-			return CacheCheckResult::NoValidPortals;
-	}
-	cache.lastPortalType = usePortalStr;
-
-	if (curEntryPortal.index == -1 || curExitPortal.index == -1)
-		return CacheCheckResult::CacheInvalid;
-	return CacheCheckResult::CacheValid;
-}
-
 void VagTrace::RecomputeCache()
 {
 	// start with world->portal & teleport matrices, we'll be using those for everything else
 
 	AngleMatrix(cache.entryPortal.ang, cache.entryPortal.pos, cache.entryMat);
-	AngleMatrix(cache.exitPortal.ang, cache.exitPortal.pos, cache.exitMat);
+	AngleMatrix(cache.entryPortal.linkedAng, cache.entryPortal.linkedPos, cache.exitMat);
 	MatrixInvert(cache.entryMat, cache.entryInvMat);
 	MatrixInvert(cache.exitMat, cache.exitInvMat);
 	MatrixGetColumn(cache.entryMat, 0, cache.entryNorm);
@@ -351,7 +246,7 @@ void VagTrace::RecomputeCache()
 			Vector delta;
 			MatrixGetColumn(cache.exitMat, ax, delta);
 			matrix3x4_t fakeExitMat = cache.exitMat;
-			MatrixSetColumn(cache.exitPortal.pos + delta, 3, fakeExitMat);
+			MatrixSetColumn(cache.entryPortal.linkedPos + delta, 3, fakeExitMat);
 			MatrixInvert(fakeExitMat, fakeExitMat);
 			Vector pos = cache.entryPortal.pos;
 			utils::VectorTransform(fakeExitMat, pos);
@@ -427,13 +322,15 @@ void VagTrace::RecomputeCache()
 
 		int numValid = 0;
 		for (int yaw = 0; yaw < 360 && numValid < 2; yaw += 120)
-			if (CalcFreeEntryPortalPos(angToMat({90, static_cast<float>(yaw), 0}), cache.entryCeilingSetForTarget.v[numValid]))
+			if (CalcFreeEntryPortalPos(angToMat({90, static_cast<float>(yaw), 0}),
+			                           cache.entryCeilingSetForTarget.v[numValid]))
 				numValid++;
 		cache.entryCeilingSetForTarget.exists = numValid == 2;
 
 		numValid = 0;
 		for (int yaw = 0; yaw < 360 && numValid < 2; yaw += 120)
-			if (CalcFreeEntryPortalPos(angToMat({-90, static_cast<float>(yaw), 0}), cache.entryFloorSetForTarget.v[numValid]))
+			if (CalcFreeEntryPortalPos(angToMat({-90, static_cast<float>(yaw), 0}),
+			                           cache.entryFloorSetForTarget.v[numValid]))
 				numValid++;
 		cache.entryFloorSetForTarget.exists = numValid == 2;
 
@@ -519,18 +416,19 @@ void VagTrace::CalcFreeExitPortalPos(const matrix3x4_t& exitRotMat, Vector& exit
 void VagTrace::DrawTrace(MeshRendererDelegate& mr)
 {
 	// draw lines between portals and to VAG destination
-	mr.DrawMesh(spt_meshBuilder.CreateDynamicMesh(
-	                [&](MeshBuilderDelegate& mb)
-	                {
-		                mb.AddLine(cache.exitPortal.pos, cache.entryPortal.pos, {{255, 0, 255, 255}, false});
-		                mb.AddLine(cache.entryPortal.pos, cache.vagDestination, {{175, 0, 175, 255}, false});
-		                mb.AddSphere(cache.vagDestination, 1, 1, {C_FACE(255, 255, 255, 255), false});
-	                }),
-	            [](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
-	            {
-		            if (infoIn.portalRenderDepth > 0)
-			            infoOut.skipRender = true;
-	            });
+	mr.DrawMesh(
+	    spt_meshBuilder.CreateDynamicMesh(
+	        [&](MeshBuilderDelegate& mb)
+	        {
+		        mb.AddLine(cache.entryPortal.linkedPos, cache.entryPortal.pos, {{255, 0, 255, 255}, false});
+		        mb.AddLine(cache.entryPortal.pos, cache.vagDestination, {{175, 0, 175, 255}, false});
+		        mb.AddSphere(cache.vagDestination, 1, 1, {C_FACE(255, 255, 255, 255), false});
+	        }),
+	    [](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+	    {
+		    if (infoIn.portalRenderDepth > 0)
+			    infoOut.skipRender = true;
+	    });
 
 	static StaticMesh arrowMesh, circleMesh;
 	if (!arrowMesh.Valid() || !circleMesh.Valid())
@@ -599,7 +497,7 @@ void VagTrace::DrawTrace(MeshRendererDelegate& mr)
 
 	// draw the set of all possible VAG destinations that can be achieved by rotating entry/exit portal
 	bool floorOrCeilingEntry = abs(abs(cache.entryPortal.ang.x) - 90) < 0.04;
-	bool floorOrCeilingExit = abs(abs(cache.exitPortal.ang.x) - 90) < 0.04;
+	bool floorOrCeilingExit = abs(abs(cache.entryPortal.linkedAng.x) - 90) < 0.04;
 	if ((floorOrCeilingEntry && ShouldDrawForFreeEntry()) || (floorOrCeilingExit && ShouldDrawForFreeExit()))
 	{
 		mr.DrawMesh(circleMesh,

@@ -5,6 +5,7 @@
 #include "ent_utils.hpp"
 #include "signals.hpp"
 #include "..\visualizations\imgui\imgui_interface.hpp"
+#include "spt\utils\ent_list.hpp"
 
 typedef void(__cdecl* _DoImageSpaceMotionBlur)(void* view, int x, int y, int w, int h);
 typedef void(__fastcall* _CViewEffects__Fade)(void* thisptr, int edx, void* data);
@@ -291,7 +292,7 @@ void __cdecl VisualFixes::HOOKED_ResetToneMapping(float value)
 #ifndef OE
 void __fastcall VisualFixes::HOOKED_C_BaseAnimating__SetSequence(void* thisptr, int edx, int nSequence)
 {
-	if (nSequence == 0 && thisptr == utils::GetPlayer()) // t-pose player
+	if (nSequence == 0 && thisptr == utils::spt_clientEntList.GetPlayer()) // t-pose player
 		nSequence = y_spt_override_tpose.GetInt();
 	spt_visual_fixes.ORIG_C_BaseAnimating__SetSequence(thisptr, edx, nSequence);
 }

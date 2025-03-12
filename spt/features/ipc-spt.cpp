@@ -210,7 +210,7 @@ CON_COMMAND(y_spt_ipc_ent, "Outputs entity data to IPC client.\n")
 	nlohmann::json msg;
 	msg["type"] = "ent";
 	int index = std::atoi(args.Arg(1));
-	auto ent = utils::GetClientEntity(index);
+	auto ent = utils::spt_clientEntList.GetEnt(index);
 
 	if (!ent)
 	{
@@ -243,7 +243,7 @@ CON_COMMAND(y_spt_ipc_properties, "Outputs entity properties to IPC client.\n")
 	nlohmann::json msg;
 	msg["type"] = "ent";
 	int index = std::atoi(args.Arg(1));
-	auto ent = utils::GetClientEntity(index);
+	auto ent = utils::spt_clientEntList.GetEnt(index);
 
 	if (!ent)
 	{

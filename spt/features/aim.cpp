@@ -37,7 +37,7 @@ void AimFeature::HandleAiming(float* va, bool& yawChanged, const Strafe::StrafeI
 		}
 		else
 		{
-			IClientEntity* ent = utils::GetClientEntity(viewState.targetID);
+			IClientEntity* ent = utils::spt_clientEntList.GetEnt(viewState.targetID);
 			if (!ent)
 			{
 				spt_aim.viewState.state = aim::ViewState::AimState::NO_AIM;
@@ -167,7 +167,7 @@ CON_COMMAND(tas_aim, "Aims at an angle")
 
 	if (cone >= 0)
 	{
-		if (!utils::playerEntityAvailable())
+		if (!utils::spt_clientEntList.GetPlayer())
 		{
 			Warning(
 			    "Trying to apply nospread while map not loaded in! Wait until map is loaded before issuing spt_tas_aim with spread cone set.\n");
@@ -258,6 +258,9 @@ CON_COMMAND(tas_aim_ent, "Aim at the absolute origin of a entity with offsets (o
 
 	spt_aim.viewState.state = aim::ViewState::AimState::ENTITY;
 	spt_aim.viewState.targetID = std::atoi(args.Arg(1));
+	extern ConVar tas_strafe_version;
+	if (tas_strafe_version.GetInt() < 8)
+		spt_aim.viewState.targetID += 1; // backwards compat for old entity index logic
 
 	if (frames == -1)
 	{
@@ -320,7 +323,8 @@ CON_COMMAND(_y_spt_setangle,
 		target.y = atof(args.Arg(2));
 		target.z = atof(args.Arg(3));
 
-		Vector player_origin = spt_playerio.GetPlayerEyePos();
+		extern ConVar tas_strafe_version;
+		Vector player_origin = spt_playerio.GetPlayerEyePos(tas_strafe_version.GetInt() >= 8);
 		Vector diff = (target - player_origin);
 		QAngle angles;
 		VectorAngles(diff, angles);

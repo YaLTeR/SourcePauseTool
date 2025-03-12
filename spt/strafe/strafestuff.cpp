@@ -76,13 +76,13 @@ namespace Strafe
 
 	void SetMoveData()
 	{
-		data.m_nPlayerHandle = utils::GetServerPlayer()->GetRefEHandle();
+		data.m_nPlayerHandle = utils::spt_serverEntList.GetPlayer()->GetRefEHandle();
 		void** player = reinterpret_cast<void**>((uintptr_t*)interfaces::gm + spt_autojump.off_player_ptr);
 		CMoveData** mv = reinterpret_cast<CMoveData**>((uintptr_t*)interfaces::gm + spt_autojump.off_mv_ptr);
 		oldmv = *mv;
 		oldPlayer = *player;
 		*mv = &data;
-		*player = utils::GetServerPlayer();
+		*player = utils::spt_serverEntList.GetPlayer();
 	}
 
 	void UnsetMoveData()
@@ -130,7 +130,7 @@ namespace Strafe
 
 			spt_tracing.ORIG_UTIL_TraceRay(ray,
 			                               MASK_PLAYERSOLID_BRUSHONLY,
-			                               utils::GetClientEntity(0),
+			                               utils::spt_clientEntList.GetPlayer(),
 			                               COLLISION_GROUP_PLAYER_MOVEMENT,
 			                               &trace);
 		}
@@ -168,7 +168,7 @@ namespace Strafe
 		ray.Init(start, end);
 		spt_tracing.ORIG_UTIL_TraceRay(ray,
 		                               MASK_PLAYERSOLID_BRUSHONLY,
-		                               utils::GetClientEntity(0),
+		                               utils::spt_clientEntList.GetPlayer(),
 		                               COLLISION_GROUP_PLAYER_MOVEMENT,
 		                               &trace);
 #endif
@@ -181,7 +181,7 @@ namespace Strafe
 	bool CanUnduck(const PlayerData& player)
 	{
 		if ((player.DuckPressed && !tas_strafe_autojb.GetBool()) || !tas_strafe_use_tracing.GetBool()
-		    || !utils::GetServerPlayer())
+		    || !utils::spt_serverEntList.GetPlayer())
 			return false;
 		else
 		{
@@ -201,7 +201,7 @@ namespace Strafe
 		int strafe_version = tas_strafe_version.GetInt();
 
 		if (!tas_strafe_use_tracing.GetBool() || strafe_version == 0 || !CanTrace()
-		    || !utils::GetServerPlayer())
+		    || !utils::spt_serverEntList.GetPlayer())
 		{
 			if (spt_playerio.IsGroundEntitySet())
 				return PositionType::GROUND;

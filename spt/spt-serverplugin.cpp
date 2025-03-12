@@ -60,7 +60,7 @@ namespace interfaces
 	IMaterialSystem* materialSystem = nullptr;
 	IInputSystem* inputSystem = nullptr;
 	IGameMovement* gm = nullptr;
-	IClientEntityList* entList;
+	IClientEntityList* entListClient = nullptr;
 	IVModelInfo* modelInfo;
 	IBaseClientDLL* clientInterface;
 	IEngineTrace* engineTraceClient = nullptr;
@@ -88,12 +88,6 @@ ConVar* _sv_cheats = nullptr;
 extern ConVar tas_force_airaccelerate;
 extern ConVar tas_force_wishspeed_cap;
 extern ConVar tas_reset_surface_friction;
-
-// useful helper func
-inline bool FStrEq(const char* sz1, const char* sz2)
-{
-	return (stricmp(sz1, sz2) == 0);
-}
 
 void CallServerCommand(const char* cmd)
 {
@@ -317,7 +311,7 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	interfaces::inputSystem = (IInputSystem*)interfaceFactory(INPUTSYSTEM_INTERFACE_VERSION, NULL);
 
 	auto clientFactory = Sys_GetFactory("client");
-	interfaces::entList = (IClientEntityList*)clientFactory(VCLIENTENTITYLIST_INTERFACE_VERSION, NULL);
+	interfaces::entListClient = (IClientEntityList*)clientFactory(VCLIENTENTITYLIST_INTERFACE_VERSION, NULL);
 	interfaces::modelInfo = (IVModelInfo*)interfaceFactory(VMODELINFO_SERVER_INTERFACE_VERSION, NULL);
 	interfaces::clientInterface = (IBaseClientDLL*)clientFactory(CLIENT_DLL_INTERFACE_VERSION, NULL);
 	interfaces::engineTraceClient = (IEngineTrace*)interfaceFactory(INTERFACEVERSION_ENGINETRACE_CLIENT, NULL);
@@ -436,8 +430,8 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	if (!interfaces::inputSystem)
 		DevWarning("SPT: Failed to get the input system interface.\n");
 
-	if (!interfaces::entList)
-		DevWarning("Unable to retrieve entitylist interface.\n");
+	if (!interfaces::entListClient)
+		DevWarning("Unable to retrieve client entity list interface.\n");
 
 	if (!interfaces::modelInfo)
 		DevWarning("Unable to retrieve the model info interface.\n");

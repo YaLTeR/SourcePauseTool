@@ -302,7 +302,7 @@ void __fastcall GenericFeature::HOOKED_ControllerMove(void* thisptr, int edx, fl
 
 	spt_tas.Strafe();
 
-	if (utils::playerEntityAvailable())
+	if (utils::spt_clientEntList.GetPlayer())
 	{
 		OngroundSignal(spt_playerio.IsGroundEntitySet());
 		AdjustAngles();

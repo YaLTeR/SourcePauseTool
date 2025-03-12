@@ -27,6 +27,8 @@ class ITraceFilter;
 #include "SDK\cmodel_private.h"
 #pragma pop_macro("ENGINE_DLL")
 
+#include "spt\utils\ent_list.hpp"
+
 // for TraceLineWithWorldInfoServer()
 struct WorldHitInfo
 {
@@ -45,12 +47,11 @@ struct WorldHitInfo
 	}
 };
 
-template<bool server>
 struct TraceFilterIgnorePlayer : public CTraceFilter
 {
 	virtual bool ShouldHitEntity(IHandleEntity* pEntity, int contentsMask) override
 	{
-		return pEntity != spt_entprops.GetPlayer(server);
+		return pEntity->GetRefEHandle().GetEntryIndex() != 1;
 	}
 };
 

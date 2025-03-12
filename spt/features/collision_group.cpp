@@ -2,6 +2,7 @@
 #include "ent_utils.hpp"
 #include "..\feature.hpp"
 #include "visualizations\imgui\imgui_interface.hpp"
+#include "spt\utils\ent_list.hpp"
 
 namespace patterns
 {
@@ -54,7 +55,7 @@ CON_COMMAND_F(y_spt_set_collision_group,
 		return;
 	}
 
-	auto playerPtr = utils::GetServerPlayer();
+	auto playerPtr = utils::spt_serverEntList.GetPlayer();
 	if (!playerPtr)
 	{
 		Warning("Server player not available\n");
@@ -80,6 +81,10 @@ void CollisionGroup::LoadFeature()
 
 void CollisionGroup::ImGuiCallback()
 {
+	auto playerPtr = utils::spt_serverEntList.GetPlayer();
+	ImGui::BeginDisabled(!playerPtr);
+	ImGui::BeginGroup();
+
 	const char* groups[LAST_SHARED_COLLISION_GROUP] = {
 	    STR(COLLISION_GROUP_NONE),
 	    STR(COLLISION_GROUP_DEBRIS),
@@ -121,10 +126,9 @@ void CollisionGroup::ImGuiCallback()
 		ImGui::EndCombo();
 	}
 	ImGui::SameLine();
-	auto playerPtr = utils::GetServerPlayer();
-	ImGui::BeginDisabled(!playerPtr);
 	if (ImGui::Button("set"))
 		spt_collisiongroup.ORIG_SetCollisionGroup(playerPtr, val);
+	ImGui::EndGroup();
 	ImGui::EndDisabled();
 	if (!playerPtr)
 		ImGui::SetItemTooltip("server player not available");

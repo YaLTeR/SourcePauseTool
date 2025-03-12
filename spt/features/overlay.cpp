@@ -30,12 +30,21 @@ ConVar _y_spt_overlay_type("_y_spt_overlay_type",
                            "  1 = angle glitch simulation\n"
                            "  2 = rear view mirror\n"
                            "  3 = havok view mirror\n"
-                           "  4 = no camera transform (even when behind SG portal)\n");
+                           "  4 = no camera transform (even when behind SG portal)\n",
+                           true,
+                           0,
+                           true,
+                           4);
+
+#ifdef SPT_PORTAL_UTILS
 ConVar _y_spt_overlay_portal(
     "_y_spt_overlay_portal",
-    "auto",
+    "env",
     FCVAR_CHEAT,
-    "Chooses the portal for the overlay camera. Valid options are blue/orange/portal index. For the SG camera this is the portal you save glitch on, for angle glitch simulation this is the portal you enter.\n");
+    "Chooses the portal for the overlay camera. For the SG camera this is the portal you save glitch on, for angle glitch simulation this is the portal you enter. Valid values are:\n"
+    "" SPT_PORTAL_SELECT_DESCRIPTION_AUTO_PREFIX "" SPT_PORTAL_SELECT_DESCRIPTION);
+#endif
+
 ConVar _y_spt_overlay_width("_y_spt_overlay_width",
                             "480",
                             FCVAR_CHEAT,
@@ -82,6 +91,13 @@ namespace patterns
 	PATTERNS(CViewRender__RenderView_4044, "4044", "81 EC 98 00 00 00 53 55 56 57 6A 00 6A 00");
 } // namespace patterns
 
+#ifdef SPT_PORTAL_UTILS
+const utils::PortalInfo* Overlay::GetOverlayPortal()
+{
+	return getPortal(_y_spt_overlay_portal.GetString(), false, false);
+}
+#endif
+
 void Overlay::InitHooks()
 {
 #ifndef OE
@@ -120,15 +136,17 @@ void Overlay::LoadFeature()
 
 	InitConcommandBase(_y_spt_overlay);
 	InitConcommandBase(_y_spt_overlay_type);
+#ifdef SPT_PORTAL_UTILS
 	InitConcommandBase(_y_spt_overlay_portal);
+#endif
 	InitConcommandBase(_y_spt_overlay_width);
 	InitConcommandBase(_y_spt_overlay_fov);
 	InitConcommandBase(_y_spt_overlay_swap);
 	InitConcommandBase(_y_spt_overlay_no_roll);
 
 #ifdef SPT_HUD_ENABLED
-	bool result = spt_hud_feat.AddHudDefaultGroup(HudCallback(
-	    std::bind(&Overlay::DrawCrosshair, this), []() { return true; }, true));
+	bool result = spt_hud_feat.AddHudDefaultGroup(
+	    HudCallback(std::bind(&Overlay::DrawCrosshair, this), []() { return true; }, true));
 
 	if (result)
 	{
@@ -283,11 +301,11 @@ void Overlay::ModifyView(CViewSetup* renderView)
 #ifdef SPT_PORTAL_UTILS
 		case 0: // saveglitch offset
 			if (utils::DoesGameLookLikePortal())
-				calculateSGPosition(renderView->origin, renderView->angles);
+				calculateSGPosition(GetOverlayPortal(), renderView->origin, renderView->angles);
 			break;
 		case 1: // angle glitch tp pos
 			if (utils::DoesGameLookLikePortal())
-				calculateAGPosition(renderView->origin, renderView->angles);
+				calculateAGPosition(GetOverlayPortal(), renderView->origin, renderView->angles);
 			break;
 #endif
 		case 2: // rear view cam
@@ -302,6 +320,7 @@ void Overlay::ModifyView(CViewSetup* renderView)
 			renderView->angles = utils::GetPlayerEyeAngles();
 			break;
 		default:
+			Assert(0);
 			break;
 		}
 		// normalize yaw

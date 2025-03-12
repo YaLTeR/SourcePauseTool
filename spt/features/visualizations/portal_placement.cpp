@@ -219,15 +219,14 @@ CON_COMMAND_F(
 	grid.camPos = utils::GetPlayerEyePosition();
 	grid.gridAngDiameter = clamp(y_spt_draw_pp_grid_fov.GetFloat(), 0.1, 179.9);
 	grid.camAng = utils::GetPlayerEyeAngles();
-	IClientEntity* env = GetEnvironmentPortal();
-	if (env)
-		transformThroughPortal(env, grid.camPos, grid.camAng, grid.camPos, grid.camAng);
+	const utils::PortalInfo* env = utils::GetEnvironmentPortal();
+	transformThroughPortal(env, grid.camPos, grid.camAng, grid.camPos, grid.camAng);
 	grid.mapName = interfaces::engine_tool->GetCurrentMap();
 }
 
 void PortalPlacement::UpdatePlacementInfo()
 {
-	auto player = utils::GetServerPlayer();
+	auto player = utils::spt_serverEntList.GetPlayer();
 	if (!player)
 	{
 		p1.placementResult = PORTAL_PLACEMENT_FAIL_NO_SERVER;
@@ -764,7 +763,7 @@ void PortalPlacement::ImGuiGridPlacementCallback()
 	ImGui::SetItemTooltip("%s 0", wrangledName);
 	ImGui::SameLine();
 
-	auto player = utils::GetServerPlayer();
+	auto player = utils::spt_serverEntList.GetPlayer();
 	bool disabled = !player || !spt_tracing.ORIG_GetActiveWeapon(player);
 	ImGui::BeginDisabled(disabled);
 

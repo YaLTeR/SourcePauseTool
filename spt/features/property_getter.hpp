@@ -10,6 +10,7 @@
 #include "icliententity.h"
 #include "icliententitylist.h"
 #include "ent_utils.hpp"
+#include "spt\utils\ent_list.hpp"
 
 #define INVALID_OFFSET -1
 
@@ -37,7 +38,7 @@ public:
 	template<typename T>
 	T GetProperty(int entindex, const std::string& key)
 	{
-		auto ent = utils::GetClientEntity(entindex);
+		auto ent = utils::spt_clientEntList.GetEnt(entindex);
 
 		if (!ent)
 			return T();

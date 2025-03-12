@@ -22,6 +22,7 @@
 #include "..\features\tracing.hpp"
 #include "..\spt-serverplugin.hpp"
 #include "interfaces.hpp"
+#include "spt\utils\ent_list.hpp"
 
 #undef max
 
@@ -31,53 +32,10 @@
 #endif
 
 extern ConVar y_spt_piwsave;
+extern ConVar tas_strafe_version;
 
 namespace utils
 {
-	IClientEntity* GetClientEntity(int index)
-	{
-		if (index >= interfaces::entList->GetHighestEntityIndex())
-			return nullptr;
-		return interfaces::entList->GetClientEntity(index + 1);
-	}
-
-	void PrintAllClientEntities()
-	{
-		int maxIndex = interfaces::entList->GetHighestEntityIndex();
-
-		for (int i = 0; i <= maxIndex; ++i)
-		{
-			auto ent = GetClientEntity(i);
-			if (ent)
-			{
-				Msg("%d : %s\n", i, ent->GetClientClass()->m_pNetworkName);
-			}
-		}
-	}
-
-	IClientEntity* GetPlayer()
-	{
-		return GetClientEntity(0);
-	}
-
-	const char* GetModelName(IClientEntity* ent)
-	{
-		if (ent)
-			return interfaces::modelInfo->GetModelName(ent->GetModel());
-		else
-			return nullptr;
-	}
-
-	ClientClass* GetClass(const char* name)
-	{
-		auto list = interfaces::clientInterface->GetAllClasses();
-
-		while (list && strcmp(list->GetName(), name) != 0)
-			list = list->m_pNext;
-
-		return list;
-	}
-
 	void GetPropValue(RecvProp* prop, void* ptr, char* buffer, size_t size)
 	{
 		void* value = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(ptr) + prop->GetOffset());
@@ -91,10 +49,10 @@ namespace utils
 			{
 				ehandle = *reinterpret_cast<int*>(value);
 				sprintf_s(buffer,
-				          size,
-				          "(index %d, serial %d)",
-				          ehandle & INDEX_MASK,
-				          (ehandle & (~INDEX_MASK)) >> MAX_EDICT_BITS);
+					size,
+					"(index %d, serial %d)",
+					ehandle & INDEX_MASK,
+					(ehandle & (~INDEX_MASK)) >> MAX_EDICT_BITS);
 			}
 			else
 			{
@@ -143,8 +101,8 @@ namespace utils
 					GetAllProps(base, ptr, props);
 			}
 			else if (
-			    prop->GetOffset()
-			    != 0) // There's various garbage attributes at offset 0 for a thusfar unbeknownst reason
+				prop->GetOffset()
+				!= 0) // There's various garbage attributes at offset 0 for a thusfar unbeknownst reason
 			{
 				GetPropValue(prop, ptr, BUFFER, BUFFER_SIZE);
 				AddProp(props, prop->GetName(), prop);
@@ -159,18 +117,18 @@ namespace utils
 		if (ent)
 		{
 			snprintf(BUFFER,
-			         BUFFER_SIZE,
-			         "(%.3f, %.3f, %.3f)",
-			         ent->GetAbsOrigin().x,
-			         ent->GetAbsOrigin().y,
-			         ent->GetAbsOrigin().z);
+				BUFFER_SIZE,
+				"(%.3f, %.3f, %.3f)",
+				ent->GetAbsOrigin().x,
+				ent->GetAbsOrigin().y,
+				ent->GetAbsOrigin().z);
 			AddProp(props, "AbsOrigin", nullptr);
 			snprintf(BUFFER,
-			         BUFFER_SIZE,
-			         "(%.3f, %.3f, %.3f)",
-			         ent->GetAbsAngles().x,
-			         ent->GetAbsAngles().y,
-			         ent->GetAbsAngles().z);
+				BUFFER_SIZE,
+				"(%.3f, %.3f, %.3f)",
+				ent->GetAbsAngles().x,
+				ent->GetAbsAngles().y,
+				ent->GetAbsAngles().z);
 			AddProp(props, "AbsAngles", nullptr);
 			GetAllProps(ent->GetClientClass()->m_pRecvTable, ent, props);
 		}
@@ -178,7 +136,7 @@ namespace utils
 
 	void PrintAllProps(int index)
 	{
-		IClientEntity* ent = GetClientEntity(index);
+		IClientEntity* ent = spt_clientEntList.GetEnt(index);
 
 		if (ent)
 		{
@@ -189,22 +147,12 @@ namespace utils
 
 			for (auto& prop : props)
 				Msg("Name: %s, offset %d, value %s\n",
-				    prop.name.c_str(),
-				    prop.GetOffset(),
-				    prop.value.c_str());
+					prop.name.c_str(),
+					prop.GetOffset(),
+					prop.value.c_str());
 		}
 		else
 			Msg("Entity doesn't exist!");
-	}
-
-	Vector GetPortalPosition(IClientEntity* ent)
-	{
-		return ent->GetAbsOrigin();
-	}
-
-	QAngle GetPortalAngles(IClientEntity* ent)
-	{
-		return ent->GetAbsAngles();
 	}
 
 	Vector GetPlayerEyePosition()
@@ -219,44 +167,16 @@ namespace utils
 		return QAngle(va[0], va[1], va[2]);
 	}
 
-	int PortalIsOrange(IClientEntity* ent)
-	{
-		return spt_propertyGetter.GetProperty<int>(ent->entindex() - 1, "m_bIsPortal2");
-	}
-
 	static IClientEntity* prevPortal = nullptr;
 	static IClientEntity* prevLinkedPortal = nullptr;
 
-	IClientEntity* FindLinkedPortal(IClientEntity* ent)
-	{
-		int ehandle = spt_propertyGetter.GetProperty<int>(ent->entindex() - 1, "m_hLinkedPortal");
-		int index = ehandle & INDEX_MASK;
-
-		// Backup linking thing for fizzled portals(not sure if you can actually properly figure it out using client portals only)
-		if (index == INDEX_MASK && prevPortal == ent && prevLinkedPortal)
-		{
-			index = prevLinkedPortal->entindex();
-		}
-
-		if (index != INDEX_MASK)
-		{
-			IClientEntity* portal = GetClientEntity(index - 1);
-			prevLinkedPortal = portal;
-			prevPortal = ent;
-
-			return portal;
-		}
-		else
-			return nullptr;
-	}
-
 	void GetValuesMatchingRegex(const char* regex,
-	                            const char* end,
-	                            int& entries,
-	                            wchar* arr,
-	                            int maxEntries,
-	                            int bufferSize,
-	                            const std::vector<propValue>& props)
+		const char* end,
+		int& entries,
+		wchar* arr,
+		int maxEntries,
+		int bufferSize,
+		const std::vector<propValue>& props)
 	{
 		std::regex r(regex, end);
 
@@ -272,10 +192,10 @@ namespace utils
 				std::wstring value = Convert(prop.value);
 
 				swprintf_s(arr + (entries * bufferSize),
-				           bufferSize,
-				           L"%s : %s",
-				           name.c_str(),
-				           value.c_str());
+					bufferSize,
+					L"%s : %s",
+					name.c_str(),
+					value.c_str());
 				++entries;
 			}
 		}
@@ -290,7 +210,7 @@ namespace utils
 		int argSize = argString.size();
 		std::vector<propValue> props;
 
-		while (i < argSize && entries < maxEntries)
+		while (i < argSize&& entries < maxEntries)
 		{
 			bool readEntityIndex = i == 0 || args[i] == entSep;
 			i += i > 0 || entries > 0; // i is at a separtor from the previous loop, go to next char
@@ -303,16 +223,16 @@ namespace utils
 			if (readEntityIndex)
 			{
 				int entIndex = atoi(args + i);
-				ent = GetClientEntity(entIndex);
+				ent = spt_clientEntList.GetEnt(entIndex);
 				// Get all the props for this entity before hand
 				GetAllProps(ent, props);
 
 				if (!ent)
 				{
 					swprintf_s(arr + (entries * bufferSize),
-					           bufferSize,
-					           L"entity %d does not exist",
-					           entIndex);
+						bufferSize,
+						L"entity %d does not exist",
+						entIndex);
 					++entries;
 				}
 				else
@@ -328,10 +248,10 @@ namespace utils
 					}
 
 					swprintf_s(arr + (entries * bufferSize),
-					           bufferSize,
-					           L"entity %d : %s",
-					           entIndex,
-					           className.c_str());
+						bufferSize,
+						L"entity %d : %s",
+						entIndex,
+						className.c_str());
 					++entries;
 				}
 			}
@@ -357,31 +277,17 @@ namespace utils
 		for (int i = 0; i < frames; ++i)
 		{
 			Msg("%d: pos: (%.3f, %.3f, %.3f), vel: (%.3f, %.3f, %.3f), ducked %d, onground %d\n",
-			    i,
-			    player.UnduckedOrigin.x,
-			    player.UnduckedOrigin.y,
-			    player.UnduckedOrigin.z,
-			    player.Velocity.x,
-			    player.Velocity.y,
-			    player.Velocity.z,
-			    player.Ducking,
-			    type == Strafe::PositionType::GROUND);
+				i,
+				player.UnduckedOrigin.x,
+				player.UnduckedOrigin.y,
+				player.UnduckedOrigin.z,
+				player.Velocity.x,
+				player.Velocity.y,
+				player.Velocity.z,
+				player.Ducking,
+				type == Strafe::PositionType::GROUND);
 			type = Strafe::Move(player, vars);
 		}
-	}
-	int GetIndex(void* ent)
-	{
-		if (!ent)
-			return -1;
-
-		for (int i = 0; i < MAX_EDICTS; ++i)
-		{
-			auto e = interfaces::engine_server->PEntityOfEntIndex(i);
-			if (e && e->GetUnknown() == ent)
-				return i;
-		}
-
-		return -1;
 	}
 
 	int propValue::GetOffset()
@@ -396,18 +302,6 @@ namespace utils
 		}
 	}
 
-	IServerUnknown* GetServerPlayer()
-	{
-		if (!interfaces::engine_server)
-			return nullptr;
-
-		auto edict = interfaces::engine_server->PEntityOfEntIndex(1);
-		if (!edict)
-			return nullptr;
-
-		return edict->GetUnknown();
-	}
-
 	JBData CanJB(float height)
 	{
 		JBData data;
@@ -415,10 +309,10 @@ namespace utils
 		data.canJB = false;
 		data.landingHeight = std::numeric_limits<float>::max();
 
-		if (!utils::playerEntityAvailable())
+		if (!utils::spt_clientEntList.GetPlayer())
 			return data;
 
-		Vector player_origin = spt_playerio.GetPlayerEyePos();
+		Vector player_origin = spt_playerio.GetPlayerEyePos(tas_strafe_version.GetInt() >= 8);
 		Vector vel = spt_playerio.GetPlayerVelocity();
 
 		constexpr float gravity = 600;
@@ -456,32 +350,9 @@ namespace utils
 		return data;
 	}
 
-	bool playerEntityAvailable()
-	{
-		return GetClientEntity(0) != nullptr;
-	}
-
-	static CBaseEntity* GetServerEntity(int index)
-	{
-		if (!interfaces::engine_server)
-			return nullptr;
-
-		auto edict = interfaces::engine_server->PEntityOfEntIndex(index);
-		if (!edict)
-			return nullptr;
-
-		auto unknown = edict->GetUnknown();
-		if (!unknown)
-			return nullptr;
-
-		return unknown->GetBaseEntity();
-	}
-
 	bool GetPunchAngleInformation(QAngle& punchAngle, QAngle& punchAngleVel)
 	{
-		auto ply = GetServerEntity(1);
-
-		if (ply)
+		if (spt_serverEntList.GetEnvironmentPortal())
 		{
 			punchAngle = spt_playerio.m_vecPunchAngle.GetValue();
 			punchAngleVel = spt_playerio.m_vecPunchAngleVel.GetValue();
@@ -494,35 +365,24 @@ namespace utils
 	}
 
 #if !defined(OE)
-	static int GetServerEntityCount()
-	{
-		if (!interfaces::engine_server)
-			return 0;
-
-		return interfaces::engine_server->GetEntityCount();
-	}
 
 	void CheckPiwSave(bool simulating)
 	{
 		if (!simulating || y_spt_piwsave.GetString()[0] == '\0')
 			return;
-
-		auto ply = GetServerEntity(1);
+		auto ply = spt_serverEntList.GetPlayer();
 		if (!ply)
 			return;
-
-		auto pphys = ply->VPhysicsGetObject();
+		static CachedField<IPhysicsObject*, "CBaseEntity", "m_pPhysicsObject", true> fPhys;
+		if (!fPhys.Exists())
+			return;
+		auto pphys = *fPhys.GetPtr(ply);
 		if (!pphys || (pphys->GetGameFlags() & FVPHYSICS_PENETRATING))
 			return;
 
-		int count = GetServerEntityCount();
-		for (int i = 0; i < count; ++i)
+		for (auto ent : spt_serverEntList.GetEntList())
 		{
-			auto ent = GetServerEntity(i);
-			if (!ent)
-				continue;
-
-			auto phys = ent->VPhysicsGetObject();
+			auto phys = *fPhys.GetPtr(ent);
 			if (!phys)
 				continue;
 
@@ -537,6 +397,7 @@ namespace utils
 			}
 		}
 	}
+
 #endif
 
 } // namespace utils

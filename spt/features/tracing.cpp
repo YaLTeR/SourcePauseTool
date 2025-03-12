@@ -13,6 +13,7 @@
 #include "portal_utils.hpp"
 #include "ent_props.hpp"
 #include "visualizations/imgui/imgui_interface.hpp"
+#include "spt\utils\ent_list.hpp"
 
 #include "model_types.h"
 
@@ -167,7 +168,7 @@ void Tracing::TracePlayerBBoxForGround(const Vector& start,
 		                               end,
 		                               mins,
 		                               maxs,
-		                               utils::GetServerPlayer(),
+		                               utils::spt_serverEntList.GetPlayer(),
 		                               fMask,
 		                               collisionGroup,
 		                               pm);
@@ -196,7 +197,7 @@ void Tracing::TracePlayerBBoxForGround(const Vector& start,
 		                               end,
 		                               mins,
 		                               maxs,
-		                               utils::GetServerPlayer(),
+		                               utils::spt_serverEntList.GetPlayer(),
 		                               fMask,
 		                               collisionGroup,
 		                               pm);
@@ -207,7 +208,7 @@ void Tracing::TracePlayerBBoxForGround(const Vector& start,
 		                              end,
 		                              mins,
 		                              maxs,
-		                              utils::GetServerPlayer(),
+		                              utils::spt_serverEntList.GetPlayer(),
 		                              fMask,
 		                              collisionGroup,
 		                              pm);
@@ -291,7 +292,7 @@ IMPL_HOOK_FASTCALL(Tracing,
 
 CBaseCombatWeapon* Tracing::GetActiveWeapon()
 {
-	auto player = utils::GetServerPlayer();
+	auto player = utils::spt_serverEntList.GetPlayer();
 	if (!player)
 		return nullptr;
 
@@ -347,11 +348,8 @@ float Tracing::TraceTransformFirePortal(trace_t& tr,
 	Vector transformedPos = startPos;
 	QAngle transformedAngles = startAngles;
 	Vector vDirection;
-	IClientEntity* env = GetEnvironmentPortal();
-	if (env)
-	{
-		transformThroughPortal(env, startPos, startAngles, transformedPos, transformedAngles);
-	}
+	const utils::PortalInfo* env = utils::GetEnvironmentPortal();
+	transformThroughPortal(env, startPos, startAngles, transformedPos, transformedAngles);
 	AngleVectors(transformedAngles, &vDirection);
 
 	const int PORTAL_PLACED_BY_PLAYER = 2;
@@ -540,7 +538,7 @@ static const char find_seam_shot_help[] =
 
 CON_COMMAND(y_spt_find_seam_shot, find_seam_shot_help)
 {
-	auto player = utils::GetServerPlayer();
+	auto player = utils::spt_serverEntList.GetPlayer() ;
 	if (!player)
 	{
 		Msg("Cannot find server player.\n");

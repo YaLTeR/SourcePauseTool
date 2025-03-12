@@ -142,17 +142,15 @@ private:
 		static utils::CachedField<QAngle, "CBasePlayer", "pl.v_angle", true, true> vangle;
 		QAngle eyeAng = tas_pause.GetBool() ? utils::GetPlayerEyeAngles() : *vangle.GetPtrPlayer();
 
-		// this transform may be slightly off since it uses client-side ents
-		auto env = GetEnvironmentPortal();
-		if (env)
-			transformThroughPortal(env, eyePos, eyeAng, eyePos, eyeAng);
+		auto env = utils::GetEnvironmentPortal();
+		transformThroughPortal(env, eyePos, eyeAng, eyePos, eyeAng);
 		Vector dir;
 		AngleVectors(eyeAng, &dir);
 
 		Ray_t ray;
 		ray.Init(eyePos, eyePos + dir * MAX_TRACE_LENGTH);
 
-		TraceFilterIgnorePlayer<true> filter{};
+		TraceFilterIgnorePlayer filter{};
 		trace_t tr;
 
 		int fMask = strtol(spt_draw_world_collides_mask.GetString(), nullptr, 0);
@@ -188,8 +186,7 @@ private:
 			    {
 				    Vector clientEyes = *v1.GetPtrPlayer() + *v2.GetPtrPlayer();
 				    QAngle qa;
-				    if (env)
-					    transformThroughPortal(env, clientEyes, qa, clientEyes, qa);
+				    transformThroughPortal(env, clientEyes, qa, clientEyes, qa);
 				    Vector diff = clientEyes - infoIn.cvs.origin;
 				    if (fabsf(diff.x) < 0.01 && fabsf(diff.y) < 0.01 && fabsf(diff.z) < 32)
 					    infoOut.skipRender = true;
