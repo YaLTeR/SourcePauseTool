@@ -611,7 +611,7 @@ void VagTrace::DrawTrace(MeshRendererDelegate& mr)
 void VagTrace::DrawTargetTrace(MeshRendererDelegate& mr)
 {
 	static StaticMesh portalMeshDetailed, portalMeshSimple, circleMesh;
-	if (!portalMeshDetailed.Valid() || !portalMeshSimple.Valid() || !circleMesh.Valid())
+	if (!StaticMesh::AllValidV(portalMeshDetailed, portalMeshSimple, circleMesh))
 	{
 		// box representing a portal w/ arrow towards local forward
 		portalMeshDetailed = MB_STATIC({
