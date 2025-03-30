@@ -302,17 +302,10 @@ void PortalPlacement::OnMeshRenderSignal(MeshRendererDelegate& mr)
 	{
 		if (ppGrid.gridIdx < ppGrid.gridWidth * ppGrid.gridWidth)
 			RunPpGridIteration(mr);
-		if (ppGrid.mapName != interfaces::engine_tool->GetCurrentMap())
+		if (ppGrid.mapName != interfaces::engine_tool->GetCurrentMap() || !StaticMesh::AllValid(ppGrid.meshes))
 			ppGrid.Reset();
 		for (auto& mesh : ppGrid.meshes)
-		{
-			if (!mesh.Valid())
-			{
-				ppGrid.Reset();
-				break;
-			}
 			mr.DrawMesh(mesh);
-		}
 
 		// draw the unmerged points as dynamic meshes
 

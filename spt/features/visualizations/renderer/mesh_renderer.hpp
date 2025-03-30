@@ -102,6 +102,7 @@ public:
 
 	// 0 for main view, 1 when looking through a portal, etc.
 	int CurrentPortalRenderDepth() const;
+	int DestroyAllStaticMeshes() const;
 
 protected:
 	bool ShouldLoadFeature() override;

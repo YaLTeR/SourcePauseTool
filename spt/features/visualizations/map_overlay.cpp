@@ -259,7 +259,7 @@ void MapOverlay::ClearMeshes()
 
 void MapOverlay::OnMeshRenderSignal(MeshRendererDelegate& mr)
 {
-	if (std::any_of(meshes.begin(), meshes.end(), [](auto& mesh) { return !mesh.Valid(); }))
+	if (!StaticMesh::AllValid(meshes))
 		ClearMeshes();
 
 	for (const auto& mesh : meshes)

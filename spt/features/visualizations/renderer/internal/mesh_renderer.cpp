@@ -53,7 +53,7 @@ CON_COMMAND_F(y_spt_destroy_all_static_meshes,
               "Destroy all static meshes created with the mesh builder, used for debugging",
               FCVAR_DONTRECORD)
 {
-	int count = StaticMesh::DestroyAll();
+	int count = spt_meshRenderer.DestroyAllStaticMeshes();
 	Msg("Destroyed %d static mesh%s\n", count, count == 1 ? "" : "es");
 };
 
@@ -171,6 +171,11 @@ void MeshRendererFeature::ImGuiCallback()
 int MeshRendererFeature::CurrentPortalRenderDepth() const
 {
 	return MAX(0, (int)g_meshRendererInternal.debugMeshInfo.descriptionSlices.size() - 1);
+}
+
+int MeshRendererFeature::DestroyAllStaticMeshes() const
+{
+	return StaticMesh::DestroyAll();
 }
 
 IMPL_HOOK_THISCALL(MeshRendererFeature, void, CRendering3dView__DrawOpaqueRenderables, CRendering3dView*, int param)
