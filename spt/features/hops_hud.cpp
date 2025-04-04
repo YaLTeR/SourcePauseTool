@@ -198,8 +198,11 @@ namespace ljstats
 		previousPos = spt_playerio.m_vecAbsOrigin.GetValue();
 	}
 
-	void OnTick()
+	void OnTick(bool simulating)
 	{
+		if (!simulating)
+			return;
+
 		bool onground = (spt_playerio.m_fFlags.GetValue() & FL_ONGROUND) != 0;
 
 		if (onground)
@@ -410,7 +413,7 @@ namespace ljstats
 class HopsHud : public FeatureWrapper<HopsHud>
 {
 public:
-	void OnTick();
+	void OnTick(bool simulating);
 	void OnJump();
 	void OnGround(bool onground);
 	void OnInput(uintptr_t pCmd);
@@ -731,9 +734,9 @@ void HopsHud::DrawHopHud()
 	}
 }
 
-void HopsHud::OnTick()
+void HopsHud::OnTick(bool simulating)
 {
-	if (!y_spt_jhud_velocity.GetBool())
+	if (!simulating || !y_spt_jhud_velocity.GetBool())
 		return;
 
 	prevVel = currVel;

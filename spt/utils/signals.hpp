@@ -24,7 +24,7 @@ extern Gallant::Signal2<void*, CViewSetup*> RenderViewPre_Signal;
 extern Gallant::Signal2<void*, int> SetSignonStateSignal;
 
 // Plugin callbacks
-extern Gallant::Signal0<void> TickSignal;
+extern Gallant::Signal1<bool> TickSignal;
 extern Gallant::Signal1<char const*> LevelInitSignal;
 extern Gallant::Signal3<edict_t*, int, int> ServerActivateSignal;
 extern Gallant::Signal0<void> LevelShutdownSignal;

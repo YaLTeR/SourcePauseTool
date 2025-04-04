@@ -42,7 +42,7 @@ public:
 	bool PlayerIOAddressesFound();
 	void Set_cinput_thisptr(void* thisptr);
 	void GetPlayerFields();
-	void OnTick();
+	void OnTick(bool simulating);
 
 	bool fetchedPlayerFields = false;
 	bool forceJump = false;

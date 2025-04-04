@@ -22,7 +22,7 @@ ConVar y_spt_hud_edgebug_sec("y_spt_hud_edgebug_sec", "1", 0, "Duration of the b
 class BoogFeature : public FeatureWrapper<BoogFeature>
 {
 public:
-	void BoogTick();
+	void BoogTick(bool simulating);
 	bool ShouldDrawBoog();
 	void DrawBoog();
 	int ticksLeftToDrawBoog = 0;
@@ -41,8 +41,11 @@ protected:
 
 static BoogFeature spt_boog;
 
-void BoogFeature::BoogTick()
+void BoogFeature::BoogTick(bool simulating)
 {
+	if (!simulating)
+		return;
+
 	if (ticksLeftToDrawBoog > 0)
 	{
 		ticksLeftToDrawBoog -= 1;
@@ -149,7 +152,7 @@ void BoogFeature::InitHooks() {}
 
 static void SV_FrameWrapper(bool finalTick)
 {
-	spt_boog.BoogTick();
+	spt_boog.BoogTick(true);
 }
 
 void BoogFeature::LoadFeature()

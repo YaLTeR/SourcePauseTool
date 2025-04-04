@@ -39,7 +39,7 @@ protected:
 
 private:
 	// collect all ents every tick instead of every frame
-	void OnTickSignal();
+	void OnTickSignal(bool simulating);
 
 public:
 	void PrintEntsCon();
@@ -98,8 +98,11 @@ void HudOobEntsFeature::LoadFeature()
 #endif
 }
 
-void HudOobEntsFeature::OnTickSignal()
+void HudOobEntsFeature::OnTickSignal(bool simulating)
 {
+	if (!simulating)
+		return;
+
 	using namespace utils;
 
 	oobEnts.clear();

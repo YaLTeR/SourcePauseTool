@@ -546,8 +546,10 @@ void PlayerIOFeature::Set_cinput_thisptr(void* thisptr)
 	cinput_thisptr = thisptr;
 }
 
-void PlayerIOFeature::OnTick()
+void PlayerIOFeature::OnTick(bool simulating)
 {
+	if (!simulating)
+		return;
 	previousVelocity = currentVelocity;
 	currentVelocity = GetPlayerVelocity();
 }

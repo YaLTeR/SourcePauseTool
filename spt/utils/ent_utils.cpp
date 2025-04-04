@@ -502,38 +502,38 @@ namespace utils
 		return interfaces::engine_server->GetEntityCount();
 	}
 
-	void CheckPiwSave()
+	void CheckPiwSave(bool simulating)
 	{
-		if (y_spt_piwsave.GetString()[0] != '\0')
+		if (!simulating || y_spt_piwsave.GetString()[0] == '\0')
+			return;
+
+		auto ply = GetServerEntity(1);
+		if (!ply)
+			return;
+
+		auto pphys = ply->VPhysicsGetObject();
+		if (!pphys || (pphys->GetGameFlags() & FVPHYSICS_PENETRATING))
+			return;
+
+		int count = GetServerEntityCount();
+		for (int i = 0; i < count; ++i)
 		{
-			auto ply = GetServerEntity(1);
-			if (ply)
+			auto ent = GetServerEntity(i);
+			if (!ent)
+				continue;
+
+			auto phys = ent->VPhysicsGetObject();
+			if (!phys)
+				continue;
+
+			const auto mask = FVPHYSICS_PLAYER_HELD | FVPHYSICS_PENETRATING;
+
+			if ((phys->GetGameFlags() & mask) == mask)
 			{
-				auto pphys = ply->VPhysicsGetObject();
-				if (pphys && (pphys->GetGameFlags() & FVPHYSICS_PENETRATING) == 0)
-				{
-					int count = GetServerEntityCount();
-					for (int i = 0; i < count; ++i)
-					{
-						auto ent = GetServerEntity(i);
-						if (!ent)
-							continue;
-
-						auto phys = ent->VPhysicsGetObject();
-						if (!phys)
-							continue;
-
-						const auto mask = FVPHYSICS_PLAYER_HELD | FVPHYSICS_PENETRATING;
-
-						if ((phys->GetGameFlags() & mask) == mask)
-						{
-							std::ostringstream oss;
-							oss << "save " << y_spt_piwsave.GetString();
-							EngineConCmd(oss.str().c_str());
-							y_spt_piwsave.SetValue("");
-						}
-					}
-				}
+				std::ostringstream oss;
+				oss << "save " << y_spt_piwsave.GetString();
+				EngineConCmd(oss.str().c_str());
+				y_spt_piwsave.SetValue("");
 			}
 		}
 	}

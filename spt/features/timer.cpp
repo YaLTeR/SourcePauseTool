@@ -58,7 +58,7 @@ protected:
 	virtual void LoadFeature() override;
 
 private:
-	void Tick();
+	void Tick(bool simulating);
 	int ticksPassed = 0;
 	chrono_precision partialAccumulatedTimeRta;
 	std::chrono::time_point<chrono_timer> lastResumeTimeRta;
@@ -67,9 +67,9 @@ private:
 
 static Timer spt_timer;
 
-void Timer::Tick()
+void Timer::Tick(bool simulating)
 {
-	if (timerRunning)
+	if (simulating && timerRunning)
 		++ticksPassed;
 }
 

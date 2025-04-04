@@ -50,9 +50,9 @@ protected:
 
 static QcCmdFeature qc_cmd;
 
-static void Tick()
+static void Tick(bool simulating)
 {
-	if (spt_qc_cmd.GetString()[0] == '\0')
+	if (!simulating || spt_qc_cmd.GetString()[0] == '\0')
 	{
 		return;
 	}

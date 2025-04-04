@@ -49,6 +49,6 @@ namespace utils
 	bool playerEntityAvailable();
 	bool GetPunchAngleInformation(QAngle& punchAngle, QAngle& punchAngleVel);
 #if !defined(OE)
-	void CheckPiwSave();
+	void CheckPiwSave(bool simulating);
 #endif
 } // namespace utils

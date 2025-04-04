@@ -530,8 +530,7 @@ const char* CSourcePauseTool::GetPluginDescription(void)
 
 void CSourcePauseTool::GameFrame(bool simulating)
 {
-	if (simulating)
-		TickSignal();
+	TickSignal(simulating);
 }
 
 void CSourcePauseTool::LevelInit(char const* pMapName)
