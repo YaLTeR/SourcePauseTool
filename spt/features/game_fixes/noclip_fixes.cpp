@@ -45,7 +45,7 @@ protected:
     // value replacements and single instruction overrides
     // we'll just write the bytes ourselves...
 private:
-    void OnTick();
+    void OnTick(bool simulating);
 
     // position fixing prevention
     uintptr_t ORIG_Server__NoclipString = 0;
@@ -217,9 +217,9 @@ void NoclipFixesFeature::LoadFeature()
         });
 }
 
-void NoclipFixesFeature::OnTick()
+void NoclipFixesFeature::OnTick(bool simulating)
 {
-    if (!spt_noclip_noslowfly.GetBool())
+    if (!simulating || !spt_noclip_noslowfly.GetBool())
         return;
 
     if ((unsigned char)spt_playerio.m_MoveType.GetValue() == MOVETYPE_NOCLIP)

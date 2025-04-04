@@ -46,7 +46,7 @@ public:
 	};
 	void StartIterations();
 	VagSearchResult RunIteration();
-	void OnTick();
+	void OnTick(bool simulating);
 
 protected:
 	virtual bool ShouldLoadFeature() override;
@@ -287,19 +287,19 @@ VagSearcher::VagSearchResult VagSearcher::RunIteration()
 	return ITERATING;
 }
 
-void VagSearcher::OnTick()
+void VagSearcher::OnTick(bool simulating)
 {
-	if (IsIterating())
+	if (!simulating || !IsIterating())
+		return;
+
+	if (cooldown)
 	{
-		if (cooldown)
-		{
-			cooldown--;
-		}
-		else if (RunIteration() != ITERATING)
-		{
-			Msg("Finished in %d iteration(s).\n", max_iteration - iteration + 1);
-			iteration = 0;
-		}
+		cooldown--;
+	}
+	else if (RunIteration() != ITERATING)
+	{
+		Msg("Finished in %d iteration(s).\n", max_iteration - iteration + 1);
+		iteration = 0;
 	}
 }
 

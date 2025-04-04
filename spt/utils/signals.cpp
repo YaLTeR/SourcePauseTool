@@ -20,7 +20,7 @@ Gallant::Signal2<void*, CViewSetup*> RenderViewPre_Signal;
 Gallant::Signal2<void*, int> SetSignonStateSignal;
 
 // Plugin callbacks
-Gallant::Signal0<void> TickSignal;
+Gallant::Signal1<bool> TickSignal;
 Gallant::Signal1<char const*> LevelInitSignal;
 Gallant::Signal3<edict_t*, int, int> ServerActivateSignal;
 Gallant::Signal0<void> LevelShutdownSignal;
