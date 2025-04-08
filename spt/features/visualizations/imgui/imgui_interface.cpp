@@ -689,6 +689,7 @@ public:
 
 IMPL_HOOK_THISCALL(SptImGuiFeature, void, CShaderDeviceDx8__Present, void*)
 {
+	std::scoped_lock lk{CSourcePauseTool::unloadMutex};
 	if (Loaded())
 	{
 		SPT_VPROF_BUDGET(__FUNCTION__, _T("SPT_ImGui"));
