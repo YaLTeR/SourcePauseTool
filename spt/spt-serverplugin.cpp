@@ -516,8 +516,12 @@ void CSourcePauseTool::Unload(void)
 	}
 #endif
 
+	unloadMutex.lock();
 	Cvar_UnregisterSPTCvars();
 	Feature::UnloadFeatures();
+	unloadMutex.unlock();
+	// pray that other threads have left their hooks
+	std::this_thread::sleep_for(std::chrono::milliseconds{0});
 	Hooks::Free();
 	pluginLoaded = false;
 }

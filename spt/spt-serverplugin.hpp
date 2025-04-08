@@ -89,4 +89,11 @@ public:
 	virtual void OnEdictAllocated(edict_t* edict);
 	virtual void OnEdictFreed(const edict_t* edict){};
 #endif
+
+	/*
+	* Most source stuff is single-threaded (thank god), but some stuff (rendering, sound, etc.)
+	* happens on a separate thread. I don't know of a way to fully fix the crash during unloading
+	* but this seems to sort of work.
+	*/
+	inline static std::mutex unloadMutex;
 };
