@@ -4,6 +4,8 @@
 #include "vector_slice.hpp"
 #include "materials_manager.hpp"
 
+#include <span>
+
 #ifdef SPT_MESH_RENDERING_ENABLED
 
 #include <forward_list>
@@ -58,7 +60,7 @@ struct VertexData
 	Vector pos;
 	color32 col;
 
-	VertexData() : pos(), col(){};
+	VertexData() : pos(), col() {};
 	VertexData(const Vector& pos, color32 color) : pos(pos), col(color) {}
 };
 
@@ -146,15 +148,6 @@ struct MeshComponent
 };
 
 /*
-* These intervals represent a portion of a container usually in the context of mesh fusing. The renderer will
-* figure out which components are elligable for fusing and will give the builder an interval of meshes. These
-* intervals are [first, second).
-*/
-using CompContainer = std::vector<MeshComponent>;
-using CompIntrvl = std::pair<CompContainer::iterator, CompContainer::iterator>;
-using ConstCompIntrvl = std::pair<CompContainer::const_iterator, CompContainer::const_iterator>;
-
-/*
 * When a mesh is being created, its data is stored in curMeshVertData. Dynamic meshes then get moved to the shared
 * list, but statics are put on the heap. Each MeshVertData is simply a slice of the shared vertex/index lists. The
 * reason we need a list of shared arrays is because each mesh can have multiple components. As a mesh is created,
@@ -217,22 +210,24 @@ struct MeshBuilderInternal
 	struct Fuser
 	{
 		/*
-		* During rendering (or when creating static meshes), we'll be given an interval via BeginIMeshCreation().
+		* During rendering (or when creating static meshes), we'll be given an span via BeginIMeshCreation().
 		* Consecutive elements are fused so long as they don't exceed the max vert/index count.
 		*/
 
 		// for keeping track of where we are in the given interval
-		ConstCompIntrvl curIntrvl;
+		std::span<const MeshComponent> curSpan;
 		// used for debug meshes
-		ConstCompIntrvl lastFusedIntrvl;
+		std::span<const MeshComponent> lastFusedSpan;
 		size_t maxVerts, maxIndices;
 		bool dynamic;
 
-		void BeginIMeshCreation(ConstCompIntrvl intrvl, bool dynamic);
+		void BeginIMeshCreation(std::span<const MeshComponent> span, bool dynamic);
 		IMeshWrapper GetNextIMeshWrapper();
 
 	private:
-		IMeshWrapper CreateIMeshFromInterval(ConstCompIntrvl intrvl, size_t totalVerts, size_t totalIndices);
+		IMeshWrapper CreateIMeshFromSpan(std::span<const MeshComponent> span,
+		                                 size_t totalVerts,
+		                                 size_t totalIndices);
 
 	} fuser;
 
