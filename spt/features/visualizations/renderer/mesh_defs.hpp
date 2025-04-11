@@ -1,5 +1,7 @@
 #pragma once
 
+#include <span>
+
 #include "spt\features\overlay.hpp"
 
 #if !defined(OE) && defined(SPT_OVERLAY_ENABLED)
@@ -43,6 +45,9 @@ private:
 
 	void AttachToFront();
 
+	friend class MeshRendererFeature;
+	static int DestroyAll();
+
 public:
 	StaticMesh();
 	StaticMesh(const StaticMesh& other);
@@ -51,9 +56,24 @@ public:
 	StaticMesh& operator=(const StaticMesh& r);
 	bool Valid() const;
 	void Destroy();
-	// this is public but don't use it :)
-	static int DestroyAll();
 	~StaticMesh();
+
+	static bool AllValid(std::span<const StaticMesh> meshes)
+	{
+		return std::all_of(meshes.begin(), meshes.end(), [](auto& m) { return m.Valid(); });
+	}
+
+	template<typename... Args>
+	static bool AllValidV(Args&&... meshes)
+	{
+		return (meshes.Valid() && ...);
+	}
+
+	template<typename... Args>
+	static void DestroyAllV(Args&&... meshes)
+	{
+		(meshes.Destroy(), ...);
+	}
 };
 
 // a token representing a dynamic mesh

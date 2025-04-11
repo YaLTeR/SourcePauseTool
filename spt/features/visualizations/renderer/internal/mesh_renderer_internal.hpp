@@ -100,7 +100,7 @@ struct MeshRendererInternal
 			bool isBox;
 			color32 color;
 
-			DebugMeshDesc(){};
+			DebugMeshDesc() {};
 
 			DebugMeshDesc(const Vector& mins, const Vector& maxs, color32 c)
 			    : box{mins, maxs}, isBox(true), color(c)
@@ -127,13 +127,13 @@ struct MeshRendererInternal
 
 	void SetupViewInfo(CRendering3dView* rendering3dView);
 	void CollectRenderableComponents(std::vector<MeshComponent>& components, bool opaques);
-	void AddDebugCrosses(ConstCompIntrvl intrvl, bool opaques);
-	void AddDebugBox(ConstCompIntrvl intrvl, bool opaques);
+	void AddDebugCrosses(std::span<const MeshComponent> span, bool opaques);
+	void AddDebugBox(std::span<const MeshComponent> span, bool opaques);
 	void DrawDebugMeshes();
-	void DrawAll(ConstCompIntrvl intrvl, bool addDebugMeshes, bool opaques);
+	void DrawAll(std::span<const MeshComponent> fullSpan, bool addDebugMeshes, bool opaques);
 
-	void AddDebugCrosses(DebugDescList& debugList, ConstCompIntrvl intrvl);
-	void AddDebugBox(DebugDescList& debugList, ConstCompIntrvl intrvl, bool opaques);
+	void AddDebugCrosses(DebugDescList& debugList, std::span<const MeshComponent> span);
+	void AddDebugBox(DebugDescList& debugList, std::span<const MeshComponent> span, bool opaques);
 	void DrawDebugMeshes(DebugDescList& debugList);
 };
 

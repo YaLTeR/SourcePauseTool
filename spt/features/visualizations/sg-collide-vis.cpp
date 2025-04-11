@@ -408,7 +408,7 @@ public:
 
 	void DrawLocalWorldGeometry(MeshRendererDelegate& mr, uintptr_t sim)
 	{
-		if (!cache.localWorld.empty() && !cache.localWorld[0].Valid())
+		if (!cache.localWorld.empty() && !StaticMesh::AllValid(cache.localWorld))
 			cache.localWorld.clear();
 
 		if (cache.localWorld.empty())

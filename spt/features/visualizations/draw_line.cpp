@@ -79,28 +79,23 @@ CON_COMMAND(spt_draw_line,
 void DrawLine::OnMeshRenderSignal(MeshRendererDelegate& mr)
 {
 	if (!should_recompute_meshes)
-		should_recompute_meshes =
-		    std::any_of(meshes.begin(), meshes.end(), [](auto& mesh) { return !mesh.Valid(); });
+		should_recompute_meshes = !StaticMesh::AllValid(meshes);
 
 	if (should_recompute_meshes)
 	{
 		should_recompute_meshes = false;
 		meshes.clear();
 
-		auto linesIter = lines.begin();
-		const auto linesEnd = lines.end();
-		while (linesIter != linesEnd)
-		{
-			meshes.push_back(spt_meshBuilder.CreateStaticMesh(
-			    [&](MeshBuilderDelegate& mb)
-			    {
-				    for (; linesIter != linesEnd; linesIter++)
-					    if (!mb.AddLine((*linesIter).start,
-					                    (*linesIter).end,
-					                    LineColor((*linesIter).color, false)))
-						    break;
-			    }));
-		}
+		spt_meshBuilder.CreateMultipleMeshes<StaticMesh>(std::back_inserter(meshes),
+		                                                 lines.begin(),
+		                                                 lines.cend(),
+		                                                 [](MeshBuilderDelegate& mb, auto linesIter)
+		                                                 {
+			                                                 return mb.AddLine(linesIter->start,
+			                                                                   linesIter->end,
+			                                                                   LineColor{linesIter->color,
+			                                                                             false});
+		                                                 });
 	}
 
 	for (const auto& mesh : meshes)
