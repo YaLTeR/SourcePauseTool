@@ -372,8 +372,8 @@ void MeshRendererInternal::OnDrawOpaques(CRendering3dView* renderingView)
 
 	static std::vector<MeshComponent> components;
 	CollectRenderableComponents(components, true);
-	std::stable_sort(components.begin(), components.end());
-	DrawAll({components.begin(), components.end()}, y_spt_draw_mesh_debug.GetBool(), true);
+	std::ranges::stable_sort(components, std::less{});
+	DrawAll(components, y_spt_draw_mesh_debug.GetBool(), true);
 	components.clear();
 }
 
@@ -387,7 +387,6 @@ void MeshRendererInternal::OnDrawTranslucents(CRendering3dView* renderingView)
 
 	static std::vector<MeshComponent> components;
 	CollectRenderableComponents(components, false);
-	CompIntrvl intrvl{components.begin(), components.end()};
 
 	/*
 	* Translucent meshes must be sorted by distance first which makes them not as good for fusing. In theory
@@ -397,35 +396,35 @@ void MeshRendererInternal::OnDrawTranslucents(CRendering3dView* renderingView)
 	* other in case <=> returns equivalent. I think this could be useful if I decide to spill components in case
 	* of overflow.
 	*/
-	std::stable_sort(intrvl.first,
-	                 intrvl.second,
-	                 [](const MeshComponent& a, const MeshComponent& b)
-	                 {
-		                 IMaterial* matA = a.vertData ? a.vertData->material : a.iMeshWrapper.material;
-		                 IMaterial* matB = b.vertData ? b.vertData->material : b.iMeshWrapper.material;
-		                 if (matA != matB)
-		                 {
-			                 bool ignoreZA = matA->GetMaterialVarFlag(MATERIAL_VAR_IGNOREZ);
-			                 bool ignoreZB = matB->GetMaterialVarFlag(MATERIAL_VAR_IGNOREZ);
-			                 if (ignoreZA != ignoreZB)
-				                 return ignoreZA < ignoreZB;
-		                 }
-		                 float distA = a.unitWrapper->camDistSqr;
-		                 float distB = b.unitWrapper->camDistSqr;
-		                 if (distA != distB) // same distance likely means that these are from the same unit
-			                 return distA > distB;
-		                 return a < b;
-	                 });
+	std::ranges::stable_sort(components,
+	                         [](const MeshComponent& a, const MeshComponent& b)
+	                         {
+		                         IMaterial* matA = a.vertData ? a.vertData->material : a.iMeshWrapper.material;
+		                         IMaterial* matB = b.vertData ? b.vertData->material : b.iMeshWrapper.material;
+		                         if (matA != matB)
+		                         {
+			                         bool ignoreZA = matA->GetMaterialVarFlag(MATERIAL_VAR_IGNOREZ);
+			                         bool ignoreZB = matB->GetMaterialVarFlag(MATERIAL_VAR_IGNOREZ);
+			                         if (ignoreZA != ignoreZB)
+				                         return ignoreZA < ignoreZB;
+		                         }
+		                         float distA = a.unitWrapper->camDistSqr;
+		                         float distB = b.unitWrapper->camDistSqr;
+		                         if (distA
+		                             != distB) // same distance likely means that these are from the same unit
+			                         return distA > distB;
+		                         return a < b;
+	                         });
 
-	DrawAll(intrvl, y_spt_draw_mesh_debug.GetBool(), false);
+	DrawAll(components, y_spt_draw_mesh_debug.GetBool(), false);
 
 	if (y_spt_draw_mesh_debug.GetBool())
 	{
-		AddDebugCrosses(debugMeshInfo.descriptionSlices.top(), intrvl);
+		AddDebugCrosses(debugMeshInfo.descriptionSlices.top(), components);
 		DrawDebugMeshes(debugMeshInfo.descriptionSlices.top()); // draw all translucent!!! debug meshes
 	}
-	components.clear();
 	debugMeshInfo.descriptionSlices.pop();
+	components.clear();
 }
 
 void MeshRendererInternal::CollectRenderableComponents(std::vector<MeshComponent>& components, bool opaques)
@@ -472,17 +471,17 @@ void MeshRendererInternal::CollectRenderableComponents(std::vector<MeshComponent
 	}
 }
 
-void MeshRendererInternal::AddDebugCrosses(DebugDescList& debugList, ConstCompIntrvl intrvl)
+void MeshRendererInternal::AddDebugCrosses(DebugDescList& debugList, std::span<const MeshComponent> span)
 {
-	for (auto it = intrvl.first; it < intrvl.second; it++)
+	for (auto& mc : span)
 	{
-		const MeshPositionInfo& posInfo = it->unitWrapper->posInfo;
+		const MeshPositionInfo& posInfo = mc.unitWrapper->posInfo;
 		float maxDiameter = VectorMaximum(posInfo.maxs - posInfo.mins);
 		const float smallest = 1, biggest = 15, falloff = 100;
 		// scale cross by the AABB size, plot this bad boy in desmos as a function of maxBoxDim
 		float size = -falloff * (biggest - smallest) / (maxDiameter + falloff) + biggest;
 
-		debugList.emplace_back(it->unitWrapper->camDistSqrTo, size, DEBUG_COLOR_CROSS);
+		debugList.emplace_back(mc.unitWrapper->camDistSqrTo, size, DEBUG_COLOR_CROSS);
 	}
 }
 
@@ -531,79 +530,77 @@ void MeshRendererInternal::DrawDebugMeshes(DebugDescList& debugList)
 			if (component.indices.size() > 0)
 				debugComponents.emplace_back(&debugMesh, &component, IMeshWrapper{});
 	}
-	std::stable_sort(debugComponents.begin(), debugComponents.end());
-	DrawAll({debugComponents.begin(), debugComponents.end()}, false, true);
+	std::ranges::stable_sort(debugComponents, std::less{});
+	DrawAll(debugComponents, false, true);
 
 	debugUnitWrappers.clear();
 	debugComponents.clear();
 }
 
-void MeshRendererInternal::DrawAll(ConstCompIntrvl fullIntrvl, bool addDebugMeshes, bool opaques)
+void MeshRendererInternal::DrawAll(std::span<const MeshComponent> span, bool addDebugMeshes, bool opaques)
 {
-	if (std::distance(fullIntrvl.first, fullIntrvl.second) == 0)
+	if (span.empty())
 		return;
 
 	SPT_VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	/*
-	* We create a subinterval of fullInterval: intrvl. Our goal is to give intervals to the builder that can be
-	* fused together. Static meshes can't be fused (they're already IMesh* objects), so we render those one at a
-	* time. For dynamic meshes, we start with the lower bound of the interval A, and find the next element B such
-	* that (A <=> B) != 0. We rely on operator<=> to tell us if two components are eligable for fusing.
+	* We create a subspan of fullSpan: compatSpan. Our goal is to give spans to the builder that can be
+	* fused together. Static meshes can't be fused (they're already IMesh* objects), so we render those
+	* one at a time. For dynamic meshes, we find the first element such that (first <=> elem) != 0. We
+	* rely on operator<=> to tell us if two components are eligable for fusing.
 	*/
 
-	ConstCompIntrvl intrvl{{}, fullIntrvl.first};
-
-	while (intrvl.second != fullIntrvl.second)
+	while (!span.empty())
 	{
-		intrvl.first = intrvl.second++;
-
-		if (intrvl.first->vertData)
+		if (span.front().vertData)
 		{
-			intrvl.second = std::find_if(intrvl.first + 1,
-			                             fullIntrvl.second,
-			                             [=](auto& mc) { return (*intrvl.first <=> mc) != 0; });
+			auto uncompatIt = span.begin() + 1;
+			while (uncompatIt != span.end() && (span.front() <=> *uncompatIt) == 0)
+				++uncompatIt;
 
-			// feed the interval that we just found to the builder
-			g_meshBuilderInternal.fuser.BeginIMeshCreation(intrvl, true);
+			std::span<const MeshComponent> compatSpan{span.begin(), uncompatIt};
+			g_meshBuilderInternal.fuser.BeginIMeshCreation(compatSpan, true);
 			IMeshWrapper mw;
 			while (mw = g_meshBuilderInternal.fuser.GetNextIMeshWrapper(), mw.iMesh)
 			{
-				intrvl.first->unitWrapper->Render(mw);
+				span.begin()->unitWrapper->Render(mw);
 				if (addDebugMeshes)
 				{
 					AddDebugBox(debugMeshInfo.descriptionSlices.top(),
-					            g_meshBuilderInternal.fuser.lastFusedIntrvl,
+					            g_meshBuilderInternal.fuser.lastFusedSpan,
 					            opaques);
 				}
 			}
+			span = span.subspan(compatSpan.size());
 		}
 		else
 		{
 			// a single static mesh
-			intrvl.first->unitWrapper->Render(intrvl.first->iMeshWrapper);
+			span.front().unitWrapper->Render(span.front().iMeshWrapper);
 			if (addDebugMeshes)
-				AddDebugBox(debugMeshInfo.descriptionSlices.top(), intrvl, opaques);
+				AddDebugBox(debugMeshInfo.descriptionSlices.top(), span.first(1), opaques);
+			span = span.subspan(1);
 		}
 	}
 }
 
-void MeshRendererInternal::AddDebugBox(DebugDescList& debugList, ConstCompIntrvl intrvl, bool opaques)
+void MeshRendererInternal::AddDebugBox(DebugDescList& debugList, std::span<const MeshComponent> span, bool opaques)
 {
-	if (intrvl.first->vertData)
+	if (span.begin()->vertData)
 	{
 		Vector batchedMins{INFINITY};
 		Vector batchedMaxs{-INFINITY};
-		for (auto it = intrvl.first; it < intrvl.second; it++)
+		for (auto& mc : span)
 		{
-			VectorMin(it->unitWrapper->posInfo.mins, batchedMins, batchedMins);
-			VectorMax(it->unitWrapper->posInfo.maxs, batchedMaxs, batchedMaxs);
+			VectorMin(mc.unitWrapper->posInfo.mins, batchedMins, batchedMins);
+			VectorMax(mc.unitWrapper->posInfo.maxs, batchedMaxs, batchedMaxs);
 
-			debugList.emplace_back(it->unitWrapper->posInfo.mins - Vector{1.f},
-			                       it->unitWrapper->posInfo.maxs + Vector{1.f},
-			                       it->unitWrapper->callback ? DEBUG_COLOR_DYNAMIC_MESH_WITH_CALLBACK
-			                                                 : DEBUG_COLOR_DYNAMIC_MESH);
+			debugList.emplace_back(mc.unitWrapper->posInfo.mins - Vector{1.f},
+			                       mc.unitWrapper->posInfo.maxs + Vector{1.f},
+			                       mc.unitWrapper->callback ? DEBUG_COLOR_DYNAMIC_MESH_WITH_CALLBACK
+			                                                : DEBUG_COLOR_DYNAMIC_MESH);
 		}
-		if (std::distance(intrvl.first, intrvl.second) > 1 && y_spt_draw_mesh_debug.GetInt() >= 2)
+		if (span.size() > 1 && y_spt_draw_mesh_debug.GetInt() >= 2)
 		{
 			debugList.emplace_back(batchedMins - Vector{opaques ? 2.5f : 2.f},
 			                       batchedMaxs + Vector{opaques ? 2.5f : 2.f},
@@ -613,9 +610,9 @@ void MeshRendererInternal::AddDebugBox(DebugDescList& debugList, ConstCompIntrvl
 	}
 	else
 	{
-		Assert(std::distance(intrvl.first, intrvl.second) == 1);
-		debugList.emplace_back(intrvl.first->unitWrapper->posInfo.mins - Vector{1.f},
-		                       intrvl.first->unitWrapper->posInfo.maxs + Vector{1.f},
+		Assert(span.size() == 1);
+		debugList.emplace_back(span.front().unitWrapper->posInfo.mins - Vector{1.f},
+		                       span.front().unitWrapper->posInfo.maxs + Vector{1.f},
 		                       DEBUG_COLOR_STATIC_MESH);
 	}
 }
@@ -634,10 +631,10 @@ void MeshRendererInternal::AddDebugBox(DebugDescList& debugList, ConstCompIntrvl
 * std::vector<MeshComponent>: [0]---[1]---[2]----[3]---[4]---[5]---[7]----[8]---[9]---[10]---[11]---[12]
 *                                                            static (can't fuse) ^     static ^
 * 
-* After sorting, the renderer will iterate over the intervals [0-3], [4-8], [9], [10], [11], [12] and render them.
-* The first two intervals have dynamic meshes, so they would be given to the builder to attempt fusion. The last
-* four are statics; they would be ordererd in a way to minimize context switching e.g. [9], [10], [11] would have
-* the same material & color modulation.
+* After sorting, the renderer will iterate over the spans [0,4), [4,9), [9,10), [10,11), [11,12), [12,13) and
+* render them. The first two spans have dynamic meshes, so they would be given to the builder to attempt fusion.
+* The last four are statics; they would be ordererd in a way to minimize context switching e.g. [9], [10], [11]
+* would have the same material & color modulation.
 */
 std::weak_ordering MeshComponent::operator<=>(const MeshComponent& rhs) const
 {
