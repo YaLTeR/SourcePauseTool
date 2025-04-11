@@ -86,20 +86,16 @@ void DrawLine::OnMeshRenderSignal(MeshRendererDelegate& mr)
 		should_recompute_meshes = false;
 		meshes.clear();
 
-		auto linesIter = lines.begin();
-		const auto linesEnd = lines.end();
-		while (linesIter != linesEnd)
-		{
-			meshes.push_back(spt_meshBuilder.CreateStaticMesh(
-			    [&](MeshBuilderDelegate& mb)
-			    {
-				    for (; linesIter != linesEnd; linesIter++)
-					    if (!mb.AddLine((*linesIter).start,
-					                    (*linesIter).end,
-					                    LineColor((*linesIter).color, false)))
-						    break;
-			    }));
-		}
+		spt_meshBuilder.CreateMultipleMeshes<StaticMesh>(std::back_inserter(meshes),
+		                                                 lines.begin(),
+		                                                 lines.cend(),
+		                                                 [](MeshBuilderDelegate& mb, auto linesIter)
+		                                                 {
+			                                                 return mb.AddLine(linesIter->start,
+			                                                                   linesIter->end,
+			                                                                   LineColor{linesIter->color,
+			                                                                             false});
+		                                                 });
 	}
 
 	for (const auto& mesh : meshes)

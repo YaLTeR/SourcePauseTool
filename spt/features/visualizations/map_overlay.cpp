@@ -198,53 +198,43 @@ bool MapOverlay::LoadMapFile(std::string filename, bool ztest, const char** err)
 	// Build meshes
 	meshes.clear();
 
-	static std::vector<VPlane> vplanes;
+	spt_meshBuilder.CreateMultipleMeshes<StaticMesh>(
+	    std::back_inserter(meshes),
+	    mapBrushesIndex.begin(),
+	    mapBrushesIndex.cend(),
+	    [&](MeshBuilderDelegate& mb, decltype(mapBrushesIndex)::iterator brushIndexIter)
+	    {
+		    dbrush_t brush = brushes[*brushIndexIter];
+		    bool isBox = (brush.numsides == 6);
 
-	auto brushIndexIter = mapBrushesIndex.begin();
-	const auto brushIndexEnd = mapBrushesIndex.end();
-	while (brushIndexIter != brushIndexEnd)
-	{
-		meshes.push_back(spt_meshBuilder.CreateStaticMesh(
-		    [&](MeshBuilderDelegate& mb)
+		    if ((brush.contents & CONTENTS_SOLID) == 0)
+			    return true;
+
+		    static std::vector<VPlane> vplanes;
+		    vplanes.clear();
+		    for (int i = 0; i < brush.numsides; i++)
 		    {
-			    for (; brushIndexIter != brushIndexEnd; brushIndexIter++)
-			    {
-				    dbrush_t brush = brushes[*brushIndexIter];
-				    bool isBox = (brush.numsides == 6);
+			    dbrushside_t brushside = brushsides[brush.firstside + i];
+			    if (brushside.bevel)
+				    continue;
+			    dplane_t plane = planes[brushside.planenum];
+			    if (isBox && plane.type > 2)
+				    isBox = false;
+			    vplanes.emplace_back(plane.normal, plane.dist);
+		    }
 
-				    if ((brush.contents & CONTENTS_SOLID) == 0)
-					    continue;
+		    CPolyhedron* poly =
+		        GeneratePolyhedronFromPlanes((float*)vplanes.data(), vplanes.size(), 0.0001f, true);
+		    if (!poly)
+			    return true;
 
-				    vplanes.clear();
-				    for (int i = 0; i < brush.numsides; i++)
-				    {
-					    dbrushside_t brushside = brushsides[brush.firstside + i];
-					    if (brushside.bevel)
-						    continue;
-					    dplane_t plane = planes[brushside.planenum];
-					    if (isBox && plane.type > 2)
-						    isBox = false;
-					    vplanes.emplace_back(plane.normal, plane.dist);
-				    }
+		    ShapeColor color = isBox ? SC_BOX_BRUSH : SC_COMPLEX_BRUSH;
+		    color.zTestFaces = ztest;
+		    bool ret = mb.AddCPolyhedron(poly, color);
+		    poly->Release();
+		    return ret;
+	    });
 
-				    CPolyhedron* poly = GeneratePolyhedronFromPlanes((float*)vplanes.data(),
-				                                                     vplanes.size(),
-				                                                     0.0001f,
-				                                                     true);
-				    if (!poly)
-					    continue;
-
-				    ShapeColor color = isBox ? SC_BOX_BRUSH : SC_COMPLEX_BRUSH;
-				    color.zTestFaces = ztest;
-				    if (!mb.AddCPolyhedron(poly, color))
-				    {
-					    poly->Release();
-					    break;
-				    }
-				    poly->Release();
-			    }
-		    }));
-	}
 	lastLoadedFile = std::move(filename);
 	createdWithZTestMaterial = ztest;
 	*err = nullptr;

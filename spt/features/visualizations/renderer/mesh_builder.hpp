@@ -221,17 +221,7 @@ private:
 	friend struct MeshBuilderInternal;
 };
 
-typedef std::function<void(MeshBuilderDelegate& mb)> MeshCreateFunc;
-
-class TmpMesh
-{
-public:
-	DynamicMesh FinalizeToDynamic();
-	StaticMesh FinalizeToStatic();
-
-private:
-	TmpMesh();
-};
+using MeshCreateFunc = std::function<void(MeshBuilderDelegate& mb)>;
 
 // give this guy a function which accepts a mesh builder delegate -
 // it'll be executed immediately so you can capture stuff by reference if you're using a lambda
@@ -241,7 +231,60 @@ public:
 	DynamicMesh CreateDynamicMesh(const MeshCreateFunc& createFunc);
 	StaticMesh CreateStaticMesh(const MeshCreateFunc& createFunc);
 
-	TmpMesh CreateTmpMesh();
+	/*
+	* For large meshes that might fill up, the only solution to gracefully keep going is to have
+	* a nested loop: one inside the create func and one outside. When the loop inside exits
+	* because the mesh gets full, you start a new one. This type of pattern is pretty ugly to have
+	* inline, hence this helper function.
+	* 
+	* outIt - an iterator where the meshes are put
+	* endPred - when to stop
+	* createFunc - a function which takes in a MeshBuilderDelegate and returns false if we should
+	*              spill into a new mesh, true otherwise
+	*/
+	template<typename MeshType, typename ForwardIt, typename Pred, typename CreateFunc>
+	ForwardIt CreateMultipleMeshes(ForwardIt outIt, Pred endPred, CreateFunc createFunc)
+	{
+		while (endPred())
+		{
+			auto outerCreateFunc = [&](MeshBuilderDelegate& mb)
+			{
+				while (endPred())
+					if (!createFunc(mb))
+						return;
+			};
+
+			if constexpr (std::is_same_v<MeshType, DynamicMesh>)
+				*outIt++ = CreateDynamicMesh(outerCreateFunc);
+			else
+				*outIt++ = CreateStaticMesh(outerCreateFunc);
+		}
+		return outIt;
+	}
+
+	/*
+	* A wrapper of the above for use specifically with iterators or for loops.
+	* 
+	* outIt - an iterator where the meshes are put
+	* start/end - integers or iterators
+	* createFunc - a function that takes in a MeshBuilderDelegate and a value of type Start;
+	*              if it returns true, start is incremented and createFunc is called again;
+	*              if it returns false, start is not incremented and a new mesh is created
+	*/
+	template<typename MeshType, typename ForwardIt, typename Start, typename End, typename CreateFunc>
+	ForwardIt CreateMultipleMeshes(ForwardIt outIt, Start start, End end, CreateFunc createFunc)
+	{
+		return CreateMultipleMeshes<MeshType, ForwardIt>(
+		    outIt,
+		    [&]() { return start != end; },
+		    [&](MeshBuilderDelegate& mb)
+		    {
+			    if (!createFunc(mb, start))
+				    return false;
+			    ++start;
+			    return true;
+		    });
+	}
 };
 
 inline MeshBuilderPro spt_meshBuilder;
