@@ -265,7 +265,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(
 		scripts::g_TASReader.ExecuteScript(args.Arg(1));
 	else if (args.ArgC() == 3)
 	{
-		scripts::g_TASReader.ExecuteScriptWithResume(args.Arg(1), std::stoi(args.Arg(2)));
+		scripts::g_TASReader.ExecuteScriptWithResume(args.Arg(1), (int)strtol(args.Arg(2), nullptr, 10));
 	}
 	else
 		Msg("Usage: spt_tas_load_script <script> [ticks]\n");

@@ -134,7 +134,7 @@ CON_COMMAND(_y_spt_afterticks_wait, "Delays the afterticks queue")
 		return;
 	}
 
-	int delay = std::stoi(args.Arg(1));
+	int delay = (int)strtol(args.Arg(1), nullptr, 10);
 
 	spt_afterticks.DelayAfterticksQueue(delay);
 }
