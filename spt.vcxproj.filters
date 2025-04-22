@@ -409,8 +409,20 @@
     <ClCompile Include="spt\utils\map_utils.cpp">
       <Filter>spt\utils</Filter>
     </ClCompile>
-    <ClCompile Include="spt\features\set_sg.cpp">
-      <Filter>spt\features</Filter>
+    <ClCompile Include="spt\features\visualizations\player_trace\tr_collect.cpp">
+      <Filter>spt\features\visualizations\player_trace</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\player_trace\tr_feature.cpp">
+      <Filter>spt\features\visualizations\player_trace</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\player_trace\tr_import_export.cpp">
+      <Filter>spt\features\visualizations\player_trace</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\player_trace\tr_record_cache.cpp">
+      <Filter>spt\features\visualizations\player_trace</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\player_trace\tr_render_cache.cpp">
+      <Filter>spt\features\visualizations\player_trace</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -846,6 +858,18 @@
     <ClInclude Include="spt\utils\map_utils.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
+    <ClInclude Include="spt\features\visualizations\player_trace\tr_config.hpp">
+      <Filter>spt\features\visualizations\player_trace</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\player_trace\tr_record_cache.hpp">
+      <Filter>spt\features\visualizations\player_trace</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\player_trace\tr_render_cache.hpp">
+      <Filter>spt\features\visualizations\player_trace</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\player_trace\tr_structs.hpp">
+      <Filter>spt\features\visualizations\player_trace</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SDK includes &amp; libs">
@@ -919,6 +943,9 @@
     </Filter>
     <Filter Include="SDK\shaderapi">
       <UniqueIdentifier>{72c1ddec-fb93-4a1b-83fb-86018e362f75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\features\visualizations\player_trace">
+      <UniqueIdentifier>{759f52e4-3baf-4158-ac52-feafc301330b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

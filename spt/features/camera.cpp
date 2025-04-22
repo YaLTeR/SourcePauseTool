@@ -114,6 +114,7 @@ private:
 	void HandleDriveEntityMode(bool active);
 	bool ProcessInputKey(ButtonCode_t keyCode, bool state);
 	void HandleCinematicMode(bool active);
+	void HandleTraceMode(bool active);
 	static std::vector<Vector> CameraInfoToPoints(float* x, CameraInfo* y, CameraInfoParameter param);
 	CameraInfo InterpPath(float time);
 	void RequestTimeOffsetRefresh();
@@ -154,7 +155,9 @@ ConVar y_spt_cam_control(
     "    Camera is controlled by predefined path.\n"
     "    See commands spt_cam_path_\n"
     "3 = Entity drive mode\n"
-    "    Sets the camera position to an entity. Use spt_cam_drive_ent to set the entity.");
+    "    Sets the camera position to an entity. Use spt_cam_drive_ent to set the entity.\n"
+    "4 = Trace drive mode\n"
+    "    Sets the camera position to the currently active trace");
 ConVar y_spt_cam_drive("y_spt_cam_drive", "1", FCVAR_CHEAT, "Enables or disables camera drive mode in-game.");
 ConVar y_spt_cam_drive_speed("y_spt_cam_drive_speed", "200", 0, "Speed for moving in camera drive mode.");
 ConVar y_spt_cam_path_interp("y_spt_cam_path_interp",
@@ -460,9 +463,10 @@ void Camera::OverrideView(CViewSetup* viewSetup)
 	HandleDriveMode(controlType == 1);
 	HandleCinematicMode(controlType == 2 && spt_demostuff.Demo_IsPlayingBack());
 	HandleDriveEntityMode(controlType == 3);
+	HandleTraceMode(controlType == 4);
 
 	viewSetup->fov = currentCam.fov;
-	if (controlType >= 1 && controlType <= 3)
+	if (controlType >= 1 && controlType <= 4)
 	{
 		viewSetup->origin = currentCam.origin;
 		viewSetup->angles = currentCam.angles;
@@ -888,6 +892,14 @@ void Camera::HandleCinematicMode(bool active)
 
 	float currentTime = interfaces::engine_tool->ClientTime() - timeOffset;
 	currentCam = InterpPath(currentTime);
+}
+
+void Camera::HandleTraceMode(bool active)
+{
+	if (!active)
+		return;
+	extern bool SptGetActiveTracePos(Vector & pos, QAngle & ang, float& fov);
+	SptGetActiveTracePos(currentCam.origin, currentCam.angles, currentCam.fov);
 }
 
 #ifdef SPT_MESH_RENDERING_ENABLED

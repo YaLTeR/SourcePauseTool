@@ -41,6 +41,15 @@ namespace utils
 		NormalizeQAngle(out);
 	}
 
+	float ScaleFOVByWidthRatio(float fovDegrees, float ratio)
+	{
+		float halfAngleRadians = fovDegrees * (0.5f * M_PI / 180.0f);
+		float t = tan(halfAngleRadians);
+		t *= ratio;
+		float retDegrees = (180.0f / M_PI) * atan(t);
+		return retDegrees * 2.0f;
+	}
+
 	// Return angle in [-Pi; Pi).
 	double NormalizeRad(double a)
 	{

@@ -70,6 +70,7 @@ namespace interfaces
 	IPhysicsCollision* physicsCollision = nullptr;
 	IStaticPropMgrServer* staticpropmgr = nullptr;
 	IShaderDevice* shaderDevice = nullptr;
+	ISpatialPartition* spatialPartition = nullptr;
 } // namespace interfaces
 
 ConVar* _viewmodel_fov = nullptr;
@@ -319,6 +320,7 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	interfaces::staticpropmgr =
 	    (IStaticPropMgrServer*)interfaceFactory(INTERFACEVERSION_STATICPROPMGR_SERVER, NULL);
 	interfaces::shaderDevice = (IShaderDevice*)interfaceFactory(SHADER_DEVICE_INTERFACE_VERSION, NULL);
+	interfaces::spatialPartition = (ISpatialPartition*)interfaceFactory(INTERFACEVERSION_SPATIALPARTITION, NULL);
 
 	if (interfaces::gm)
 	{
