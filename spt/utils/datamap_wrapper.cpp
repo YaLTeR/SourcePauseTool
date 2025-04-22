@@ -118,7 +118,6 @@ namespace utils
 			{
 			// Some weird stuff so ignore it
 			case FIELD_VOID:
-			case FIELD_CUSTOM:
 			case FIELD_FUNCTION:
 			case FIELD_TYPECOUNT:
 				continue;
