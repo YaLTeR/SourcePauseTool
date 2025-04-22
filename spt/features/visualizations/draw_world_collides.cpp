@@ -8,9 +8,8 @@
 #include "spt\utils\portal_utils.hpp"
 #include "spt\features\tracing.hpp"
 #include "spt\features\generic.hpp"
-#include "spt\features\generic.hpp"
+#include "spt\features\create_collide.hpp"
 #include "renderer\mesh_renderer.hpp"
-#include "renderer\create_collide.hpp"
 #include "imgui\imgui_interface.hpp"
 
 #ifdef SPT_MESH_RENDERING_ENABLED

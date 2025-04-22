@@ -14,7 +14,7 @@
 #include "spt\utils\game_detection.hpp"
 #include "spt\utils\signals.hpp"
 #include "spt\features\ent_props.hpp"
-#include "renderer\create_collide.hpp"
+#include "spt\features\create_collide.hpp"
 
 using interfaces::engine_server;
 
@@ -141,7 +141,7 @@ public:
 
 		struct CachedEnt
 		{
-			CBaseEntity* pEnt;
+			IServerEntity* pEnt;
 			IPhysicsObject* pPhysObj;
 			StaticMesh mesh;
 			CachedEntFlags flags;
@@ -519,7 +519,7 @@ public:
 			edict_t* ed = interfaces::engine_server->PEntityOfEntIndex(i);
 			if (!ed || !ed->GetIServerEntity())
 				continue;
-			CBaseEntity* pEnt = ed->GetIServerEntity()->GetBaseEntity();
+			IServerEntity* pEnt = ed->GetIServerEntity();
 			auto pCp = (CCollisionProperty*)((uint32_t)pEnt + portalFieldOffs.m_Collision);
 			bool collisionSolid = pCp->IsSolid();
 
@@ -549,7 +549,7 @@ public:
 		}
 	}
 
-	void DrawSingleEntity(MeshRendererDelegate& mr, CBaseEntity* pEnt, int entIndex, CachedEntFlags entFlags)
+	void DrawSingleEntity(MeshRendererDelegate& mr, IServerEntity* pEnt, int entIndex, CachedEntFlags entFlags)
 	{
 		if (!pEnt || entFlags == CEF_NONE || entFlags == CEF_IS_CLONE)
 			return;

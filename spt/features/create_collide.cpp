@@ -1,6 +1,6 @@
 #include "stdafx.hpp"
 
-#include "..\create_collide.hpp"
+#include "create_collide.hpp"
 #include "spt\features\ent_props.hpp"
 #include "spt\utils\interfaces.hpp"
 #include "spt\utils\game_detection.hpp"
@@ -66,7 +66,7 @@ std::unique_ptr<Vector> CreateCollideFeature::CreatePhysObjMesh(const IPhysicsOb
 	return CreateCollideMesh(pPhysObj->GetCollide(), outNumTris);
 }
 
-std::unique_ptr<Vector> CreateCollideFeature::CreateEntMesh(const CBaseEntity* pEnt, int& outNumTris)
+std::unique_ptr<Vector> CreateCollideFeature::CreateEntMesh(const IServerEntity* pEnt, int& outNumTris)
 {
 	IPhysicsObject* pPhysObj = GetPhysObj(pEnt);
 	if (!pPhysObj)
@@ -77,22 +77,13 @@ std::unique_ptr<Vector> CreateCollideFeature::CreateEntMesh(const CBaseEntity* p
 	return CreatePhysObjMesh(pPhysObj, outNumTris);
 }
 
-IPhysicsObject* CreateCollideFeature::GetPhysObj(const CBaseEntity* pEnt)
+IPhysicsObject* CreateCollideFeature::GetPhysObj(const IServerEntity* pEnt)
 {
-	static int cachedPhysObjOff = utils::INVALID_DATAMAP_OFFSET;
-
-	if (cachedPhysObjOff == utils::INVALID_DATAMAP_OFFSET)
-	{
-		cachedPhysObjOff = spt_entprops.GetFieldOffset("CBaseEntity", "m_CollisionGroup", true);
-		if (cachedPhysObjOff != utils::INVALID_DATAMAP_OFFSET)
-			cachedPhysObjOff += sizeof(int);
-		else
-			return nullptr;
-	}
-	return *reinterpret_cast<IPhysicsObject**>(reinterpret_cast<uint32_t>(pEnt) + cachedPhysObjOff);
+	static utils::CachedField<IPhysicsObject*, "CBaseEntity", "m_CollisionGroup", true, false, sizeof(int)> fPhys;
+	return pEnt && fPhys.Exists() ? *fPhys.GetPtr(pEnt) : nullptr;
 }
 
-int CreateCollideFeature::GetPhysObjList(const CBaseEntity* pEnt, IPhysicsObject** pList, int maxElems)
+int CreateCollideFeature::GetPhysObjList(const IServerEntity* pEnt, IPhysicsObject** pList, int maxElems)
 {
 	if (!pEnt || !pList || getVPhysObjListVirtualOff <= 0)
 		return 0;
@@ -136,9 +127,9 @@ int CreateCollideFeature::GetPhysObjList(const CBaseEntity* pEnt, IPhysicsObject
 		* initialized. This is a problem since CFourWheelVehiclePhysics::VPhysicsGetObjectList() uses that field,
 		* and it can cause crashes. Unconditionally setting that field to the vehicle handle *should* be okay.
 		*/
-		*vehicleOuterField.GetPtr(pEnt) = ((IServerEntity*)pEnt)->GetRefEHandle();
+		*vehicleOuterField.GetPtr(pEnt) = pEnt->GetRefEHandle();
 	}
 
-	typedef int(__thiscall * _func)(const CBaseEntity*, IPhysicsObject**, int);
+	typedef int(__thiscall * _func)(const IServerEntity*, IPhysicsObject**, int);
 	return ((_func**)pEnt)[0][getVPhysObjListVirtualOff](pEnt, pList, maxElems);
 }

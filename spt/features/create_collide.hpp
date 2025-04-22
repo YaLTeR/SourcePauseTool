@@ -12,7 +12,7 @@
 
 class CPhysCollide;
 class IPhysicsObject;
-class CBaseEntity;
+class IServerEntity;
 
 // a simple interface to get the vertices of physics models
 class CreateCollideFeature : public FeatureWrapper<CreateCollideFeature>
@@ -27,13 +27,13 @@ public:
 
 	// you'll need to transform the verts using either pEnt's matrix or the matrix from the phys obj;
 	// only creates a mesh using GetPhysObj(), not GetPhysObjList()
-	std::unique_ptr<Vector> CreateEntMesh(const CBaseEntity* pEnt, int& outNumTris);
+	std::unique_ptr<Vector> CreateEntMesh(const IServerEntity* pEnt, int& outNumTris);
 
 	// can be used after InitHooks()
-	IPhysicsObject* GetPhysObj(const CBaseEntity* pEnt);
+	IPhysicsObject* GetPhysObj(const IServerEntity* pEnt);
 
 	// calls VPhysicsGetObjectList(), used when pEnt has multiple vphys objects; see note about spheres above
-	int GetPhysObjList(const CBaseEntity* pEnt, IPhysicsObject** pList, int maxElems);
+	int GetPhysObjList(const IServerEntity* pEnt, IPhysicsObject** pList, int maxElems);
 
 protected:
 	virtual void InitHooks();
