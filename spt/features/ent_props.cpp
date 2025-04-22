@@ -415,7 +415,7 @@ CON_COMMAND(y_spt_print_ent_props, "Prints all props for a given entity index.")
 	}
 	else
 	{
-		utils::PrintAllProps(std::stoi(args.Arg(1)));
+		utils::PrintAllProps((int)strtol(args.Arg(1), nullptr, 10));
 	}
 }
 

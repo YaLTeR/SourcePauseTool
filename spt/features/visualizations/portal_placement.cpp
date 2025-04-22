@@ -564,7 +564,8 @@ void PortalPlacement::LoadFeature()
 		    "portal_placement",
 		    [](std::string args)
 		    {
-			    int mode = args == "" ? y_spt_hud_portal_placement.GetInt() : std::stoi(args);
+			    int mode = args == "" ? y_spt_hud_portal_placement.GetInt()
+			                          : (int)strtol(args.c_str(), nullptr, 10);
 			    spt_pp.placementInfoUpdateRequested = true;
 
 			    float res1 = spt_pp.p1.placementResult;

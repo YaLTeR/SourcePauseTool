@@ -34,7 +34,8 @@ CON_COMMAND_AUTOCOMPLETEFILE(
 	}
 	else if (args.ArgC() == 3)
 	{
-		result = scripts2::g_TASReader.ExecuteScriptWithResume(args.Arg(1), std::stoi(args.Arg(2)));
+		result =
+		    scripts2::g_TASReader.ExecuteScriptWithResume(args.Arg(1), (int)strtol(args.Arg(2), nullptr, 10));
 	}
 	else
 		Msg("Usage: spt_tas_experimental_load <script> [ticks]\n");
@@ -52,7 +53,7 @@ bool NewTASFeature::ShouldLoadFeature()
 
 void NewTASFeature::InitHooks() {}
 
-void NewTASFeature::LoadFeature() 
+void NewTASFeature::LoadFeature()
 {
 	if (FrameSignal.Works)
 	{

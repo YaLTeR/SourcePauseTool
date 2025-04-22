@@ -955,7 +955,8 @@ void PlayerIOFeature::LoadFeature()
 			    "position",
 			    [this](std::string args)
 			    {
-				    int mode = (args == "") ? spt_hud_position.GetInt() : std::stoi(args);
+				    int mode = (args == "") ? spt_hud_position.GetInt()
+				                            : (int)strtol(args.c_str(), nullptr, 10);
 				    Vector pos = (mode == 1) ? m_vecAbsOrigin.GetValue() + m_vecViewOffset.GetValue()
 				                             : m_vecAbsOrigin.GetValue();
 				    int precision = (mode == 1) ? 2 : mode;
@@ -992,7 +993,8 @@ void PlayerIOFeature::LoadFeature()
 			    "angles",
 			    [this](std::string args)
 			    {
-				    int mode = (args == "") ? spt_hud_angles.GetInt() : std::stoi(args);
+				    int mode =
+				        (args == "") ? spt_hud_angles.GetInt() : (int)strtol(args.c_str(), nullptr, 10);
 				    QAngle ang = utils::GetPlayerEyeAngles();
 				    int precision = (mode < 2) ? 2 : mode;
 
@@ -1015,7 +1017,8 @@ void PlayerIOFeature::LoadFeature()
 			    "velocity",
 			    [this](std::string args)
 			    {
-				    int mode = (args == "") ? y_spt_hud_velocity.GetInt() : std::stoi(args);
+				    int mode = (args == "") ? y_spt_hud_velocity.GetInt()
+				                            : (int)strtol(args.c_str(), nullptr, 10);
 				    Vector currentVel = GetPlayerVelocity();
 				    if (mode != 2)
 					    spt_hud_feat.DrawTopHudElement(L"vel(xyz): %.3f %.3f %.3f",

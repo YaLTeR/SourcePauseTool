@@ -112,7 +112,7 @@ CON_COMMAND(_y_spt_afterframes_wait, "Delays the afterframes queue")
 		return;
 	}
 
-	int delay = std::stoi(args.Arg(1));
+	int delay = (int)strtol(args.Arg(1), nullptr, 10);
 
 	spt_afterframes.DelayAfterframesQueue(delay);
 }
