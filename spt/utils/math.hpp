@@ -20,6 +20,7 @@ namespace utils
 	float RandomFloat(float min, float max);
 	void NormalizeQAngle(QAngle& angle);
 	void GetMiddlePoint(const QAngle& angle1, const QAngle& angle2, QAngle& out);
+	float ScaleFOVByWidthRatio(float fovDegrees, float ratio);
 #ifndef OE
 	void VectorTransform(const matrix3x4_t& mat, Vector& v); // applies mat directly to v
 #endif

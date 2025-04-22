@@ -43,4 +43,5 @@ namespace interfaces
 	extern IPhysicsCollision* physicsCollision;
 	extern IStaticPropMgrServer* staticpropmgr;
 	extern IShaderDevice* shaderDevice;
+	extern ISpatialPartition* spatialPartition;
 } // namespace interfaces
