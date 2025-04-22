@@ -8,7 +8,12 @@
 #include "..\cvars.hpp"
 #include "..\spt-serverplugin.hpp"
 #include "..\utils\ent_utils.hpp"
+#include "..\utils\ent_list.hpp"
+#include "create_collide.hpp"
 #include "signals.hpp"
+
+#define GAME_DLL
+#include "cbase.h"
 
 #include <sstream>
 
@@ -34,6 +39,7 @@ private:
 	_CheckStuck ORIG_CheckStuck = nullptr;
 
 	static int __fastcall HOOKED_CheckStuck(void* thisptr, int edx);
+	static void CheckPiwSave(bool simulating);
 };
 
 static Stucksave spt_stucksave;
@@ -80,7 +86,7 @@ void Stucksave::InitHooks()
 
 void Stucksave::LoadFeature()
 {
-	TickSignal.Connect(&utils::CheckPiwSave);
+	TickSignal.Connect(CheckPiwSave);
 
 	// CheckStuck
 	if (ORIG_CheckStuck)
@@ -109,6 +115,33 @@ int __fastcall Stucksave::HOOKED_CheckStuck(void* thisptr, int edx)
 	}
 
 	return ret;
+}
+
+void Stucksave::CheckPiwSave(bool simulating)
+{
+	if (!simulating || y_spt_piwsave.GetString()[0] == '\0')
+		return;
+
+	IPhysicsObject* pphys = spt_collideToMesh.GetPhysObj(utils::spt_serverEntList.GetPlayer());
+	if (!pphys || (pphys->GetGameFlags() & FVPHYSICS_PENETRATING))
+		return;
+
+	for (auto ent : utils::spt_serverEntList.GetEntList())
+	{
+		auto phys = spt_collideToMesh.GetPhysObj(ent);
+		if (!phys)
+			continue;
+
+		const auto mask = FVPHYSICS_PLAYER_HELD | FVPHYSICS_PENETRATING;
+
+		if ((pphys->GetGameFlags() & mask) == mask)
+		{
+			std::ostringstream oss;
+			oss << "save " << y_spt_piwsave.GetString();
+			EngineConCmd(oss.str().c_str());
+			y_spt_piwsave.SetValue("");
+		}
+	}
 }
 
 #endif

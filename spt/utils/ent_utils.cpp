@@ -16,7 +16,6 @@
 #include "..\features\property_getter.hpp"
 #include "string_utils.hpp"
 #include "math.hpp"
-#include "game_detection.hpp"
 #include "..\features\playerio.hpp"
 #include "..\features\tickrate.hpp"
 #include "..\features\tracing.hpp"
@@ -363,41 +362,5 @@ namespace utils
 			return false;
 		}
 	}
-
-#if !defined(OE)
-
-	void CheckPiwSave(bool simulating)
-	{
-		if (!simulating || y_spt_piwsave.GetString()[0] == '\0')
-			return;
-		auto ply = spt_serverEntList.GetPlayer();
-		if (!ply)
-			return;
-		static CachedField<IPhysicsObject*, "CBaseEntity", "m_pPhysicsObject", true> fPhys;
-		if (!fPhys.Exists())
-			return;
-		auto pphys = *fPhys.GetPtr(ply);
-		if (!pphys || (pphys->GetGameFlags() & FVPHYSICS_PENETRATING))
-			return;
-
-		for (auto ent : spt_serverEntList.GetEntList())
-		{
-			auto phys = *fPhys.GetPtr(ent);
-			if (!phys)
-				continue;
-
-			const auto mask = FVPHYSICS_PLAYER_HELD | FVPHYSICS_PENETRATING;
-
-			if ((phys->GetGameFlags() & mask) == mask)
-			{
-				std::ostringstream oss;
-				oss << "save " << y_spt_piwsave.GetString();
-				EngineConCmd(oss.str().c_str());
-				y_spt_piwsave.SetValue("");
-			}
-		}
-	}
-
-#endif
 
 } // namespace utils
