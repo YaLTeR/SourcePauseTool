@@ -150,7 +150,7 @@ public:
 
 private:
 	const char* subDirectory;
-	const char* extension;
+	std::string extension;
 	std::filesystem::path prevPath;
 };
 

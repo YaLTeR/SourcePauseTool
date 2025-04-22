@@ -92,11 +92,18 @@ int FileAutoCompleteList::AutoCompletionFunc(AUTOCOMPLETION_FUNCTION_PARAMS)
 		for (auto& p : fs::directory_iterator(dir, ec))
 		{
 			if (fs::is_directory(p.status()))
-				completions.push_back(completionPath + p.path().filename().string() + '/');
-			else if (p.path().extension() == extension)
 			{
-				std::string completion(completionPath + p.path().stem().string());
-				completions.push_back(completion);
+				completions.push_back(completionPath + p.path().filename().string() + '/');
+			}
+			else
+			{
+				// don't use extension() & stem() to support extensions with multiple dots
+				std::string filename = p.path().filename().string();
+				if (filename.size() > extension.size() && filename.ends_with(extension))
+				{
+					std::string stem = filename.substr(0, filename.size() - extension.size());
+					completions.push_back(completionPath + stem);
+				}
 			}
 		}
 	}
