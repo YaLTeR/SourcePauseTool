@@ -274,9 +274,6 @@
     <ClCompile Include="spt\features\movement_vars.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
-    <ClCompile Include="spt\features\visualizations\renderer\internal\create_collide.cpp">
-      <Filter>spt\features\visualizations\renderer\internal</Filter>
-    </ClCompile>
     <ClCompile Include="spt\features\visualizations\renderer\internal\materials_manager.cpp">
       <Filter>spt\features\visualizations\renderer\internal</Filter>
     </ClCompile>
@@ -399,6 +396,9 @@
     </ClCompile>
     <ClCompile Include="spt\features\game_fixes\caption_fix.cpp">
       <Filter>spt\features\game_fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\create_collide.cpp">
+      <Filter>spt\features</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -738,9 +738,6 @@
     <ClInclude Include="spt\features\visualizations\renderer\internal\vector_slice.hpp">
       <Filter>spt\features\visualizations\renderer\internal</Filter>
     </ClInclude>
-    <ClInclude Include="spt\features\visualizations\renderer\create_collide.hpp">
-      <Filter>spt\features\visualizations\renderer</Filter>
-    </ClInclude>
     <ClInclude Include="spt\features\visualizations\renderer\mesh_builder.hpp">
       <Filter>spt\features\visualizations\renderer</Filter>
     </ClInclude>
@@ -827,6 +824,9 @@
     </ClInclude>
     <ClInclude Include="spt\features\visualizations\imgui\imgui_styles.hpp">
       <Filter>spt\features\visualizations\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\create_collide.hpp">
+      <Filter>spt\features</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

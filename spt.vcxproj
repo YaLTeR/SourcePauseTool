@@ -1189,6 +1189,7 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClCompile Include="spt\features\camera.cpp" />
     <ClCompile Include="spt\features\collision_group.cpp" />
     <ClCompile Include="spt\features\con_notify.cpp" />
+    <ClCompile Include="spt\features\create_collide.cpp" />
     <ClCompile Include="spt\features\cvar.cpp" />
     <ClCompile Include="spt\features\demo.cpp" />
     <ClCompile Include="spt\features\dmomm.cpp" />
@@ -1249,7 +1250,6 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClCompile Include="spt\features\visualizations\mesh_test.cpp" />
     <ClCompile Include="spt\features\visualizations\oob_ents.cpp" />
     <ClCompile Include="spt\features\visualizations\portal_placement.cpp" />
-    <ClCompile Include="spt\features\visualizations\renderer\internal\create_collide.cpp" />
     <ClCompile Include="spt\features\visualizations\renderer\internal\materials_manager.cpp" />
     <ClCompile Include="spt\features\visualizations\renderer\internal\mesh_builder.cpp" />
     <ClCompile Include="spt\features\visualizations\renderer\internal\mesh_construction.cpp" />
@@ -1441,6 +1441,7 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="spt\features\afterticks.hpp" />
     <ClInclude Include="spt\features\aim.hpp" />
     <ClInclude Include="spt\features\autojump.hpp" />
+    <ClInclude Include="spt\features\create_collide.hpp" />
     <ClInclude Include="spt\features\cvar.hpp" />
     <ClInclude Include="spt\features\demo.hpp" />
     <ClInclude Include="spt\features\ent_props.hpp" />
