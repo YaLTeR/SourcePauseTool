@@ -24,7 +24,7 @@ void TrPlayerTrace::Clear()
 {
 	recordingCache.reset();
 	renderingCache.reset();
-	std::apply([](auto&... vecs) { ((vecs.clear(), vecs.shrink_to_fit()), ...); }, storage);
+	std::apply([](auto&... vecs) { ((vecs.clear(), vecs.shrink_to_fit()), ...); }, _storage);
 	numRecordedTicks = 0;
 
 	playerStandBboxIdx.Invalidate();
@@ -53,7 +53,7 @@ void TrPlayerTrace::StopRecording()
 {
 	recordingCache->StopRecording();
 	recordingCache.reset();
-	std::apply([](auto&... vecs) { (vecs.shrink_to_fit(), ...); }, storage);
+	std::apply([](auto&... vecs) { (vecs.shrink_to_fit(), ...); }, _storage);
 }
 
 void TrPlayerTrace::StopRendering()

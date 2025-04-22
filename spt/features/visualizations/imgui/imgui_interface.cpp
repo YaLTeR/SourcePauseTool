@@ -16,6 +16,7 @@
 #include "thirdparty/x86.h"
 #include "thirdparty/json.hpp"
 #include "thirdparty/curl/include/curl/curlver.h"
+#include "thirdparty/xz/include/lzma.h"
 
 #include "d3d9helper.h"
 
@@ -256,6 +257,11 @@ private:
 			ImGui::TextUnformatted("libcurl v" LIBCURL_VERSION " (" LIBCURL_TIMESTAMP ")");
 			ImGui::TextLinkOpenURL("Github##libcurl", "https://github.com/curl/curl");
 			ImGui::TextDisabled("Copyright %s", LIBCURL_COPYRIGHT);
+
+			ImGui::Separator();
+			ImGui::TextUnformatted("XZ Utils v" LZMA_VERSION_STRING);
+			ImGui::TextLinkOpenURL("Github##xz-utils", "https://github.com/tukaani-project/xz");
+			ImGui::TextDisabled("%s", "Copyright (C) The XZ Utils authors and contributors");
 
 			ImGui::Separator();
 			ImGui::Text("nlohmann/json v%d.%d.%d",

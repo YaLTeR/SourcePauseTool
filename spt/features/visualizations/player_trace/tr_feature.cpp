@@ -7,6 +7,7 @@
 
 #include "tr_record_cache.hpp"
 #include "tr_render_cache.hpp"
+#include "tr_import_export.hpp"
 
 #include "signals.hpp"
 #include "spt/utils/ent_list.hpp"
@@ -82,8 +83,6 @@ CON_COMMAND_F(spt_trace_set_tick, "Sets the trace draw tick", FCVAR_DONTRECORD)
 	spt_player_trace_feat.SetDisplayTick(strtoul(args[1], nullptr, 10));
 }
 
-#define TR_FILE_EXT ".sptr"
-
 CON_COMMAND_F(spt_trace_export, "Export trace to binary file", FCVAR_DONTRECORD)
 {
 	if (spt_player_trace_feat.tr.IsRecording())
@@ -98,7 +97,7 @@ CON_COMMAND_F(spt_trace_export, "Export trace to binary file", FCVAR_DONTRECORD)
 	}
 	std::filesystem::path filePath{GetGameDir()};
 	filePath /= args[1];
-	filePath += TR_FILE_EXT;
+	filePath += TR_FILE_EXTENSION;
 	filePath = std::filesystem::absolute(filePath);
 
 	std::error_code ec;
@@ -116,26 +115,15 @@ CON_COMMAND_F(spt_trace_export, "Export trace to binary file", FCVAR_DONTRECORD)
 		return;
 	}
 
-	struct TrFileStreamWriter : ITrWriter
-	{
-		std::ofstream& of;
+	TrXzFileWriter wr{ofs};
 
-		TrFileStreamWriter(std::ofstream& of) : of{of} {}
-
-		virtual bool Write(std::span<const char> data)
-		{
-			return of.write(data.data(), data.size_bytes()).good();
-		}
-
-	} wr{ofs};
-
-	if (!spt_player_trace_feat.tr.WriteBinaryStream(wr))
+	if (!wr.WriteTrace(spt_player_trace_feat.tr))
 		Warning("Failed to write trace to file\n");
 	else
-		Msg("Wrote trace to '%s'.\n", filePath.u8string().c_str());
+		Msg("Wrote trace to '%s'.\n", filePath.string().c_str());
 }
 
-CON_COMMAND_AUTOCOMPLETEFILE(spt_trace_import, "Load trace from binary file", FCVAR_DONTRECORD, "", TR_FILE_EXT)
+CON_COMMAND_AUTOCOMPLETEFILE(spt_trace_import, "Load trace from binary file", FCVAR_DONTRECORD, "", TR_FILE_EXTENSION)
 {
 	if (args.ArgC() < 2)
 	{
@@ -145,34 +133,23 @@ CON_COMMAND_AUTOCOMPLETEFILE(spt_trace_import, "Load trace from binary file", FC
 
 	std::filesystem::path filePath{GetGameDir()};
 	filePath /= args[1];
-	filePath += TR_FILE_EXT;
+	filePath += TR_FILE_EXTENSION;
 	filePath = std::filesystem::absolute(filePath);
 	std::ifstream ifs{filePath, std::ios::binary};
 	if (!ifs.is_open())
 	{
-		Warning("Failed to open file '%s'\n", filePath.u8string().c_str());
+		Warning("Failed to open file '%s'\n", filePath.string().c_str());
 		return;
 	}
 
-	struct TrFileStreamWriter : ITrReader
-	{
-		std::ifstream& ifs;
-
-		TrFileStreamWriter(std::ifstream& ifs) : ifs{ifs} {}
-
-		virtual bool ReadTo(std::span<char> dst, uint32_t at)
-		{
-			return ifs.seekg(at).read(dst.data(), dst.size()).good();
-		};
-
-	} rd{ifs};
+	TrXzFileReader rd{ifs};
 
 	char sptVersion[TR_MAX_SPT_VERSION_LEN];
 	std::string errMsg;
 	TrPlayerTrace newTr;
-	if (!newTr.ReadBinaryStream(rd, sptVersion, errMsg))
+	if (!rd.ReadTrace(newTr, sptVersion, errMsg))
 	{
-		Warning("Failed to load trace from file: %s\n", errMsg.c_str());
+		Warning("Failed to load trace from file: %s\n", rd.errMsg.empty() ? errMsg.c_str() : rd.errMsg.c_str());
 		return;
 	}
 	Msg("Loaded trace from '%s' with %d ticks%s%s\n",

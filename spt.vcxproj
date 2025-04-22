@@ -255,11 +255,11 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;ws2_32.lib;Normaliz.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;Dbghelp.lib;libcurl_a.lib</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;ws2_32.lib;Normaliz.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;Dbghelp.lib;libcurl_a.lib;lzma_dbg.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>thirdparty\curl\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>thirdparty\curl\lib;thirdparty\xz\lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -330,11 +330,11 @@ del "$(OutDir)spt-version.obj"</Command>
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;ws2_32.lib;Normaliz.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;Dbghelp.lib;libcurl_a.lib</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;ws2_32.lib;Normaliz.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;Dbghelp.lib;libcurl_a.lib;lzma_dbg.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>thirdparty\curl\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>thirdparty\curl\lib;thirdparty\xz\lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -406,11 +406,11 @@ del "$(OutDir)spt-version.obj"</Command>
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;ws2_32.lib;Normaliz.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;Dbghelp.lib;libcurl_a.lib</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;ws2_32.lib;Normaliz.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;Dbghelp.lib;libcurl_a.lib;lzma_dbg.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>thirdparty\curl\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>thirdparty\curl\lib;thirdparty\xz\lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -482,11 +482,11 @@ del "$(OutDir)spt-version.obj"</Command>
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;ws2_32.lib;Normaliz.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;Dbghelp.lib;libcurl_a.lib</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;ws2_32.lib;Normaliz.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;Dbghelp.lib;libcurl_a.lib;lzma_dbg.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>thirdparty\curl\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>thirdparty\curl\lib;thirdparty\xz\lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -561,11 +561,11 @@ del "$(OutDir)spt-version.obj"</Command>
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;ws2_32.lib;Normaliz.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;Dbghelp.lib;libcurl_a.lib</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;ws2_32.lib;Normaliz.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;Dbghelp.lib;libcurl_a.lib;lzma_rel.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>thirdparty\curl\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>thirdparty\curl\lib;thirdparty\xz\lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -644,11 +644,11 @@ del "$(OutDir)spt-version.obj"</Command>
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;ws2_32.lib;Normaliz.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;Dbghelp.lib;libcurl_a.lib</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;ws2_32.lib;Normaliz.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;Dbghelp.lib;libcurl_a.lib;lzma_rel.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>thirdparty\curl\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>thirdparty\curl\lib;thirdparty\xz\lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -728,11 +728,11 @@ del "$(OutDir)spt-version.obj"</Command>
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;ws2_32.lib;Normaliz.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;Dbghelp.lib;libcurl_a.lib</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;ws2_32.lib;Normaliz.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;Dbghelp.lib;libcurl_a.lib;lzma_rel.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>thirdparty\curl\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>thirdparty\curl\lib;thirdparty\xz\lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -891,11 +891,11 @@ del "$(OutDir)spt-version.obj"</Command>
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;ws2_32.lib;Normaliz.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;Dbghelp.lib;libcurl_a.lib</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;ws2_32.lib;Normaliz.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;Dbghelp.lib;libcurl_a.lib;lzma_rel.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>thirdparty\curl\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>thirdparty\curl\lib;thirdparty\xz\lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -1468,6 +1468,7 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="spt\features\visualizations\imgui\imgui_styles.hpp" />
     <ClInclude Include="spt\features\visualizations\imgui\jetbrains_mono_bold.hpp" />
     <ClInclude Include="spt\features\visualizations\player_trace\tr_config.hpp" />
+    <ClInclude Include="spt\features\visualizations\player_trace\tr_import_export.hpp" />
     <ClInclude Include="spt\features\visualizations\player_trace\tr_record_cache.hpp" />
     <ClInclude Include="spt\features\visualizations\player_trace\tr_render_cache.hpp" />
     <ClInclude Include="spt\features\visualizations\player_trace\tr_structs.hpp" />
@@ -1547,6 +1548,21 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="thirdparty\md5.hpp" />
     <ClInclude Include="thirdparty\Signal.h" />
     <ClInclude Include="thirdparty\x86.h" />
+    <ClInclude Include="thirdparty\xz\include\lzma.h" />
+    <ClInclude Include="thirdparty\xz\include\lzma\base.h" />
+    <ClInclude Include="thirdparty\xz\include\lzma\bcj.h" />
+    <ClInclude Include="thirdparty\xz\include\lzma\block.h" />
+    <ClInclude Include="thirdparty\xz\include\lzma\check.h" />
+    <ClInclude Include="thirdparty\xz\include\lzma\container.h" />
+    <ClInclude Include="thirdparty\xz\include\lzma\delta.h" />
+    <ClInclude Include="thirdparty\xz\include\lzma\filter.h" />
+    <ClInclude Include="thirdparty\xz\include\lzma\hardware.h" />
+    <ClInclude Include="thirdparty\xz\include\lzma\index.h" />
+    <ClInclude Include="thirdparty\xz\include\lzma\index_hash.h" />
+    <ClInclude Include="thirdparty\xz\include\lzma\lzma12.h" />
+    <ClInclude Include="thirdparty\xz\include\lzma\stream_flags.h" />
+    <ClInclude Include="thirdparty\xz\include\lzma\version.h" />
+    <ClInclude Include="thirdparty\xz\include\lzma\vli.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="SDK\SDK.vcxproj">

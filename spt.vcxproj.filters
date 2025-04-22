@@ -870,6 +870,54 @@
     <ClInclude Include="spt\features\visualizations\player_trace\tr_structs.hpp">
       <Filter>spt\features\visualizations\player_trace</Filter>
     </ClInclude>
+    <ClInclude Include="thirdparty\xz\include\lzma.h">
+      <Filter>thirdparty\xz\include</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\xz\include\lzma\base.h">
+      <Filter>thirdparty\xz\include\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\xz\include\lzma\bcj.h">
+      <Filter>thirdparty\xz\include\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\xz\include\lzma\block.h">
+      <Filter>thirdparty\xz\include\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\xz\include\lzma\check.h">
+      <Filter>thirdparty\xz\include\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\xz\include\lzma\container.h">
+      <Filter>thirdparty\xz\include\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\xz\include\lzma\delta.h">
+      <Filter>thirdparty\xz\include\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\xz\include\lzma\filter.h">
+      <Filter>thirdparty\xz\include\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\xz\include\lzma\hardware.h">
+      <Filter>thirdparty\xz\include\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\xz\include\lzma\index.h">
+      <Filter>thirdparty\xz\include\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\xz\include\lzma\index_hash.h">
+      <Filter>thirdparty\xz\include\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\xz\include\lzma\lzma12.h">
+      <Filter>thirdparty\xz\include\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\xz\include\lzma\stream_flags.h">
+      <Filter>thirdparty\xz\include\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\xz\include\lzma\version.h">
+      <Filter>thirdparty\xz\include\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\xz\include\lzma\vli.h">
+      <Filter>thirdparty\xz\include\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\player_trace\tr_import_export.hpp">
+      <Filter>spt\features\visualizations\player_trace</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SDK includes &amp; libs">
@@ -946,6 +994,15 @@
     </Filter>
     <Filter Include="spt\features\visualizations\player_trace">
       <UniqueIdentifier>{759f52e4-3baf-4158-ac52-feafc301330b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\xz">
+      <UniqueIdentifier>{ba578357-bd9d-4dbd-9306-eb8e352fe0a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\xz\include">
+      <UniqueIdentifier>{bb7e263a-e204-45b3-a98a-0b167accd0a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\xz\include\lzma">
+      <UniqueIdentifier>{683dc8a5-fbb8-4260-84ed-bb51e32c8037}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
