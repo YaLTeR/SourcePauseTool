@@ -38,7 +38,4 @@ namespace utils
 
 	JBData CanJB(float height);
 	bool GetPunchAngleInformation(QAngle& punchAngle, QAngle& punchAngleVel);
-#if !defined(OE)
-	void CheckPiwSave(bool simulating);
-#endif
 } // namespace utils
