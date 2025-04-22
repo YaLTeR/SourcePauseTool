@@ -30,8 +30,6 @@
 
 namespace player_trace
 {
-	constexpr size_t TR_MAX_TRACE_NAME_LEN = 64;
-	constexpr size_t TR_MAX_SPT_VERSION_LEN = 32;
 
 // for caching purposes I'm using memcmp so there better not be any implicit padding
 #pragma warning(push)
@@ -42,7 +40,7 @@ namespace player_trace
 	// a scope within which we can deref TrIdx & TrSpan
 	class TrReadContextScope
 	{
-		inline static const TrPlayerTrace* trDataCtx = nullptr;
+		inline static const TrPlayerTrace* trCtx = nullptr;
 		const TrPlayerTrace* oldCtx;
 
 		template<typename T>
@@ -52,14 +50,14 @@ namespace player_trace
 		friend struct TrSpan;
 
 	public:
-		TrReadContextScope(const TrPlayerTrace& newCtx) : oldCtx{trDataCtx}
+		TrReadContextScope(const TrPlayerTrace& newCtx) : oldCtx{trCtx}
 		{
-			trDataCtx = &newCtx;
+			trCtx = &newCtx;
 		}
 
 		~TrReadContextScope()
 		{
-			trDataCtx = oldCtx;
+			trCtx = oldCtx;
 		}
 	};
 
@@ -392,37 +390,8 @@ namespace player_trace
 
 #pragma warning(pop) // all trace objects should be above this pragma
 
-	struct ITrWriter
-	{
-		virtual bool Write(std::span<const char> sp) = 0;
-		virtual void Finish() {};
-
-		bool Write(const void* what, size_t nBytes)
-		{
-			return Write(std::span<const char>{(char*)what, nBytes});
-		}
-
-		template<typename T>
-		bool Write(const T& o)
-		{
-			return Write(&o, sizeof o);
-		}
-	};
-
-	struct ITrReader
-	{
-		virtual bool ReadTo(std::span<char> sp, uint32_t at) = 0;
-		virtual void Finish() {};
-
-		template<typename T>
-		bool ReadTo(T& o, uint32_t at)
-		{
-			return ReadTo(std::span<char>{(char*)&o, sizeof o}, at);
-		}
-	};
-
-	class TrRenderingCache;
 	class TrRecordingCache;
+	class TrRenderingCache;
 
 	/*
 	* Behold all the data in the player trace. Everything that is stored inside the struct is all
@@ -432,7 +401,6 @@ namespace player_trace
 	*/
 	struct TrPlayerTrace
 	{
-	private:
 		// I might be going to hell for this
 		std::tuple<
 		    // :)
@@ -476,7 +444,7 @@ namespace player_trace
 
 		    // :)
 		    >
-		    storage;
+		    _storage;
 
 		std::unique_ptr<TrRecordingCache> recordingCache;
 		std::unique_ptr<TrRenderingCache> renderingCache;
@@ -484,8 +452,6 @@ namespace player_trace
 	public:
 		uint32_t numRecordedTicks = 0;
 		TrIdx<TrAbsBox_v1> playerStandBboxIdx{}, playerDuckBboxIdx{};
-
-		using storageType = decltype(storage);
 
 	private:
 		TrRecordingCache& GetRecordingCache();
@@ -530,19 +496,19 @@ namespace player_trace
 		{
 			auto capacityFunc = [](auto&... vecs)
 			{ return (0u + ... + (vecs.capacity() * sizeof(std::decay_t<decltype(vecs)>::value_type))); };
-			return sizeof(*this) + std::apply(capacityFunc, storage);
+			return sizeof(*this) + std::apply(capacityFunc, _storage);
 		}
 
 		template<typename T>
 		constexpr std::vector<T>& Get()
 		{
-			return std::get<std::vector<T>>(storage);
+			return std::get<std::vector<T>>(_storage);
 		}
 
 		template<typename T>
 		constexpr const std::vector<T>& Get() const
 		{
-			return std::get<std::vector<T>>(storage);
+			return std::get<std::vector<T>>(_storage);
 		}
 
 		/*
@@ -574,30 +540,27 @@ namespace player_trace
 		void HostTickCollect(bool simulated, TrSegmentReason segmentReason, float entCollectRadius);
 		Vector GetAdjacentLandmarkDelta(std::span<const TrLandmark_v1> fromLandmarkSp,
 		                                std::span<const TrLandmark_v1> toLandmarkSp) const;
-
-		bool WriteBinaryStream(ITrWriter& wr) const;
-		bool ReadBinaryStream(ITrReader& rd, char sptVersion[TR_MAX_SPT_VERSION_LEN], std::string& errMsg);
 	};
 
 	template<typename T>
 	inline bool TrIdx<T>::IsValid() const
 	{
-		AssertMsg(!!TrReadContextScope::trDataCtx, "SPT: set up a TrReadContextScope");
-		return _val < TrReadContextScope::trDataCtx->Get<T>().size();
+		AssertMsg(!!TrReadContextScope::trCtx, "SPT: set up a TrReadContextScope");
+		return _val < TrReadContextScope::trCtx->Get<T>().size();
 	}
 
 	template<typename T>
 	inline const T* TrIdx<T>::operator*() const
 	{
 		Assert(IsValid());
-		return TrReadContextScope::trDataCtx->Get<T>().data() + _val;
+		return TrReadContextScope::trCtx->Get<T>().data() + _val;
 	}
 	template<typename T>
 	inline std::span<const T> TrSpan<T>::operator*() const
 	{
 		if (n == 0)
 			return {(T*)nullptr, 0};
-		return {TrReadContextScope::trDataCtx->Get<T>().data() + start, n};
+		return {TrReadContextScope::trCtx->Get<T>().data() + start, n};
 	}
 } // namespace player_trace
 
