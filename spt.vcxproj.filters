@@ -406,6 +406,9 @@
     <ClCompile Include="spt\features\create_collide.cpp">
       <Filter>spt\features</Filter>
     </ClCompile>
+    <ClCompile Include="spt\utils\map_utils.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -836,6 +839,9 @@
     </ClInclude>
     <ClInclude Include="spt\features\create_collide.hpp">
       <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\map_utils.hpp">
+      <Filter>spt\utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
