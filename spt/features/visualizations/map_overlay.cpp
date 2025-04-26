@@ -7,12 +7,14 @@
 #include "spt\utils\convar.hpp"
 #include "spt\utils\game_detection.hpp"
 #include "spt\utils\file.hpp"
+#include "spt\utils\map_utils.hpp"
 #include "imgui\imgui_interface.hpp"
 #include "thirdparty\imgui\imgui_internal.h"
 
 #include "bspfile.h"
 
 #include <stack>
+#include <mutex>
 
 #define SC_BOX_BRUSH ShapeColor(C_OUTLINE(0, 255, 255, 20))
 #define SC_COMPLEX_BRUSH ShapeColor(C_OUTLINE(255, 0, 255, 20))
@@ -23,7 +25,9 @@ class MapOverlay : public FeatureWrapper<MapOverlay>
 public:
 	bool LoadMapFile(std::string filename, bool ztest, const char** err);
 	void ClearMeshes();
-	Vector offset;
+	Vector GetLandmarkOffsetToLastLoadedMap();
+	bool bOverrideOffset = false;
+	Vector overrideOffset;
 	std::string lastLoadedFile;
 	bool createdWithZTestMaterial;
 
@@ -38,9 +42,14 @@ protected:
 
 private:
 	void OnMeshRenderSignal(MeshRendererDelegate& mr);
-	static void ImGuiCallback();
+	void ImGuiCallback();
 
 	std::vector<StaticMesh> meshes;
+	utils::SptLandmarkList bspLandmarks;
+	Vector cachedLandmarkOffset;
+	std::string landmarkOffsetCachedFrom;
+	// gotta use a pointer since std::mutex is not moveable
+	std::unique_ptr<std::mutex> mapLoadLock;
 };
 
 static MapOverlay spt_map_overlay;
@@ -72,15 +81,16 @@ CON_COMMAND_AUTOCOMPLETEFILE(spt_draw_map_overlay, "Draw the brushes from anothe
 	{
 		if (argc == 5 || argc == 6)
 		{
-			spt_map_overlay.offset = {
+			spt_map_overlay.overrideOffset = {
 			    (float)atof(args.Arg(2)),
 			    (float)atof(args.Arg(3)),
 			    (float)atof(args.Arg(4)),
 			};
+			spt_map_overlay.bOverrideOffset = true;
 		}
 		else
 		{
-			spt_map_overlay.offset = {0, 0, 0};
+			spt_map_overlay.bOverrideOffset = false;
 		}
 	}
 }
@@ -89,6 +99,11 @@ bool MapOverlay::LoadMapFile(std::string filename, bool ztest, const char** err)
 {
 	if (filename == lastLoadedFile && ztest == createdWithZTestMaterial && !meshes.empty())
 		return true; // no need to reload
+
+	std::scoped_lock lock{*mapLoadLock};
+
+	landmarkOffsetCachedFrom.clear();
+	bspLandmarks.clear();
 
 #define READ_BYTES(f, buffer, bytes) \
 	{ \
@@ -168,9 +183,81 @@ bool MapOverlay::LoadMapFile(std::string filename, bool ztest, const char** err)
 	std::vector<dbrushside_t> brushsides(header.lumps[LUMP_BRUSHSIDES].filelen / sizeof(dbrushside_t));
 	READ_BYTES(mapFile, (char*)brushsides.data(), header.lumps[LUMP_BRUSHSIDES].filelen);
 
+	SEEK_TO_BYTE(mapFile, header.lumps[LUMP_ENTITIES].fileofs);
+	std::vector<char> ents(header.lumps[LUMP_ENTITIES].filelen);
+	READ_BYTES(mapFile, ents.data(), header.lumps[LUMP_ENTITIES].filelen);
+
+	// find landmarks in the most jank way possible
+	const char* landmarkEntPtr = ents.data();
+	for (; !ents.empty();)
+	{
+		// find a landmark entity, but we may land somewhere in the middle of it!
+		landmarkEntPtr = strstr(landmarkEntPtr, "\"classname\" \"info_landmark\"");
+		if (!landmarkEntPtr)
+			break;
+		// go back to the opening brace
+		const char* startSearch = landmarkEntPtr;
+		do
+		{
+			--startSearch;
+		} while (strncmp(startSearch, "{\n", 2) && startSearch > ents.data());
+		startSearch += 2;
+
+		Vector pos{0.f};
+		char landmarkName[256];
+		bool posFound = false;
+		bool nameFound = false;
+
+		// find closing brace
+		const char* endSearch = strstr(landmarkEntPtr, "\n}");
+		if (!endSearch)
+		{
+			*err = "bad entity lump";
+			return false;
+		}
+		do
+		{
+			// limit our search to just this line
+			const char* nextNl = startSearch;
+			while (nextNl < endSearch && *nextNl != '\n')
+				nextNl++;
+			if (nextNl >= endSearch)
+				break;
+			// look for "origin" & "targetname"
+			if (!posFound
+			    && _snscanf_s(startSearch,
+			                  nextNl - startSearch,
+			                  "\"origin\" \"%f %f %f\"",
+			                  &pos.x,
+			                  &pos.y,
+			                  &pos.z)
+			           == 3)
+			{
+				posFound = true;
+			}
+			else if (!nameFound
+			         && _snscanf_s(startSearch,
+			                       nextNl - startSearch - 1,
+			                       "\"targetname\" \"%s",
+			                       landmarkName,
+			                       sizeof landmarkName)
+			                == 1)
+			{
+				nameFound = true;
+			}
+			startSearch = nextNl + 1;
+		} while (!posFound || !nameFound);
+		if (nameFound)
+			bspLandmarks.emplace_back(landmarkName, pos);
+
+		landmarkEntPtr = endSearch + 2;
+		if (landmarkEntPtr >= &*--ents.cend())
+			break;
+	}
+
 	// Traverse the tree
 	std::set<uint16_t> mapBrushesIndex;
-	std::stack<uint16_t> s;
+	std::stack<uint16_t, std::vector<uint16_t>> s;
 	int curr = 0;
 	while (curr >= 0 || !s.empty())
 	{
@@ -247,6 +334,28 @@ void MapOverlay::ClearMeshes()
 	lastLoadedFile.clear();
 }
 
+Vector MapOverlay::GetLandmarkOffsetToLastLoadedMap()
+{
+	std::scoped_lock lock{*mapLoadLock};
+	const char* inMap = utils::GetLoadedMap();
+	if (lastLoadedFile.empty() || strlen(inMap) == 0)
+		return vec3_origin;
+	if (landmarkOffsetCachedFrom != inMap || landmarkOffsetCachedFrom.empty())
+	{
+		auto& loadedLandmarks = utils::GetLandmarksInLoadedMap();
+		if (strstr(lastLoadedFile.data(), inMap) && loadedLandmarks == bspLandmarks)
+		{
+			cachedLandmarkOffset = vec3_origin;
+		}
+		else
+		{
+			cachedLandmarkOffset = utils::LandmarkDelta(loadedLandmarks, bspLandmarks);
+			landmarkOffsetCachedFrom = inMap;
+		}
+	}
+	return cachedLandmarkOffset;
+}
+
 void MapOverlay::OnMeshRenderSignal(MeshRendererDelegate& mr)
 {
 	if (!StaticMesh::AllValid(meshes))
@@ -257,7 +366,10 @@ void MapOverlay::OnMeshRenderSignal(MeshRendererDelegate& mr)
 		mr.DrawMesh(mesh,
 		            [](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
 		            {
-			            PositionMatrix(spt_map_overlay.offset, infoOut.mat);
+			            Vector off = spt_map_overlay.bOverrideOffset
+			                             ? spt_map_overlay.overrideOffset
+			                             : spt_map_overlay.GetLandmarkOffsetToLastLoadedMap();
+			            PositionMatrix(off, infoOut.mat);
 			            RenderCallbackZFightFix(infoIn, infoOut);
 		            });
 	}
@@ -275,7 +387,7 @@ void MapOverlay::ImGuiCallback()
 	const char* cmdName = WrangleLegacyCommandName(cmd.GetName(), true, nullptr);
 
 	if (ImGui::Button("Clear"))
-		spt_map_overlay.ClearMeshes();
+		ClearMeshes();
 	if (ImGui::BeginItemTooltip())
 	{
 		ImGui::Text("%s 0", cmdName);
@@ -285,13 +397,20 @@ void MapOverlay::ImGuiCallback()
 	ImGui::SameLine();
 	if (ImGui::Button("Draw map"))
 	{
-		if (!spt_map_overlay.LoadMapFile(acPersist.textInput, ztest, &errMsg))
+		if (!LoadMapFile(acPersist.textInput, ztest, &errMsg))
 			errMsgStartTime = ImGui::GetTime();
 	}
 	if (ImGui::BeginItemTooltip())
 	{
-		const Vector& v = spt_map_overlay.offset;
-		ImGui::Text("%s \"%s\" %g %g %g %d", cmdName, acPersist.textInput, v.x, v.y, v.z, ztest);
+		if (bOverrideOffset)
+		{
+			const Vector& v = overrideOffset;
+			ImGui::Text("%s \"%s\" %g %g %g %d", cmdName, acPersist.textInput, v.x, v.y, v.z, ztest);
+		}
+		else
+		{
+			ImGui::Text("%s \"%s\" %d", cmdName, acPersist.textInput, ztest);
+		}
 		ImGui::EndTooltip();
 	}
 
@@ -311,8 +430,12 @@ void MapOverlay::ImGuiCallback()
 	                                AUTOCOMPLETION_FUNCTION(spt_draw_map_overlay),
 	                                spt_draw_map_overlay_command.GetName());
 
-	Vector& v = spt_map_overlay.offset;
+	if (ImGui::Checkbox("override map offset", &bOverrideOffset))
+		overrideOffset = cachedLandmarkOffset;
+	ImGui::BeginDisabled(!bOverrideOffset);
+	Vector& v = bOverrideOffset ? overrideOffset : cachedLandmarkOffset;
 	ImGui::DragFloat3("offset", v.Base(), 1.f, 0.f, 0.f, "%g", ImGuiSliderFlags_NoRoundToFormat);
+	ImGui::EndDisabled();
 
 	ImGui::Checkbox("ztest", &ztest);
 	if (ImGui::BeginItemTooltip())
@@ -333,11 +456,15 @@ void MapOverlay::LoadFeature()
 {
 	if (!spt_meshRenderer.signal.Works)
 		return;
+	mapLoadLock = std::make_unique<std::mutex>();
 	InitCommand(spt_draw_map_overlay);
 	spt_meshRenderer.signal.Connect(this, &MapOverlay::OnMeshRenderSignal);
-	SptImGuiGroup::Draw_MapOverlay.RegisterUserCallback(ImGuiCallback);
+	SptImGuiGroup::Draw_MapOverlay.RegisterUserCallback([this]() { ImGuiCallback(); });
 }
 
-void MapOverlay::UnloadFeature() {}
+void MapOverlay::UnloadFeature()
+{
+	mapLoadLock.release();
+}
 
 #endif
