@@ -1,7 +1,7 @@
 save 000-canals_01-0,12s-Rama
 settings y_spt_autojump 1
 playspeed 1
-settings tas_strafe_use_tracing 0; exec tashelp; cl_mouseenable 0; _y_spt_afterframes_await_legacy 1
+settings tas_strafe_use_tracing 0; exec tashelp; cl_mouseenable 0; _y_spt_afterframes_await_legacy 1; spt_tas_strafe_version 7
 playspeed 16
 
 vars
