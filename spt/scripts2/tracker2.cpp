@@ -2,6 +2,7 @@
 #include "tracker2.hpp"
 #include "string_utils.hpp"
 #include "..\features\playerio.hpp"
+#include "..\features\tas.hpp"
 #include "..\sptlib-wrapper.hpp"
 
 namespace scripts2
@@ -67,13 +68,11 @@ namespace scripts2
 
 	std::string PosTracker::GenerateTestData() const
 	{
-		extern ConVar tas_strafe_version;
 		return GenerateVectorData(spt_playerio.GetPlayerEyePos(tas_strafe_version.GetInt() >= 8), decimals);
 	}
 
 	ValidationResult PosTracker::Validate(const std::string& expectedValue) const
 	{
-		extern ConVar tas_strafe_version;
 		return VectorValidation(spt_playerio.GetPlayerEyePos(tas_strafe_version.GetInt() >= 8), expectedValue, decimals);
 	}
 

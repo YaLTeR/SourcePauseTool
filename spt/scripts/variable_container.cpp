@@ -2,8 +2,7 @@
 #include "variable_container.hpp"
 #include "dbg.h"
 #include "srctas_reader.hpp"
-
-extern ConVar tas_script_printvars;
+#include "..\features\tas.hpp"
 
 namespace scripts
 {

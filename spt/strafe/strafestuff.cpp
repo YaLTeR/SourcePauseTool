@@ -18,6 +18,7 @@
 #include "..\features\playerio.hpp"
 #include "..\features\tracing.hpp"
 #include "..\features\autojump.hpp"
+#include "..\features\tas.hpp"
 #include "SDK\hl_movedata.h"
 #include "interfaces.hpp"
 
@@ -30,19 +31,6 @@
 #ifdef min
 #undef min
 #endif
-
-extern ConVar tas_strafe_afh_length;
-extern ConVar tas_strafe_allow_jump_override;
-extern ConVar tas_strafe_autojb;
-extern ConVar tas_strafe_capped_limit;
-extern ConVar tas_strafe_hull_is_line;
-extern ConVar tas_strafe_jumptype;
-extern ConVar tas_strafe_lgagst_max;
-extern ConVar tas_strafe_lgagst_min;
-extern ConVar tas_strafe_use_tracing;
-extern ConVar tas_strafe_version;
-extern ConVar tas_strafe_vectorial_increment;
-extern ConVar tas_strafe_vectorial_snap;
 
 // This code is a messed up version of hlstrafe,
 // go take a look at that instead:

@@ -9,6 +9,7 @@
 #include "spt\features\tracing.hpp"
 #include "spt\features\generic.hpp"
 #include "spt\features\create_collide.hpp"
+#include "spt\features\tas.hpp"
 #include "renderer\mesh_renderer.hpp"
 #include "imgui\imgui_interface.hpp"
 
@@ -23,8 +24,6 @@ ConVar spt_draw_world_collides(
     "    - purple: complex (i.e. non-box) brush\n"
     "    - white: displacement\n"
     "    - red: static prop");
-
-extern ConVar tas_pause;
 
 // this hidden cvar can be used to change the mask
 const std::string _g_default_mask_str = std::to_string(MASK_PLAYERSOLID | MASK_VISIBLE);

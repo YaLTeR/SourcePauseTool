@@ -4,10 +4,9 @@
 #include "convar.hpp"
 #include "signals.hpp"
 #include "visualizations\imgui\imgui_interface.hpp"
+#include "tas.hpp"
 
 ConVar y_spt_pause("y_spt_pause", "0", FCVAR_ARCHIVE);
-
-extern ConVar tas_pause;
 
 // spt_pause stuff
 class PauseFeature : public FeatureWrapper<PauseFeature>

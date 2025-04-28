@@ -11,10 +11,10 @@
 #include "..\features\afterframes.hpp"
 #include "..\features\demo.hpp"
 #include "..\features\tickrate.hpp"
+#include "..\features\tas.hpp"
 #include "..\spt-serverplugin.hpp"
 #include "..\sptlib-wrapper.hpp"
 
-extern ConVar tas_script_onsuccess;
 extern ConVar y_spt_gamedir;
 
 namespace scripts2

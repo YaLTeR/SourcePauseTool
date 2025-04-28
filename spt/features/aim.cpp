@@ -6,6 +6,7 @@
 #include "math.hpp"
 #include "playerio.hpp"
 #include "signals.hpp"
+#include "tas.hpp"
 
 #undef min
 #undef max
@@ -258,7 +259,6 @@ CON_COMMAND(tas_aim_ent, "Aim at the absolute origin of a entity with offsets (o
 
 	spt_aim.viewState.state = aim::ViewState::AimState::ENTITY;
 	spt_aim.viewState.targetID = std::atoi(args.Arg(1));
-	extern ConVar tas_strafe_version;
 	if (tas_strafe_version.GetInt() < 8)
 		spt_aim.viewState.targetID += 1; // backwards compat for old entity index logic
 
@@ -323,7 +323,6 @@ CON_COMMAND(_y_spt_setangle,
 		target.y = atof(args.Arg(2));
 		target.z = atof(args.Arg(3));
 
-		extern ConVar tas_strafe_version;
 		Vector player_origin = spt_playerio.GetPlayerEyePos(tas_strafe_version.GetInt() >= 8);
 		Vector diff = (target - player_origin);
 		QAngle angles;

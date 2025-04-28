@@ -19,6 +19,7 @@
 #include "..\features\playerio.hpp"
 #include "..\features\tickrate.hpp"
 #include "..\features\tracing.hpp"
+#include "..\features\tas.hpp"
 #include "..\spt-serverplugin.hpp"
 #include "interfaces.hpp"
 #include "spt\utils\ent_list.hpp"
@@ -31,7 +32,6 @@
 #endif
 
 extern ConVar y_spt_piwsave;
-extern ConVar tas_strafe_version;
 
 namespace utils
 {
