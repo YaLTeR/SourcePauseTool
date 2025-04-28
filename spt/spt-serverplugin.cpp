@@ -123,15 +123,6 @@ void SetViewAngles(const float viewangles[3])
 	}
 }
 
-void DefaultFOVChangeCallback(ConVar* var, char const* pOldString)
-{
-	if (FStrEq(var->GetString(), "75") && FStrEq(pOldString, "90"))
-	{
-		//Msg("Attempted to change default_fov from 90 to 75. Preventing.\n");
-		var->SetValue("90");
-	}
-}
-
 CSourcePauseTool g_SourcePauseTool;
 
 extern "C" __declspec(dllexport) const void* CreateInterface(const char* pName, int* pReturnCode)
