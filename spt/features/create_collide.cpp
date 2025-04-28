@@ -66,17 +66,6 @@ std::unique_ptr<Vector> CreateCollideFeature::CreatePhysObjMesh(const IPhysicsOb
 	return CreateCollideMesh(pPhysObj->GetCollide(), outNumTris);
 }
 
-std::unique_ptr<Vector> CreateCollideFeature::CreateEntMesh(const IServerEntity* pEnt, int& outNumTris)
-{
-	IPhysicsObject* pPhysObj = GetPhysObj(pEnt);
-	if (!pPhysObj)
-	{
-		outNumTris = 0;
-		return nullptr;
-	}
-	return CreatePhysObjMesh(pPhysObj, outNumTris);
-}
-
 IPhysicsObject* CreateCollideFeature::GetPhysObj(const IServerEntity* pEnt)
 {
 	static utils::CachedField<IPhysicsObject*, "CBaseEntity", "m_CollisionGroup", true, false, sizeof(int)> fPhys;
