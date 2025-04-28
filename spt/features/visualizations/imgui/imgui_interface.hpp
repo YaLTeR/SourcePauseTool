@@ -67,8 +67,8 @@ struct ImGuiWindow;
 *   to check for something regularly, use e.g. SV_FrameSignal. The ImGui
 *   callbacks are not guaranteed to be called every frame.
 * 
-* - With the currently implementation of input events, ImGui will not see key
-*   & mouse events when there is no game UI open.
+* - With the current implementation of input events, ImGui will not see key &
+*   mouse events when there is no game UI open.
 */
 
 using SptImGuiTabCallback = std::function<void()>;
@@ -103,15 +103,15 @@ using SptImGuiHudTextCallback = std::function<void(ConVar& var)>;
 * feature within an ImGui::BeginDisabled block (and preferably let the user know why
 * the feature is disabled in the UI).
 * 
-* The RegisterUserCallback() functions return true if the internal feature is loaded.
-* If the return value is false, the callback will *not* be called. Tab/Section
-* callbacks will only be called if that tab is visible. If you want to display a
-* separate window for your feature, use RegisterWindowCallback().
+* Tab::RegisterUserCallback() & Section::RegisterUserCallback() return true if the
+* internal feature is loaded. If the return value is false, the callback will *not*
+* be called. If you want to display a separate window for your feature, use
+* RegisterWindowCallback().
 * 
-* You shoudn't rely on any particular order for the ImGui callbacks. Section callbacks
-* will be called from top to bottom and window callbacks are called in the order they
-* were registered in. Since this (usually) depends on feature initialization order it
-* may change as files are moved around.
+* Each leaf section/tab should have at most a single callback. Section/tab
+* callbacks are allowed to make their own windows, but keep in mind that those
+* windows won't show when the tab is closed. It's recommended to register a
+* separate window callback for separate windows.
 */
 namespace SptImGuiGroup
 {
@@ -232,19 +232,12 @@ namespace SptImGuiGroup
 
 class SptImGui
 {
+public:
+	// true if the imgui feature works and is loaded
+	static bool Loaded();
 	/*
-	* Only call these during PreHook() or later! These return true if the internal feature is loaded.
-	* If the return value is false, the callback will *not* be called.
-	* If the return value is true, the callbacks will be called at the end of each frame:
-	* - tab/section callbacks will always be called, even if that tab is closed
-	* - window callbacks will always be called
-	* 
-	* The logic for tab/section callbacks should look something like this:
-	* if (open) {
-	*   // draw ImGui stuff
-	* }
-	* // update feature internals
-	* // display other ImGui windows
+	* Use this if you want a separate window for your feature, it returns true if the internal
+	* feature is loaded.
 	* 
 	* The logic for window callbacks should look something like this:
 	* if (ImGui::Begin(...)) {
@@ -252,25 +245,15 @@ class SptImGui
 	* }
 	* ImGui::End();
 	* 
+	* Window callbacks are called in the order that the register functions were called in.
+	* Since this (probably) depends on feature initialization order it should not be relied on
+	* (at least until feature dependencies are implemented). The main window has no special
+	* priority over other windows.
+	* 
 	* If your feature can be used from the console and you want support for many games/versions,
 	* avoid relying on the ImGui callback to update the feature internals. Instead, use e.g.
 	* SV_FrameSignal since that is more thoroughly tested and supported for more game versions.
-	* 
-	* Tab/section callbacks for the main window are called in the order that those objects are
-	* defined above. Window callbacks are called in the order that the register functions were
-	* called in. Since this (probably) depends on feature initialization order it should not be
-	* relied on (at least until feature dependencies are implemented). The main window has no
-	* special priority over other windows.
-	* 
-	* Each leaf section/tab should have at most a single callback. Section/tab callbacks are also
-	* allowed to make their own windows (e.g. the tab has a checkbox to enable the feature, and
-	* when checked the main guts of the feature are displayed in a separate window).
 	*/
-
-public:
-	// true if the imgui feature works and is loaded
-	static bool Loaded();
-	// use this if you want a separate window for your feature
 	static bool RegisterWindowCallback(const SptImGuiWindowCallback& cb);
 
 	/*
