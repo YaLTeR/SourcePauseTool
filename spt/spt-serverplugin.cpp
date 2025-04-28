@@ -15,6 +15,7 @@
 #include "game_detection.hpp"
 #include "..\features\generic.hpp"
 #include "..\features\playerio.hpp"
+#include "..\features\tas.hpp"
 #include "custom_interfaces.hpp"
 #include "cvars.hpp"
 #include "scripts\srctas_reader.hpp"
@@ -84,10 +85,6 @@ ConVar* _sv_gravity = nullptr;
 ConVar* _sv_maxvelocity = nullptr;
 ConVar* _sv_bounce = nullptr;
 ConVar* _sv_cheats = nullptr;
-
-extern ConVar tas_force_airaccelerate;
-extern ConVar tas_force_wishspeed_cap;
-extern ConVar tas_reset_surface_friction;
 
 void CallServerCommand(const char* cmd)
 {

@@ -14,9 +14,9 @@
 #include "framebulk_handler.hpp"
 #include "..\features\afterframes.hpp"
 #include "..\features\demo.hpp"
+#include "..\features\tas.hpp"
 
 extern ConVar y_spt_gamedir;
-extern ConVar tas_script_onsuccess;
 
 namespace scripts
 {

@@ -7,12 +7,11 @@
 #include "ent_utils.hpp"
 #include "spt/sptlib-wrapper.hpp"
 #include "spt\features\game_fixes\rng.hpp"
+#include "spt\features\tas.hpp"
 #include "..\spt-serverplugin.hpp"
 
 #undef max
 #undef min
-
-extern ConVar tas_strafe_vectorial_offset;
 
 namespace aim
 {

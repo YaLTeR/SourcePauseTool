@@ -3,10 +3,9 @@
 #include "file.hpp"
 #include "parsed_script2.hpp"
 #include "..\features\demo.hpp"
+#include "..\features\tas.hpp"
 #include "..\spt-serverplugin.hpp"
 #include "thirdparty\md5.hpp"
-
-extern ConVar tas_script_savestates;
 
 namespace scripts2
 {
