@@ -68,8 +68,8 @@ std::unique_ptr<Vector> CreateCollideFeature::CreatePhysObjMesh(const IPhysicsOb
 
 IPhysicsObject* CreateCollideFeature::GetPhysObj(const IServerEntity* pEnt)
 {
-	static utils::CachedField<IPhysicsObject*, "CBaseEntity", "m_CollisionGroup", true, false, sizeof(int)> fPhys;
-	return pEnt && fPhys.Exists() ? *fPhys.GetPtr(pEnt) : nullptr;
+	static utils::CachedField<IPhysicsObject*, "CBaseEntity", "m_pPhysicsObject", true> fPhys;
+	return fPhys.GetValueOrDefault(pEnt);
 }
 
 int CreateCollideFeature::GetPhysObjList(const IServerEntity* pEnt, IPhysicsObject** pList, int maxElems)
@@ -77,7 +77,7 @@ int CreateCollideFeature::GetPhysObjList(const IServerEntity* pEnt, IPhysicsObje
 	if (!pEnt || !pList || getVPhysObjListVirtualOff <= 0)
 		return 0;
 
-	static utils::CachedField<string_t, "CBaseEntity", "m_iClassname", true, false> classNameField{};
+	static utils::CachedField<string_t, "CBaseEntity", "m_iClassname", true> classNameField{};
 
 	if (!classNameField.Exists())
 		return 0;
@@ -104,7 +104,7 @@ int CreateCollideFeature::GetPhysObjList(const IServerEntity* pEnt, IPhysicsObje
 	}
 
 	// actually m_VehiclePhysics.m_pOuter
-	static utils::CachedField<CBaseHandle, "CPropVehicle", "m_VehiclePhysics.m_controls.throttle", true, false, -8>
+	static utils::CachedField<CBaseHandle, "CPropVehicle", "m_VehiclePhysics.m_controls.throttle", true, -8>
 	    vehicleOuterField{};
 
 	if (isVehicle)

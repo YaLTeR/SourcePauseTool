@@ -158,7 +158,7 @@ void ShadowPosition::SetPlayerHavokPos(const Vector& worldPosition, const QAngle
 IPhysicsPlayerController* ShadowPosition::GetPlayerController()
 {
 	constexpr int fOff = -3 * (int)sizeof(void*);
-	static utils::CachedField<IPhysicsPlayerController*, "CBasePlayer", "m_oldOrigin", true, true, fOff> fCont;
+	static utils::CachedField<IPhysicsPlayerController*, "CBasePlayer", "m_oldOrigin", true, fOff> fCont;
 	auto ppController = fCont.GetPtrPlayer();
 	return ppController ? *ppController : nullptr;
 }

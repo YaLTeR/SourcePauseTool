@@ -136,11 +136,10 @@ namespace utils
 
 	/*
 	* A small wrapper of spt_entprops.GetFieldOffset() that caches the offset.
-	* Always asserts that the field exists. Optionally, calls Error() if it does not.
-	* additionalOffset can be used when the exact field you're looking for does not exist;
+	* AdditionalOffset can be used when the exact field you're looking for does not exist;
 	* you can instead reference a nearby field and add an offset from that in bytes.
 	*/
-	template<typename T, _tstring map, _tstring field, bool server, bool error = false, int additionalOffset = 0>
+	template<typename T, _tstring map, _tstring field, bool server, int additionalOffset = 0>
 	struct CachedField
 	{
 		int _off = INVALID_DATAMAP_OFFSET;
@@ -150,24 +149,7 @@ namespace utils
 			if (_off != INVALID_DATAMAP_OFFSET)
 				return _off + additionalOffset;
 			_off = spt_entprops.GetFieldOffset(map.val, field.val, server);
-			if (_off == INVALID_DATAMAP_OFFSET)
-			{
-				char errStr[256];
-				snprintf(errStr,
-				         sizeof(errStr),
-				         "spt: %s::%s (%s) does not exist",
-				         map.val,
-				         field.val,
-				         (server) ? "server" : "client");
-				AssertMsg1(0, "%s", errStr);
-				if (error)
-					Error("%s", errStr);
-				return INVALID_DATAMAP_OFFSET;
-			}
-			else
-			{
-				return _off + additionalOffset;
-			}
+			return _off == INVALID_DATAMAP_OFFSET ? INVALID_DATAMAP_OFFSET : _off + additionalOffset;
 		}
 
 		bool Exists()
@@ -182,7 +164,6 @@ namespace utils
 			return reinterpret_cast<T*>(reinterpret_cast<uint32_t>(ent) + _off + additionalOffset);
 		}
 
-		template<typename = std::enable_if_t<!error>>
 		T& GetValueOrDefault(const void* ent, T def = T{})
 		{
 			T* ptr = GetPtr(ent);
@@ -196,7 +177,6 @@ namespace utils
 			return GetPtr(utils::spt_clientEntList.GetPlayer());
 		}
 
-		template<typename = std::enable_if_t<!error>>
 		T& GetValueOrDefaultPlayer(T def = T{})
 		{
 			T* ptr = GetPtrPlayer();

@@ -120,9 +120,9 @@ void HudOobEntsFeature::OnTickSignal(bool simulating)
 			continue;
 		CBaseEntity* ent = ed->GetIServerEntity()->GetBaseEntity();
 
-		static CachedField<string_t, "CBaseEntity", "m_iName", true, true> nf;
-		static CachedField<string_t, "CBaseEntity", "m_iClassname", true, true> cnf;
-		static CachedField<string_t, "CBaseEntity", "m_iGlobalname", true, true> gnf;
+		static CachedField<string_t, "CBaseEntity", "m_iName", true> nf;
+		static CachedField<string_t, "CBaseEntity", "m_iClassname", true> cnf;
+		static CachedField<string_t, "CBaseEntity", "m_iGlobalname", true> gnf;
 		const char* name = nf.GetPtr(ent)->ToCStr();
 		const char* className = cnf.GetPtr(ent)->ToCStr();
 		const char* globalName = gnf.GetPtr(ent)->ToCStr();
@@ -152,8 +152,8 @@ void HudOobEntsFeature::OnTickSignal(bool simulating)
 		}
 
 		// m_Collision is not in datamap, use field before it
-		static CachedField<CCollisionProperty, "CBaseEntity", "m_hMovePeer", true, true, sizeof EHANDLE> cf;
-		static CachedField<QAngle, "CBaseEntity", "m_angAbsRotation", true, true> rotField;
+		static CachedField<CCollisionProperty, "CBaseEntity", "m_hMovePeer", true, sizeof EHANDLE> cf;
+		static CachedField<QAngle, "CBaseEntity", "m_angAbsRotation", true> rotField;
 		const CCollisionProperty* colProp = cf.GetPtr(ent);
 		// arbitary decision: we don't care about things being oob that aren't solid according to this function
 		if (!colProp->IsSolid())
