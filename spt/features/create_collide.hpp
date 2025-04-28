@@ -25,10 +25,6 @@ public:
 	// if this returns a sphere (pPhysObj->GetSphereRadius() > 0) then this return an empty mesh
 	std::unique_ptr<Vector> CreatePhysObjMesh(const IPhysicsObject* pPhysObj, int& outNumTris);
 
-	// you'll need to transform the verts using either pEnt's matrix or the matrix from the phys obj;
-	// only creates a mesh using GetPhysObj(), not GetPhysObjList()
-	std::unique_ptr<Vector> CreateEntMesh(const IServerEntity* pEnt, int& outNumTris);
-
 	// can be used after InitHooks()
 	IPhysicsObject* GetPhysObj(const IServerEntity* pEnt);
 
