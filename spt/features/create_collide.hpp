@@ -22,13 +22,13 @@ public:
 	std::unique_ptr<Vector> CreateCollideMesh(const CPhysCollide* pCollide, int& outNumTris);
 
 	// you'll need to transform these verts by applying a matrix you can create with pPhysObj->GetPosition();
-	// if this returns a sphere (pPhysObj->GetSphereRadius() > 0) then this return an empty mesh
+	// if the object is a sphere (pPhysObj->GetSphereRadius() > 0) then this return an empty mesh
 	std::unique_ptr<Vector> CreatePhysObjMesh(const IPhysicsObject* pPhysObj, int& outNumTris);
 
 	// can be used after InitHooks()
 	IPhysicsObject* GetPhysObj(const IServerEntity* pEnt);
 
-	// calls VPhysicsGetObjectList(), used when pEnt has multiple vphys objects; see note about spheres above
+	// calls VPhysicsGetObjectList(), used when pEnt has multiple vphys objects
 	int GetPhysObjList(const IServerEntity* pEnt, IPhysicsObject** pList, int maxElems);
 
 protected:

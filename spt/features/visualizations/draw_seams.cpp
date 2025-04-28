@@ -166,7 +166,7 @@ void DrawSeamsFeature::OnMeshRenderSignal(MeshRendererDelegate& mr)
 		return;
 
 	Vector cameraPosition = utils::GetPlayerEyePosition();
-	static utils::CachedField<QAngle, "CBasePlayer", "pl.v_angle", true, true> vangle;
+	static utils::CachedField<QAngle, "CBasePlayer", "pl.v_angle", true> vangle;
 	QAngle angles = *vangle.GetPtrPlayer();
 
 	auto env = utils::GetEnvironmentPortal();

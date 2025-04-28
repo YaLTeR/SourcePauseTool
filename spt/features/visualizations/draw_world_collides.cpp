@@ -139,7 +139,7 @@ private:
 	{
 		// this does not work when we're in a vehicle, we'd want to use a modified version of CBasePlayer::CalcView
 		Vector eyePos = utils::GetPlayerEyePosition();
-		static utils::CachedField<QAngle, "CBasePlayer", "pl.v_angle", true, true> vangle;
+		static utils::CachedField<QAngle, "CBasePlayer", "pl.v_angle", true> vangle;
 		QAngle eyeAng = tas_pause.GetBool() ? utils::GetPlayerEyeAngles() : *vangle.GetPtrPlayer();
 
 		auto env = utils::GetEnvironmentPortal();
@@ -179,8 +179,8 @@ private:
 			    // that's good enough. This does not work that well through portals or in vehicles, but it does
 			    // take care of stepping up/down which was the main annoyance I had.
 
-			    utils::CachedField<Vector, "CBasePlayer", "m_vecAbsOrigin", false, false> v1;
-			    utils::CachedField<Vector, "CBasePlayer", "m_vecViewOffset", false, false> v2;
+			    static utils::CachedField<Vector, "CBasePlayer", "m_vecAbsOrigin", false> v1;
+			    static utils::CachedField<Vector, "CBasePlayer", "m_vecViewOffset", false> v2;
 
 			    if (v1.Exists() && v2.Exists())
 			    {

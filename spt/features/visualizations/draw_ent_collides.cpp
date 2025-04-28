@@ -82,10 +82,10 @@ private:
 
 	struct
 	{
-		utils::CachedField<matrix3x4_t, "CBaseEntity", "m_rgflCoordinateFrame", true, true> coordFrame;
-		utils::CachedField<int, "CBaseEntity", "m_CollisionGroup", true, true> collisionGroup;
-		utils::CachedField<ushort, "CBaseEntity", "m_Collision.m_usSolidFlags", true, true> solidFlags;
-		utils::CachedField<string_t, "CBaseEntity", "m_iClassname", true, true> className;
+		utils::CachedField<matrix3x4_t, "CBaseEntity", "m_rgflCoordinateFrame", true> coordFrame;
+		utils::CachedField<int, "CBaseEntity", "m_CollisionGroup", true> collisionGroup;
+		utils::CachedField<ushort, "CBaseEntity", "m_Collision.m_usSolidFlags", true> solidFlags;
+		utils::CachedField<string_t, "CBaseEntity", "m_iClassname", true> className;
 	} entFields;
 
 	int lastUpdateTick = -1;
