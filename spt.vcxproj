@@ -1225,6 +1225,7 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClCompile Include="spt\features\qccmd.cpp" />
     <ClCompile Include="spt\features\restart.cpp" />
     <ClCompile Include="spt\features\saveloads.cpp" />
+    <ClCompile Include="spt\features\set_sg.cpp" />
     <ClCompile Include="spt\features\shadow.cpp" />
     <ClCompile Include="spt\features\strafehud.cpp" />
     <ClCompile Include="spt\features\stucksave.cpp" />
