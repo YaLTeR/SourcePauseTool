@@ -30,18 +30,29 @@ std::wstring calculateWillAGSG(const utils::PortalInfo* portal, Vector& new_play
 * Allowed options are: blue/orange/auto/env/overlay/<index>.
 */
 
-// prepend to the rest of the description if getPortal(allowAuto=true) is used
+// prepend to the rest of the description if GPF_ALLOW_AUTO is used
 #define SPT_PORTAL_SELECT_DESCRIPTION_AUTO_PREFIX \
 	"  - auto: prioritize the player's portal environment, otherwise uses last drawn portal\n"
 
-// prepend to the rest of the description if getPortal("overlay") is allowed
+// prepend to the rest of the description if GPF_ALLOW_OVERLAY is allowed
 #define SPT_PORTAL_SELECT_DESCRIPTION_OVERLAY_PREFIX "  - overlay: uses the same portal as spt_overlay_portal\n"
 
+// prepend to the rest of the description if GPF_ALLOW_PLAYER_ENV is allowed
+#define SPT_PORTAL_SELECT_DESCRIPTION_ENV_PREFIX "  - env: use the player's portal environment\n"
+
 #define SPT_PORTAL_SELECT_DESCRIPTION \
-	"  - env: draw using the player's portal environment\n" \
 	"  - blue/orange: use a specific portal color\n" \
 	"  - <index>: specify portal entity index"
 
-const utils::PortalInfo* getPortal(const char* arg, bool onlyOpen, bool allowAuto = true);
+enum GetPortalFlags
+{
+	GPF_NONE = 0,
+	GPF_ONLY_OPEN_PORTALS = 1 << 0,
+	GPF_ALLOW_AUTO = 1 << 1,
+	GPF_ALLOW_OVERLAY = 1 << 2,
+	GPF_ALLOW_PLAYER_ENV = 1 << 3,
+};
+
+const utils::PortalInfo* getPortal(const char* arg, int getPortalFlags);
 
 #endif

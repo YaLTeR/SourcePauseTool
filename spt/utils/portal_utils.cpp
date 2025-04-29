@@ -140,7 +140,7 @@ void calculateOffsetPlayer(const utils::PortalInfo* portal, Vector& new_player_o
 	transformThroughPortal(portal, player_origin, player_angles, new_player_origin, new_player_angles);
 }
 
-const utils::PortalInfo* getPortal(const char* arg, bool onlyOpen, bool allowAuto)
+const utils::PortalInfo* getPortal(const char* arg, int getPortalFlags)
 {
 	if (!arg || !utils::DoesGameLookLikePortal())
 		return nullptr;
@@ -148,7 +148,8 @@ const utils::PortalInfo* getPortal(const char* arg, bool onlyOpen, bool allowAut
 	if (!stricmp(arg, "overlay"))
 	{
 		arg = _y_spt_overlay_portal.GetString();
-		allowAuto = true; // copy same portal as used for overlay, meaning that 'auto' is allowed
+		// copy same portal as used for overlay, meaning that 'auto' & 'env' are allowed
+		getPortalFlags |= GPF_ALLOW_AUTO | GPF_ALLOW_PLAYER_ENV;
 	}
 
 	enum PortalSelector
@@ -170,25 +171,26 @@ const utils::PortalInfo* getPortal(const char* arg, bool onlyOpen, bool allowAut
 	static std::array<utils::PortalInfo, _PS_N_STATEFUL_SELECTORS> lastUsedLookup{};
 
 	PortalSelector selector;
-	{
-		if (!stricmp(arg, "blue"))
-			selector = onlyOpen ? PS_BLUE_ONLY_OPEN : PS_BLUE;
-		else if (!stricmp(arg, "orange"))
-			selector = onlyOpen ? PS_ORANGE_ONLY_OPEN : PS_ORANGE;
-		else if (allowAuto && !stricmp(arg, "auto"))
-			selector = onlyOpen ? PS_AUTO_ONLY_OPEN : PS_AUTO;
-		else if (!stricmp(arg, "env"))
-			selector = PS_ENV;
-		else
-			selector = PS_INDEX;
-	}
+	if (!stricmp(arg, "blue"))
+		selector = (getPortalFlags & GPF_ONLY_OPEN_PORTALS) ? PS_BLUE_ONLY_OPEN : PS_BLUE;
+	else if (!stricmp(arg, "orange"))
+		selector = (getPortalFlags & GPF_ONLY_OPEN_PORTALS) ? PS_ORANGE_ONLY_OPEN : PS_ORANGE;
+	else if ((getPortalFlags & GPF_ALLOW_AUTO) && !stricmp(arg, "auto"))
+		selector = (getPortalFlags & GPF_ONLY_OPEN_PORTALS) ? PS_AUTO_ONLY_OPEN : PS_AUTO;
+	else if (!stricmp(arg, "env"))
+		selector = PS_ENV;
+	else
+		selector = PS_INDEX;
 
 	bool wantBlue = true;
 	bool wantOrange = true;
 
-	// check if a portal matches the selector string
-	const auto portalIsMatch = [&wantBlue, &wantOrange, onlyOpen](const utils::PortalInfo* p)
-	{ return p && (!onlyOpen || p->isOpen) && ((wantOrange && p->isOrange) || (wantBlue && !p->isOrange)); };
+	// check if a portal matches the selector string & flags
+	const auto portalIsMatch = [&wantBlue, &wantOrange, getPortalFlags](const utils::PortalInfo* p)
+	{
+		return p && (!(getPortalFlags & GPF_ONLY_OPEN_PORTALS) || p->isOpen)
+		       && ((wantOrange && p->isOrange) || (wantBlue && !p->isOrange));
+	};
 
 	// index selector is easy
 	if (selector == PS_INDEX)

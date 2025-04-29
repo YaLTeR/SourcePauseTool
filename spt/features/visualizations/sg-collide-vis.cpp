@@ -28,12 +28,15 @@ ConVar y_spt_draw_portal_env("y_spt_draw_portal_env",
                              "   - blue: world geometry behind the portal\n"
                              "   - yellow: static props");
 
+constexpr int SPT_PORTAL_SELECT_FLAGS = GPF_ALLOW_AUTO | GPF_ALLOW_PLAYER_ENV;
+
 ConVar y_spt_draw_portal_env_type(
     "y_spt_draw_portal_env_type",
     "auto",
     FCVAR_CHEAT | FCVAR_DONTRECORD,
     "This determines what portal to use for all spt_draw_portal_* cvars. Valid values are:\n"
-    "" SPT_PORTAL_SELECT_DESCRIPTION_AUTO_PREFIX "" SPT_PORTAL_SELECT_DESCRIPTION);
+    "" SPT_PORTAL_SELECT_DESCRIPTION_AUTO_PREFIX "" SPT_PORTAL_SELECT_DESCRIPTION_ENV_PREFIX
+    "" SPT_PORTAL_SELECT_DESCRIPTION);
 
 ConVar y_spt_draw_portal_env_ents(
     "y_spt_draw_portal_env_ents",
@@ -177,7 +180,8 @@ public:
 			cache.Clear();
 			return;
 		}
-		const utils::PortalInfo* newPortal = getPortal(y_spt_draw_portal_env_type.GetString(), false, true);
+		const utils::PortalInfo* newPortal =
+		    getPortal(y_spt_draw_portal_env_type.GetString(), SPT_PORTAL_SELECT_FLAGS);
 
 		if (!newPortal)
 			return;

@@ -76,6 +76,8 @@ private:
 
 VagSearcher spt_vag_searcher;
 
+constexpr int SPT_PORTAL_SELECT_FLAGS = GPF_ALLOW_OVERLAY | GPF_ONLY_OPEN_PORTALS;
+
 ConVar y_spt_vag_search_portal("y_spt_vag_search_portal",
                                "overlay",
                                FCVAR_CHEAT,
@@ -92,7 +94,7 @@ void VagSearcher::StartSearch()
 	if (IsIterating())
 		return;
 
-	enter_portal = getPortal(y_spt_vag_search_portal.GetString(), true, false);
+	enter_portal = getPortal(y_spt_vag_search_portal.GetString(), SPT_PORTAL_SELECT_FLAGS);
 
 	if (!enter_portal || !enter_portal->linkedHandle.IsValid())
 	{
