@@ -7,7 +7,6 @@
 #include "predictable_entity.h"
 #include "dt_common.h"
 #include "collisionproperty.h"
-#include "vphysics_interface.h"
 
 #include "interfaces.hpp"
 #include "spt\feature.hpp"
@@ -16,6 +15,7 @@
 #include "spt\utils\portal_utils.hpp"
 #include "spt\features\ent_props.hpp"
 #include "spt\features\create_collide.hpp"
+#include "imgui\imgui_interface.hpp"
 
 using interfaces::engine_server;
 
@@ -162,6 +162,8 @@ public:
 		InitConcommandBase(y_spt_draw_portal_env_type);
 		InitConcommandBase(y_spt_draw_portal_env_ents);
 		InitConcommandBase(y_spt_draw_portal_env_remote);
+
+		SptImGuiGroup::Draw_Collides_PortalEnv.RegisterUserCallback(ImGuiCallback);
 	}
 
 	virtual void UnloadFeature() override
@@ -413,6 +415,16 @@ public:
 			            infoOut.mat = entMat;
 			            RenderCallbackZFightFix(infoIn, infoOut);
 		            });
+	}
+
+	static void ImGuiCallback()
+	{
+		ImGui::BeginDisabled(!SptImGui::CvarCheckbox(y_spt_draw_portal_env, "Draw portal geometry"));
+		SptImGui::CvarCheckbox(y_spt_draw_portal_env_ents, "Draw portal entities");
+		SptImGui::CvarCheckbox(y_spt_draw_portal_env_remote, "Draw remote portal geometry");
+		static SptImGui::PortalSelectionPersist persist;
+		SptImGui::PortalSelectionWidgetCvar(y_spt_draw_portal_env_type, persist, SPT_PORTAL_SELECT_FLAGS);
+		ImGui::EndDisabled();
 	}
 };
 

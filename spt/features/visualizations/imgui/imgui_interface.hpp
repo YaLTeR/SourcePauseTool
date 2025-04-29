@@ -2,6 +2,8 @@
 
 #include "thirdparty/imgui/imgui.h"
 #include "spt/cvars.hpp"
+#include "spt/utils/ent_list.hpp"
+#include "spt/utils/portal_utils.hpp"
 
 class SptImGuiFeature;
 class SptImGui;
@@ -174,11 +176,13 @@ namespace SptImGuiGroup
 	inline Tab Draw_Collides{"Collision", &Draw};
 	inline Section Draw_Collides_World{"World collides", &Draw_Collides};
 	inline Section Draw_Collides_Ents{"Entity collides", &Draw_Collides};
+	inline Section Draw_Collides_PortalEnv{"Portal environment collision", &Draw_Collides};
 	inline Tab Draw_MapOverlay{"Map overlay", &Draw};
-	inline Tab Draw_Lines{"Draw lines", &Draw};
 	inline Tab Draw_PpPlacement{"Portal placement", &Draw};
 	inline Section Draw_PpPlacement_Gun{"Gun portal placement", &Draw_PpPlacement};
 	inline Section Draw_PpPlacement_Grid{"Portal placement grid", &Draw_PpPlacement};
+	inline Tab Draw_VagTrace{"VAG trace", &Draw};
+	inline Tab Draw_Lines{"Draw lines", &Draw};
 	inline Tab Draw_Misc{"Misc.", &Draw};
 	inline Section Draw_Misc_OobEnts{"OOB entities", &Draw_Misc};
 	inline Section Draw_Misc_Seams{"Seamshots", &Draw_Misc};
@@ -202,6 +206,7 @@ namespace SptImGuiGroup
 	inline Section Cheats_ISG{"ISG", &Cheats};
 	inline Section Cheats_SnapshotOverflow{"Snapshot overflow fix", &Cheats};
 	inline Section Cheats_VagCrash{"Prevent VAG crash", &Cheats};
+	inline Section Cheats_VagSearch{"VAG search", &Cheats};
 	inline Section Cheats_PlayerShadow{"Player shadow", &Cheats};
 	inline Section Cheats_Pause{"Pause on load", &Cheats};
 	inline Section Cheats_FreeOob{"Free OOB", &Cheats};
@@ -306,14 +311,25 @@ public:
 	static bool InputTextInteger(const char* label, const char* hint, long long& val, int radix);
 	// a textbox for a cvar which can take on any long long value, returns the value
 	static long long CvarInputTextInteger(ConVar& c, const char* label, const char* hint, int radix = 10);
-	// wrapper of SptImGui::DragInt
-	static long long CvarDragInt(ConVar& c, const char* label, const char* format = nullptr);
 	// wrapper of ImGui::InputDouble, returns true if the value was changed
 	static bool InputDouble(const char* label, double* f);
 	// wrapper of SptImGui::InputDouble
 	static double CvarDouble(ConVar& c, const char* label, const char* hint);
-	// uses DragScalarN, puts everything in a CmdGroup scope using the first cvar, does not provide help text
-	// sets mins/maxs from the first cvar (if present)
+	// either a slider or a draggable for a cvar, depending on the value of isSlider
+	static long long CvarDraggableInt(ConVar& c,
+	                                  const char* label,
+	                                  const char* format = nullptr,
+	                                  bool isSlider = false);
+	static float CvarDraggableFloat(ConVar& c,
+	                                const char* label,
+	                                float speed, // only applicable if isSlider is false
+	                                const char* format = nullptr,
+	                                bool isSlider = false);
+	/*
+	* - uses DragScalarN & puts everything in a CmdGroup scope using the first cvar
+	* - does not provide help text
+	* - sets mins/maxs from the first cvar (if present)
+	*/
 	static void CvarsDragScalar(
 	    ConVar* const* cvars,
 	    void* data, // isFloat=true: floats, isFloat=false: long longs; will be filled by this function
@@ -322,6 +338,13 @@ public:
 	    const char* label,
 	    float speed = 1.f,
 	    const char* format = nullptr);
+	// same as CvarsDragScalar, but uses ImGui::SliderScalarN instead of ImGui::DragScalarN, appropriate when the cvars have mins & maxs
+	static void CvarsSliderScalar(ConVar* const* cvars,
+	                              void* data,
+	                              int n,
+	                              bool isFloat,
+	                              const char* label,
+	                              const char* format = nullptr);
 	// same as internal imgui help marker - a tooltip with extra info
 	static void HelpMarker(const char* fmt, ...);
 	// a help marker that says "Help text for <cvar_name>:\n\n<help_text>"
@@ -379,6 +402,27 @@ public:
 	                                  FnCommandCompletionCallback autocompleteFn,
 	                                  const char* cmdName,
 	                                  float maxDisplayItems = 7.25f);
+
+#ifdef SPT_PORTAL_UTILS
+
+	struct PortalSelectionPersist
+	{
+		int selectedPortalIdx = -1; // [in/out] public
+		bool enableHighPrecision = false;
+		bool showIndexSelectorTooltip = false;          // [in] public
+		bool userSelectedPortalByIndexLastCall = false; // [out] public
+	};
+
+	// Creates a table of portals for the user to select from. create a static
+	// PortalSelectionPersist and pass it in here every time you call this widget.
+	static const utils::PortalInfo* PortalSelectionWidget(PortalSelectionPersist& persist, int getPortalFlags);
+
+	// For cvars which accept "blue"/"orange"/"auto" etc. Use the same flags as for getPortal.
+	static const utils::PortalInfo* PortalSelectionWidgetCvar(ConVar& c,
+	                                                          PortalSelectionPersist& persist,
+	                                                          int getPortalFlags);
+
+#endif
 };
 
 inline ConCommand spt_gui{

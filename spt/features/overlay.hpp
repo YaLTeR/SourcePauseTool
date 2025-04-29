@@ -59,6 +59,7 @@ private:
 	void DrawCrosshair();
 	void ModifyView(CViewSetup* renderView);
 	void ModifyScreenFlags(int& clearFlags, int& drawFlags);
+	static void ImGuiCallback();
 };
 
 extern Overlay spt_overlay;

@@ -1,5 +1,7 @@
 #include "stdafx.hpp"
 
+#include <inttypes.h>
+
 #include "overlay.hpp"
 
 #include "vguimatsurface\imatsystemsurface.h"
@@ -11,6 +13,7 @@
 #include "spt\utils\signals.hpp"
 #include "spt\utils\math.hpp"
 #include "spt\utils\game_detection.hpp"
+#include "visualizations\imgui\imgui_interface.hpp"
 
 #include "playerio.hpp"
 #include "hud.hpp"
@@ -62,15 +65,26 @@ ConVar _y_spt_overlay_fov("_y_spt_overlay_fov",
                           FCVAR_CHEAT,
                           "Determines the FOV of the overlay.\n",
                           true,
-                          5.0f,
+                          1.f,
                           true,
-                          140.0f);
+                          175.f);
 ConVar _y_spt_overlay_swap("_y_spt_overlay_swap", "0", FCVAR_CHEAT, "Swap alternate view and main screen?\n");
-ConVar _y_spt_overlay_crosshair_size("_y_spt_overlay_crosshair_size", "10", FCVAR_CHEAT, "Overlay crosshair size.");
+ConVar _y_spt_overlay_crosshair_size("_y_spt_overlay_crosshair_size",
+                                     "10",
+                                     FCVAR_CHEAT,
+                                     "Overlay crosshair size.",
+                                     true,
+                                     1,
+                                     true,
+                                     200);
 ConVar _y_spt_overlay_crosshair_thickness("_y_spt_overlay_crosshair_thickness",
                                           "1",
                                           FCVAR_CHEAT,
-                                          "Overlay crosshair thickness.");
+                                          "Overlay crosshair thickness.",
+                                          true,
+                                          1,
+                                          true,
+                                          15);
 ConVar _y_spt_overlay_crosshair_color("_y_spt_overlay_crosshair_color",
                                       "0 255 0 255",
                                       FCVAR_CHEAT,
@@ -160,6 +174,7 @@ void Overlay::LoadFeature()
 	}
 #endif
 
+	SptImGuiGroup::Overlay.RegisterUserCallback(ImGuiCallback);
 #endif
 }
 
@@ -348,6 +363,67 @@ void Overlay::ModifyScreenFlags(int& clearFlags, int& drawFlags)
 	{
 		drawFlags &= ~RENDERVIEW_DRAWVIEWMODEL;
 	}
+}
+
+void Overlay::ImGuiCallback()
+{
+	SptImGui::BeginCmdGroup(_y_spt_overlay);
+	SptImGui::CvarCheckbox(_y_spt_overlay, "Enable overlay");
+	ImGui::BeginDisabled(!_y_spt_overlay.GetBool());
+
+	SptImGui::CvarDraggableInt(_y_spt_overlay_width, "Width", nullptr, true);
+	SptImGui::CvarDraggableFloat(_y_spt_overlay_fov, "FOV", 1.f, nullptr, true);
+	SptImGui::CvarCheckbox(_y_spt_overlay_swap, "Swap overlay and main View");
+	SptImGui::CvarCheckbox(_y_spt_overlay_no_roll, "No roll");
+
+	ImGui::SeparatorText("Crosshair");
+
+	SptImGui::CvarDraggableInt(_y_spt_overlay_crosshair_size, "Size", nullptr, true);
+	SptImGui::CvarDraggableInt(_y_spt_overlay_crosshair_thickness, "Thickness", nullptr, true);
+
+	// clang-format off
+	color32 color;
+	if (sscanf_s(_y_spt_overlay_crosshair_color.GetString(),
+	             "%" PRIu8 " %" PRIu8 " %" PRIu8 " %" PRIu8,
+	             &color.r, &color.g, &color.b, &color.a) != 4)
+	{
+		color = color32(0, 255, 0, 255);
+	}
+	ImVec4 colf = ImGui::ColorConvertU32ToFloat4(Color32ToImU32(color));
+	if (ImGui::ColorEdit4("Color",
+	                      (float*)&colf,
+	                      ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_AlphaBar))
+	{
+		color = ImU32ToColor32(ImGui::ColorConvertFloat4ToU32(colf));
+		char buf[32];
+		snprintf(buf,
+		         sizeof buf,
+		         "%" SCNu8 " %" SCNu8 " %" SCNu8 " %" SCNu8,
+		         color.r, color.g, color.b, color.a);
+		_y_spt_overlay_crosshair_color.SetValue(buf);
+	}
+	// clang-format on
+
+	ImGui::SeparatorText("Overlay type");
+
+	std::array<const char*, 5> opts = {"Save glitch", "Angle glitch", "Rear view", "Havok", "No transform"};
+	SptImGui::CvarCombo(_y_spt_overlay_type, "Overlay type", opts.data(), opts.size());
+
+	
+#ifdef SPT_PORTAL_UTILS
+	if (_y_spt_overlay_type.GetInt() < 2)
+	{
+		static SptImGui::PortalSelectionPersist persist;
+		SptImGui::PortalSelectionWidgetCvar(_y_spt_overlay_portal, persist, SPT_PORTAL_SELECT_FLAGS);
+	}
+	else
+	{
+		ImGui::TextDisabled("Portal selection disabled");
+	}
+#endif
+
+	ImGui::EndDisabled();
+	SptImGui::EndCmdGroup();
 }
 
 #endif
