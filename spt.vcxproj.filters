@@ -409,6 +409,9 @@
     <ClCompile Include="spt\utils\map_utils.cpp">
       <Filter>spt\utils</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\set_sg.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">

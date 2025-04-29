@@ -202,6 +202,7 @@ namespace SptImGuiGroup
 	// cheats - stuff that changes gameplay or cannot be done via normal means
 	inline Tab Cheats{"Cheats", &Root};
 	inline Section Cheats_Jumping{"Jumping", &Cheats};
+	inline Section Cheats_SetSg{"Set SG", &Cheats};
 	inline Section Cheats_HL2AirControl{"HL2 air control", &Cheats};
 	inline Section Cheats_ISG{"ISG", &Cheats};
 	inline Section Cheats_SnapshotOverflow{"Snapshot overflow fix", &Cheats};
