@@ -12,6 +12,7 @@
 #include "spt\features\ent_props.hpp"
 #include "spt\utils\math.hpp"
 #include "spt\features\playerio.hpp"
+#include "imgui\imgui_interface.hpp"
 
 ConVar y_spt_draw_vag_trace("y_spt_draw_vag_trace", "0", FCVAR_CHEAT, "Draw VAG teleport destination(s)");
 
@@ -107,6 +108,7 @@ public:
 	*/
 
 	void OnMeshRenderSignal(MeshRendererDelegate& mr);
+	static void ImGuiCallback();
 
 	void RecomputeCache();
 	bool CalcFreeEntryPortalPos(const matrix3x4_t& entryRotMat, Vector& entryPosOut);
@@ -134,6 +136,7 @@ void VagTrace::LoadFeature()
 	InitConcommandBase(y_spt_draw_vag_target_trace);
 	InitConcommandBase(y_spt_draw_vag_entry_portal);
 	InitConcommandBase(y_spt_draw_vag_lock_entry);
+	SptImGuiGroup::Draw_VagTrace.RegisterUserCallback(ImGuiCallback);
 }
 
 void VagTrace::OnMeshRenderSignal(MeshRendererDelegate& mr)
@@ -421,26 +424,26 @@ void VagTrace::CalcFreeExitPortalPos(const matrix3x4_t& exitRotMat, Vector& exit
 void VagTrace::DrawTrace(MeshRendererDelegate& mr)
 {
 	// draw lines between portals and to VAG destination
-	mr.DrawMesh(
-	    spt_meshBuilder.CreateDynamicMesh(
-	        [&](MeshBuilderDelegate& mb)
-	        {
-		        mb.AddLine(cache.entryPortal.linkedPos, cache.entryPortal.pos, {{255, 0, 255, 255}, false});
-		        mb.AddLine(cache.entryPortal.pos, cache.vagDestination, {{175, 0, 175, 255}, false});
-		        mb.AddSphere(cache.vagDestination, 1, 1, {C_FACE(255, 255, 255, 255), false});
-	        }),
-	    [](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
-	    {
-		    if (infoIn.portalRenderDepth > 0)
-			    infoOut.skipRender = true;
-	    });
+	mr.DrawMesh(spt_meshBuilder.CreateDynamicMesh(
+	                [&](MeshBuilderDelegate& mb)
+	                {
+		                mb.AddLine(cache.entryPortal.linkedPos,
+		                           cache.entryPortal.pos,
+		                           {{255, 0, 255, 255}, false});
+		                mb.AddLine(cache.entryPortal.pos, cache.vagDestination, {{175, 0, 175, 255}, false});
+		                mb.AddSphere(cache.vagDestination, 1, 1, {C_FACE(255, 255, 255, 255), false});
+	                }),
+	            [](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+	            {
+		            if (infoIn.portalRenderDepth > 0)
+			            infoOut.skipRender = true;
+	            });
 
 	static StaticMesh arrowMesh, circleMesh;
 	if (!arrowMesh.Valid() || !circleMesh.Valid())
 	{
-		arrowMesh = MB_STATIC({
-			mb.AddArrow3D({0, 0, 0}, {1, 0, 0}, ARROW_PARAMS, {C_OUTLINE(255, 255, 255, 40)});
-		});
+		arrowMesh =
+		    MB_STATIC({ mb.AddArrow3D({0, 0, 0}, {1, 0, 0}, ARROW_PARAMS, {C_OUTLINE(255, 255, 255, 40)}); });
 		circleMesh = MB_STATIC({ mb.AddCircle({0, 0, 0}, {0, 0, 0}, 1, 500, {C_WIRE(255, 255, 255, 255)}); });
 	}
 
@@ -598,6 +601,29 @@ void VagTrace::DrawTargetTrace(MeshRendererDelegate& mr)
 			            });
 		}
 	}
+}
+
+void VagTrace::ImGuiCallback()
+{
+	ImGui::BeginDisabled(!SptImGui::CvarCheckbox(y_spt_draw_vag_trace, "Draw VAG trace"));
+
+	ImGui::BeginDisabled(!SptImGui::CvarCheckbox(y_spt_draw_vag_target_trace, "Draw VAG target trace"));
+	auto& targetSetCmd = y_spt_draw_vag_target_set_command;
+	const char* targetSetCmdName = targetSetCmd.GetName();
+	if (SptImGui::CmdButton("Set target", targetSetCmd))
+		targetSetCmd.Dispatch(CCommand{1, &targetSetCmdName});
+	ImGui::EndDisabled();
+
+	std::array<const char*, 3> opts{
+	    "Lock exit portal",
+	    "Lock entry portal",
+	    "Show visualization for both",
+	};
+	SptImGui::CvarCombo(y_spt_draw_vag_lock_entry, "Lock portals in place", opts.data(), opts.size());
+	static SptImGui::PortalSelectionPersist persist;
+	SptImGui::PortalSelectionWidgetCvar(y_spt_draw_vag_entry_portal, persist, SPT_PORTAL_SELECT_FLAGS);
+
+	ImGui::EndDisabled();
 }
 
 #endif

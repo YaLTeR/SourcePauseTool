@@ -11,6 +11,7 @@
 #include "spt\utils\signals.hpp"
 #include "spt\sptlib-wrapper.hpp"
 #include "spt\utils\portal_utils.hpp"
+#include "visualizations\imgui\imgui_interface.hpp"
 
 extern ConVar y_spt_prevent_vag_crash;
 extern ConVar _y_spt_overlay_portal;
@@ -19,7 +20,7 @@ extern ConVar _y_spt_overlay_portal;
 class VagSearcher : public FeatureWrapper<VagSearcher>
 {
 public:
-	void StartSearch();
+	bool StartSearch(const char** errMsg);
 	void VagCrashTriggered();
 	bool IsIterating()
 	{
@@ -72,6 +73,8 @@ private:
 	SearchResult first_result = NONE;
 	SearchResult current_result;
 	std::string setpos_cmd;
+
+	static void ImGuiCallback();
 };
 
 VagSearcher spt_vag_searcher;
@@ -86,31 +89,34 @@ ConVar y_spt_vag_search_portal("y_spt_vag_search_portal",
 
 CON_COMMAND(y_spt_vag_search, "Search VAG")
 {
-	spt_vag_searcher.StartSearch();
+	const char* errMsg = nullptr;
+	if (!spt_vag_searcher.StartSearch(&errMsg))
+		Msg("%s\n", errMsg);
 }
 
-void VagSearcher::StartSearch()
+bool VagSearcher::StartSearch(const char** errMsg)
 {
 	if (IsIterating())
-		return;
+		return true;
 
 	enter_portal = getPortal(y_spt_vag_search_portal.GetString(), SPT_PORTAL_SELECT_FLAGS);
 
 	if (!enter_portal || !enter_portal->linkedHandle.IsValid())
 	{
-		Msg("Entry portal not found, maybe try using a color or index.\n");
-		return;
+		*errMsg = "Entry portal not found, maybe try using a color or index.";
+		return false;
 	}
 
 	entry_index = enter_portal->handle.GetEntryIndex();
 
 	if (!enter_portal->isOpen)
 	{
-		Msg("Portal not open.\n");
-		return;
+		*errMsg = "Entry portal is not open.";
+		return false;
 	}
 
 	StartIterations();
+	return true;
 }
 
 bool VagSearcher::ShouldLoadFeature()
@@ -132,6 +138,7 @@ void VagSearcher::LoadFeature()
 	{
 		VagCrashSignal.Connect(this, &VagSearcher::VagCrashTriggered);
 	}
+	SptImGuiGroup::Cheats_VagSearch.RegisterUserCallback(ImGuiCallback);
 }
 
 void VagSearcher::UnloadFeature() {}
@@ -282,6 +289,29 @@ void VagSearcher::OnTick(bool simulating)
 		Msg("Finished in %d iteration(s).\n", max_iteration - iteration + 1);
 		iteration = 0;
 	}
+}
+
+void VagSearcher::ImGuiCallback()
+{
+	static const char* lastErrMsg = nullptr;
+	static double lastErrMsgStartTime = -666;
+
+	if (SptImGui::CmdButton("Start search", y_spt_vag_search_command))
+	{
+		if (spt_vag_searcher.StartSearch(&lastErrMsg))
+			lastErrMsgStartTime = -666;
+		else
+			lastErrMsgStartTime = ImGui::GetTime();
+	}
+	if (lastErrMsg && ImGui::GetTime() - lastErrMsgStartTime < 3)
+	{
+		ImGui::PushStyleColor(ImGuiCol_Text, SPT_IMGUI_WARN_COLOR_YELLOW);
+		ImGui::SetTooltip("%s", lastErrMsg);
+		ImGui::PopStyleColor();
+	}
+
+	static SptImGui::PortalSelectionPersist persist;
+	SptImGui::PortalSelectionWidgetCvar(y_spt_vag_search_portal, persist, SPT_PORTAL_SELECT_FLAGS);
 }
 
 #endif

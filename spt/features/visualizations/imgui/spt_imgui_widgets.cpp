@@ -1,7 +1,9 @@
 #include <stdafx.hpp>
 #include <inttypes.h>
+
 #include "imgui_interface.hpp"
 #include "thirdparty/imgui/imgui_internal.h"
+#include "spt/utils/portal_utils.hpp"
 
 // for float/integer text inputs have a constant width
 #define SPT_IMGUI_NUMBER_INPUT_N_CHARS 25
@@ -148,68 +150,15 @@ long long SptImGui::CvarInputTextInteger(ConVar& c, const char* label, const cha
 	return val;
 }
 
-long long SptImGui::CvarDragInt(ConVar& c, const char* label, const char* format)
-{
-	BeginCmdGroup(c);
-	long long val = strtoll(c.GetString(), nullptr, 10);
-	float fMin, fMax;
-	long long llMin, llMax;
-	void *pMin = nullptr, *pMax = nullptr;
-	if (c.GetMin(fMin))
-	{
-		llMin = static_cast<long long>(fMin);
-		pMin = &llMin;
-	}
-	if (c.GetMin(fMax))
-	{
-		llMax = static_cast<long long>(fMax);
-		pMax = &llMax;
-	}
-	SPT_SET_NUMBER_INPUT_ITEM_WIDTH(SPT_IMGUI_NUMBER_INPUT_N_CHARS);
-	if (ImGui::DragScalar(label, ImGuiDataType_S64, &val, 1.f, pMin, pMax, format))
-	{
-		char buf[SPT_IMGUI_NUMBER_INPUT_N_CHARS];
-		sprintf_s(buf, "%" PRId64, val);
-		c.SetValue(buf);
-	}
-	ImGui::SameLine();
-	if (*label)
-		CmdHelpMarkerWithName(c);
-	else
-		CvarValue(c);
-	EndCmdGroup();
-	return val;
-}
-
-bool SptImGui::InputDouble(const char* label, double* f)
-{
-	SPT_SET_NUMBER_INPUT_ITEM_WIDTH(SPT_IMGUI_NUMBER_INPUT_N_CHARS);
-	return ImGui::InputDouble(label, f, 0.0, 0.0, "%g");
-}
-
-double SptImGui::CvarDouble(ConVar& c, const char* label, const char* hint)
-{
-	BeginCmdGroup(c);
-	double val = atof(c.GetString());
-	if (SptImGui::InputDouble(label, &val))
-	{
-		char buf[SPT_IMGUI_NUMBER_INPUT_N_CHARS];
-		sprintf_s(buf, "%f", val);
-		c.SetValue(buf);
-	}
-	ImGui::SameLine();
-	CmdHelpMarkerWithName(c);
-	EndCmdGroup();
-	return val;
-}
-
-void SptImGui::CvarsDragScalar(ConVar* const* cvars,
-                               void* data,
-                               int n,
-                               bool isFloat,
-                               const char* label,
-                               float speed,
-                               const char* format)
+static void DraggableCvarsScalarInternal(ConVar* const* cvars,
+                                         void* data,
+                                         int n,
+                                         bool isFloat,
+                                         const char* label,
+                                         float speed,
+                                         const char* format,
+                                         bool isSlider,
+                                         ImGuiSliderFlags flags)
 {
 	Assert(cvars && data && n > 0);
 
@@ -253,7 +202,9 @@ void SptImGui::CvarsDragScalar(ConVar* const* cvars,
 
 	SptImGui::BeginCmdGroup(*cvars[0]);
 	ImGuiDataType dataType = isFloat ? ImGuiDataType_Float : ImGuiDataType_S64;
-	if (ImGui::DragScalarN(label, dataType, data, n, speed, pMin, pMax, format, ImGuiSliderFlags_NoRoundToFormat))
+	bool ret = isSlider ? ImGui::SliderScalarN(label, dataType, data, n, pMin, pMax, format, flags)
+	                    : ImGui::DragScalarN(label, dataType, data, n, speed, pMin, pMax, format, flags);
+	if (ret)
 	{
 		for (int i = 0; i < n; i++)
 		{
@@ -264,6 +215,99 @@ void SptImGui::CvarsDragScalar(ConVar* const* cvars,
 		}
 	}
 	SptImGui::EndCmdGroup();
+}
+
+long long SptImGui::CvarDraggableInt(ConVar& c, const char* label, const char* format, bool isSlider)
+{
+	[[maybe_unused]] float dummy;
+	Assert(!isSlider || (c.GetMin(dummy) && c.GetMax(dummy)));
+	BeginCmdGroup(c);
+	SPT_SET_NUMBER_INPUT_ITEM_WIDTH(SPT_IMGUI_NUMBER_INPUT_N_CHARS);
+	ConVar* pc = &c;
+	long long val;
+	// clang-format off
+	DraggableCvarsScalarInternal(
+		&pc, &val, 1, false, label, 1.f, format, isSlider,
+		isSlider ? ImGuiSliderFlags_NoRoundToFormat | ImGuiSliderFlags_AlwaysClamp : ImGuiSliderFlags_NoRoundToFormat
+	);
+	// clang-format on
+	ImGui::SameLine();
+	if (*label)
+		CmdHelpMarkerWithName(c);
+	else
+		CvarValue(c);
+	EndCmdGroup();
+	return val;
+}
+
+float SptImGui::CvarDraggableFloat(ConVar& c, const char* label, float speed, const char* format, bool isSlider)
+{
+	[[maybe_unused]] float dummy;
+	Assert(!isSlider || (c.GetMin(dummy) && c.GetMax(dummy)));
+	BeginCmdGroup(c);
+	SPT_SET_NUMBER_INPUT_ITEM_WIDTH(SPT_IMGUI_NUMBER_INPUT_N_CHARS);
+	ConVar* pc = &c;
+	float val;
+	// clang-format off
+	DraggableCvarsScalarInternal(
+		&pc, &val, 1, true, label, speed, format, isSlider,
+		isSlider ? ImGuiSliderFlags_NoRoundToFormat | ImGuiSliderFlags_AlwaysClamp : ImGuiSliderFlags_NoRoundToFormat
+	);
+	// clang-format on
+	ImGui::SameLine();
+	if (*label)
+		CmdHelpMarkerWithName(c);
+	else
+		CvarValue(c);
+	EndCmdGroup();
+	return val;
+}
+
+bool SptImGui::InputDouble(const char* label, double* f)
+{
+	SPT_SET_NUMBER_INPUT_ITEM_WIDTH(SPT_IMGUI_NUMBER_INPUT_N_CHARS);
+	return ImGui::InputDouble(label, f, 0.0, 0.0, "%g");
+}
+
+double SptImGui::CvarDouble(ConVar& c, const char* label, const char* hint)
+{
+	BeginCmdGroup(c);
+	double val = atof(c.GetString());
+	if (SptImGui::InputDouble(label, &val))
+	{
+		char buf[SPT_IMGUI_NUMBER_INPUT_N_CHARS];
+		sprintf_s(buf, "%f", val);
+		c.SetValue(buf);
+	}
+	ImGui::SameLine();
+	CmdHelpMarkerWithName(c);
+	EndCmdGroup();
+	return val;
+}
+
+void SptImGui::CvarsDragScalar(ConVar* const* cvars,
+                               void* data,
+                               int n,
+                               bool isFloat,
+                               const char* label,
+                               float speed,
+                               const char* format)
+{
+	// clang-format off
+	DraggableCvarsScalarInternal(cvars, data, n, isFloat, label, speed, format, false, ImGuiSliderFlags_NoRoundToFormat);
+	// clang-format on
+}
+
+void SptImGui::CvarsSliderScalar(ConVar* const* cvars,
+                                 void* data,
+                                 int n,
+                                 bool isFloat,
+                                 const char* label,
+                                 const char* format)
+{
+	// clang-format off
+	DraggableCvarsScalarInternal(cvars, data, n, isFloat, label, -1, format, true, ImGuiSliderFlags_NoRoundToFormat | ImGuiSliderFlags_AlwaysClamp);
+	// clang-format on
 }
 
 void SptImGui::HelpMarker(const char* fmt, ...)
@@ -515,3 +559,195 @@ void SptImGui::TextInputAutocomplete(const char* inputTextLabel,
 	ImGui::End();
 	ImGui::PopStyleVar();
 }
+
+#ifdef SPT_PORTAL_UTILS
+
+const utils::PortalInfo* SptImGui::PortalSelectionWidget(PortalSelectionPersist& persist, int getPortalFlags)
+{
+	ImGui::BeginGroup();
+	ImGui::Checkbox("Show high precision position/angles##portal_select", &persist.enableHighPrecision);
+
+	const utils::PortalInfo* selectedPortal = nullptr;
+	persist.userSelectedPortalByIndexLastCall = false;
+
+	bool serverEnabled = utils::spt_serverEntList.Valid();
+	auto& portalList = utils::GetPortalList();
+	if (portalList.empty())
+	{
+		ImGui::TextDisabled("No portals...");
+	}
+	else
+	{
+		ImGuiTabBarFlags tableFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg
+		                              | ImGuiTableFlags_NoHostExtendX | ImGuiTableFlags_NoKeepColumnsVisible;
+		if (ImGui::BeginTable("##portal_select", 11, tableFlags))
+		{
+			ImGui::TableSetupColumn("index", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("linked", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("color", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("state", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("x", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("y", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("z", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("pitch", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("yaw", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("roll", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("linkage", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableHeadersRow();
+
+			const char* posAngFmt = persist.enableHighPrecision ? "%.9g" : "%.2f";
+
+			char buf[16];
+			for (auto& portal : portalList)
+			{
+				if (portal.handle.GetEntryIndex() == persist.selectedPortalIdx)
+					selectedPortal = &portal;
+
+				ImGui::TableNextRow(ImGuiTableRowFlags_None);
+
+				// handle
+				ImGui::TableSetColumnIndex(0);
+				snprintf(buf, sizeof buf, "%d", portal.handle.GetEntryIndex());
+
+				bool portalClosedSelectionDisabled =
+				    !portal.isOpen && (getPortalFlags & GPF_ONLY_OPEN_PORTALS);
+				ImGuiSelectableFlags selectFlags =
+				    ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap;
+				if (portalClosedSelectionDisabled)
+					selectFlags |= ImGuiSelectableFlags_Disabled;
+
+				if (ImGui::Selectable(buf,
+				                      portal.handle.GetEntryIndex() == persist.selectedPortalIdx,
+				                      selectFlags))
+				{
+					selectedPortal = &portal;
+					persist.selectedPortalIdx = portal.handle.GetEntryIndex();
+					persist.userSelectedPortalByIndexLastCall = true;
+				}
+
+				if (portalClosedSelectionDisabled)
+				{
+					ImGui::SetItemTooltip("Can't select closed portals");
+				}
+				else if (persist.showIndexSelectorTooltip) // hack
+				{
+					ImGui::SetItemTooltip(
+					    "Clicking here will change the portal selection to index mode");
+				}
+
+				// linked handle
+				ImGui::TableSetColumnIndex(1);
+				if (portal.linkedHandle.IsValid())
+					ImGui::Text("%d", portal.linkedHandle.GetEntryIndex());
+				else
+					ImGui::TextDisabled("NONE");
+
+				// color
+				ImGui::TableSetColumnIndex(2);
+				ImGui::TextColored(portal.isOrange ? ImVec4{1.f, .63f, .13f, 1.f}
+				                                   : ImVec4{.25f, .63f, 1.f, 1.f},
+				                   portal.isOrange ? "orange" : "blue");
+
+				// state
+				ImGui::TableSetColumnIndex(3);
+				ImGui::TextUnformatted(portal.isOpen ? "open"
+				                                     : (portal.isActivated ? "closed" : "inactive"));
+
+				// pos & ang
+				for (int i = 0; i < 3; i++)
+				{
+					ImGui::TableSetColumnIndex(4 + i);
+					ImGui::Text(posAngFmt, portal.pos[i]);
+					ImGui::TableSetColumnIndex(7 + i);
+					ImGui::Text(posAngFmt, portal.ang[i]);
+				}
+
+				// linkage ID
+				ImGui::TableSetColumnIndex(10);
+				if (serverEnabled)
+				{
+					ImGui::Text("%d", portal.linkageId);
+				}
+				else
+				{
+					ImGui::TextDisabled("N/A");
+					ImGui::SetTooltip("Linkage ID is only available when the server is active");
+				}
+			}
+			ImGui::EndTable();
+		}
+	}
+	if (!selectedPortal && persist.selectedPortalIdx >= 0 && persist.selectedPortalIdx < MAX_EDICTS)
+		persist.selectedPortalIdx = -1;
+	ImGui::EndGroup();
+	return selectedPortal;
+}
+
+const utils::PortalInfo* SptImGui::PortalSelectionWidgetCvar(ConVar& c,
+                                                             PortalSelectionPersist& persist,
+                                                             int getPortalFlags)
+{
+	BeginCmdGroup(c);
+
+	const char* oldCvarVal = c.GetString();
+
+	size_t nOpts = 0;
+	std::array<const char*, 5> opts;
+	if (getPortalFlags & GPF_ALLOW_OVERLAY)
+		opts[nOpts++] = "overlay";
+	if (getPortalFlags & GPF_ALLOW_AUTO)
+		opts[nOpts++] = "auto";
+	if (getPortalFlags & GPF_ALLOW_PLAYER_ENV)
+		opts[nOpts++] = "env";
+	opts[nOpts++] = "blue";
+	opts[nOpts++] = "orange";
+
+	char previewBuf[32];
+	const char* start = c.GetString();
+	char* end;
+	long idx = strtol(start, &end, 10);
+	if (start == end)
+	{
+		persist.showIndexSelectorTooltip = true;
+	}
+	else
+	{
+		persist.showIndexSelectorTooltip = false;
+		snprintf(previewBuf, sizeof previewBuf, "index: %" PRId32, idx);
+	}
+
+	if (ImGui::BeginCombo("Portal type",
+	                      persist.showIndexSelectorTooltip ? oldCvarVal : previewBuf,
+	                      ImGuiComboFlags_WidthFitPreview))
+	{
+		for (size_t i = 0; i < nOpts; i++)
+		{
+			const bool is_selected = !stricmp(opts[i], oldCvarVal);
+			if (ImGui::Selectable(opts[i], is_selected))
+				c.SetValue(opts[i]);
+			if (is_selected)
+				ImGui::SetItemDefaultFocus();
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::SameLine();
+	CvarValue(c);
+
+	const utils::PortalInfo* selectedPortal = getPortal(c.GetString(), getPortalFlags);
+	if (selectedPortal)
+		persist.selectedPortalIdx = selectedPortal->handle.GetEntryIndex();
+	else
+		persist.selectedPortalIdx = -1;
+
+	selectedPortal = PortalSelectionWidget(persist, getPortalFlags);
+	if (persist.userSelectedPortalByIndexLastCall)
+	{
+		Assert(selectedPortal);
+		c.SetValue(selectedPortal->handle.GetEntryIndex());
+	}
+
+	EndCmdGroup();
+	return selectedPortal;
+}
+
+#endif
