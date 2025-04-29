@@ -1461,7 +1461,6 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="spt\features\visualizations\imgui\imgui_interface.hpp" />
     <ClInclude Include="spt\features\visualizations\imgui\imgui_styles.hpp" />
     <ClInclude Include="spt\features\visualizations\imgui\jetbrains_mono_bold.hpp" />
-    <ClInclude Include="spt\features\visualizations\renderer\create_collide.hpp" />
     <ClInclude Include="spt\features\visualizations\renderer\internal\internal_defs.hpp" />
     <ClInclude Include="spt\features\visualizations\renderer\internal\materials_manager.hpp" />
     <ClInclude Include="spt\features\visualizations\renderer\internal\mesh_builder_internal.hpp" />
