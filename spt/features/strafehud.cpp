@@ -77,9 +77,9 @@ ConVar spt_strafehud_detail_scale("spt_strafehud_detail_scale",
                                   FCVAR_CHEAT,
                                   "The detail scale for the lines of the strafe HUD.",
                                   true,
-                                  0,
+                                  1,
                                   true,
-                                  645);
+                                  15);
 ConVar spt_strafehud_lock_mode("spt_strafehud_lock_mode",
                                "1",
                                FCVAR_CHEAT,
