@@ -37,12 +37,16 @@ ConVar _y_spt_overlay_type("_y_spt_overlay_type",
                            4);
 
 #ifdef SPT_PORTAL_UTILS
+
+constexpr int SPT_PORTAL_SELECT_FLAGS = GPF_ALLOW_AUTO | GPF_ALLOW_PLAYER_ENV | GPF_ONLY_OPEN_PORTALS;
+
 ConVar _y_spt_overlay_portal(
     "_y_spt_overlay_portal",
     "env",
     FCVAR_CHEAT,
     "Chooses the portal for the overlay camera. For the SG camera this is the portal you save glitch on, for angle glitch simulation this is the portal you enter. Valid values are:\n"
-    "" SPT_PORTAL_SELECT_DESCRIPTION_AUTO_PREFIX "" SPT_PORTAL_SELECT_DESCRIPTION);
+    "" SPT_PORTAL_SELECT_DESCRIPTION_ENV_PREFIX "" SPT_PORTAL_SELECT_DESCRIPTION_AUTO_PREFIX
+    "" SPT_PORTAL_SELECT_DESCRIPTION);
 #endif
 
 ConVar _y_spt_overlay_width("_y_spt_overlay_width",
@@ -94,7 +98,7 @@ namespace patterns
 #ifdef SPT_PORTAL_UTILS
 const utils::PortalInfo* Overlay::GetOverlayPortal()
 {
-	return getPortal(_y_spt_overlay_portal.GetString(), false, false);
+	return getPortal(_y_spt_overlay_portal.GetString(), SPT_PORTAL_SELECT_FLAGS);
 }
 #endif
 

@@ -20,12 +20,15 @@ ConVar y_spt_draw_vag_target_trace("y_spt_draw_vag_target_trace",
                                    FCVAR_CHEAT,
                                    "Draw where to place wall/floor/ceiling portal to get to VAG target");
 
+constexpr int SPT_PORTAL_SELECT_FLAGS = GPF_ALLOW_AUTO | GPF_ALLOW_OVERLAY | GPF_ONLY_OPEN_PORTALS;
+
 ConVar y_spt_draw_vag_entry_portal(
     "y_spt_draw_vag_entry_portal",
     "overlay",
     FCVAR_CHEAT,
     "Chooses the portal for the VAG trace, this is the portal you enter. Valid options are:\n"
-    "" SPT_PORTAL_SELECT_DESCRIPTION_OVERLAY_PREFIX "" SPT_PORTAL_SELECT_DESCRIPTION);
+    "" SPT_PORTAL_SELECT_DESCRIPTION_OVERLAY_PREFIX "" SPT_PORTAL_SELECT_DESCRIPTION_AUTO_PREFIX
+    "" SPT_PORTAL_SELECT_DESCRIPTION);
 
 ConVar y_spt_draw_vag_lock_entry("y_spt_draw_vag_lock_entry",
                                  "1",
@@ -157,7 +160,9 @@ void VagTrace::OnMeshRenderSignal(MeshRendererDelegate& mr)
 		            { MatrixSetColumn(target, 3, infoOut.mat); });
 	}
 
-	const utils::PortalInfo* newPortal = getPortal(y_spt_draw_vag_entry_portal.GetString(), true, false);
+	const utils::PortalInfo* newPortal =
+	    getPortal(y_spt_draw_vag_entry_portal.GetString(), SPT_PORTAL_SELECT_FLAGS);
+
 	if (!newPortal)
 	{
 		cache.entryPortal.Invalidate();
