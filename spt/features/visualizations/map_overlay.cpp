@@ -380,14 +380,16 @@ void MapOverlay::ImGuiCallback()
 	static SptImGui::AutocompletePersistData acPersist;
 	static bool ztest = true;
 
-	static double errMsgStartTime = -666;
-	static const char* errMsg;
+	static SptImGui::TimedToolTip errTip;
 
 	ConCommand& cmd = spt_draw_map_overlay_command;
 	const char* cmdName = WrangleLegacyCommandName(cmd.GetName(), true, nullptr);
 
 	if (ImGui::Button("Clear"))
+	{
 		ClearMeshes();
+		errTip.StopShowing();
+	}
 	if (ImGui::BeginItemTooltip())
 	{
 		ImGui::Text("%s 0", cmdName);
@@ -397,8 +399,10 @@ void MapOverlay::ImGuiCallback()
 	ImGui::SameLine();
 	if (ImGui::Button("Draw map"))
 	{
-		if (!LoadMapFile(acPersist.textInput, ztest, &errMsg))
-			errMsgStartTime = ImGui::GetTime();
+		if (LoadMapFile(acPersist.textInput, ztest, &errTip.text))
+			errTip.StopShowing();
+		else
+			errTip.StartShowing();
 	}
 	if (ImGui::BeginItemTooltip())
 	{
@@ -414,12 +418,7 @@ void MapOverlay::ImGuiCallback()
 		ImGui::EndTooltip();
 	}
 
-	if (errMsg && ImGui::GetTime() - errMsgStartTime < 2)
-	{
-		ImGui::PushStyleColor(ImGuiCol_Text, SPT_IMGUI_WARN_COLOR_YELLOW);
-		ImGui::SetTooltip("%s", errMsg);
-		ImGui::PopStyleColor();
-	}
+	errTip.Show(SPT_IMGUI_WARN_COLOR_YELLOW, 2.0);
 
 	ImGui::SameLine();
 	SptImGui::HelpMarker("%s", cmd.GetHelpText());

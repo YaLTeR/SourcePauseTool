@@ -111,8 +111,8 @@ void DrawLine::ImGuiCallback()
 	auto& lines = feat_drawline.lines;
 	bool& recompute = feat_drawline.should_recompute_meshes;
 
-	static double lastErrorTime = -666;
-	static char lastErrorMsg[64];
+	static SptImGui::TimedToolTip errTip;
+	static char errTipBuf[64];
 
 	static int actionIdx = -1;
 	enum
@@ -178,9 +178,7 @@ void DrawLine::ImGuiCallback()
 		if (!origClipboard)
 		{
 			err = true;
-			lastErrorTime = ImGui::GetTime();
-			strncpy(lastErrorMsg, "nothing in clipboard...", sizeof lastErrorMsg);
-			lastErrorMsg[sizeof(lastErrorMsg) - 1] = '\0';
+			errTip.StartShowing("nothing in clipboard...");
 		}
 		while (!err && *clipboard)
 		{
@@ -202,13 +200,14 @@ void DrawLine::ImGuiCallback()
 			if (nFilled != 6 && nFilled != 9 && nFilled != 10)
 			{
 				err = true;
-				lastErrorTime = ImGui::GetTime();
-				int written = snprintf(lastErrorMsg,
-				                       sizeof lastErrorMsg,
+				
+				int written = snprintf(errTipBuf,
+				                       sizeof errTipBuf,
 				                       "syntax error at byte %u: \"%s",
 				                       clipboard - origClipboard,
 				                       clipboard);
-				strcpy(MIN(lastErrorMsg + sizeof(lastErrorMsg) - 5, lastErrorMsg + written), "...\"");
+				strcpy(MIN(errTipBuf + sizeof(errTipBuf) - 5, errTipBuf + written), "...\"");
+				errTip.StartShowing(errTipBuf);
 			}
 			else
 			{
@@ -224,17 +223,12 @@ void DrawLine::ImGuiCallback()
 			if (importType == 1)
 				lines.clear();
 			lines.insert(lines.end(), newLines.cbegin(), newLines.cend());
-			lastErrorTime = -666;
+			errTip.StopShowing();
 			focusIdx = -1;
 			recompute = true;
 		}
 	}
-	if (ImGui::GetTime() - lastErrorTime < 2.0)
-	{
-		ImGui::PushStyleColor(ImGuiCol_Text, SPT_IMGUI_WARN_COLOR_YELLOW);
-		ImGui::SetTooltip("%s", lastErrorMsg);
-		ImGui::PopStyleColor();
-	}
+	errTip.Show(SPT_IMGUI_WARN_COLOR_YELLOW, 2.0);
 	ImGui::SameLine();
 	if (ImGui::Button("Export to clipboard"))
 	{
