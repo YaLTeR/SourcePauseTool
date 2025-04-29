@@ -1,5 +1,5 @@
 # SourcePauseTool
-[![Actions Status](https://github.com/YaLTeR/SourcePauseTool/workflows/CI/badge.svg?branch=master)](https://github.com/YaLTeR/SourcePauseTool/actions?query=branch%3Amaster)
+[![Actions Status](https://github.com/YaLTeR/SourcePauseTool/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/YaLTeR/SourcePauseTool/actions?query=branch%3Amaster)
 
 A plugin for all your pausing needs.
 
