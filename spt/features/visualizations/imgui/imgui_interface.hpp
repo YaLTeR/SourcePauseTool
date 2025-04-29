@@ -423,6 +423,47 @@ public:
 	                                                          int getPortalFlags);
 
 #endif
+
+	/*
+	* Useful for short timed error messages, e.g. user pressed a button but something failed
+	* internally. To use, create a static instance of this and always call Show(). Call
+	* StartShowing(text) to display a tooltip, or set the text first then call StartShowing().
+	*/
+	struct TimedToolTip
+	{
+		const char* text = nullptr;
+		double lastStartDisplayTime = -666;
+
+		bool Show(const ImVec4& color, double duration) const
+		{
+			if (text && ImGui::GetTime() - lastStartDisplayTime < duration)
+			{
+				ImGui::PushStyleColor(ImGuiCol_Text, color);
+				ImGui::SetTooltip("%s", text);
+				ImGui::PopStyleColor();
+				return true;
+			}
+			return false;
+		}
+
+		// newText must remain a valid pointer while showing
+		void StartShowing(const char* newText)
+		{
+			text = newText;
+			StartShowing();
+		}
+
+		void StartShowing()
+		{
+			lastStartDisplayTime = ImGui::GetTime();
+		}
+
+		void StopShowing()
+		{
+			text = nullptr;
+			lastStartDisplayTime = -666;
+		}
+	};
 };
 
 inline ConCommand spt_gui{

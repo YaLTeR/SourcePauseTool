@@ -293,22 +293,15 @@ void VagSearcher::OnTick(bool simulating)
 
 void VagSearcher::ImGuiCallback()
 {
-	static const char* lastErrMsg = nullptr;
-	static double lastErrMsgStartTime = -666;
-
+	static SptImGui::TimedToolTip errTip;
 	if (SptImGui::CmdButton("Start search", y_spt_vag_search_command))
 	{
-		if (spt_vag_searcher.StartSearch(&lastErrMsg))
-			lastErrMsgStartTime = -666;
+		if (spt_vag_searcher.StartSearch(&errTip.text))
+			errTip.StopShowing();
 		else
-			lastErrMsgStartTime = ImGui::GetTime();
+			errTip.StartShowing();
 	}
-	if (lastErrMsg && ImGui::GetTime() - lastErrMsgStartTime < 3)
-	{
-		ImGui::PushStyleColor(ImGuiCol_Text, SPT_IMGUI_WARN_COLOR_YELLOW);
-		ImGui::SetTooltip("%s", lastErrMsg);
-		ImGui::PopStyleColor();
-	}
+	errTip.Show(SPT_IMGUI_WARN_COLOR_YELLOW, 3);
 
 	static SptImGui::PortalSelectionPersist persist;
 	SptImGui::PortalSelectionWidgetCvar(y_spt_vag_search_portal, persist, SPT_PORTAL_SELECT_FLAGS);
