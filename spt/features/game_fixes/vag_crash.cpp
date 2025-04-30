@@ -66,7 +66,7 @@ void VAG::LoadFeature()
 		InitConcommandBase(y_spt_prevent_vag_crash);
 		VagCrashSignal.Works = true;
 
-		SptImGuiGroup::Cheats_VagCrash.RegisterUserCallback(
+		SptImGuiGroup::Cheats_PortalSpecific_VagCrash.RegisterUserCallback(
 			[]() { SptImGui::CvarCheckbox(y_spt_prevent_vag_crash, "##checkbox"); });
 	}
 	recursiveTeleportCount = 0;

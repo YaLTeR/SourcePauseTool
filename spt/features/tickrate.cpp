@@ -85,7 +85,7 @@ void TickrateMod::LoadFeature()
 		{
 			InitCommand(_y_spt_tickrate);
 
-			SptImGuiGroup::Cheats_Tickrate.RegisterUserCallback(
+			SptImGuiGroup::Cheats_Misc_Tickrate.RegisterUserCallback(
 			    []()
 			    {
 				    ImGui::Text("Current tickrate: %g", spt_tickrate.GetTickrate());

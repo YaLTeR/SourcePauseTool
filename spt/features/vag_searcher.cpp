@@ -138,7 +138,7 @@ void VagSearcher::LoadFeature()
 	{
 		VagCrashSignal.Connect(this, &VagSearcher::VagCrashTriggered);
 	}
-	SptImGuiGroup::Cheats_VagSearch.RegisterUserCallback(ImGuiCallback);
+	SptImGuiGroup::Cheats_PortalSpecific_VagSearch.RegisterUserCallback(ImGuiCallback);
 }
 
 void VagSearcher::UnloadFeature() {}

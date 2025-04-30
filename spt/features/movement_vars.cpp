@@ -74,7 +74,7 @@ void VarChanger::LoadFeature()
 	{
 		ProcessMovementPre_Signal.Connect(ProcessMovementPre);
 		InitConcommandBase(spt_player_maxspeed);
-		SptImGuiGroup::Cheats_MaxSpeed.RegisterUserCallback(
+		SptImGuiGroup::Cheats_Misc_MaxSpeed.RegisterUserCallback(
 		    []()
 		    { SptImGui::CvarDouble(spt_player_maxspeed, "override max speed value", "enter float value"); });
 	}

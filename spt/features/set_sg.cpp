@@ -99,7 +99,7 @@ void SetSgFeature::ClearSg()
 void SetSgFeature::LoadFeature()
 {
 	InitCommand(spt_set_sg);
-	SptImGuiGroup::Cheats_SetSg.RegisterUserCallback(ImGuiCallback);
+	SptImGuiGroup::Cheats_PortalSpecific_SetSg.RegisterUserCallback(ImGuiCallback);
 }
 
 void SetSgFeature::ImGuiCallback()

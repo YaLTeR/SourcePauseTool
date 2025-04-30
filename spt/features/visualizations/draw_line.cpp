@@ -162,12 +162,13 @@ void DrawLine::ImGuiCallback()
 		focusIdx = -1;
 		recompute = true;
 	}
-	ImGui::SameLine();
 	int importType = 0;
-	if (ImGui::Button("Import from clipboard (replace)"))
+	ImGui::Text("Import from clipboard:");
+	ImGui::SameLine();
+	if (ImGui::Button("Replace"))
 		importType = 1;
 	ImGui::SameLine();
-	if (ImGui::Button("Import from clipboard (append)"))
+	if (ImGui::Button("Append"))
 		importType = 2;
 	if (importType)
 	{
@@ -229,7 +230,6 @@ void DrawLine::ImGuiCallback()
 		}
 	}
 	errTip.Show(SPT_IMGUI_WARN_COLOR_YELLOW, 2.0);
-	ImGui::SameLine();
 	if (ImGui::Button("Export to clipboard"))
 	{
 		ImGui::LogToClipboard();

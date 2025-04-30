@@ -174,9 +174,9 @@ namespace SptImGuiGroup
 	// drawing visualizations
 	inline Tab Draw{"Drawing", &Root};
 	inline Tab Draw_Collides{"Collision", &Draw};
-	inline Section Draw_Collides_World{"World collides", &Draw_Collides};
-	inline Section Draw_Collides_Ents{"Entity collides", &Draw_Collides};
-	inline Section Draw_Collides_PortalEnv{"Portal environment collision", &Draw_Collides};
+	inline Tab Draw_Collides_World{"World collides", &Draw_Collides};
+	inline Tab Draw_Collides_Ents{"Entity collides", &Draw_Collides};
+	inline Tab Draw_Collides_PortalEnv{"Portal environment collision", &Draw_Collides};
 	inline Tab Draw_MapOverlay{"Map overlay", &Draw};
 	inline Tab Draw_PpPlacement{"Portal placement", &Draw};
 	inline Section Draw_PpPlacement_Gun{"Gun portal placement", &Draw_PpPlacement};
@@ -201,19 +201,21 @@ namespace SptImGuiGroup
 
 	// cheats - stuff that changes gameplay or cannot be done via normal means
 	inline Tab Cheats{"Cheats", &Root};
-	inline Section Cheats_Jumping{"Jumping", &Cheats};
-	inline Section Cheats_SetSg{"Set SG", &Cheats};
-	inline Section Cheats_HL2AirControl{"HL2 air control", &Cheats};
-	inline Section Cheats_ISG{"ISG", &Cheats};
-	inline Section Cheats_SnapshotOverflow{"Snapshot overflow fix", &Cheats};
-	inline Section Cheats_VagCrash{"Prevent VAG crash", &Cheats};
-	inline Section Cheats_VagSearch{"VAG search", &Cheats};
-	inline Section Cheats_PlayerShadow{"Player shadow", &Cheats};
-	inline Section Cheats_Pause{"Pause on load", &Cheats};
-	inline Section Cheats_FreeOob{"Free OOB", &Cheats};
-	inline Section Cheats_PlayerCollisionGroup{"Player collision group", &Cheats};
-	inline Section Cheats_MaxSpeed{"Max speed", &Cheats};
-	inline Section Cheats_Tickrate{"Tickrate", &Cheats};
+	inline Tab Cheats_PortalSpecific{"Portal specific", &Cheats};
+	inline Section Cheats_PortalSpecific_SetSg{"Set SG", &Cheats_PortalSpecific};
+	inline Section Cheats_PortalSpecific_VagCrash{"Prevent VAG crash", &Cheats_PortalSpecific};
+	inline Section Cheats_PortalSpecific_VagSearch{"VAG search", &Cheats_PortalSpecific};
+	inline Tab Cheats_Misc{"Misc", &Cheats};
+	inline Section Cheats_Misc_Jumping{"Jumping", &Cheats_Misc};
+	inline Section Cheats_Misc_HL2AirControl{"HL2 air control", &Cheats_Misc};
+	inline Section Cheats_Misc_ISG{"ISG", &Cheats_Misc};
+	inline Section Cheats_Misc_SnapshotOverflow{"Snapshot overflow fix", &Cheats_Misc};
+	inline Section Cheats_Misc_PlayerShadow{"Player shadow", &Cheats_Misc};
+	inline Section Cheats_Misc_Pause{"Pause on load", &Cheats_Misc};
+	inline Section Cheats_Misc_FreeOob{"Free OOB", &Cheats_Misc};
+	inline Section Cheats_Misc_PlayerCollisionGroup{"Player collision group", &Cheats_Misc};
+	inline Section Cheats_Misc_MaxSpeed{"Max speed", &Cheats_Misc};
+	inline Section Cheats_Misc_Tickrate{"Tickrate", &Cheats_Misc};
 
 	// spt_hud and friends
 	inline Tab Hud{"HUD", &Root};

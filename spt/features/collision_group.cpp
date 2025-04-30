@@ -75,7 +75,7 @@ void CollisionGroup::LoadFeature()
 	if (ORIG_SetCollisionGroup)
 	{
 		InitCommand(y_spt_set_collision_group);
-		SptImGuiGroup::Cheats_PlayerCollisionGroup.RegisterUserCallback(ImGuiCallback);
+		SptImGuiGroup::Cheats_Misc_PlayerCollisionGroup.RegisterUserCallback(ImGuiCallback);
 	}
 }
 
