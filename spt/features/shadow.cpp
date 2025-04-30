@@ -96,7 +96,7 @@ void ShadowPosition::LoadFeature()
 	{
 		InitCommand(y_spt_set_shadow_roll);
 
-		SptImGuiGroup::Cheats_PlayerShadow.RegisterUserCallback(
+		SptImGuiGroup::Cheats_Misc_PlayerShadow.RegisterUserCallback(
 		    []()
 		    {
 			    static double df = 0.f;

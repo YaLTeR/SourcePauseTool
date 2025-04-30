@@ -85,7 +85,7 @@ protected:
 			    spt_snapShotOverflow.SetOverwrite(((ConVar*)var)->GetBool());
 		    });
 
-		SptImGuiGroup::Cheats_SnapshotOverflow.RegisterUserCallback(
+		SptImGuiGroup::Cheats_Misc_SnapshotOverflow.RegisterUserCallback(
 		    []() { SptImGui::CvarCheckbox(spt_prevent_snapshot_overflow, "##checkbox"); });
 	};
 

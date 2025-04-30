@@ -188,7 +188,7 @@ void AutojumpFeature::LoadFeature()
 			// dmomm
 			off_player_ptr = 4;
 
-		SptImGuiGroup::Cheats_Jumping.RegisterUserCallback(
+		SptImGuiGroup::Cheats_Misc_Jumping.RegisterUserCallback(
 		    []()
 		    {
 			    SptImGui::CvarCheckbox(y_spt_autojump, "##checkbox_autojump");
@@ -211,7 +211,7 @@ void AutojumpFeature::LoadFeature()
 	if (utils::DoesGameLookLikePortal() && ORIG_CGameMovement__AirMove && ORIG_CPortalGameMovement__AirMove)
 	{
 		InitConcommandBase(y_spt_aircontrol);
-		SptImGuiGroup::Cheats_HL2AirControl.RegisterUserCallback(
+		SptImGuiGroup::Cheats_Misc_HL2AirControl.RegisterUserCallback(
 		    []() { SptImGui::CvarCheckbox(y_spt_aircontrol, "##checkbox"); });
 	}
 }

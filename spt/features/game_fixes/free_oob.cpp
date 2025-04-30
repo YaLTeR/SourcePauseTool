@@ -112,7 +112,7 @@ void FreeOobFeature::LoadFeature()
 				INIT_BYTE_REPLACE(SecondJump, cur);
 
 				InitConcommandBase(y_spt_free_oob);
-				SptImGuiGroup::Cheats_FreeOob.RegisterUserCallback(
+				SptImGuiGroup::Cheats_Misc_FreeOob.RegisterUserCallback(
 				    []() { SptImGui::CvarCheckbox(y_spt_free_oob, "##checkbox"); });
 				return;
 			}

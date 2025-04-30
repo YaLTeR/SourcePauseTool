@@ -136,7 +136,7 @@ void PauseFeature::LoadFeature()
 
 		InitConcommandBase(y_spt_pause);
 
-		SptImGuiGroup::Cheats_Pause.RegisterUserCallback(
+		SptImGuiGroup::Cheats_Misc_Pause.RegisterUserCallback(
 		    [pause1_works, pause2_works]()
 		    {
 			    const char* opts[] = {
