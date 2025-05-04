@@ -5,8 +5,20 @@
 #ifdef SPT_MESH_RENDERING_ENABLED
 #define SPT_PLAYER_TRACE_ENABLED
 
+// no con-commands here since CON_COMMAND_F declares them as static
+extern ConVar spt_draw_trace;
+extern ConVar spt_hud_trace;
+extern ConVar spt_trace_autoplay;
+extern ConVar spt_trace_ent_collect_radius;
+extern ConVar spt_trace_draw_portal_collision_entities;
+extern ConVar spt_trace_draw_path_cones;
+extern ConVar spt_trace_draw_cam_style;
+extern ConVar spt_trace_draw_contact_points;
+
 namespace player_trace
 {
+	bool GetActiveTracePos(Vector& pos, QAngle& ang, float& fov);
+
 	enum TrSegmentReason : int
 	{
 		TR_SR_FCPS,

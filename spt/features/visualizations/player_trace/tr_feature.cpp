@@ -319,7 +319,7 @@ void PlayerTraceFeature::OnHudCallback()
 	spt_hud_feat.DrawTopHudElement(L"Trace memory usage: %.*f%s", i > 0 ? 2 : 0, displayUsage, suffixes[i]);
 }
 
-bool SptGetActiveTracePos(Vector& pos, QAngle& ang, float& fov)
+bool player_trace::GetActiveTracePos(Vector& pos, QAngle& ang, float& fov)
 {
 	auto& tr = spt_player_trace_feat.tr;
 	TrReadContextScope scope{tr};
@@ -331,13 +331,6 @@ bool SptGetActiveTracePos(Vector& pos, QAngle& ang, float& fov)
 	ang = **plDataIdx->transEyesIdx->angIdx;
 	fov = plDataIdx->fov;
 	return true;
-}
-
-#else
-
-bool SptGetActiveTracePos(Vector& pos, QAngle& ang, float& fov)
-{
-	return false;
 }
 
 #endif
