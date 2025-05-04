@@ -12,7 +12,7 @@
 #include "spt\utils\interfaces.hpp"
 #include "spt\utils\signals.hpp"
 #include "spt\cvars.hpp"
-#include "visualizations/renderer/mesh_renderer.hpp"
+#include "visualizations\player_trace\tr_config.hpp"
 
 #include "usercmd.h"
 #include "view_shared.h"
@@ -898,8 +898,9 @@ void Camera::HandleTraceMode(bool active)
 {
 	if (!active)
 		return;
-	extern bool SptGetActiveTracePos(Vector & pos, QAngle & ang, float& fov);
-	SptGetActiveTracePos(currentCam.origin, currentCam.angles, currentCam.fov);
+#ifdef SPT_PLAYER_TRACE_ENABLED
+	player_trace::GetActiveTracePos(currentCam.origin, currentCam.angles, currentCam.fov);
+#endif
 }
 
 #ifdef SPT_MESH_RENDERING_ENABLED
