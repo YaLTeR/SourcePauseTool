@@ -13,6 +13,7 @@
 #include "spt/utils/ent_list.hpp"
 #include "spt/utils/interfaces.hpp"
 #include "spt/utils/file.hpp"
+#include "spt/utils/game_detection.hpp"
 #include "spt/features/hud.hpp"
 #include "spt/features/visualizations/imgui/imgui_interface.hpp"
 
@@ -215,7 +216,8 @@ void PlayerTraceFeature::LoadFeature()
 
 	InitConcommandBase(spt_trace_autoplay);
 	InitConcommandBase(spt_trace_ent_collect_radius);
-	InitConcommandBase(spt_trace_draw_portal_collision_entities);
+	if (utils::DoesGameLookLikePortal())
+		InitConcommandBase(spt_trace_draw_portal_collision_entities);
 	InitConcommandBase(spt_trace_draw_path_cones);
 	InitConcommandBase(spt_trace_draw_cam_style);
 	InitConcommandBase(spt_trace_draw_contact_points);
