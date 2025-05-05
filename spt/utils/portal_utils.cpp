@@ -61,8 +61,9 @@ void calculateAGPosition(const utils::PortalInfo* portal, Vector& new_player_ori
 
 void calculateSGPosition(const utils::PortalInfo* portal, Vector& new_player_origin, QAngle& new_player_angles)
 {
-	if (portal && portal->linkedHandle.IsValid())
-		calculateOffsetPlayer(portal, new_player_origin, new_player_angles);
+	const auto& player_origin = utils::GetPlayerEyePosition();
+	const auto& player_angles = utils::GetPlayerEyeAngles();
+	transformThroughPortal(portal, player_origin, player_angles, new_player_origin, new_player_angles);
 }
 
 std::wstring calculateWillAGSG(const utils::PortalInfo* portal, Vector& new_player_origin, QAngle& new_player_angles)
@@ -118,26 +119,31 @@ void transformThroughPortal(const utils::PortalInfo* portal,
 
 	if (!portal || normal.Dot(start_pos - portal->pos) >= 0)
 	{
+		// in front of portal
 		transformed_origin = start_pos;
 		transformed_angles = start_angles;
 		return;
 	}
 
 	VMatrix matrix;
-	UpdatePortalTransformationMatrix(portal, matrix);
+	if (portal->linkedHandle.IsValid())
+	{
+		UpdatePortalTransformationMatrix(portal, matrix);
+	}
+	else
+	{
+		// after fizzling the linked handle is invalid, so use the portal's linked matrix if we're on server
+		static utils::CachedField<VMatrix, "CProp_Portal", "m_matrixThisToLinked", true> fMatrix;
+		auto serverPortalEnt = utils::spt_serverEntList.GetEnt(portal->handle.GetEntryIndex());
+		if (serverPortalEnt && fMatrix.Exists())
+			matrix = *fMatrix.GetPtr(serverPortalEnt);
+	}
 
 	transformed_origin = matrix * start_pos;
 	transformed_angles = TransformAnglesToWorldSpace(start_angles, matrix.As3x4());
 	transformed_angles.x = AngleNormalizePositive(transformed_angles.x);
 	transformed_angles.y = AngleNormalizePositive(transformed_angles.y);
 	transformed_angles.z = AngleNormalizePositive(transformed_angles.z);
-}
-
-void calculateOffsetPlayer(const utils::PortalInfo* portal, Vector& new_player_origin, QAngle& new_player_angles)
-{
-	const auto& player_origin = utils::GetPlayerEyePosition();
-	const auto& player_angles = utils::GetPlayerEyeAngles();
-	transformThroughPortal(portal, player_origin, player_angles, new_player_origin, new_player_angles);
 }
 
 const utils::PortalInfo* getPortal(const char* arg, int getPortalFlags)
