@@ -301,12 +301,8 @@ void Overlay::ModifyView(CViewSetup* renderView)
 
 		renderView->x = 0;
 		renderView->y = 0;
-
-		// game does some funny fov scaling, fixup so that overlay fov is scaled in the same way as the main view
-		const float half_ang = M_PI_F / 360.f;
-		float aspect = renderView->m_flAspectRatio;
-		renderView->fov = atan(tan(_y_spt_overlay_fov.GetFloat() * half_ang) * .75f * aspect) / half_ang;
-
+		renderView->fov =
+		    utils::ScaleFOVByWidthRatio(_y_spt_overlay_fov.GetFloat(), renderView->m_flAspectRatio * 3.f / 4.f);
 		renderView->width = _y_spt_overlay_width.GetFloat();
 		renderView->height = static_cast<int>(renderView->width / renderView->m_flAspectRatio);
 	}
