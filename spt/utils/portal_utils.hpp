@@ -18,7 +18,6 @@ void transformThroughPortal(const utils::PortalInfo* portal,
                             Vector& transformed_origin,
                             QAngle& transformed_angles);
 void calculateSGPosition(const utils::PortalInfo* portal, Vector& new_player_origin, QAngle& new_player_angles);
-void calculateOffsetPlayer(const utils::PortalInfo* portal, Vector& new_player_origin, QAngle& new_player_angles);
 std::wstring calculateWillAGSG(const utils::PortalInfo* portal, Vector& new_player_origin, QAngle& new_player_angles);
 
 /*

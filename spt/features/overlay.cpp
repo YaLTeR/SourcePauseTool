@@ -41,7 +41,7 @@ ConVar _y_spt_overlay_type("_y_spt_overlay_type",
 
 #ifdef SPT_PORTAL_UTILS
 
-constexpr int SPT_PORTAL_SELECT_FLAGS = GPF_ALLOW_AUTO | GPF_ALLOW_PLAYER_ENV | GPF_ONLY_OPEN_PORTALS;
+constexpr int SPT_PORTAL_SELECT_FLAGS = GPF_ALLOW_AUTO | GPF_ALLOW_PLAYER_ENV;
 
 ConVar _y_spt_overlay_portal(
     "_y_spt_overlay_portal",
@@ -405,7 +405,6 @@ void Overlay::ImGuiCallback()
 	std::array<const char*, 5> opts = {"Save glitch", "Angle glitch", "Rear view", "Havok", "No transform"};
 	SptImGui::CvarCombo(_y_spt_overlay_type, "Overlay type", opts.data(), opts.size());
 
-	
 #ifdef SPT_PORTAL_UTILS
 	if (_y_spt_overlay_type.GetInt() < 2)
 	{
