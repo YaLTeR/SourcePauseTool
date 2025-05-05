@@ -27,11 +27,11 @@ public:
 	TrPlayerTrace* StartRecording();
 	TrPlayerTrace* StopRecording();
 	void ChangeDisplayTick(int diff);
-	void SetDisplayTick(uint32_t val);
+	void SetDisplayTick(tr_tick val);
 
 	// only one active trace until we support import/export
 	TrPlayerTrace tr;
-	uint32_t activeDrawTick = 0;
+	tr_tick activeDrawTick = 0;
 
 protected:
 	virtual bool ShouldLoadFeature() override;
@@ -259,10 +259,10 @@ void PlayerTraceFeature::ChangeDisplayTick(int diff)
 {
 	if (!spt_draw_trace.GetBool())
 		return;
-	activeDrawTick = (uint32_t)clamp((int64_t)activeDrawTick + diff, 0, std::numeric_limits<uint32_t>::max());
+	activeDrawTick = (tr_tick)clamp((int64_t)activeDrawTick + diff, 0, std::numeric_limits<tr_tick>::max());
 }
 
-void PlayerTraceFeature::SetDisplayTick(uint32_t val)
+void PlayerTraceFeature::SetDisplayTick(tr_tick val)
 {
 	if (!spt_draw_trace.GetBool())
 		return;
