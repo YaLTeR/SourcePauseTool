@@ -39,11 +39,11 @@ void TrPlayerTrace::StartRecording()
 	rc.StartRecording();
 
 	// hardcoding player hulls for now...
-	playerStandBboxIdx = rc.GetCachedIdx(TrAbsBox_v1{
+	playerStandBboxIdx = rc.GetCachedIdx(TrAbsBox{
 	    rc.GetCachedIdx(Vector{-16, -16, 0}),
 	    rc.GetCachedIdx(Vector{16, 16, 72}),
 	});
-	playerDuckBboxIdx = rc.GetCachedIdx(TrAbsBox_v1{
+	playerDuckBboxIdx = rc.GetCachedIdx(TrAbsBox{
 	    rc.GetCachedIdx(Vector{-16, -16, 0}),
 	    rc.GetCachedIdx(Vector{16, 16, 36}),
 	});
@@ -83,16 +83,15 @@ void TrPlayerTrace::HostTickCollect(bool simulated, TrSegmentReason segmentReaso
 	const char* curLoadedMap = utils::GetLoadedMap();
 	if (!curLoadedMap || !curLoadedMap[0])
 		return;
-	if (Get<TrMapTransition_v1>().empty()
-	    || strcmp(*Get<TrMapTransition_v1>().back().toMapIdx->nameIdx, curLoadedMap))
+	if (Get<TrMapTransition>().empty() || strcmp(*Get<TrMapTransition>().back().toMapIdx->nameIdx, curLoadedMap))
 	{
 		segmentReason = TR_SR_MAP_TRANSITION;
 		CollectMapTransition();
 	}
-	if (Get<TrSegmentStart_v1>().empty())
+	if (Get<TrSegmentStart>().empty())
 		segmentReason = TR_SR_TRACE_START;
 	if (segmentReason != TR_SR_NONE)
-		Get<TrSegmentStart_v1>().emplace_back(numRecordedTicks, segmentReason);
+		Get<TrSegmentStart>().emplace_back(numRecordedTicks, segmentReason);
 
 	CollectServerState(simulated);
 	CollectPlayerData();
@@ -102,19 +101,19 @@ void TrPlayerTrace::HostTickCollect(bool simulated, TrSegmentReason segmentReaso
 	numRecordedTicks++;
 }
 
-int TrPlayerTrace::GetServerTickAtTick(uint32_t atTick) const
+int TrPlayerTrace::GetServerTickAtTick(tr_tick atTick) const
 {
 	TrReadContextScope scope{*this};
-	auto svStateIdx = GetAtTick<TrServerState_v1>(atTick);
+	auto svStateIdx = GetAtTick<TrServerState>(atTick);
 	return svStateIdx.IsValid() ? svStateIdx->GetServerTickFromThisAsLastState(atTick) : -1;
 }
 
-TrIdx<TrMap_v1> TrPlayerTrace::GetMapAtTick(uint32_t atTick) const
+TrIdx<TrMap> TrPlayerTrace::GetMapAtTick(tr_tick atTick) const
 {
 	TrReadContextScope scope{*this};
-	auto& transitions = Get<TrMapTransition_v1>();
-	return transitions.empty() || transitions[0].tick > atTick ? TrIdx<TrMap_v1>{0}
-	                                                           : GetAtTick<TrMapTransition_v1>(atTick)->toMapIdx;
+	auto& transitions = Get<TrMapTransition>();
+	return transitions.empty() || transitions[0].tick > atTick ? TrIdx<TrMap>{0}
+	                                                           : GetAtTick<TrMapTransition>(atTick)->toMapIdx;
 }
 
 TrRecordingCache& TrPlayerTrace::GetRecordingCache()
@@ -127,7 +126,7 @@ void TrPlayerTrace::CollectServerState(bool hostTickSimulating)
 {
 	int newServerTick = interfaces::engine_tool->ServerTick();
 	bool newPausedState = interfaces::engine_tool->IsGamePaused();
-	auto& vec = Get<TrServerState_v1>();
+	auto& vec = Get<TrServerState>();
 
 	if (vec.empty() || newPausedState != vec.back().paused
 	    || newServerTick != vec.back().GetServerTickFromThisAsLastState(numRecordedTicks))
@@ -140,7 +139,7 @@ void TrPlayerTrace::CollectPlayerData()
 {
 	auto& rc = GetRecordingCache();
 
-	TrPlayerData_v1 data{
+	TrPlayerData data{
 	    .tick = numRecordedTicks,
 	    .qPosIdx = rc.specialIdxs.invalidVec,
 	    .qVelIdx = rc.specialIdxs.invalidVec,
@@ -178,14 +177,14 @@ void TrPlayerTrace::CollectPlayerData()
 			Vector eyePos = qPos + spt_playerio.m_vecViewOffset.GetValue();
 			QAngle eyeAng = *fVangle.GetPtr(serverPlayer);
 
-			data.transEyesIdx = rc.GetCachedIdx(TrTransform_v1{
+			data.transEyesIdx = rc.GetCachedIdx(TrTransform{
 			    rc.GetCachedIdx(eyePos),
 			    rc.GetCachedIdx(eyeAng),
 			});
 
 			transformThroughPortal(utils::GetEnvironmentPortal(), eyePos, eyeAng, eyePos, eyeAng);
 
-			data.transSgEyesIdx = rc.GetCachedIdx(TrTransform_v1{
+			data.transSgEyesIdx = rc.GetCachedIdx(TrTransform{
 			    rc.GetCachedIdx(eyePos),
 			    rc.GetCachedIdx(eyeAng),
 			});
@@ -199,14 +198,14 @@ void TrPlayerTrace::CollectPlayerData()
 			Vector vPos;
 			QAngle vAng;
 			playerPhysObj->GetPosition(&vPos, &vAng);
-			data.transVPhysIdx = rc.GetCachedIdx(TrTransform_v1{
+			data.transVPhysIdx = rc.GetCachedIdx(TrTransform{
 			    rc.GetCachedIdx(vPos),
 			    rc.GetCachedIdx(vAng),
 			});
 
 			// contact points
 
-			static std::vector<TrIdx<TrPlayerContactPoint_v1>> playerContactPoints;
+			static std::vector<TrIdx<TrPlayerContactPoint>> playerContactPoints;
 			playerContactPoints.clear();
 
 			IPhysicsFrictionSnapshot* snap = playerPhysObj->CreateFrictionSnapshot();
@@ -218,7 +217,7 @@ void TrPlayerTrace::CollectPlayerData()
 				IPhysicsObject* obj0 = snap->GetObject(0);
 				IPhysicsObject* obj1 = snap->GetObject(1);
 
-				playerContactPoints.push_back(rc.GetCachedIdx(TrPlayerContactPoint_v1{
+				playerContactPoints.push_back(rc.GetCachedIdx(TrPlayerContactPoint{
 				    .posIdx = rc.GetCachedIdx(pos),
 				    .normIdx = rc.GetCachedIdx(norm),
 				    .force = snap->GetNormalForce(),
@@ -249,7 +248,7 @@ void TrPlayerTrace::CollectPlayerData()
 		data.m_MoveType = fMoveType.GetValueOrDefault(serverPlayer);
 	}
 
-	auto& vec = Get<TrPlayerData_v1>();
+	auto& vec = Get<TrPlayerData>();
 	if (vec.empty() || !MemSameExceptTick(vec.back(), data))
 		vec.push_back(data);
 }
@@ -258,7 +257,7 @@ void TrPlayerTrace::CollectPortals()
 {
 	auto& rc = GetRecordingCache();
 	rc.simToPortalMap.clear();
-	static std::vector<TrIdx<TrPortal_v1>> portalSnapshot;
+	static std::vector<TrIdx<TrPortal>> portalSnapshot;
 	portalSnapshot.clear();
 
 	// CProp_Portal::simulator
@@ -266,10 +265,10 @@ void TrPlayerTrace::CollectPortals()
 
 	for (auto& p : utils::spt_serverEntList.GetPortalList())
 	{
-		auto portalIdx = rc.GetCachedIdx(TrPortal_v1{
+		auto portalIdx = rc.GetCachedIdx(TrPortal{
 		    .handle = p.handle,
 		    .linkedHandle = p.linkedHandle,
-		    .transIdx = rc.GetCachedIdx(TrTransform_v1{
+		    .transIdx = rc.GetCachedIdx(TrTransform{
 		        rc.GetCachedIdx(p.pos),
 		        rc.GetCachedIdx(p.ang),
 		    }),
@@ -285,12 +284,12 @@ void TrPlayerTrace::CollectPortals()
 			rc.simToPortalMap.emplace(pSim, portalIdx);
 	}
 
-	TrPortalSnapshot_v1 newSnapshot{
+	TrPortalSnapshot newSnapshot{
 	    .tick = numRecordedTicks,
 	    .portalsSp = rc.GetCachedSpan(portalSnapshot),
 	};
 
-	auto& vec = Get<TrPortalSnapshot_v1>();
+	auto& vec = Get<TrPortalSnapshot>();
 	if (vec.empty() || !MemSameExceptTick(vec.back(), newSnapshot))
 		vec.push_back(newSnapshot);
 }
@@ -299,8 +298,8 @@ void TrPlayerTrace::CollectEntities(float entCollectRadius)
 {
 	auto& rc = GetRecordingCache();
 
-	Assert(!Get<TrPlayerData_v1>().empty());
-	auto& playerDataVec = Get<TrPlayerData_v1>();
+	Assert(!Get<TrPlayerData>().empty());
+	auto& playerDataVec = Get<TrPlayerData>();
 	if (!interfaces::spatialPartition || !interfaces::staticpropmgr || entCollectRadius < 0
 	    || !playerDataVec.back().qPosIdx.IsValid())
 	{
@@ -351,13 +350,13 @@ void TrPlayerTrace::CollectEntities(float entCollectRadius)
 			// casually use 12kb of stack space
 			constexpr int MAX_PHYS_OBJECTS = 1024;
 			std::array<IPhysicsObject*, MAX_PHYS_OBJECTS> physObjects;
-			std::array<TrIdx<TrTransform_v1>, MAX_PHYS_OBJECTS> physTransforms;
-			std::array<TrIdx<TrPhysicsObject_v1>, MAX_PHYS_OBJECTS> physObjSp;
+			std::array<TrIdx<TrTransform>, MAX_PHYS_OBJECTS> physTransforms;
+			std::array<TrIdx<TrPhysicsObject>, MAX_PHYS_OBJECTS> physObjSp;
 
 			int nPhysObjects =
 			    spt_collideToMesh.GetPhysObjList(serverEnt, physObjects.data(), physObjects.size());
 
-			TrPhysicsObjectInfo_v1::SourceEntity::Id physInfoId{.pServerEnt = serverEnt};
+			TrPhysicsObjectInfo::SourceEntity::Id physInfoId{.pServerEnt = serverEnt};
 			if (enumeratingPortalSims)
 			{
 				/*
@@ -377,7 +376,7 @@ void TrPlayerTrace::CollectEntities(float entCollectRadius)
 					CPortalSimulator* linkedSim = ((CPortalSimulator**)sim)[1];
 					it = rc.simToPortalMap.find(linkedSim);
 					physInfoId.portalIdxIfThisIsCollisionEntity.linkedPortal =
-					    it == rc.simToPortalMap.cend() ? TrIdx<TrPortal_v1>{} : it->second;
+					    it == rc.simToPortalMap.cend() ? TrIdx<TrPortal>{} : it->second;
 				}
 			}
 
@@ -388,7 +387,7 @@ void TrPlayerTrace::CollectEntities(float entCollectRadius)
 					continue;
 
 				// check if this is a new physics object
-				TrPhysicsObjectInfo_v1 newPhysInfo{
+				TrPhysicsObjectInfo newPhysInfo{
 				    .sourceEntity{
 				        .extraId = physInfoId,
 				        .handle = handle,
@@ -401,15 +400,15 @@ void TrPlayerTrace::CollectEntities(float entCollectRadius)
 				             | (physObj->IsGravityEnabled() ? TR_POF_GRAVITY_ENABLED : 0),
 				};
 
-				auto [it, new_elem] = rc.entMeshMap.try_emplace(newPhysInfo, TrIdx<TrPhysMesh_v1>{});
+				auto [it, new_elem] = rc.entMeshMap.try_emplace(newPhysInfo, TrIdx<TrPhysMesh>{});
 
 				if (new_elem)
 				{
 					// set the pointer just like how the recording cache does
-					it->first.idx = tr.Get<TrPhysicsObjectInfo_v1>().size();
-					tr.Get<TrPhysicsObjectInfo_v1>().push_back(newPhysInfo);
+					it->first.idx = tr.Get<TrPhysicsObjectInfo>().size();
+					tr.Get<TrPhysicsObjectInfo>().push_back(newPhysInfo);
 
-					TrPhysMesh_v1 newTrMesh{
+					TrPhysMesh newTrMesh{
 					    .ballRadius = physObj->GetSphereRadius(),
 					    .vertIdxSp{},
 					};
@@ -430,7 +429,7 @@ void TrPlayerTrace::CollectEntities(float entCollectRadius)
 				}
 
 				Assert(it->first.idx.IsValid());
-				physObjSp[nNonNullPhysObjects] = rc.GetCachedIdx(TrPhysicsObject_v1{
+				physObjSp[nNonNullPhysObjects] = rc.GetCachedIdx(TrPhysicsObject{
 				    .infoIdx = it->first.idx,
 				    .meshIdx = it->second,
 				});
@@ -438,7 +437,7 @@ void TrPlayerTrace::CollectEntities(float entCollectRadius)
 				Vector pos;
 				QAngle ang;
 				physObj->GetPosition(&pos, &ang);
-				physTransforms[nNonNullPhysObjects] = rc.GetCachedIdx(TrTransform_v1{
+				physTransforms[nNonNullPhysObjects] = rc.GetCachedIdx(TrTransform{
 				    rc.GetCachedIdx(pos),
 				    rc.GetCachedIdx(ang),
 				});
@@ -446,14 +445,14 @@ void TrPlayerTrace::CollectEntities(float entCollectRadius)
 				nNonNullPhysObjects++;
 			}
 
-			TrEnt_v1 newEnt{
+			TrEnt newEnt{
 			    .extraId{.pServerEnt = serverEnt},
 			    .handle = handle,
 			    .networkClassNameIdx =
 			        rc.GetStringIdx(utils::SptEntListServer::NetworkClassName(serverEnt)),
 			    .classNameIdx = rc.GetStringIdx(className),
 			    .nameIdx = rc.GetStringIdx(fName.GetValueOrDefault(serverEnt).ToCStr()),
-			    .physSp = rc.GetCachedSpan(std::span<const TrIdx<TrPhysicsObject_v1>>{
+			    .physSp = rc.GetCachedSpan(std::span<const TrIdx<TrPhysicsObject>>{
 			        &physObjSp.front(),
 			        nNonNullPhysObjects,
 			    }),
@@ -462,16 +461,16 @@ void TrPlayerTrace::CollectEntities(float entCollectRadius)
 			    .m_CollisionGroup = (uint32_t)fColGroup.GetValueOrDefault(serverEnt),
 			};
 
-			TrEntTransform_v1 newEntTrans{
-			    .obbIdx = rc.GetCachedIdx(TrAbsBox_v1{
+			TrEntTransform newEntTrans{
+			    .obbIdx = rc.GetCachedIdx(TrAbsBox{
 			        .minsIdx = rc.GetCachedIdx(coll->OBBMins()),
 			        .maxsIdx = rc.GetCachedIdx(coll->OBBMaxs()),
 			    }),
-			    .obbTransIdx = rc.GetCachedIdx(TrTransform_v1{
+			    .obbTransIdx = rc.GetCachedIdx(TrTransform{
 			        rc.GetCachedIdx(coll->GetCollisionOrigin()),
 			        rc.GetCachedIdx(coll->GetCollisionAngles()),
 			    }),
-			    .physTransSp = rc.GetCachedSpan(std::span<const TrIdx<TrTransform_v1>>{
+			    .physTransSp = rc.GetCachedSpan(std::span<const TrIdx<TrTransform>>{
 			        &physTransforms.front(),
 			        nNonNullPhysObjects,
 			    }),
@@ -482,8 +481,8 @@ void TrPlayerTrace::CollectEntities(float entCollectRadius)
 		}
 	} enumerator{*this, rc};
 
-	Assert(!Get<TrTraceState_v1>().empty());
-	TrAbsBox_v1 entCollectBbox = **Get<TrTraceState_v1>().back().entCollectBboxAroundPlayerIdx;
+	Assert(!Get<TrTraceState>().empty());
+	TrAbsBox entCollectBbox = **Get<TrTraceState>().back().entCollectBboxAroundPlayerIdx;
 	interfaces::spatialPartition->EnumerateElementsInBox(PARTITION_SERVER_GAME_EDICTS,
 	                                                     lastPlayerPos + **entCollectBbox.minsIdx,
 	                                                     lastPlayerPos + **entCollectBbox.maxsIdx,
@@ -503,7 +502,7 @@ void TrPlayerTrace::CollectEntities(float entCollectRadius)
 
 	std::ranges::sort(newSnapshot);
 
-	auto& snapshots = Get<TrEntSnapshot_v1>();
+	auto& snapshots = Get<TrEntSnapshot>();
 
 	if (!snapshots.empty() && rc.entSnapshot == newSnapshot)
 		return; // nothing new
@@ -517,20 +516,20 @@ void TrPlayerTrace::CollectEntities(float entCollectRadius)
 void TrPlayerTrace::CollectTraceState(float entCollectRadius)
 {
 	auto& rc = GetRecordingCache();
-	Assert(!Get<TrPlayerData_v1>().empty());
+	Assert(!Get<TrPlayerData>().empty());
 
-	TrIdx<TrAbsBox_v1> playerBboxIdx =
-	    (Get<TrPlayerData_v1>().back().m_fFlags & FL_DUCKING) ? playerDuckBboxIdx : playerStandBboxIdx;
+	TrIdx<TrAbsBox> playerBboxIdx =
+	    (Get<TrPlayerData>().back().m_fFlags & FL_DUCKING) ? playerDuckBboxIdx : playerStandBboxIdx;
 
-	TrTraceState_v1 newTraceState{
+	TrTraceState newTraceState{
 	    .tick = numRecordedTicks,
-	    .entCollectBboxAroundPlayerIdx = rc.GetCachedIdx(TrAbsBox_v1{
+	    .entCollectBboxAroundPlayerIdx = rc.GetCachedIdx(TrAbsBox{
 	        rc.GetCachedIdx(**playerBboxIdx->minsIdx - Vector{entCollectRadius}),
 	        rc.GetCachedIdx(**playerBboxIdx->maxsIdx + Vector{entCollectRadius}),
 	    }),
 	};
 
-	auto& vec = Get<TrTraceState_v1>();
+	auto& vec = Get<TrTraceState>();
 	if (vec.empty() || !MemSameExceptTick(vec.back(), newTraceState))
 		vec.push_back(newTraceState);
 }
@@ -539,19 +538,19 @@ void TrPlayerTrace::CollectMapTransition()
 {
 	auto& rc = GetRecordingCache();
 
-	auto& maps = Get<TrMap_v1>();
-	auto& landmarks = Get<TrLandmark_v1>();
-	auto& transitions = Get<TrMapTransition_v1>();
+	auto& maps = Get<TrMap>();
+	auto& landmarks = Get<TrLandmark>();
+	auto& transitions = Get<TrMapTransition>();
 
 	const char* loadedMapName = utils::GetLoadedMap();
-	TrIdx<TrMap_v1> toMapIdx = 0;
+	TrIdx<TrMap> toMapIdx = 0;
 	for (; toMapIdx < maps.size(); toMapIdx++)
 		if (!strcmp(*toMapIdx->nameIdx, loadedMapName))
 			break;
 
 	if (!toMapIdx.IsValid())
 	{
-		static std::vector<TrLandmark_v1> newLandmarks;
+		static std::vector<TrLandmark> newLandmarks;
 		newLandmarks.clear();
 		for (auto& [name, pos] : utils::GetLandmarksInLoadedMap())
 			newLandmarks.emplace_back(rc.GetStringIdx(name), rc.GetCachedIdx(pos));
@@ -561,7 +560,7 @@ void TrPlayerTrace::CollectMapTransition()
 			rc.landmarkDeltaToFirstMap +=
 			    GetAdjacentLandmarkDelta(*transitions.back().toMapIdx->landmarkSp, newLandmarks);
 		}
-		maps.push_back(TrMap_v1{
+		maps.push_back(TrMap{
 		    .nameIdx = rc.GetStringIdx(loadedMapName),
 		    .landmarkDeltaToFirstMapIdx = rc.GetCachedIdx(rc.landmarkDeltaToFirstMap),
 		    .landmarkSp = {landmarks.size(), newLandmarks.size()},
@@ -570,12 +569,12 @@ void TrPlayerTrace::CollectMapTransition()
 	}
 
 	transitions.emplace_back(numRecordedTicks,
-	                         transitions.empty() ? TrIdx<TrMap_v1>{} : transitions.back().toMapIdx,
+	                         transitions.empty() ? TrIdx<TrMap>{} : transitions.back().toMapIdx,
 	                         toMapIdx);
 }
 
-Vector TrPlayerTrace::GetAdjacentLandmarkDelta(std::span<const TrLandmark_v1> fromLandmarkSp,
-                                               std::span<const TrLandmark_v1> toLandmarkSp) const
+Vector TrPlayerTrace::GetAdjacentLandmarkDelta(std::span<const TrLandmark> fromLandmarkSp,
+                                               std::span<const TrLandmark> toLandmarkSp) const
 {
 	TrReadContextScope scope{*this};
 	for (auto& fromLandmark : fromLandmarkSp)

@@ -26,17 +26,15 @@ namespace player_trace
 		void RebuildPhysMeshes();
 
 		void RenderPlayerPath(MeshRendererDelegate& mr, const Vector& landmarkDeltaToFirstMap);
-		void RenderPlayerHull(MeshRendererDelegate& mr,
-		                      const Vector& landmarkDeltaToMapAtTick,
-		                      uint32_t atTick);
-		void RenderPortals(MeshRendererDelegate& mr, const Vector& landmarkDeltaToMapAtTick, uint32_t atTick);
-		void RenderEntities(MeshRendererDelegate& mr, const Vector& landmarkDeltaToMapAtTick, uint32_t atTick);
+		void RenderPlayerHull(MeshRendererDelegate& mr, const Vector& landmarkDeltaToMapAtTick, tr_tick atTick);
+		void RenderPortals(MeshRendererDelegate& mr, const Vector& landmarkDeltaToMapAtTick, tr_tick atTick);
+		void RenderEntities(MeshRendererDelegate& mr, const Vector& landmarkDeltaToMapAtTick, tr_tick atTick);
 
 		void VerifySnapshotState() const;
-		void UpdateEntSnapshot(uint32_t toTick);
-		void JumpToEntSnapshot(TrIdx<TrEntSnapshot_v1> snapIdx);
-		void ForwardIterateSnapshotDeltas(uint32_t toTick);
-		void BackwardIterateSnapshotDeltas(uint32_t toTick);
+		void UpdateEntSnapshot(tr_tick toTick);
+		void JumpToEntSnapshot(TrIdx<TrEntSnapshot> snapIdx);
+		void ForwardIterateSnapshotDeltas(tr_tick toTick);
+		void BackwardIterateSnapshotDeltas(tr_tick toTick);
 
 		/*
 		* The player path coordinates are computed relative to the first map of the trace, but in order
@@ -78,7 +76,7 @@ namespace player_trace
 			{
 				std::vector<StaticMesh> staticMeshes;
 				std::vector<DynamicMesh> dynamicMeshes;
-				uint32_t staticMeshesBuiltUpToTick = 0;
+				tr_tick staticMeshesBuiltUpToTick = 0;
 			} playerPath;
 
 			struct EntityCache
@@ -89,7 +87,7 @@ namespace player_trace
 					bool isActive = false;
 				};
 
-				std::unordered_map<TrIdx<TrPhysMesh_v1>, TrackedMesh> physObjs;
+				std::unordered_map<TrIdx<TrPhysMesh>, TrackedMesh> physObjs;
 				bool anyStale = false;
 			} ents;
 
@@ -97,17 +95,17 @@ namespace player_trace
 
 		struct EntSnapshot
 		{
-			std::unordered_map<TrIdx<TrEnt_v1>, TrIdx<TrEntTransform_v1>> entMap;
-			TrIdx<TrEntSnapshot_v1> snapshotIdx = 0;
-			TrIdx<TrEntSnapshotDelta_v1> snapshotDeltaIdx = 0;
-			uint32_t tick = 0;
+			std::unordered_map<TrIdx<TrEnt>, TrIdx<TrEntTransform>> entMap;
+			TrIdx<TrEntSnapshot> snapshotIdx = 0;
+			TrIdx<TrEntSnapshotDelta> snapshotDeltaIdx = 0;
+			tr_tick tick = 0;
 			bool initialized = false;
 		} entSnapshot;
 
 		std::string renderedLastTimeOnMap;
 
 	public:
-		void RenderAll(MeshRendererDelegate& mr, uint32_t atTick);
+		void RenderAll(MeshRendererDelegate& mr, tr_tick atTick);
 	};
 
 } // namespace player_trace

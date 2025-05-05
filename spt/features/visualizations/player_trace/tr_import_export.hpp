@@ -13,7 +13,7 @@ namespace player_trace
 {
 	constexpr size_t TR_MAX_SPT_VERSION_LEN = 32;
 
-	struct TrLump_v1;
+	using TrLump = struct TrLump_v1;
 
 	class ITrWriter
 	{
@@ -62,7 +62,7 @@ namespace player_trace
 	private:
 		template<typename T>
 		bool ReadLumpData(std::vector<T>& vec,
-		                  std::unordered_map<std::string_view, const TrLump_v1*>& lumpMap,
+		                  std::unordered_map<std::string_view, const TrLump*>& lumpMap,
 		                  std::string& errMsg);
 	};
 
@@ -99,7 +99,7 @@ namespace player_trace
 		* calls (and therefore ReadTrace) will return false. Prioritize reading this message over
 		* the message returned by ITrReader::ReadTrace
 		*/
-		std::string errMsg; 
+		std::string errMsg;
 
 		TrXzFileReader(std::istream& iStream);
 

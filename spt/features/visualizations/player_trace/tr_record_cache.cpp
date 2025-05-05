@@ -8,9 +8,9 @@ using namespace player_trace;
 
 void TrRecordingCache::CollectEntityDelta(std::vector<EntSnapshotEntry>& newSnapshot)
 {
-	auto& creates = tr->Get<TrEntCreateDelta_v1>();
-	auto& deltas = tr->Get<TrEntTransformDelta_v1>();
-	auto& deletes = tr->Get<TrEntDeleteDelta_v1>();
+	auto& creates = tr->Get<TrEntCreateDelta>();
+	auto& deltas = tr->Get<TrEntTransformDelta>();
+	auto& deletes = tr->Get<TrEntDeleteDelta>();
 
 	size_t nCreates = 0, nDeltas = 0, nDeletes = 0;
 
@@ -45,31 +45,31 @@ void TrRecordingCache::CollectEntityDelta(std::vector<EntSnapshotEntry>& newSnap
 		}
 	}
 
-	tr->Get<TrEntSnapshotDelta_v1>().emplace_back(tr->numRecordedTicks,
-	                                              TrSpan<TrEntCreateDelta_v1>{creates.size() - nCreates, nCreates},
-	                                              TrSpan<TrEntTransformDelta_v1>{deltas.size() - nDeltas, nDeltas},
-	                                              TrSpan<TrEntDeleteDelta_v1>{deletes.size() - nDeletes, nDeletes});
+	tr->Get<TrEntSnapshotDelta>().emplace_back(tr->numRecordedTicks,
+	                                           TrSpan<TrEntCreateDelta>{creates.size() - nCreates, nCreates},
+	                                           TrSpan<TrEntTransformDelta>{deltas.size() - nDeltas, nDeltas},
+	                                           TrSpan<TrEntDeleteDelta>{deletes.size() - nDeletes, nDeletes});
 
 	++nEntDeltasWithoutSnapshot;
 }
 
 void TrRecordingCache::CollectEntitySnapshot()
 {
-	auto& snaps = tr->Get<TrEntSnapshot_v1>();
-	auto& snapDeltas = tr->Get<TrEntSnapshotDelta_v1>();
+	auto& snaps = tr->Get<TrEntSnapshot>();
+	auto& snapDeltas = tr->Get<TrEntSnapshotDelta>();
 	Assert(!snapDeltas.empty());
 	if (!snaps.empty() && snaps.back().tick >= snapDeltas.back().tick)
 		return;
 
 	// only log additional creates that weren't logged in the snapshot delta
 
-	auto& creates = tr->Get<TrEntCreateDelta_v1>();
+	auto& creates = tr->Get<TrEntCreateDelta>();
 	for (auto& entry : entSnapshot)
 		if (!entry.loggedAsCreateInLastDelta)
 			creates.emplace_back(entry.entIdx, entry.entTransIdx);
 
 	snaps.emplace_back(snapDeltas.back().tick,
-	                   TrSpan<TrEntCreateDelta_v1>{
+	                   TrSpan<TrEntCreateDelta>{
 	                       creates.size() - entSnapshot.size(),
 	                       entSnapshot.size(),
 	                   },

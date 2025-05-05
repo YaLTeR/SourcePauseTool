@@ -25,6 +25,8 @@ namespace player_trace
 	{
 	};
 
+	using tr_struct_version = uint32_t;
+
 	template<size_t N>
 	struct _tstring
 	{
@@ -52,11 +54,11 @@ namespace player_trace
 		static_assert(tuple_contains_type<std::vector<T>, decltype(TrPlayerTrace::_storage)>::value, \
 		              "TrPlayerTrace::_storage must contain std::vector<T>"); \
 		static constexpr const char name[TR_MAX_LUMP_NAME_LEN] = nameStr; \
-		static constexpr uint32_t version = versionNum; \
-	};
+		static constexpr tr_struct_version struct_version = versionNum; \
+	}
 
 #define TR_LUMP_TYPE_TO_NAME(T) (TrLumpInfo<T>::name)
-#define TR_LUMP_TYPE_TO_VERSION(T) (TrLumpInfo<T>::version)
+#define TR_LUMP_TYPE_TO_VERSION(T) (TrLumpInfo<T>::struct_version)
 
 	/*
 	* Give a unique name to each vector type in TrPlayerTrace. Anything that doesn't match the name
@@ -104,19 +106,19 @@ namespace player_trace
 		uint32_t fileVersion;
 	};
 
-	struct TrHeader_v1
+	struct TrHeader
 	{
 		char sptVersion[TR_MAX_SPT_VERSION_LEN];
 		uint32_t lumpsOff;
 		uint32_t nLumps;
 		uint32_t numRecordedTicks;
-		TrIdx<TrAbsBox_v1> playerStandBboxIdx, playerDuckBboxIdx;
+		TrIdx<TrAbsBox> playerStandBboxIdx, playerDuckBboxIdx;
 	};
 
 	struct TrLump_v1
 	{
 		char name[TR_MAX_LUMP_NAME_LEN];
-		uint32_t version;
+		tr_struct_version struct_version;
 		uint32_t dataOff;
 		uint32_t dataLenBytes;
 		// not necessary but useful for external tools so they don't have to know how to parse the each lump
@@ -141,8 +143,8 @@ using namespace player_trace;
 template<typename T>
 bool ITrWriter::WriteLumpHeader(const std::vector<T>& vec, uint32_t& fileOff, uint32_t& lumpDataFileOff)
 {
-	TrLump_v1 lump{
-	    .version = TR_LUMP_TYPE_TO_VERSION(T),
+	TrLump lump{
+	    .struct_version = TR_LUMP_TYPE_TO_VERSION(T),
 	    .dataOff = lumpDataFileOff,
 	    .dataLenBytes = vec.size() * sizeof(T),
 	    .nElems = vec.size(),
@@ -176,7 +178,7 @@ bool ITrWriter::WriteTrace(const TrPlayerTrace& tr)
 
 	constexpr uint32_t nLumps = std::tuple_size_v<decltype(tr._storage)>;
 
-	TrHeader_v1 header{
+	TrHeader header{
 	    .lumpsOff = fileOff + sizeof header,
 	    .nLumps = nLumps,
 	    .numRecordedTicks = tr.numRecordedTicks,
@@ -188,7 +190,7 @@ bool ITrWriter::WriteTrace(const TrPlayerTrace& tr)
 		return false;
 	fileOff += sizeof header;
 
-	uint32_t lumpDataFileOff = fileOff + sizeof(TrLump_v1) * nLumps;
+	uint32_t lumpDataFileOff = fileOff + sizeof(TrLump) * nLumps;
 	if (!std::apply([&](auto&... vecs) { return (WriteLumpHeader(vecs, fileOff, lumpDataFileOff) && ...); },
 	                tr._storage))
 		return false;
@@ -202,20 +204,20 @@ bool ITrWriter::WriteTrace(const TrPlayerTrace& tr)
 
 template<typename T>
 bool ITrReader::ReadLumpData(std::vector<T>& vec,
-                             std::unordered_map<std::string_view, const TrLump_v1*>& lumpMap,
+                             std::unordered_map<std::string_view, const TrLump*>& lumpMap,
                              std::string& errMsg)
 {
 	auto it = lumpMap.find(TR_LUMP_TYPE_TO_NAME(T));
 	if (it == lumpMap.cend())
 		return true; // compat with other versions, don't fill non-existent lumps
 
-	const TrLump_v1& lump = *it->second;
-	if (lump.version != TR_LUMP_TYPE_TO_VERSION(T))
+	const TrLump& lump = *it->second;
+	if (lump.struct_version != TR_LUMP_TYPE_TO_VERSION(T))
 	{
 		errMsg = std::format("bad lump version for lump '{}' (expected {}, got {})",
 		                     TR_LUMP_TYPE_TO_NAME(T),
 		                     TR_LUMP_TYPE_TO_VERSION(T),
-		                     lump.version);
+		                     lump.struct_version);
 		return false;
 	}
 	if (sizeof(T) * lump.nElems != lump.dataLenBytes)
@@ -259,7 +261,7 @@ bool ITrReader::ReadTrace(TrPlayerTrace& tr, char sptVersionOut[TR_MAX_SPT_VERSI
 		return false;
 	}
 
-	TrHeader_v1 header;
+	TrHeader header;
 	if (!ReadTo(header, sizeof preamble))
 	{
 		errMsg = "failed to read header";
@@ -271,13 +273,13 @@ bool ITrReader::ReadTrace(TrPlayerTrace& tr, char sptVersionOut[TR_MAX_SPT_VERSI
 	tr.playerStandBboxIdx = header.playerStandBboxIdx;
 	tr.playerDuckBboxIdx = header.playerDuckBboxIdx;
 
-	std::vector<TrLump_v1> lumps{header.nLumps};
+	std::vector<TrLump> lumps{header.nLumps};
 	if (!ReadTo(std::span<char>{(char*)lumps.data(), lumps.size() * sizeof(lumps[0])}, header.lumpsOff))
 	{
 		errMsg = "failed to read lump headers";
 		return false;
 	}
-	std::unordered_map<std::string_view, const TrLump_v1*> lumpMap;
+	std::unordered_map<std::string_view, const TrLump*> lumpMap;
 	for (auto& lump : lumps)
 		lumpMap[std::string_view{lump.name, strnlen(lump.name, sizeof lump.name)}] = &lump;
 
