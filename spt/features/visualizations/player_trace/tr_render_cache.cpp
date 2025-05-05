@@ -11,11 +11,6 @@
 #define PORTAL_HALF_WIDTH 32.0f
 #define PORTAL_HALF_HEIGHT 54.0f
 
-extern ConVar spt_trace_draw_portal_collision_entities;
-extern ConVar spt_trace_draw_path_cones;
-extern ConVar spt_trace_draw_cam_style;
-extern ConVar spt_trace_draw_contact_points;
-
 using namespace player_trace;
 
 TrRenderingCache::TrRenderingCache(const TrPlayerTrace& tr) : tr{&tr} {}
@@ -29,7 +24,7 @@ void TrRenderingCache::RebuildPlayerHullMeshes()
 	struct
 	{
 		StaticMesh& mesh;
-		TrIdx<TrAbsBox_v1> hullIdx;
+		TrIdx<TrAbsBox> hullIdx;
 	} qPhysData[] = {
 	    {meshes.qPhysStand, tr->playerStandBboxIdx},
 	    {meshes.qPhysDuck, tr->playerDuckBboxIdx},
@@ -83,7 +78,7 @@ void TrRenderingCache::RebuildPlayerHullMeshes()
 	struct
 	{
 		StaticMesh& mesh;
-		TrIdx<TrAbsBox_v1> hullIdx;
+		TrIdx<TrAbsBox> hullIdx;
 	} vPhysData[] = {
 	    {meshes.vPhysStand, tr->playerStandBboxIdx},
 	    {meshes.vPhysDuck, tr->playerDuckBboxIdx},
@@ -211,11 +206,11 @@ void TrRenderingCache::RebuildPlayerPathMeshes()
 	* transform the mesh(es).
 	*/
 
-	uint32_t firstTickToDraw = meshes.playerPath.staticMeshesBuiltUpToTick;
+	tr_tick firstTickToDraw = meshes.playerPath.staticMeshesBuiltUpToTick;
 
-	auto pdIdx = tr->GetAtTick<TrPlayerData_v1>(firstTickToDraw);
-	auto segmentIdx = tr->GetAtTick<TrSegmentStart_v1>(firstTickToDraw);
-	auto mapTransitionIdx = tr->GetAtTick<TrMapTransition_v1>(firstTickToDraw);
+	auto pdIdx = tr->GetAtTick<TrPlayerData>(firstTickToDraw);
+	auto segmentIdx = tr->GetAtTick<TrSegmentStart>(firstTickToDraw);
+	auto mapTransitionIdx = tr->GetAtTick<TrMapTransition>(firstTickToDraw);
 
 	Vector lastImplicitVel{1.f, 0.f, 0.f};
 	Vector prevImplicitVel = lastImplicitVel;
@@ -227,7 +222,7 @@ void TrRenderingCache::RebuildPlayerPathMeshes()
 	if (!pdIdx.IsValid())
 		return;
 
-	auto createFunc = [&](MeshBuilderDelegate& mb, uint32_t tick)
+	auto createFunc = [&](MeshBuilderDelegate& mb, tr_tick tick)
 	{
 		auto incrementIdxToCurTick = [tick]<typename T>(TrIdx<T>& idx)
 		{
@@ -350,7 +345,7 @@ void TrRenderingCache::RebuildPlayerPathMeshes()
 		return true;
 	};
 
-	uint32_t maxTicksForDynamic = tr->IsRecording() ? trStyles.playerPath.maxTicksToRenderAsDynamicMesh : 0;
+	tr_tick maxTicksForDynamic = tr->IsRecording() ? trStyles.playerPath.maxTicksToRenderAsDynamicMesh : 0;
 
 	if (tr->numRecordedTicks - meshes.playerPath.staticMeshesBuiltUpToTick > maxTicksForDynamic)
 	{
@@ -424,7 +419,7 @@ void TrRenderingCache::RebuildPhysMeshes()
 
 	for (auto& [entIdx, entTransIdx] : entSnapshot.entMap)
 	{
-		const TrEnt_v1& ent = **entIdx;
+		const TrEnt& ent = **entIdx;
 
 		const ShapeColor& shapeCol = strcmp(*entIdx->classNameIdx, "portalsimulator_collisionentity")
 		                                 ? trColors.entities.physMesh
@@ -437,7 +432,7 @@ void TrRenderingCache::RebuildPhysMeshes()
 			if (it->second.mesh.Valid())
 				continue;
 
-			const TrPhysMesh_v1& physMesh = **it->first;
+			const TrPhysMesh& physMesh = **it->first;
 
 			if (physMesh.ballRadius > 0)
 			{
@@ -485,20 +480,20 @@ void TrRenderingCache::VerifySnapshotState() const
 	}
 }
 
-void TrRenderingCache::UpdateEntSnapshot(uint32_t toTick)
+void TrRenderingCache::UpdateEntSnapshot(tr_tick toTick)
 {
 	if (entSnapshot.initialized && toTick == entSnapshot.tick)
 		return;
 
 	VerifySnapshotState();
 
-	TrIdx<TrEntSnapshot_v1> snapIdxLow = tr->GetAtTick<TrEntSnapshot_v1>(toTick);
+	TrIdx<TrEntSnapshot> snapIdxLow = tr->GetAtTick<TrEntSnapshot>(toTick);
 	auto snapIdxHigh = snapIdxLow + 1;
 
 	if (!snapIdxLow.IsValid())
 		return; // no baselines :/
 
-	TrIdx<TrEntSnapshotDelta_v1> snapDeltaIdx = tr->GetAtTick<TrEntSnapshotDelta_v1>(toTick);
+	TrIdx<TrEntSnapshotDelta> snapDeltaIdx = tr->GetAtTick<TrEntSnapshotDelta>(toTick);
 	if (!snapDeltaIdx.IsValid())
 	{
 		// no deltas, rely on snapshots only
@@ -605,7 +600,7 @@ void TrRenderingCache::UpdateEntSnapshot(uint32_t toTick)
 	}
 }
 
-void TrRenderingCache::JumpToEntSnapshot(TrIdx<TrEntSnapshot_v1> snapIdx)
+void TrRenderingCache::JumpToEntSnapshot(TrIdx<TrEntSnapshot> snapIdx)
 {
 	entSnapshot.entMap.clear();
 	for (auto& create : *snapIdx->createSp)
@@ -618,10 +613,10 @@ void TrRenderingCache::JumpToEntSnapshot(TrIdx<TrEntSnapshot_v1> snapIdx)
 	entSnapshot.initialized = true;
 }
 
-void TrRenderingCache::ForwardIterateSnapshotDeltas(uint32_t toTick)
+void TrRenderingCache::ForwardIterateSnapshotDeltas(tr_tick toTick)
 {
 	VerifySnapshotState();
-	TrIdx<TrEntSnapshot_v1> snapIdxLow = entSnapshot.snapshotIdx;
+	TrIdx<TrEntSnapshot> snapIdxLow = entSnapshot.snapshotIdx;
 
 	while ((entSnapshot.snapshotDeltaIdx + 1).IsValid() && entSnapshot.snapshotDeltaIdx->tick < toTick)
 	{
@@ -661,10 +656,10 @@ void TrRenderingCache::ForwardIterateSnapshotDeltas(uint32_t toTick)
 	entSnapshot.tick = toTick;
 }
 
-void TrRenderingCache::BackwardIterateSnapshotDeltas(uint32_t toTick)
+void TrRenderingCache::BackwardIterateSnapshotDeltas(tr_tick toTick)
 {
 	VerifySnapshotState();
-	TrIdx<TrEntSnapshot_v1> snapIdxLow = entSnapshot.snapshotIdx;
+	TrIdx<TrEntSnapshot> snapIdxLow = entSnapshot.snapshotIdx;
 
 	while ((entSnapshot.snapshotDeltaIdx - 1).IsValid() && entSnapshot.snapshotDeltaIdx->tick > toTick)
 	{
@@ -718,22 +713,22 @@ void TrRenderingCache::RenderPlayerPath(MeshRendererDelegate& mr, const Vector& 
 
 void TrRenderingCache::RenderPlayerHull(MeshRendererDelegate& mr,
                                         const Vector& landmarkDeltaToMapAtTick,
-                                        uint32_t atTick)
+                                        tr_tick atTick)
 {
-	auto pdIdx = tr->GetAtTick<TrPlayerData_v1>(atTick);
+	auto pdIdx = tr->GetAtTick<TrPlayerData>(atTick);
 	if (!pdIdx.IsValid())
 		return;
 
 	RebuildPlayerHullMeshes();
 	RebuildEyeMeshes(pdIdx->fov == 0 ? 90.f : pdIdx->fov);
 
-	const TrPlayerData_v1& pd = **pdIdx;
-	TrTransform_v1 qPhysTransform{pd.qPosIdx, {}};
+	const TrPlayerData& pd = **pdIdx;
+	TrTransform qPhysTransform{pd.qPosIdx, {}};
 
 	struct
 	{
 		StaticMesh& mesh;
-		const TrTransform_v1& trans;
+		const TrTransform& trans;
 		bool bDraw = true;
 	} hulls[] = {
 	    {(pd.m_fFlags & FL_DUCKING) ? meshes.qPhysDuck : meshes.qPhysStand, qPhysTransform},
@@ -774,16 +769,16 @@ void TrRenderingCache::RenderPlayerHull(MeshRendererDelegate& mr,
 	}
 }
 
-void TrRenderingCache::RenderPortals(MeshRendererDelegate& mr, const Vector& landmarkDeltaToMapAtTick, uint32_t atTick)
+void TrRenderingCache::RenderPortals(MeshRendererDelegate& mr, const Vector& landmarkDeltaToMapAtTick, tr_tick atTick)
 {
 	RebuildPortalMeshes();
-	auto snapIdx = tr->GetAtTick<TrPortalSnapshot_v1>(atTick);
+	auto snapIdx = tr->GetAtTick<TrPortalSnapshot>(atTick);
 	if (!snapIdx.IsValid())
 		return;
 
 	for (auto idx : *snapIdx->portalsSp)
 	{
-		const TrPortal_v1& portal = **idx;
+		const TrPortal& portal = **idx;
 		if (!portal.isActivated)
 			continue; // not rendering these for now
 		const StaticMesh& mesh = portal.isOpen
@@ -799,15 +794,15 @@ void TrRenderingCache::RenderPortals(MeshRendererDelegate& mr, const Vector& lan
 	}
 }
 
-void TrRenderingCache::RenderEntities(MeshRendererDelegate& mr, const Vector& landmarkDeltaToMapAtTick, uint32_t atTick)
+void TrRenderingCache::RenderEntities(MeshRendererDelegate& mr, const Vector& landmarkDeltaToMapAtTick, tr_tick atTick)
 {
 	UpdateEntSnapshot(atTick);
 	RebuildPhysMeshes();
 
 	if (trStyles.entities.drawEntCollectRadius)
 	{
-		auto traceStateIdx = tr->GetAtTick<TrTraceState_v1>(atTick);
-		auto plDataIdx = tr->GetAtTick<TrPlayerData_v1>(atTick);
+		auto traceStateIdx = tr->GetAtTick<TrTraceState>(atTick);
+		auto plDataIdx = tr->GetAtTick<TrPlayerData>(atTick);
 		if (plDataIdx.IsValid() && plDataIdx->qPosIdx->IsValid() && traceStateIdx.IsValid())
 		{
 			mr.DrawMesh(spt_meshBuilder.CreateDynamicMesh(
@@ -847,8 +842,8 @@ void TrRenderingCache::RenderEntities(MeshRendererDelegate& mr, const Vector& la
 			if (!isTrigger)
 				continue; // don't draw other trigger types
 		}
-		const TrAbsBox_v1& obb = **transIdx->obbIdx;
-		const TrTransform_v1& trans = **transIdx->obbTransIdx;
+		const TrAbsBox& obb = **transIdx->obbIdx;
+		const TrTransform& trans = **transIdx->obbTransIdx;
 		if (**obb.minsIdx == vec3_origin && **obb.maxsIdx == vec3_origin && **trans.posIdx == vec3_origin)
 			continue; // don't draw ZERO OBBs
 		mr.DrawMesh(spt_meshBuilder.CreateDynamicMesh(
@@ -909,7 +904,7 @@ const Vector& TrRenderingCache::GetLandmarkOffsetToFirstMap(const char* fromMap)
 
 	CacheLandmarkOffsetsToFirstMapFromTraceData();
 
-	if (tr->Get<TrMap_v1>().empty())
+	if (tr->Get<TrMap>().empty())
 		return vec3_origin;
 
 	auto [it, new_elem] = mapToFirstMapLandmarkOffset.try_emplace(fromMap);
@@ -924,9 +919,9 @@ const Vector& TrRenderingCache::GetLandmarkOffsetToFirstMap(const char* fromMap)
 	* TODO: if the server is not active, we can't find landmarks and the cache will get borked. Fix that
 	*/
 	auto& landmarksInCurMap = utils::GetLandmarksInLoadedMap();
-	TrIdx<TrMap_v1> mapIdx = 0;
+	TrIdx<TrMap> mapIdx = 0;
 	Vector offFromFirst = vec3_origin;
-	for (TrIdx<TrMapTransition_v1> transitionIdx = 1u;; transitionIdx++)
+	for (TrIdx<TrMapTransition> transitionIdx = 1u;; transitionIdx++)
 	{
 		for (auto& [curLandmarkName, curLandmarkOff] : landmarksInCurMap)
 			for (auto& trLandmark : *mapIdx->landmarkSp)
@@ -948,12 +943,12 @@ void TrRenderingCache::CacheLandmarkOffsetsToFirstMapFromTraceData()
 	if (!mapToFirstMapLandmarkOffset.empty())
 		return;
 
-	if (tr->Get<TrMap_v1>().empty())
+	if (tr->Get<TrMap>().empty())
 		return;
 
-	TrIdx<TrMap_v1> mapIdx = 0;
+	TrIdx<TrMap> mapIdx = 0;
 	Vector offToFirstMap = vec3_origin;
-	for (TrIdx<TrMapTransition_v1> transitionIdx = 1u;; transitionIdx++)
+	for (TrIdx<TrMapTransition> transitionIdx = 1u;; transitionIdx++)
 	{
 		mapToFirstMapLandmarkOffset[*mapIdx->nameIdx] = offToFirstMap;
 		if (!transitionIdx.IsValid())
@@ -964,7 +959,7 @@ void TrRenderingCache::CacheLandmarkOffsetsToFirstMapFromTraceData()
 	}
 }
 
-void TrRenderingCache::RenderAll(MeshRendererDelegate& mr, uint32_t atTick)
+void TrRenderingCache::RenderAll(MeshRendererDelegate& mr, tr_tick atTick)
 {
 	if (renderedLastTimeOnMap != utils::GetLoadedMap())
 	{
@@ -976,7 +971,7 @@ void TrRenderingCache::RenderAll(MeshRendererDelegate& mr, uint32_t atTick)
 	atTick = tr->numRecordedTicks == 0 ? 0 : clamp(atTick, 0, tr->numRecordedTicks - 1);
 	Vector landmarkdelta = GetLandmarkOffsetToFirstMap(utils::GetLoadedMap());
 	RenderPlayerPath(mr, landmarkdelta);
-	TrIdx<TrMap_v1> atMap = tr->GetMapAtTick(atTick);
+	TrIdx<TrMap> atMap = tr->GetMapAtTick(atTick);
 	if (!atMap.IsValid())
 		return;
 	landmarkdelta -= GetLandmarkOffsetToFirstMap(*atMap->nameIdx);

@@ -120,14 +120,14 @@ namespace player_trace
 
 		    MemKeySet<Vector>,
 		    MemKeySet<QAngle>,
-		    MemKeySet<TrTransform_v1>,
-		    MemKeySet<TrPortal_v1>,
-		    MemKeySet<TrAbsBox_v1>,
-		    MemKeySet<TrEnt_v1>,
-		    MemKeySet<TrPhysicsObject_v1>,
-		    MemKeySet<TrPhysMesh_v1>,
-		    MemKeySet<TrEntTransform_v1>,
-		    MemKeySet<TrPlayerContactPoint_v1>
+		    MemKeySet<TrTransform>,
+		    MemKeySet<TrPortal>,
+		    MemKeySet<TrAbsBox>,
+		    MemKeySet<TrEnt>,
+		    MemKeySet<TrPhysicsObject>,
+		    MemKeySet<TrPhysMesh>,
+		    MemKeySet<TrEntTransform>,
+		    MemKeySet<TrPlayerContactPoint>
 
 		    >
 		    idxSets;
@@ -136,10 +136,10 @@ namespace player_trace
 
 		    MemSpanKeySet<char>,
 		    MemSpanKeySet<TrIdx<Vector>>,
-		    MemSpanKeySet<TrIdx<TrPhysicsObject_v1>>,
-		    MemSpanKeySet<TrIdx<TrTransform_v1>>,
-		    MemSpanKeySet<TrIdx<TrPortal_v1>>,
-		    MemSpanKeySet<TrIdx<TrPlayerContactPoint_v1>>
+		    MemSpanKeySet<TrIdx<TrPhysicsObject>>,
+		    MemSpanKeySet<TrIdx<TrTransform>>,
+		    MemSpanKeySet<TrIdx<TrPortal>>,
+		    MemSpanKeySet<TrIdx<TrPlayerContactPoint>>
 
 		    >
 		    spanSets;
@@ -162,8 +162,8 @@ namespace player_trace
 
 		struct EntSnapshotEntry
 		{
-			TrIdx<TrEnt_v1> entIdx;
-			TrIdx<TrEntTransform_v1> entTransIdx;
+			TrIdx<TrEnt> entIdx;
+			TrIdx<TrEntTransform> entTransIdx;
 			// a small optimization to allow overlapping snapshot deltas & full snapshot spans
 			bool loggedAsCreateInLastDelta = false;
 
@@ -178,14 +178,12 @@ namespace player_trace
 			}
 		};
 
-		std::unordered_map<CPortalSimulator*, TrIdx<TrPortal_v1>> simToPortalMap;
+		std::unordered_map<CPortalSimulator*, TrIdx<TrPortal>> simToPortalMap;
 		std::vector<EntSnapshotEntry> entSnapshot;
 		uint32_t nEntDeltasWithoutSnapshot = 0;
 
 		// map IPhysicsObject* -> mesh_data so that we don't have to rebuild entity meshes every tick
-		std::unordered_map<MemKey<TrPhysicsObjectInfo_v1>,
-		                   TrIdx<TrPhysMesh_v1>,
-		                   MemKey<TrPhysicsObjectInfo_v1>::Hasher>
+		std::unordered_map<MemKey<TrPhysicsObjectInfo>, TrIdx<TrPhysMesh>, MemKey<TrPhysicsObjectInfo>::Hasher>
 		    entMeshMap;
 
 		Vector landmarkDeltaToFirstMap = vec3_origin;
@@ -195,7 +193,7 @@ namespace player_trace
 			TrIdx<Vector> zeroVec{};
 			TrIdx<Vector> invalidVec{};
 			TrIdx<QAngle> invalidAng{};
-			TrIdx<TrTransform_v1> invalidTrans{};
+			TrIdx<TrTransform> invalidTrans{};
 		} specialIdxs;
 
 		void StartRecording()
@@ -203,7 +201,7 @@ namespace player_trace
 			specialIdxs.zeroVec = GetCachedIdx(vec3_origin);
 			specialIdxs.invalidVec = GetCachedIdx(vec3_invalid);
 			specialIdxs.invalidAng = GetCachedIdx(QAngle{NAN, NAN, NAN});
-			specialIdxs.invalidTrans = GetCachedIdx(TrTransform_v1{
+			specialIdxs.invalidTrans = GetCachedIdx(TrTransform{
 			    specialIdxs.invalidVec,
 			    specialIdxs.invalidAng,
 			});
