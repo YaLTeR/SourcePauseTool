@@ -415,9 +415,6 @@
     <ClCompile Include="spt\features\visualizations\player_trace\tr_feature.cpp">
       <Filter>spt\features\visualizations\player_trace</Filter>
     </ClCompile>
-    <ClCompile Include="spt\features\visualizations\player_trace\tr_import_export.cpp">
-      <Filter>spt\features\visualizations\player_trace</Filter>
-    </ClCompile>
     <ClCompile Include="spt\features\visualizations\player_trace\tr_record_cache.cpp">
       <Filter>spt\features\visualizations\player_trace</Filter>
     </ClCompile>
@@ -426,6 +423,15 @@
     </ClCompile>
     <ClCompile Include="spt\features\set_sg.cpp">
       <Filter>spt\features</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\player_trace\import_export\tr_binary_write.cpp">
+      <Filter>spt\features\visualizations\player_trace\import_export</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\player_trace\import_export\tr_binary_read.cpp">
+      <Filter>spt\features\visualizations\player_trace\import_export</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\player_trace\import_export\tr_binary_compress.cpp">
+      <Filter>spt\features\visualizations\player_trace\import_export</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -918,8 +924,14 @@
     <ClInclude Include="thirdparty\xz\include\lzma\vli.h">
       <Filter>thirdparty\xz\include\lzma</Filter>
     </ClInclude>
-    <ClInclude Include="spt\features\visualizations\player_trace\tr_import_export.hpp">
-      <Filter>spt\features\visualizations\player_trace</Filter>
+    <ClInclude Include="spt\features\visualizations\player_trace\import_export\tr_binary_internal.hpp">
+      <Filter>spt\features\visualizations\player_trace\import_export</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\player_trace\import_export\tr_binary.hpp">
+      <Filter>spt\features\visualizations\player_trace\import_export</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\player_trace\import_export\tr_binary_compress.hpp">
+      <Filter>spt\features\visualizations\player_trace\import_export</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1006,6 +1018,9 @@
     </Filter>
     <Filter Include="thirdparty\xz\include\lzma">
       <UniqueIdentifier>{683dc8a5-fbb8-4260-84ed-bb51e32c8037}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\features\visualizations\player_trace\import_export">
+      <UniqueIdentifier>{3f0921d7-b608-4ebf-b3a6-766225b29da7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

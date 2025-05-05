@@ -7,7 +7,7 @@
 
 #include "tr_record_cache.hpp"
 #include "tr_render_cache.hpp"
-#include "tr_import_export.hpp"
+#include "import_export/tr_binary_compress.hpp"
 
 #include "signals.hpp"
 #include "spt/utils/ent_list.hpp"
@@ -98,7 +98,7 @@ CON_COMMAND_F(spt_trace_export, "Export trace to binary file", FCVAR_DONTRECORD)
 	}
 	std::filesystem::path filePath{GetGameDir()};
 	filePath /= args[1];
-	filePath += TR_FILE_EXTENSION;
+	filePath += TR_COMPRESSED_FILE_EXT;
 	filePath = std::filesystem::absolute(filePath);
 
 	std::error_code ec;
@@ -116,15 +116,20 @@ CON_COMMAND_F(spt_trace_export, "Export trace to binary file", FCVAR_DONTRECORD)
 		return;
 	}
 
+	TrWrite trWrite{};
 	TrXzFileWriter wr{ofs};
 
-	if (!wr.WriteTrace(spt_player_trace_feat.tr))
+	if (trWrite.Write(spt_player_trace_feat.tr, wr))
 		Warning("Failed to write trace to file\n");
 	else
 		Msg("Wrote trace to '%s'.\n", filePath.string().c_str());
 }
 
-CON_COMMAND_AUTOCOMPLETEFILE(spt_trace_import, "Load trace from binary file", FCVAR_DONTRECORD, "", TR_FILE_EXTENSION)
+CON_COMMAND_AUTOCOMPLETEFILE(spt_trace_import,
+                             "Load trace from binary file",
+                             FCVAR_DONTRECORD,
+                             "",
+                             TR_COMPRESSED_FILE_EXT)
 {
 	if (args.ArgC() < 2)
 	{
@@ -134,7 +139,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(spt_trace_import, "Load trace from binary file", FC
 
 	std::filesystem::path filePath{GetGameDir()};
 	filePath /= args[1];
-	filePath += TR_FILE_EXTENSION;
+	filePath += TR_COMPRESSED_FILE_EXT;
 	filePath = std::filesystem::absolute(filePath);
 	std::ifstream ifs{filePath, std::ios::binary};
 	if (!ifs.is_open())
@@ -143,21 +148,23 @@ CON_COMMAND_AUTOCOMPLETEFILE(spt_trace_import, "Load trace from binary file", FC
 		return;
 	}
 
+	TrRestore restore{};
 	TrXzFileReader rd{ifs};
 
-	char sptVersion[TR_MAX_SPT_VERSION_LEN];
-	std::string errMsg;
 	TrPlayerTrace newTr;
-	if (!rd.ReadTrace(newTr, sptVersion, errMsg))
+	if (!restore.Restore(newTr, rd))
 	{
-		Warning("Failed to load trace from file: %s\n", rd.errMsg.empty() ? errMsg.c_str() : rd.errMsg.c_str());
+		Warning("Failed to load trace from file: %s\n",
+		        rd.errMsg.empty() ? restore.errMsg.c_str() : rd.errMsg.c_str());
 		return;
 	}
-	Msg("Loaded trace from '%s' with %d ticks%s%s\n",
-	    filePath.u8string().c_str(),
-	    newTr.numRecordedTicks,
-	    errMsg.empty() ? "" : " and warnings: ",
-	    errMsg.c_str());
+	Msg("Loaded trace from '%s' with %d ticks\n", filePath.string().c_str(), newTr.numRecordedTicks);
+	if (!restore.warnings.empty())
+	{
+		Warning("Warning(s):\n");
+		for (const std::string& s : restore.warnings)
+			Warning("  - %s\n", s.c_str());
+	}
 	spt_player_trace_feat.tr = std::move(newTr);
 	spt_player_trace_feat.activeDrawTick = 0;
 }
@@ -325,7 +332,7 @@ bool player_trace::GetActiveTracePos(Vector& pos, QAngle& ang, float& fov)
 {
 	auto& tr = spt_player_trace_feat.tr;
 	TrReadContextScope scope{tr};
-	auto plDataIdx = tr.GetAtTick<TrPlayerData_v1>(spt_player_trace_feat.activeDrawTick);
+	auto plDataIdx = tr.GetAtTick<TrPlayerData>(spt_player_trace_feat.activeDrawTick);
 	if (!plDataIdx.IsValid())
 		return false;
 	// TODO setting for seeing from sg eyes

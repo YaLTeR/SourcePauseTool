@@ -194,6 +194,7 @@ namespace player_trace
 			TrIdx<Vector> invalidVec{};
 			TrIdx<QAngle> invalidAng{};
 			TrIdx<TrTransform> invalidTrans{};
+
 		} specialIdxs;
 
 		void StartRecording()
