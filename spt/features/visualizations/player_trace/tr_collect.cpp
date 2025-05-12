@@ -34,6 +34,13 @@ void TrPlayerTrace::Clear()
 void TrPlayerTrace::StartRecording()
 {
 	Clear();
+	hasStartRecordingBeenCalled = true;
+
+	// set all import version to most up-to-date version
+	std::apply(
+	    [](auto&... h)
+	    { ((h.firstExportVersion = TR_LUMP_VERSION(typename std::remove_reference_t<decltype(h)>::type)), ...); },
+	    versions);
 
 	auto& rc = *(recordingCache = std::make_unique<TrRecordingCache>(*this));
 	rc.StartRecording();
@@ -139,16 +146,7 @@ void TrPlayerTrace::CollectPlayerData()
 {
 	auto& rc = GetRecordingCache();
 
-	TrPlayerData data{
-	    .tick = numRecordedTicks,
-	    .qPosIdx = rc.specialIdxs.invalidVec,
-	    .qVelIdx = rc.specialIdxs.invalidVec,
-	    .transEyesIdx = rc.specialIdxs.invalidTrans,
-	    .transSgEyesIdx = rc.specialIdxs.invalidTrans,
-	    .transVPhysIdx = rc.specialIdxs.invalidTrans,
-	    .contactPtsSp{0, 0},
-	    .m_fFlags = 0,
-	};
+	TrPlayerData data{numRecordedTicks};
 
 	Vector qPos;
 	bool qPhysPosValid = false;
@@ -195,13 +193,15 @@ void TrPlayerTrace::CollectPlayerData()
 		IPhysicsObject* playerPhysObj = spt_collideToMesh.GetPhysObj(serverPlayer);
 		if (playerPhysObj)
 		{
-			Vector vPos;
+			Vector vPos, vVel;
 			QAngle vAng;
 			playerPhysObj->GetPosition(&vPos, &vAng);
 			data.transVPhysIdx = rc.GetCachedIdx(TrTransform{
 			    rc.GetCachedIdx(vPos),
 			    rc.GetCachedIdx(vAng),
 			});
+			playerPhysObj->GetVelocity(&vVel, nullptr);
+			data.vVelIdx = rc.GetCachedIdx(vVel);
 
 			// contact points
 
@@ -344,6 +344,8 @@ void TrPlayerTrace::CollectEntities(float entCollectRadius)
 				return ITERATION_CONTINUE;
 
 			const char* className = fClassName.GetValueOrDefault(serverEnt).ToCStr();
+			if (!strcmp(className, "prop_portal"))
+				return ITERATION_CONTINUE; // portals are recorded separately
 			if (!enumeratingPortalSims && !strcmp(className, "portalsimulator_collisionentity"))
 				return ITERATION_CONTINUE; // we'll do these in a second pass
 
