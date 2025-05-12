@@ -108,6 +108,7 @@ bool VagSearcher::StartSearch(const char** errMsg)
 	}
 
 	entry_index = enter_portal->handle.GetEntryIndex();
+	exit_index = enter_portal->linkedHandle.GetEntryIndex();
 
 	if (!enter_portal->isOpen)
 	{
