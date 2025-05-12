@@ -424,6 +424,9 @@
     <ClCompile Include="spt\features\visualizations\player_trace\tr_render_cache.cpp">
       <Filter>spt\features\visualizations\player_trace</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\set_sg.cpp">
+      <Filter>spt\features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
