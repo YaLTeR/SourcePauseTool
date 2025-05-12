@@ -7,15 +7,20 @@
 using namespace player_trace;
 
 template<typename T>
-bool WriteLumpHeader(ITrWriter& wr, const std::vector<T>& vec, uint32_t& fileOff, uint32_t& lumpDataFileOff)
+bool WriteLumpHeader(ITrWriter& wr,
+                     const TrPlayerTrace& trace,
+                     const std::vector<T>& vec,
+                     uint32_t& fileOff,
+                     uint32_t& lumpDataFileOff)
 {
-	TrLump lump{
-	    .structVersion = TR_LUMP_VERSION(T),
-	    .dataOff = lumpDataFileOff,
-	    .dataLenBytes = vec.size() * sizeof(T),
-	    .nElems = vec.size(),
-	};
+	TrLump lump{};
 	strncpy(lump.name, TR_LUMP_NAME(T), sizeof lump.name);
+	lump.structVersion = TR_LUMP_VERSION(T);
+	lump.dataOff = lumpDataFileOff;
+	lump.dataLenBytes = vec.size() * sizeof(T);
+	lump.nElems = vec.size();
+	lump.firstExportVersion = trace.GetFirstExportVersion<T>();
+
 	if (!wr.Write(lump))
 		return false;
 	fileOff += sizeof lump;
@@ -34,6 +39,9 @@ bool WriteLumpData(ITrWriter& wr, const std::vector<T>& vec, uint32_t& fileOff)
 
 bool TrWrite::Write(const TrPlayerTrace& tr, ITrWriter& wr)
 {
+	if (!tr.hasStartRecordingBeenCalled)
+		return false;
+
 	size_t fileOff = 0;
 
 	TrPreamble preamble{.fileVersion = TR_SERIALIZE_VERSION};
@@ -57,7 +65,7 @@ bool TrWrite::Write(const TrPlayerTrace& tr, ITrWriter& wr)
 	fileOff += sizeof header;
 
 	uint32_t lumpDataFileOff = fileOff + sizeof(TrLump) * nLumps;
-	if (!std::apply([&](auto&... vecs) { return (WriteLumpHeader(wr, vecs, fileOff, lumpDataFileOff) && ...); },
+	if (!std::apply([&](auto&... vecs) { return (WriteLumpHeader(wr, tr, vecs, fileOff, lumpDataFileOff) && ...); },
 	                tr._storage))
 	{
 		return false;

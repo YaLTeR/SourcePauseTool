@@ -77,6 +77,7 @@ namespace player_trace
 	*/
 
 	using tr_struct_version = uint32_t;
+	constexpr tr_struct_version TR_INVALID_STRUCT_VERSION = 0;
 	constexpr size_t TR_MAX_LUMP_NAME_LEN = 32;
 
 	template<utils::_tstring NAME, tr_struct_version VERSION>
@@ -86,6 +87,8 @@ namespace player_trace
 	struct TrLumpInfo;
 
 #define TR_DEFINE_LUMP(type, lump_serialize_name, lump_version) \
+	static_assert(lump_version != TR_INVALID_STRUCT_VERSION, \
+	              "Cannot use TR_INVALID_STRUCT_VERSION for player trace structures"); \
 	template<> \
 	struct _TrLumpNameShouldBeUniquePerVersion<lump_serialize_name, lump_version> \
 	{ \
@@ -139,12 +142,12 @@ namespace player_trace
 		}
 	};
 
-	TR_DEFINE_LUMP(QAngle, "angle", 0);
-	TR_DEFINE_LUMP(Vector, "point", 0);
-	TR_DEFINE_LUMP(TrIdx<Vector>, "point_idx", 0);
+	TR_DEFINE_LUMP(QAngle, "angle", 1);
+	TR_DEFINE_LUMP(Vector, "point", 2);
+	TR_DEFINE_LUMP(TrIdx<Vector>, "point_idx", 1);
 
 	using TrStr = TrIdx<char>;
-	TR_DEFINE_LUMP(TrStr::idx_to, "string", 0);
+	TR_DEFINE_LUMP(TrStr::idx_to, "string", 1);
 } // namespace player_trace
 
 namespace std
@@ -188,6 +191,7 @@ namespace player_trace
 	};
 
 	using tr_tick = uint32_t;
+	constexpr tr_tick TR_INVALID_TICK = std::numeric_limits<tr_tick>::max();
 
 	struct TrLandmark_v1
 	{
@@ -240,7 +244,7 @@ namespace player_trace
 		TrIdx<QAngle> angIdx;
 	};
 	TR_DEFINE_LUMP(TrTransform_v1, "transform", 1);
-	TR_DEFINE_LUMP(TrIdx<TrTransform_v1>, "transform_idx", 0);
+	TR_DEFINE_LUMP(TrIdx<TrTransform_v1>, "transform_idx", 1);
 
 	using TrTransform = TrTransform_v1;
 
@@ -258,7 +262,7 @@ namespace player_trace
 		char pad = {};
 	};
 	TR_DEFINE_LUMP(TrPortal_v1, "portal", 1);
-	TR_DEFINE_LUMP(TrIdx<TrPortal_v1>, "portal_idx", 0);
+	TR_DEFINE_LUMP(TrIdx<TrPortal_v1>, "portal_idx", 1);
 
 	using TrPortal = TrPortal_v1;
 
@@ -346,7 +350,7 @@ namespace player_trace
 		TrIdx<TrPhysMesh_v1> meshIdx;
 	};
 	TR_DEFINE_LUMP(TrPhysicsObject_v1, "physics_object", 1);
-	TR_DEFINE_LUMP(TrIdx<TrPhysicsObject_v1>, "physics_object_idx", 0);
+	TR_DEFINE_LUMP(TrIdx<TrPhysicsObject_v1>, "physics_object_idx", 1);
 
 	using TrPhysicsObject = TrPhysicsObject_v1;
 
@@ -367,7 +371,7 @@ namespace player_trace
 		uint32_t m_CollisionGroup : 6; // Collision_Group_t
 		uint32_t _pad : 11;
 	};
-	TR_DEFINE_LUMP(TrEnt_v1, "ent", 0);
+	TR_DEFINE_LUMP(TrEnt_v1, "ent", 1);
 
 	using TrEnt = TrEnt_v1;
 
@@ -457,27 +461,44 @@ namespace player_trace
 		char _pad[3];
 	};
 	TR_DEFINE_LUMP(TrPlayerContactPoint_v1, "contact_point", 1);
-	TR_DEFINE_LUMP(TrIdx<TrPlayerContactPoint_v1>, "contact_point_idx", 0);
+	TR_DEFINE_LUMP(TrIdx<TrPlayerContactPoint_v1>, "contact_point_idx", 1);
 
 	using TrPlayerContactPoint = TrPlayerContactPoint_v1;
 
 	struct TrPlayerData_v1
 	{
-		tr_tick tick;
+		TrPlayerData_v1() = default;
+		TrPlayerData_v1(tr_tick tick) : tick{tick} {}
+
+		tr_tick tick = TR_INVALID_TICK;
 		TrIdx<Vector> qPosIdx, qVelIdx;
 		TrIdx<TrTransform_v1> transEyesIdx, transSgEyesIdx, transVPhysIdx;
 		TrSpan<TrIdx<TrPlayerContactPoint_v1>> contactPtsSp;
 
-		int m_fFlags;
-		uint32_t fov : 8;
-		uint32_t m_iHealth : 8;
-		uint32_t m_lifeState : 4;
-		uint32_t m_CollisionGroup : 6; // Collision_Group_t
-		uint32_t m_MoveType : 6;       // MoveType_t
+		int m_fFlags = 0;
+		uint32_t fov : 8 = 0;
+		uint32_t m_iHealth : 8 = 0;
+		uint32_t m_lifeState : 4 = 0;
+		uint32_t m_CollisionGroup : 6 = 0; // Collision_Group_t
+		uint32_t m_MoveType : 6 = 0;       // MoveType_t
 	};
 	TR_DEFINE_LUMP(TrPlayerData_v1, "player_data", 1);
 
-	using TrPlayerData = TrPlayerData_v1;
+	struct TrPlayerData_v2 : TrPlayerData_v1
+	{
+		TrPlayerData_v2() = default;
+		TrPlayerData_v2(tr_tick tick) : TrPlayerData_v1{tick} {};
+
+		TrPlayerData_v2(const TrPlayerData_v1& v1) : vVelIdx{}
+		{
+			memcpy(this, &v1, sizeof v1);
+		}
+
+		TrIdx<Vector> vVelIdx;
+	};
+	TR_DEFINE_LUMP(TrPlayerData_v2, "player_data", 2);
+
+	using TrPlayerData = TrPlayerData_v2;
 
 	struct TrServerState_v1
 	{
@@ -563,14 +584,38 @@ namespace player_trace
 		    >
 		    _storage;
 
-		std::unique_ptr<TrRecordingCache> recordingCache;
-		std::unique_ptr<TrRenderingCache> renderingCache;
-
-	public:
 		tr_tick numRecordedTicks = 0;
 		TrIdx<TrAbsBox_v1> playerStandBboxIdx{}, playerDuckBboxIdx{};
 
+		bool hasStartRecordingBeenCalled = false;
+
 	private:
+		/*
+		* A little bit of boilerplate to create a corresponding tuple of versions for each type in
+		* the storage. Say our storage is std::tuple<std::vector<A>, std::vector<B>>, then we want
+		* a corresponding std::tuple<VersionHolder<A>, VersionHolder<B>>.
+		*/
+		template<typename T>
+		struct VersionHolder
+		{
+			using type = T;
+			tr_struct_version firstExportVersion;
+		};
+
+		template<typename... Ts>
+		struct StorageToVersionHolder;
+
+		template<typename... Ts>
+		struct StorageToVersionHolder<std::tuple<Ts...>>
+		{
+			using type = std::tuple<VersionHolder<typename Ts::value_type>...>;
+		};
+
+		StorageToVersionHolder<decltype(_storage)>::type versions;
+
+		std::unique_ptr<TrRecordingCache> recordingCache;
+		std::unique_ptr<TrRenderingCache> renderingCache;
+
 		TrRecordingCache& GetRecordingCache();
 
 		void CollectServerState(bool hostTickSimulating);
@@ -629,6 +674,38 @@ namespace player_trace
 		}
 
 		/*
+		* If a trace was just recorded, the version of each type will be the most up-to-date one,
+		* i.e. TR_LUMP_VERSION(T). If a trace was imported, this is used to get the version that
+		* was *first* recorded for that type. Example use case:
+		* 
+		* 1) trace is recorded and exported
+		* 2) trace is imported in newer spt version which has new fields (e.g. player shadow vel)
+		* 3) during the import process, a compat handler initializes the player shadow vel to NAN
+		* 4) we can use GetFirstExportVersion<TrPlayerData> to check if the vel was one of the
+		*    things that was recorded when the trace was *first* written
+		* 
+		* If the lump for type T did not exist in the file OR if StartRecording hasn't been called
+		* yet, GetFirstExportVersion<T> will return TR_INVALID_STRUCT_VERSION. Since
+		* TR_INVALID_STRUCT_VERSION is just 0, we can then do:
+		* 
+		* if (GetFirstExportVersion<TrPlayerData>() < 2)
+		*     Msg("Trace does not have player shadow vel");
+		*/
+
+		// only call from import code
+		template<typename T>
+		constexpr void SetFirstExportVersion(tr_struct_version v)
+		{
+			std::get<VersionHolder<T>>(versions).firstExportVersion = v;
+		}
+
+		template<typename T>
+		constexpr tr_struct_version GetFirstExportVersion() const
+		{
+			return std::get<VersionHolder<T>>(versions).firstExportVersion;
+		}
+
+		/*
 		* Gets a state at the given tick using a binary search.
 		* Specifically, given a tick, finds either:
 		* - the *first* element with the matching 'tick' field
@@ -643,6 +720,10 @@ namespace player_trace
 			const std::vector<T>& vec = Get<T>();
 			if (vec.empty())
 				return TrIdx<T>{};
+
+			AssertMsg(vec.size() < 2 || (vec[0].tick != vec[1].tick),
+			          "SPT: ticks should be distinct in this struct");
+
 			auto it =
 			    std::upper_bound(vec.cbegin(),
 			                     vec.cend(),

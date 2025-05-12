@@ -7,7 +7,7 @@
 namespace player_trace
 {
 	constexpr char TR_FILE_ID[8] = "sausage";
-	constexpr uint32_t TR_SERIALIZE_VERSION = 1;
+	constexpr uint32_t TR_SERIALIZE_VERSION = 2;
 	constexpr size_t TR_MAX_SPT_VERSION_LEN = 32;
 
 	struct TrPreamble
@@ -37,7 +37,19 @@ namespace player_trace
 		uint32_t nElems;
 	};
 
-	using TrLump = struct TrLump_v1;
+	struct TrLump_v2 : TrLump_v1
+	{
+		TrLump_v2() {};
+
+		TrLump_v2(const TrLump_v1& v1) : firstExportVersion{v1.structVersion}
+		{
+			memcpy(this, &v1, sizeof v1);
+		}
+
+		tr_struct_version firstExportVersion;
+	};
+
+	using TrLump = struct TrLump_v2;
 
 	struct TrRestoreInternal;
 
@@ -87,6 +99,7 @@ namespace player_trace
 		* - changing the structVersion & nElems is REQUIRED
 		* - changing dataOff or dataLenBytes has no effect (the data has already been read)
 		* - changing the name is UB (you can read/write/edit other vectors in the trace though)
+		* - changing firstExportVersion should only be done when upgrading from version 0
 		* 
 		* If reading data from other lumps, you must set them as a dependency in the constructor.
 		* By the time this is called:

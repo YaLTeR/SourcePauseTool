@@ -96,6 +96,17 @@ CON_COMMAND_F(spt_trace_export, "Export trace to binary file", FCVAR_DONTRECORD)
 		Msg("Usage: %s <file_name>\n", spt_trace_export_command.GetName());
 		return;
 	}
+	// nothing will break if we remove these two checks, I just think it removes a weird use case
+	if (!spt_player_trace_feat.tr.hasStartRecordingBeenCalled)
+	{
+		Warning("Trace has not been recorded, call '%s' first\n", spt_trace_start_command.GetName());
+		return;
+	}
+	if (spt_player_trace_feat.tr.IsRecording())
+	{
+		Warning("Trace is still being recorded, call '%s' first\n", spt_trace_stop_command.GetName());
+		return;
+	}
 	std::filesystem::path filePath{GetGameDir()};
 	filePath /= args[1];
 	filePath += TR_COMPRESSED_FILE_EXT;

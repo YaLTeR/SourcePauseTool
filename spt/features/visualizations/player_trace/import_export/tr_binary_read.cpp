@@ -1,5 +1,7 @@
 #include "stdafx.hpp"
 
+#include <inttypes.h>
+
 #include "tr_binary_internal.hpp"
 
 #ifdef SPT_PLAYER_TRACE_ENABLED
@@ -52,6 +54,29 @@ static bool TrReadLumpData(TrRestoreInternal& internal, TrTopologicalNode& node)
 				}
 			}
 		}
+	}
+
+	// with the current static assert(s) and upgrade handlers this assert should always be true
+	Assert(lump.structVersion != TR_INVALID_STRUCT_VERSION);
+
+	if (lump.firstExportVersion > lump.structVersion)
+	{
+		restore.warnings.push_back(std::format("clamping export version of lump '{}' to {} (was {})",
+		                                       lump.name,
+		                                       lump.structVersion,
+		                                       lump.firstExportVersion));
+		lump.firstExportVersion = lump.structVersion;
+	}
+
+	tr.SetFirstExportVersion<T>(lump.firstExportVersion);
+
+	if (!anyHandlers && lump.firstExportVersion != lump.structVersion)
+	{
+		DevMsg("SPT [%s]: lump '%s' has version %" PRIu32 " (originally exported as version %" PRIu32 ")\n",
+		       __FUNCTION__,
+		       lump.name,
+		       lump.structVersion,
+		       lump.firstExportVersion);
 	}
 
 	if (lump.structVersion != TR_LUMP_VERSION(T))
@@ -186,9 +211,8 @@ bool TrRestore::Restore(TrPlayerTrace& tr, ITrReader& rd)
 		return false;
 	}
 
-	if (preamble.fileVersion != TR_SERIALIZE_VERSION)
+	if (preamble.fileVersion == 0 || preamble.fileVersion > TR_SERIALIZE_VERSION)
 	{
-		// for now, no backwards or forwards compat
 		errMsg = std::format("expected file version {}, got {}", TR_SERIALIZE_VERSION, preamble.fileVersion);
 		return false;
 	}
@@ -212,10 +236,27 @@ bool TrRestore::Restore(TrPlayerTrace& tr, ITrReader& rd)
 	tr.playerDuckBboxIdx = header.playerDuckBboxIdx;
 
 	std::vector<TrLump> lumps(header.nLumps);
-	if (!rd.ReadTo(std::as_writable_bytes(std::span{lumps}), header.lumpsOff))
+
+	switch (preamble.fileVersion)
 	{
-		errMsg = "failed to read lump headers";
-		return false;
+	case 1:
+	{
+		std::vector<TrLump_v1> v1Lumps(header.nLumps);
+		if (!rd.ReadTo(std::as_writable_bytes(std::span{v1Lumps}), header.lumpsOff))
+		{
+			errMsg = "failed to read lump headers";
+			return false;
+		}
+		lumps.assign(v1Lumps.cbegin(), v1Lumps.cend());
+		break;
+	}
+	default:
+		if (!rd.ReadTo(std::as_writable_bytes(std::span{lumps}), header.lumpsOff))
+		{
+			errMsg = "failed to read lump headers";
+			return false;
+		}
+		break;
 	}
 
 	TrRestoreInternal internal{
@@ -261,6 +302,8 @@ bool TrRestore::Restore(TrPlayerTrace& tr, ITrReader& rd)
 			return false;
 		}
 	}
+
+	tr.hasStartRecordingBeenCalled = true;
 
 	return true;
 }
