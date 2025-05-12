@@ -140,7 +140,7 @@ namespace player_trace
 	};
 
 	TR_DEFINE_LUMP(QAngle, "angle", 0);
-	TR_DEFINE_LUMP(Vector, "point", 0);
+	TR_DEFINE_LUMP(Vector, "point", 1);
 	TR_DEFINE_LUMP(TrIdx<Vector>, "point_idx", 0);
 
 	using TrStr = TrIdx<char>;
@@ -477,7 +477,30 @@ namespace player_trace
 	};
 	TR_DEFINE_LUMP(TrPlayerData_v1, "player_data", 1);
 
-	using TrPlayerData = TrPlayerData_v1;
+	/*
+	* - has vphys vel
+	* - in v1, some indices were set to vec3_invalid; here you'll see either an invalid index or Vector{NAN, NAN, NAN}
+	*/
+	struct TrPlayerData_v2
+	{
+		tr_tick tick;
+		TrIdx<Vector> qPosIdx, qVelIdx;
+		// will probably be used for shadow vel PRE CPlayerController::do_simulation_controller
+		TrIdx<Vector> _unused;
+		TrIdx<Vector> vVelIdx;
+		TrIdx<TrTransform_v1> transEyesIdx, transSgEyesIdx, transVPhysIdx;
+		TrSpan<TrIdx<TrPlayerContactPoint_v1>> contactPtsSp;
+
+		int m_fFlags;
+		uint32_t fov : 8;
+		uint32_t m_iHealth : 8;
+		uint32_t m_lifeState : 4;
+		uint32_t m_CollisionGroup : 6; // Collision_Group_t
+		uint32_t m_MoveType : 6;       // MoveType_t
+	};
+	TR_DEFINE_LUMP(TrPlayerData_v2, "player_data", 2);
+
+	using TrPlayerData = TrPlayerData_v2;
 
 	struct TrServerState_v1
 	{
@@ -643,6 +666,10 @@ namespace player_trace
 			const std::vector<T>& vec = Get<T>();
 			if (vec.empty())
 				return TrIdx<T>{};
+
+			AssertMsg(vec.size() < 2 || (vec[0].tick != vec[1].tick),
+			          "SPT: ticks should be distinct in this struct");
+
 			auto it =
 			    std::upper_bound(vec.cbegin(),
 			                     vec.cend(),

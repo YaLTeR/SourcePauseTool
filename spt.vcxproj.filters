@@ -430,6 +430,9 @@
     <ClCompile Include="spt\features\visualizations\player_trace\import_export\tr_binary_read.cpp">
       <Filter>spt\features\visualizations\player_trace\import_export</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\visualizations\player_trace\import_export\tr_binary_read_upgrade.cpp">
+      <Filter>spt\features\visualizations\player_trace\import_export</Filter>
+    </ClCompile>
     <ClCompile Include="spt\features\visualizations\player_trace\import_export\tr_binary_compress.cpp">
       <Filter>spt\features\visualizations\player_trace\import_export</Filter>
     </ClCompile>

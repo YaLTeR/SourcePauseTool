@@ -139,16 +139,7 @@ void TrPlayerTrace::CollectPlayerData()
 {
 	auto& rc = GetRecordingCache();
 
-	TrPlayerData data{
-	    .tick = numRecordedTicks,
-	    .qPosIdx = rc.specialIdxs.invalidVec,
-	    .qVelIdx = rc.specialIdxs.invalidVec,
-	    .transEyesIdx = rc.specialIdxs.invalidTrans,
-	    .transSgEyesIdx = rc.specialIdxs.invalidTrans,
-	    .transVPhysIdx = rc.specialIdxs.invalidTrans,
-	    .contactPtsSp{0, 0},
-	    .m_fFlags = 0,
-	};
+	TrPlayerData data{.tick = numRecordedTicks};
 
 	Vector qPos;
 	bool qPhysPosValid = false;
@@ -195,13 +186,15 @@ void TrPlayerTrace::CollectPlayerData()
 		IPhysicsObject* playerPhysObj = spt_collideToMesh.GetPhysObj(serverPlayer);
 		if (playerPhysObj)
 		{
-			Vector vPos;
+			Vector vPos, vVel;
 			QAngle vAng;
 			playerPhysObj->GetPosition(&vPos, &vAng);
 			data.transVPhysIdx = rc.GetCachedIdx(TrTransform{
 			    rc.GetCachedIdx(vPos),
 			    rc.GetCachedIdx(vAng),
 			});
+			playerPhysObj->GetVelocity(&vVel, nullptr);
+			data.vVelIdx = rc.GetCachedIdx(vVel);
 
 			// contact points
 
