@@ -1,7 +1,8 @@
 #include "stdafx.hpp"
 
 #include "tr_record_cache.hpp"
-#include "tr_render_cache.hpp"
+
+#ifdef SPT_PLAYER_TRACE_ENABLED
 
 #include "spt/utils/interfaces.hpp"
 #include "spt/utils/map_utils.hpp"
@@ -13,28 +14,10 @@
 #include "spt/features/create_collide.hpp"
 #include "spt/features/property_getter.hpp"
 
-#include "tr_structs.hpp"
-
 #include "PlayerState.h"
 #include "vphysics/friction.h"
 
-#ifdef SPT_PLAYER_TRACE_ENABLED
-
 using namespace player_trace;
-
-void TrPlayerTrace::Clear()
-{
-	recordingCache.reset();
-	renderingCache.reset();
-	std::apply([](auto&... vecs) { ((vecs.clear(), vecs.shrink_to_fit()), ...); }, _storage);
-	numRecordedTicks = 0;
-
-	playerStandBboxIdx.Invalidate();
-	playerDuckBboxIdx.Invalidate();
-
-	firstRecordedInfo.Clear();
-	hasStartRecordingBeenCalled = false;
-}
 
 static void TrTryFillPlayerName(TrPlayerTrace& tr)
 {
@@ -98,19 +81,6 @@ void TrPlayerTrace::StopRecording()
 	std::apply([](auto&... vecs) { (vecs.shrink_to_fit(), ...); }, _storage);
 }
 
-void TrPlayerTrace::StopRendering()
-{
-	renderingCache.reset();
-}
-
-TrRenderingCache& TrPlayerTrace::GetRenderingCache()
-{
-	if (!renderingCache)
-		renderingCache = std::make_unique<TrRenderingCache>(*this);
-	renderingCache->tr = this; // std::move hack
-	return *renderingCache;
-}
-
 void TrPlayerTrace::HostTickCollect(bool simulated, TrSegmentReason segmentReason, float entCollectRadius)
 {
 	AssertMsg(recordingCache.get(), "SPT: this trace is not being recorded to!");
@@ -143,27 +113,6 @@ void TrPlayerTrace::HostTickCollect(bool simulated, TrSegmentReason segmentReaso
 	CollectPortals();
 	CollectEntities(entCollectRadius); // collect after trace state & after portals
 	numRecordedTicks++;
-}
-
-int TrPlayerTrace::GetServerTickAtTick(tr_tick atTick) const
-{
-	TrReadContextScope scope{*this};
-	auto svStateIdx = GetAtTick<TrServerState>(atTick);
-	return svStateIdx.IsValid() ? svStateIdx->GetServerTickFromThisAsLastState(atTick) : -1;
-}
-
-TrIdx<TrMap> TrPlayerTrace::GetMapAtTick(tr_tick atTick) const
-{
-	TrReadContextScope scope{*this};
-	auto& transitions = Get<TrMapTransition>();
-	return transitions.empty() || transitions[0].tick > atTick ? TrIdx<TrMap>{0}
-	                                                           : GetAtTick<TrMapTransition>(atTick)->toMapIdx;
-}
-
-TrRecordingCache& TrPlayerTrace::GetRecordingCache()
-{
-	recordingCache->tr = this; // std::move hack
-	return *recordingCache;
 }
 
 void TrPlayerTrace::CollectServerState(bool hostTickSimulating)
@@ -614,17 +563,6 @@ void TrPlayerTrace::CollectMapTransition()
 	transitions.emplace_back(numRecordedTicks,
 	                         transitions.empty() ? TrIdx<TrMap>{} : transitions.back().toMapIdx,
 	                         toMapIdx);
-}
-
-Vector TrPlayerTrace::GetAdjacentLandmarkDelta(std::span<const TrLandmark> fromLandmarkSp,
-                                               std::span<const TrLandmark> toLandmarkSp) const
-{
-	TrReadContextScope scope{*this};
-	for (auto& fromLandmark : fromLandmarkSp)
-		for (auto& toLandmark : toLandmarkSp)
-			if (fromLandmark.nameIdx == toLandmark.nameIdx)
-				return **fromLandmark.posIdx - **toLandmark.posIdx;
-	return vec3_origin;
 }
 
 #endif

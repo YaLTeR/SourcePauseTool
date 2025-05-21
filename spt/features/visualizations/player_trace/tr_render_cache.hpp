@@ -88,7 +88,7 @@ namespace player_trace
 				};
 
 				std::unordered_map<TrIdx<TrPhysMesh>, TrackedMesh> physObjs;
-				bool anyStale = false;
+				bool anyStale = true;
 			} ents;
 
 		} meshes;

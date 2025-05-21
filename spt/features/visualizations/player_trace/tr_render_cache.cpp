@@ -413,9 +413,8 @@ void TrRenderingCache::RebuildPhysMeshes()
 {
 	auto& physMeshes = meshes.ents.physObjs;
 
-	if (meshes.ents.anyStale)
-		for (auto& [_, tracked] : physMeshes)
-			tracked.isActive = false;
+	for (auto& [_, tracked] : physMeshes)
+		tracked.isActive = false;
 
 	for (auto& [entIdx, entTransIdx] : entSnapshot.entMap)
 	{
@@ -461,11 +460,7 @@ void TrRenderingCache::RebuildPhysMeshes()
 		}
 	}
 
-	if (meshes.ents.anyStale)
-	{
-		std::erase_if(physMeshes, [](const auto& entry) { return !entry.second.isActive; });
-		meshes.ents.anyStale = false;
-	}
+	std::erase_if(physMeshes, [](const auto& entry) { return !entry.second.isActive; });
 }
 
 void TrRenderingCache::VerifySnapshotState() const
