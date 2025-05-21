@@ -276,7 +276,7 @@ void PlayerTraceFeature::LoadFeature()
 	    [](IConVar* var, const char*, float)
 	    {
 		    if (!((ConVar*)var)->GetBool())
-			    spt_player_trace_feat.tr.StopRendering();
+			    spt_player_trace_feat.tr.KillRenderingCache();
 	    });
 }
 

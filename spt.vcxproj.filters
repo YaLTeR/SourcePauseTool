@@ -436,6 +436,9 @@
     <ClCompile Include="spt\features\visualizations\player_trace\import_export\tr_binary_compress.cpp">
       <Filter>spt\features\visualizations\player_trace\import_export</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\visualizations\player_trace\tr_state_access.cpp">
+      <Filter>spt\features\visualizations\player_trace</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
