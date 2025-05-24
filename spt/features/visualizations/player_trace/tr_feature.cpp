@@ -7,7 +7,7 @@
 
 #include "tr_record_cache.hpp"
 #include "tr_render_cache.hpp"
-#include "tr_import_export.hpp"
+#include "import_export/tr_binary_compress.hpp"
 
 #include "signals.hpp"
 #include "spt/utils/ent_list.hpp"
@@ -27,11 +27,11 @@ public:
 	TrPlayerTrace* StartRecording();
 	TrPlayerTrace* StopRecording();
 	void ChangeDisplayTick(int diff);
-	void SetDisplayTick(uint32_t val);
+	void SetDisplayTick(tr_tick val);
 
 	// only one active trace until we support import/export
 	TrPlayerTrace tr;
-	uint32_t activeDrawTick = 0;
+	tr_tick activeDrawTick = 0;
 
 protected:
 	virtual bool ShouldLoadFeature() override;
@@ -96,9 +96,20 @@ CON_COMMAND_F(spt_trace_export, "Export trace to binary file", FCVAR_DONTRECORD)
 		Msg("Usage: %s <file_name>\n", spt_trace_export_command.GetName());
 		return;
 	}
+	// nothing will break if we remove these two checks, I just think it removes a weird use case
+	if (!spt_player_trace_feat.tr.hasStartRecordingBeenCalled)
+	{
+		Warning("Trace has not been recorded, call '%s' first\n", spt_trace_start_command.GetName());
+		return;
+	}
+	if (spt_player_trace_feat.tr.IsRecording())
+	{
+		Warning("Trace is still being recorded, call '%s' first\n", spt_trace_stop_command.GetName());
+		return;
+	}
 	std::filesystem::path filePath{GetGameDir()};
 	filePath /= args[1];
-	filePath += TR_FILE_EXTENSION;
+	filePath += TR_COMPRESSED_FILE_EXT;
 	filePath = std::filesystem::absolute(filePath);
 
 	std::error_code ec;
@@ -116,15 +127,20 @@ CON_COMMAND_F(spt_trace_export, "Export trace to binary file", FCVAR_DONTRECORD)
 		return;
 	}
 
+	TrWrite trWrite{};
 	TrXzFileWriter wr{ofs};
 
-	if (!wr.WriteTrace(spt_player_trace_feat.tr))
-		Warning("Failed to write trace to file\n");
+	if (trWrite.Write(spt_player_trace_feat.tr, wr))
+		Msg("Wrote trace to '%s'\n", filePath.string().c_str());
 	else
-		Msg("Wrote trace to '%s'.\n", filePath.string().c_str());
+		Warning("Failed to write trace to file\n");
 }
 
-CON_COMMAND_AUTOCOMPLETEFILE(spt_trace_import, "Load trace from binary file", FCVAR_DONTRECORD, "", TR_FILE_EXTENSION)
+CON_COMMAND_AUTOCOMPLETEFILE(spt_trace_import,
+                             "Load trace from binary file",
+                             FCVAR_DONTRECORD,
+                             "",
+                             TR_COMPRESSED_FILE_EXT)
 {
 	if (args.ArgC() < 2)
 	{
@@ -134,7 +150,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(spt_trace_import, "Load trace from binary file", FC
 
 	std::filesystem::path filePath{GetGameDir()};
 	filePath /= args[1];
-	filePath += TR_FILE_EXTENSION;
+	filePath += TR_COMPRESSED_FILE_EXT;
 	filePath = std::filesystem::absolute(filePath);
 	std::ifstream ifs{filePath, std::ios::binary};
 	if (!ifs.is_open())
@@ -143,21 +159,32 @@ CON_COMMAND_AUTOCOMPLETEFILE(spt_trace_import, "Load trace from binary file", FC
 		return;
 	}
 
+	TrRestore restore{};
 	TrXzFileReader rd{ifs};
 
-	char sptVersion[TR_MAX_SPT_VERSION_LEN];
-	std::string errMsg;
 	TrPlayerTrace newTr;
-	if (!rd.ReadTrace(newTr, sptVersion, errMsg))
+	if (!restore.Restore(newTr, rd))
 	{
-		Warning("Failed to load trace from file: %s\n", rd.errMsg.empty() ? errMsg.c_str() : rd.errMsg.c_str());
+		Warning("Failed to load trace from file: %s\n",
+		        rd.errMsg.empty() ? restore.errMsg.c_str() : rd.errMsg.c_str());
 		return;
 	}
-	Msg("Loaded trace from '%s' with %d ticks%s%s\n",
-	    filePath.u8string().c_str(),
-	    newTr.numRecordedTicks,
-	    errMsg.empty() ? "" : " and warnings: ",
-	    errMsg.c_str());
+
+	{
+		TrReadContextScope scope{newTr};
+		auto& maps = newTr.Get<TrMap>();
+		Msg("Loaded trace from '%s' with %d ticks starting from map '%s'\n",
+		    filePath.string().c_str(),
+		    newTr.numRecordedTicks,
+		    maps.empty() || !maps[0].nameIdx.IsValid() ? "INVALID" : *maps[0].nameIdx);
+	}
+
+	if (!restore.warnings.empty())
+	{
+		Warning("Warning(s):\n");
+		for (const std::string& s : restore.warnings)
+			Warning("  - %s\n", s.c_str());
+	}
 	spt_player_trace_feat.tr = std::move(newTr);
 	spt_player_trace_feat.activeDrawTick = 0;
 }
@@ -259,10 +286,10 @@ void PlayerTraceFeature::ChangeDisplayTick(int diff)
 {
 	if (!spt_draw_trace.GetBool())
 		return;
-	activeDrawTick = (uint32_t)clamp((int64_t)activeDrawTick + diff, 0, std::numeric_limits<uint32_t>::max());
+	activeDrawTick = (tr_tick)clamp((int64_t)activeDrawTick + diff, 0, std::numeric_limits<tr_tick>::max());
 }
 
-void PlayerTraceFeature::SetDisplayTick(uint32_t val)
+void PlayerTraceFeature::SetDisplayTick(tr_tick val)
 {
 	if (!spt_draw_trace.GetBool())
 		return;
@@ -325,7 +352,7 @@ bool player_trace::GetActiveTracePos(Vector& pos, QAngle& ang, float& fov)
 {
 	auto& tr = spt_player_trace_feat.tr;
 	TrReadContextScope scope{tr};
-	auto plDataIdx = tr.GetAtTick<TrPlayerData_v1>(spt_player_trace_feat.activeDrawTick);
+	auto plDataIdx = tr.GetAtTick<TrPlayerData>(spt_player_trace_feat.activeDrawTick);
 	if (!plDataIdx.IsValid())
 		return false;
 	// TODO setting for seeing from sg eyes
