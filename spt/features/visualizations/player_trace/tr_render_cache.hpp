@@ -4,6 +4,7 @@
 #include <unordered_map>
 
 #include "tr_structs.hpp"
+#include "tr_entity_cache.hpp"
 
 #ifdef SPT_PLAYER_TRACE_ENABLED
 
@@ -18,18 +19,12 @@ namespace player_trace
 		void RebuildEyeMeshes(float fov);
 		void RebuildPlayerPathMeshes();
 		void RebuildPortalMeshes();
-		void RebuildPhysMeshes();
+		void RebuildPhysMeshes(const TrEntityCache::EntMap& entMap);
 
 		void RenderPlayerPath(MeshRendererDelegate& mr, const Vector& landmarkDeltaToFirstMap);
 		void RenderPlayerHull(MeshRendererDelegate& mr, const Vector& landmarkDeltaToMapAtTick, tr_tick atTick);
 		void RenderPortals(MeshRendererDelegate& mr, const Vector& landmarkDeltaToMapAtTick, tr_tick atTick);
 		void RenderEntities(MeshRendererDelegate& mr, const Vector& landmarkDeltaToMapAtTick, tr_tick atTick);
-
-		void VerifySnapshotState() const;
-		void UpdateEntSnapshot(tr_tick toTick);
-		void JumpToEntSnapshot(TrIdx<TrEntSnapshot> snapIdx);
-		void ForwardIterateSnapshotDeltas(tr_tick toTick);
-		void BackwardIterateSnapshotDeltas(tr_tick toTick);
 
 		/*
 		* The player path coordinates are computed relative to the first map of the trace, but in order
@@ -87,15 +82,6 @@ namespace player_trace
 			} ents;
 
 		} meshes;
-
-		struct EntSnapshot
-		{
-			std::unordered_map<TrIdx<TrEnt>, TrIdx<TrEntTransform>> entMap;
-			TrIdx<TrEntSnapshot> snapshotIdx = 0;
-			TrIdx<TrEntSnapshotDelta> snapshotDeltaIdx = 0;
-			tr_tick tick = 0;
-			bool initialized = false;
-		} entSnapshot;
 
 		std::string renderedLastTimeOnMap;
 

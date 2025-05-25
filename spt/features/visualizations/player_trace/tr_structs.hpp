@@ -36,6 +36,7 @@ namespace player_trace
 {
 	class TrRecordingCache;
 	class TrRenderingCache;
+	class TrEntityCache;
 	struct TrPlayerTrace;
 
 	// a scope within which we can deref TrIdx & TrSpan
@@ -649,6 +650,9 @@ namespace player_trace
 
 		std::unique_ptr<TrRecordingCache> recordingCache;
 		mutable std::unique_ptr<TrRenderingCache> renderingCache;
+		mutable std::unique_ptr<TrEntityCache> entityCache;
+
+		TrRecordingCache& GetRecordingCache();
 
 		void CollectServerState(bool hostTickSimulating);
 		void CollectPlayerData();
@@ -683,9 +687,10 @@ namespace player_trace
 		}
 
 		TrRenderingCache& GetRenderingCache() const;
-		TrRecordingCache& GetRecordingCache();
+		TrEntityCache& GetEntityCache() const;
 
 		void KillRenderingCache();
+		void KillEntityCache();
 
 		size_t GetMemoryUsage() const
 		{

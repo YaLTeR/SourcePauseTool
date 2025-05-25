@@ -1,6 +1,7 @@
 #include "stdafx.hpp"
 
 #include "tr_render_cache.hpp"
+
 #include "spt/utils/interfaces.hpp"
 #include "spt/utils/map_utils.hpp"
 #include "spt/utils/math.hpp"
@@ -411,14 +412,14 @@ void TrRenderingCache::RebuildPortalMeshes()
 	meshes.closedOrangePortal = buildFunc(false, true);
 }
 
-void TrRenderingCache::RebuildPhysMeshes()
+void TrRenderingCache::RebuildPhysMeshes(const TrEntityCache::EntMap& entMap)
 {
 	auto& physMeshes = meshes.ents.physObjs;
 
 	for (auto& [_, tracked] : physMeshes)
 		tracked.isActive = false;
 
-	for (auto& [entIdx, entTransIdx] : entSnapshot.entMap)
+	for (auto& [entIdx, entTransIdx] : entMap)
 	{
 		const TrEnt& ent = **entIdx;
 
@@ -465,238 +466,6 @@ void TrRenderingCache::RebuildPhysMeshes()
 	std::erase_if(physMeshes, [](const auto& entry) { return !entry.second.isActive; });
 }
 
-void TrRenderingCache::VerifySnapshotState() const
-{
-	if (!entSnapshot.initialized)
-		return;
-	Assert(entSnapshot.snapshotIdx.IsValid());
-	if (entSnapshot.snapshotIdx.IsValid() && entSnapshot.snapshotDeltaIdx.IsValid())
-	{
-		Assert(entSnapshot.snapshotIdx->snapDeltaIdx <= entSnapshot.snapshotDeltaIdx);
-		Assert(entSnapshot.snapshotIdx->tick <= entSnapshot.snapshotDeltaIdx->tick);
-	}
-}
-
-void TrRenderingCache::UpdateEntSnapshot(tr_tick toTick)
-{
-	if (entSnapshot.initialized && toTick == entSnapshot.tick)
-		return;
-
-	VerifySnapshotState();
-
-	auto& tr = TrReadContextScope::Current();
-
-	TrIdx<TrEntSnapshot> snapIdxLow = tr.GetAtTick<TrEntSnapshot>(toTick);
-	auto snapIdxHigh = snapIdxLow + 1;
-
-	if (!snapIdxLow.IsValid())
-		return; // no baselines :/
-
-	TrIdx<TrEntSnapshotDelta> snapDeltaIdx = tr.GetAtTick<TrEntSnapshotDelta>(toTick);
-	if (!snapDeltaIdx.IsValid())
-	{
-		// no deltas, rely on snapshots only
-		if (entSnapshot.snapshotIdx == snapIdxLow && entSnapshot.initialized)
-			entSnapshot.tick = toTick;
-		else
-			JumpToEntSnapshot(snapIdxLow);
-		return;
-	}
-
-#define TR_DEBUG_UPDATE_SNAPSHOT 0
-
-	// small optimization
-	if (entSnapshot.initialized && snapDeltaIdx == entSnapshot.snapshotDeltaIdx)
-	{
-		entSnapshot.tick = toTick;
-#if TR_DEBUG_UPDATE_SNAPSHOT
-		DevMsg("SPT: [%s] no deltas applied\n", __FUNCTION__);
-#endif
-		return;
-	}
-
-	// calculate most efficient approach to the desired delta
-
-	enum SnapshotDeltaApproach
-	{
-		SDA_JUMP_TO_SNAPSHOT_THEN_INCREMENT,
-		SDA_JUMP_TO_SNAPSHOT_THEN_DECREMENT,
-		SDA_INCREMENT,
-		SDA_DECREMENT,
-
-		SDA_COUNT,
-	};
-
-	constexpr uint32_t JUMP_TO_SNAPSHOT_COST = 3;
-	constexpr uint32_t SNAPSHOT_DELTA_COST = 1;
-
-	SnapshotDeltaApproach approach = SDA_JUMP_TO_SNAPSHOT_THEN_INCREMENT;
-	size_t cost = JUMP_TO_SNAPSHOT_COST + SNAPSHOT_DELTA_COST * (snapDeltaIdx - snapIdxLow->snapDeltaIdx);
-	size_t nDeltas = snapDeltaIdx - snapIdxLow->snapDeltaIdx;
-
-	if (snapIdxHigh.IsValid())
-	{
-		size_t newCost =
-		    JUMP_TO_SNAPSHOT_COST + SNAPSHOT_DELTA_COST * (snapIdxHigh->snapDeltaIdx - snapDeltaIdx);
-		if (newCost < cost)
-		{
-			approach = SDA_JUMP_TO_SNAPSHOT_THEN_DECREMENT;
-			cost = newCost;
-			nDeltas = snapIdxHigh->snapDeltaIdx - snapDeltaIdx;
-		}
-	}
-
-	if (entSnapshot.initialized)
-	{
-		if (entSnapshot.tick <= toTick)
-		{
-			size_t newCost = SNAPSHOT_DELTA_COST * (snapDeltaIdx - entSnapshot.snapshotDeltaIdx);
-			if (newCost < cost)
-			{
-				approach = SDA_INCREMENT;
-				cost = newCost;
-				nDeltas = snapDeltaIdx - entSnapshot.snapshotDeltaIdx;
-			}
-		}
-		else
-		{
-			size_t newCost = SNAPSHOT_DELTA_COST * (entSnapshot.snapshotDeltaIdx - snapDeltaIdx);
-			if (newCost < cost)
-			{
-				approach = SDA_DECREMENT;
-				cost = newCost;
-				nDeltas = entSnapshot.snapshotDeltaIdx - snapDeltaIdx;
-			}
-		}
-	}
-
-#if TR_DEBUG_UPDATE_SNAPSHOT
-	static std::array<const char*, SDA_COUNT> approachStrs = {
-	    "JUMP THEN INCREMENT",
-	    "JUMP THEN DECREMENT",
-	    "INCREMENT",
-	    "DECREMENT",
-	};
-	DevMsg("SPT: [%s] using approach %s with %u deltas\n", __FUNCTION__, approachStrs[approach], nDeltas);
-#endif
-
-	switch (approach)
-	{
-	case SDA_JUMP_TO_SNAPSHOT_THEN_INCREMENT:
-		JumpToEntSnapshot(snapIdxLow);
-		[[fallthrough]];
-	case SDA_INCREMENT:
-		ForwardIterateSnapshotDeltas(toTick);
-		break;
-	case SDA_JUMP_TO_SNAPSHOT_THEN_DECREMENT:
-		JumpToEntSnapshot(snapIdxHigh);
-		[[fallthrough]];
-	case SDA_DECREMENT:
-		BackwardIterateSnapshotDeltas(toTick);
-		break;
-	default:
-		Assert(0);
-	}
-}
-
-void TrRenderingCache::JumpToEntSnapshot(TrIdx<TrEntSnapshot> snapIdx)
-{
-	entSnapshot.entMap.clear();
-	for (auto& create : *snapIdx->createSp)
-		entSnapshot.entMap[create.entIdx] = {create.transIdx};
-
-	meshes.ents.anyStale = true;
-	entSnapshot.snapshotIdx = snapIdx;
-	entSnapshot.snapshotDeltaIdx = snapIdx->snapDeltaIdx;
-	entSnapshot.tick = snapIdx->tick;
-	entSnapshot.initialized = true;
-}
-
-void TrRenderingCache::ForwardIterateSnapshotDeltas(tr_tick toTick)
-{
-	VerifySnapshotState();
-	TrIdx<TrEntSnapshot> snapIdxLow = entSnapshot.snapshotIdx;
-
-	while ((entSnapshot.snapshotDeltaIdx + 1).IsValid() && entSnapshot.snapshotDeltaIdx->tick < toTick)
-	{
-		auto& delta = **++entSnapshot.snapshotDeltaIdx;
-
-		for (auto& create : *delta.createSp)
-			entSnapshot.entMap.emplace(create.entIdx, create.transIdx);
-
-		for (auto& transDelta : *delta.deltaSp)
-		{
-			auto it = entSnapshot.entMap.find(transDelta.entIdx);
-			if (it == entSnapshot.entMap.cend())
-			{
-				AssertMsg(0, "SPT: attempting to delta non-existing ent");
-				continue;
-			}
-			it->second = transDelta.toTransIdx;
-		}
-
-		for (auto& del : *delta.deleteSp)
-		{
-			auto it = entSnapshot.entMap.find(del.entIdx);
-			if (it == entSnapshot.entMap.cend())
-			{
-				AssertMsg(0, "SPT: attempting to delete non-existing ent");
-				continue;
-			}
-			entSnapshot.entMap.erase(it);
-			meshes.ents.anyStale = true;
-		}
-
-		entSnapshot.tick = delta.tick;
-
-		if ((snapIdxLow + 1).IsValid() && (snapIdxLow + 1)->tick <= delta.tick)
-			entSnapshot.snapshotIdx = ++snapIdxLow;
-	}
-	entSnapshot.tick = toTick;
-}
-
-void TrRenderingCache::BackwardIterateSnapshotDeltas(tr_tick toTick)
-{
-	VerifySnapshotState();
-	TrIdx<TrEntSnapshot> snapIdxLow = entSnapshot.snapshotIdx;
-
-	while ((entSnapshot.snapshotDeltaIdx - 1).IsValid() && entSnapshot.snapshotDeltaIdx->tick > toTick)
-	{
-		auto& delta = **entSnapshot.snapshotDeltaIdx--;
-
-		for (auto& create : *delta.createSp)
-		{
-			auto it = entSnapshot.entMap.find(create.entIdx);
-			if (it == entSnapshot.entMap.cend())
-			{
-				AssertMsg(0, "SPT: attempting to delete non-existing ent");
-				continue;
-			}
-			entSnapshot.entMap.erase(it);
-			meshes.ents.anyStale = true;
-		}
-
-		for (auto& transDelta : *delta.deltaSp)
-		{
-			auto it = entSnapshot.entMap.find(transDelta.entIdx);
-			if (it == entSnapshot.entMap.cend())
-			{
-				AssertMsg(0, "SPT: attempting to delta non-existing ent");
-				continue;
-			}
-			it->second = transDelta.fromTransIdx;
-		}
-
-		for (auto& del : *delta.deleteSp)
-			entSnapshot.entMap.emplace(del.entIdx, del.oldTransIdx);
-
-		entSnapshot.tick = delta.tick;
-
-		if ((snapIdxLow - 1).IsValid() && snapIdxLow->tick >= delta.tick)
-			entSnapshot.snapshotIdx = --snapIdxLow;
-	}
-	entSnapshot.tick = toTick;
-}
 void TrRenderingCache::RenderPlayerPath(MeshRendererDelegate& mr, const Vector& landmarkDeltaToFirstMap)
 {
 	RebuildPlayerPathMeshes();
@@ -800,8 +569,9 @@ void TrRenderingCache::RenderPortals(MeshRendererDelegate& mr, const Vector& lan
 void TrRenderingCache::RenderEntities(MeshRendererDelegate& mr, const Vector& landmarkDeltaToMapAtTick, tr_tick atTick)
 {
 	auto& tr = TrReadContextScope::Current();
-	UpdateEntSnapshot(atTick);
-	RebuildPhysMeshes();
+	auto& entCache = tr.GetEntityCache();
+	auto& entMap = entCache.GetEnts(atTick);
+	RebuildPhysMeshes(entMap);
 
 	if (trStyles.entities.drawEntCollectRadius)
 	{
@@ -831,7 +601,7 @@ void TrRenderingCache::RenderEntities(MeshRendererDelegate& mr, const Vector& la
 	uint32_t triggerFlags = FSOLID_NOT_SOLID | FSOLID_TRIGGER;
 
 	// draw each OBB as a dynamic mesh, the mesh system will fuse them anyways
-	for (auto [entIdx, transIdx] : entSnapshot.entMap)
+	for (auto [entIdx, transIdx] : entMap)
 	{
 		if (entIdx->m_nSolidType == SOLID_NONE)
 			continue;
@@ -867,7 +637,7 @@ void TrRenderingCache::RenderEntities(MeshRendererDelegate& mr, const Vector& la
 		    }));
 	}
 
-	for (auto [entIdx, transIdx] : entSnapshot.entMap)
+	for (auto [entIdx, transIdx] : entMap)
 	{
 		if (!spt_trace_draw_portal_collision_entities.GetBool()
 		    && !strcmp(*entIdx->classNameIdx, "portalsimulator_collisionentity"))
