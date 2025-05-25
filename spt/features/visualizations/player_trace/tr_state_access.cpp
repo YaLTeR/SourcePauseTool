@@ -11,6 +11,7 @@ void TrPlayerTrace::Clear()
 {
 	recordingCache.reset();
 	renderingCache.reset();
+	entityCache.reset();
 
 	playerStandBboxIdx.Invalidate();
 	playerDuckBboxIdx.Invalidate();
@@ -25,6 +26,18 @@ TrRecordingCache& TrPlayerTrace::GetRecordingCache()
 {
 	Assert(recordingCache.get());
 	return *recordingCache;
+}
+
+TrEntityCache& TrPlayerTrace::GetEntityCache() const
+{
+	if (!entityCache)
+		entityCache = std::make_unique<TrEntityCache>();
+	return *entityCache;
+}
+
+void TrPlayerTrace::KillEntityCache()
+{
+	entityCache.reset();
 }
 
 TrRenderingCache& TrPlayerTrace::GetRenderingCache() const
