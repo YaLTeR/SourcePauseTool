@@ -442,6 +442,9 @@
     <ClCompile Include="spt\features\visualizations\player_trace\tr_entity_cache.cpp">
       <Filter>spt\features\visualizations\player_trace</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\visualizations\player_trace\tr_imgui.cpp">
+      <Filter>spt\features\visualizations\player_trace</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -948,8 +951,14 @@
     <ClInclude Include="thirdparty\json_spt_include.hpp">
       <Filter>thirdparty</Filter>
     </ClInclude>
-	<ClInclude Include="spt\features\portalled_pause.hpp">
+    <ClInclude Include="spt\features\portalled_pause.hpp">
       <Filter>spt\features</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\player_trace\tr_entity_cache.hpp">
+      <Filter>spt\features\visualizations\player_trace</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\player_trace\tr_imgui.hpp">
+      <Filter>spt\features\visualizations\player_trace</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1257,6 +1257,7 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClCompile Include="spt\features\visualizations\player_trace\tr_collect.cpp" />
     <ClCompile Include="spt\features\visualizations\player_trace\tr_entity_cache.cpp" />
     <ClCompile Include="spt\features\visualizations\player_trace\tr_feature.cpp" />
+    <ClCompile Include="spt\features\visualizations\player_trace\tr_imgui.cpp" />
     <ClCompile Include="spt\features\visualizations\player_trace\tr_record_cache.cpp" />
     <ClCompile Include="spt\features\visualizations\player_trace\tr_render_cache.cpp" />
     <ClCompile Include="spt\features\visualizations\player_trace\tr_state_access.cpp" />
@@ -1558,6 +1559,8 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="spt\features\visualizations\player_trace\import_export\tr_binary_compress.hpp" />
     <ClInclude Include="spt\features\visualizations\player_trace\import_export\tr_binary_internal.hpp" />
     <ClInclude Include="spt\features\visualizations\player_trace\tr_config.hpp" />
+    <ClInclude Include="spt\features\visualizations\player_trace\tr_entity_cache.hpp" />
+    <ClInclude Include="spt\features\visualizations\player_trace\tr_imgui.hpp" />
     <ClInclude Include="spt\features\visualizations\player_trace\tr_record_cache.hpp" />
     <ClInclude Include="spt\features\visualizations\player_trace\tr_render_cache.hpp" />
     <ClInclude Include="spt\features\visualizations\player_trace\tr_structs.hpp" />

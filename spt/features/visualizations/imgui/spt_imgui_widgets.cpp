@@ -333,7 +333,11 @@ void SptImGui::CmdHelpMarkerWithName(const ConCommandBase& c)
 
 bool SptImGui::BeginBordered(const ImVec2& outer_size, float inner_width)
 {
-	if (ImGui::BeginTable("##table_border", 1, ImGuiTableFlags_BordersOuter, outer_size, inner_width))
+	if (ImGui::BeginTable("##table_border",
+	                      1,
+	                      ImGuiTableFlags_BordersOuter | ImGuiTableFlags_NoHostExtendX,
+	                      outer_size,
+	                      inner_width))
 	{
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();

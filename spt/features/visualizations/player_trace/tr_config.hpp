@@ -108,6 +108,7 @@ namespace player_trace
 			ShapeColor physMeshPortalCollisionEnt{C_OUTLINE(200, 60, 100, 20)};
 			ShapeColor obb{C_WIRE(220, 150, 20, 255)};
 			ShapeColor obbTrigger{C_OUTLINE(200, 200, 20, 10)};
+			ShapeColor obbHovered{C_OUTLINE(255, 0, 0, 100), false, false, WD_BOTH};
 			ShapeColor collectAABB{C_WIRE(150, 100, 100, 255)};
 		} entities;
 	} inline trColors;

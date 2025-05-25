@@ -603,8 +603,11 @@ void TrRenderingCache::RenderEntities(MeshRendererDelegate& mr, const Vector& la
 	// draw each OBB as a dynamic mesh, the mesh system will fuse them anyways
 	for (auto [entIdx, transIdx] : entMap)
 	{
+		bool drawObb = true;
+
 		if (entIdx->m_nSolidType == SOLID_NONE)
-			continue;
+			drawObb = false;
+
 		const char* className = *entIdx->classNameIdx;
 		bool isTrigger = false;
 		if ((entIdx->m_usSolidFlags & triggerFlags) == triggerFlags)
@@ -614,28 +617,44 @@ void TrRenderingCache::RenderEntities(MeshRendererDelegate& mr, const Vector& la
 			                        [className](const char* allowedTriggerName)
 			                        { return !strcmp(className, allowedTriggerName); });
 			if (!isTrigger)
-				continue; // don't draw other trigger types
+				drawObb = false; // don't draw other trigger types
 		}
 		const TrAbsBox& obb = **transIdx->obbIdx;
 		const TrTransform& trans = **transIdx->obbTransIdx;
-		if (**obb.minsIdx == vec3_origin && **obb.maxsIdx == vec3_origin && **trans.posIdx == vec3_origin)
-			continue; // don't draw ZERO OBBs
+		Vector mins = obb.minsIdx.GetOrDefault(Vector{NAN}), maxs = obb.maxsIdx.GetOrDefault(Vector{NAN});
+		Vector pos;
+		QAngle ang;
+		trans.GetPosAng(pos, ang);
+
+		if (!mins.IsValid() || !maxs.IsValid() || !pos.IsValid() || !ang.IsValid())
+			continue;
+
 		mr.DrawMesh(spt_meshBuilder.CreateDynamicMesh(
-		    [=](MeshBuilderDelegate& mb)
+		    [&](MeshBuilderDelegate& mb)
 		    {
-			    Vector origin = **trans.posIdx + landmarkDeltaToMapAtTick;
+			    // add in landmark delta manually so that meshes can be merged
+			    Vector origin = pos + landmarkDeltaToMapAtTick;
 			    // interfaces::debugOverlay->AddTextOverlay(origin, 0, "%s", className);
 			    ShapeColor color = isTrigger ? trColors.entities.obbTrigger : trColors.entities.obb;
-			    mb.AddBox(origin, **obb.minsIdx, **obb.maxsIdx, **trans.angIdx, color);
-			    if (trStyles.entities.drawObbCenter && !isTrigger && **trans.posIdx != vec3_origin)
+			    if (drawObb && mins != maxs)
+				    mb.AddBox(origin, mins, maxs, ang, color);
+			    if (drawObb && trStyles.entities.drawObbCenter && !isTrigger && pos != vec3_origin)
 			    {
 				    // a position at exactly the origin *probably* means it's not relevant
 				    mb.AddCross(origin,
 				                trStyles.entities.obbCenterCrossRadius,
 				                trColors.entities.obb.lineColor);
 			    }
+			    if (entIdx == entCache.hoveredEnt)
+			    {
+				    Vector extra{1.f};
+				    if (mins == maxs)
+					    mins = -(maxs = Vector{trStyles.entities.obbCenterCrossRadius});
+				    mb.AddBox(origin, mins - extra, maxs + extra, ang, trColors.entities.obbHovered);
+			    }
 		    }));
 	}
+	entCache.hoveredEnt.Invalidate();
 
 	for (auto [entIdx, transIdx] : entMap)
 	{
