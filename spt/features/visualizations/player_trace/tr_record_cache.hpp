@@ -17,10 +17,6 @@ namespace player_trace
 
 	class TrRecordingCache
 	{
-		friend struct TrPlayerTrace;
-		TrPlayerTrace* tr;
-
-	private:
 		/*
 		* One of the main goals of the recording cache is to reuse indices that we've seen before.
 		* Say we recording a new player data object, and the player is looking in the same
@@ -157,7 +153,7 @@ namespace player_trace
 		}
 
 	public:
-		TrRecordingCache(TrPlayerTrace& tr) : tr{&tr} {};
+		TrRecordingCache() = default;
 		TrRecordingCache(const TrRecordingCache&) = delete;
 
 		struct EntSnapshotEntry
@@ -215,12 +211,12 @@ namespace player_trace
 		template<typename T>
 		TrIdx<T> GetCachedIdx(const T& t)
 		{
-			TrReadContextScope ctx{*tr};
+			auto& tr = TrReadContextScope::CurrentModifiable();
 			auto& set = GetKeySet<T>();
 			auto [it, new_elem] = set.emplace(t);
 			if (new_elem)
 			{
-				auto& vec = tr->Get<T>();
+				auto& vec = tr.Get<T>();
 				it->idx = vec.size();
 				vec.push_back(t);
 			}
@@ -230,12 +226,12 @@ namespace player_trace
 		template<typename T>
 		TrSpan<T> GetCachedSpan(std::span<const T> sp)
 		{
-			TrReadContextScope ctx{*tr};
+			auto& tr = TrReadContextScope::CurrentModifiable();
 			auto& set = GetSpanSet<T>();
 			auto [it, new_elem] = set.emplace(sp);
 			if (new_elem)
 			{
-				auto& vec = tr->Get<T>();
+				auto& vec = tr.Get<T>();
 				it->trSpan = TrSpan<T>{vec.size(), sp.size()};
 				vec.insert(vec.cend(), sp.begin(), sp.end());
 			}
