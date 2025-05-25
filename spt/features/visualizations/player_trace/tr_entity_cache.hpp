@@ -13,8 +13,8 @@ namespace player_trace
 
 	private:
 		EntMap entMap;
-		TrIdx<TrEntSnapshot> snapshotIdx = 0;
-		TrIdx<TrEntSnapshotDelta> snapshotDeltaIdx = 0;
+		TrIdx<TrEntSnapshot> snapshotIdx;
+		TrIdx<TrEntSnapshotDelta> snapshotDeltaIdx;
 		tr_tick tick = 0;
 		bool initialized = false;
 
@@ -27,6 +27,8 @@ namespace player_trace
 	public:
 		TrEntityCache() = default;
 		TrEntityCache(const TrEntityCache&) = delete;
+
+		TrIdx<TrEnt> hoveredEnt; // set by imgui, reset by renderer
 
 		const EntMap& GetEnts(tr_tick atTick)
 		{

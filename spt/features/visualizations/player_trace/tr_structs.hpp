@@ -252,6 +252,12 @@ namespace player_trace
 	struct TrAbsBox_v1
 	{
 		TrIdx<Vector> minsIdx, maxsIdx;
+
+		void GetMinsMaxs(Vector& mins, Vector& maxs) const
+		{
+			mins = minsIdx.IsValid() ? **minsIdx : Vector{NAN};
+			maxs = maxsIdx.IsValid() ? **maxsIdx : Vector{NAN};
+		}
 	};
 	TR_DEFINE_LUMP(TrAbsBox_v1, "aabb", 1);
 
@@ -261,6 +267,12 @@ namespace player_trace
 	{
 		TrIdx<Vector> posIdx;
 		TrIdx<QAngle> angIdx;
+
+		void GetPosAng(Vector& pos, QAngle& ang) const
+		{
+			pos = posIdx.GetOrDefault(Vector{NAN});
+			ang = angIdx.GetOrDefault(QAngle{NAN, NAN, NAN});
+		}
 	};
 	TR_DEFINE_LUMP(TrTransform_v1, "transform", 1);
 	TR_DEFINE_LUMP(TrIdx<TrTransform_v1>, "transform_idx", 1);
