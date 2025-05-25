@@ -60,7 +60,8 @@ void TrPlayerTrace::StartRecording()
 	    { ((h.firstExportVersion = TR_LUMP_VERSION(typename std::remove_reference_t<decltype(h)>::type)), ...); },
 	    versions);
 
-	auto& rc = *(recordingCache = std::make_unique<TrRecordingCache>(*this));
+	TrReadContextScope scope{*this};
+	auto& rc = *(recordingCache = std::make_unique<TrRecordingCache>());
 	rc.StartRecording();
 
 	// hardcoding player hulls for now...
@@ -76,6 +77,7 @@ void TrPlayerTrace::StartRecording()
 
 void TrPlayerTrace::StopRecording()
 {
+	TrReadContextScope scope{*this};
 	recordingCache->StopRecording();
 	recordingCache.reset();
 	std::apply([](auto&... vecs) { (vecs.shrink_to_fit(), ...); }, _storage);

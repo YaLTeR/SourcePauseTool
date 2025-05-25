@@ -13,10 +13,10 @@
 
 using namespace player_trace;
 
-TrRenderingCache::TrRenderingCache(const TrPlayerTrace& tr) : tr{&tr} {}
-
 void TrRenderingCache::RebuildPlayerHullMeshes()
 {
+	auto& tr = TrReadContextScope::Current();
+
 	// qphys
 
 	static constexpr float qphysHullReduction = 0.7f;
@@ -26,8 +26,8 @@ void TrRenderingCache::RebuildPlayerHullMeshes()
 		StaticMesh& mesh;
 		TrIdx<TrAbsBox> hullIdx;
 	} qPhysData[] = {
-	    {meshes.qPhysStand, tr->playerStandBboxIdx},
-	    {meshes.qPhysDuck, tr->playerDuckBboxIdx},
+	    {meshes.qPhysStand, tr.playerStandBboxIdx},
+	    {meshes.qPhysDuck, tr.playerDuckBboxIdx},
 	};
 
 	for (auto [mesh, hullIdx] : qPhysData)
@@ -80,8 +80,8 @@ void TrRenderingCache::RebuildPlayerHullMeshes()
 		StaticMesh& mesh;
 		TrIdx<TrAbsBox> hullIdx;
 	} vPhysData[] = {
-	    {meshes.vPhysStand, tr->playerStandBboxIdx},
-	    {meshes.vPhysDuck, tr->playerDuckBboxIdx},
+	    {meshes.vPhysStand, tr.playerStandBboxIdx},
+	    {meshes.vPhysDuck, tr.playerDuckBboxIdx},
 	};
 
 	for (auto [mesh, hullIdx] : vPhysData)
@@ -177,6 +177,8 @@ void TrRenderingCache::RebuildEyeMeshes(float fov)
 
 void TrRenderingCache::RebuildPlayerPathMeshes()
 {
+	auto& tr = TrReadContextScope::Current();
+
 	meshes.playerPath.dynamicMeshes.clear();
 
 	if (!StaticMesh::AllValid(meshes.playerPath.staticMeshes)
@@ -188,7 +190,7 @@ void TrRenderingCache::RebuildPlayerPathMeshes()
 	if (meshes.playerPath.staticMeshes.empty())
 		meshes.playerPath.staticMeshesBuiltUpToTick = 0;
 
-	if (meshes.playerPath.staticMeshesBuiltUpToTick + 1 >= tr->numRecordedTicks)
+	if (meshes.playerPath.staticMeshesBuiltUpToTick + 1 >= tr.numRecordedTicks)
 		return;
 
 	meshes.playerPathGeneratedWithCones = spt_trace_draw_path_cones.GetBool();
@@ -208,9 +210,9 @@ void TrRenderingCache::RebuildPlayerPathMeshes()
 
 	tr_tick firstTickToDraw = meshes.playerPath.staticMeshesBuiltUpToTick;
 
-	auto pdIdx = tr->GetAtTick<TrPlayerData>(firstTickToDraw);
-	auto segmentIdx = tr->GetAtTick<TrSegmentStart>(firstTickToDraw);
-	auto mapTransitionIdx = tr->GetAtTick<TrMapTransition>(firstTickToDraw);
+	auto pdIdx = tr.GetAtTick<TrPlayerData>(firstTickToDraw);
+	auto segmentIdx = tr.GetAtTick<TrSegmentStart>(firstTickToDraw);
+	auto mapTransitionIdx = tr.GetAtTick<TrMapTransition>(firstTickToDraw);
 
 	Vector lastImplicitVel{1.f, 0.f, 0.f};
 	Vector prevImplicitVel = lastImplicitVel;
@@ -345,22 +347,22 @@ void TrRenderingCache::RebuildPlayerPathMeshes()
 		return true;
 	};
 
-	tr_tick maxTicksForDynamic = tr->IsRecording() ? trStyles.playerPath.maxTicksToRenderAsDynamicMesh : 0;
+	tr_tick maxTicksForDynamic = tr.IsRecording() ? trStyles.playerPath.maxTicksToRenderAsDynamicMesh : 0;
 
-	if (tr->numRecordedTicks - meshes.playerPath.staticMeshesBuiltUpToTick > maxTicksForDynamic)
+	if (tr.numRecordedTicks - meshes.playerPath.staticMeshesBuiltUpToTick > maxTicksForDynamic)
 	{
 		spt_meshBuilder.CreateMultipleMeshes<StaticMesh>(std::back_inserter(meshes.playerPath.staticMeshes),
 		                                                 meshes.playerPath.staticMeshesBuiltUpToTick,
-		                                                 tr->numRecordedTicks,
+		                                                 tr.numRecordedTicks,
 		                                                 createFunc);
 
-		meshes.playerPath.staticMeshesBuiltUpToTick = tr->numRecordedTicks - 1;
+		meshes.playerPath.staticMeshesBuiltUpToTick = tr.numRecordedTicks - 1;
 	}
 	else
 	{
 		spt_meshBuilder.CreateMultipleMeshes<DynamicMesh>(std::back_inserter(meshes.playerPath.dynamicMeshes),
 		                                                  meshes.playerPath.staticMeshesBuiltUpToTick,
-		                                                  tr->numRecordedTicks,
+		                                                  tr.numRecordedTicks,
 		                                                  createFunc);
 	}
 }
@@ -482,13 +484,15 @@ void TrRenderingCache::UpdateEntSnapshot(tr_tick toTick)
 
 	VerifySnapshotState();
 
-	TrIdx<TrEntSnapshot> snapIdxLow = tr->GetAtTick<TrEntSnapshot>(toTick);
+	auto& tr = TrReadContextScope::Current();
+
+	TrIdx<TrEntSnapshot> snapIdxLow = tr.GetAtTick<TrEntSnapshot>(toTick);
 	auto snapIdxHigh = snapIdxLow + 1;
 
 	if (!snapIdxLow.IsValid())
 		return; // no baselines :/
 
-	TrIdx<TrEntSnapshotDelta> snapDeltaIdx = tr->GetAtTick<TrEntSnapshotDelta>(toTick);
+	TrIdx<TrEntSnapshotDelta> snapDeltaIdx = tr.GetAtTick<TrEntSnapshotDelta>(toTick);
 	if (!snapDeltaIdx.IsValid())
 	{
 		// no deltas, rely on snapshots only
@@ -710,7 +714,9 @@ void TrRenderingCache::RenderPlayerHull(MeshRendererDelegate& mr,
                                         const Vector& landmarkDeltaToMapAtTick,
                                         tr_tick atTick)
 {
-	auto pdIdx = tr->GetAtTick<TrPlayerData>(atTick);
+	auto& tr = TrReadContextScope::Current();
+
+	auto pdIdx = tr.GetAtTick<TrPlayerData>(atTick);
 	if (!pdIdx.IsValid())
 		return;
 
@@ -766,8 +772,10 @@ void TrRenderingCache::RenderPlayerHull(MeshRendererDelegate& mr,
 
 void TrRenderingCache::RenderPortals(MeshRendererDelegate& mr, const Vector& landmarkDeltaToMapAtTick, tr_tick atTick)
 {
+	auto& tr = TrReadContextScope::Current();
 	RebuildPortalMeshes();
-	auto snapIdx = tr->GetAtTick<TrPortalSnapshot>(atTick);
+
+	auto snapIdx = tr.GetAtTick<TrPortalSnapshot>(atTick);
 	if (!snapIdx.IsValid())
 		return;
 
@@ -791,13 +799,14 @@ void TrRenderingCache::RenderPortals(MeshRendererDelegate& mr, const Vector& lan
 
 void TrRenderingCache::RenderEntities(MeshRendererDelegate& mr, const Vector& landmarkDeltaToMapAtTick, tr_tick atTick)
 {
+	auto& tr = TrReadContextScope::Current();
 	UpdateEntSnapshot(atTick);
 	RebuildPhysMeshes();
 
 	if (trStyles.entities.drawEntCollectRadius)
 	{
-		auto traceStateIdx = tr->GetAtTick<TrTraceState>(atTick);
-		auto plDataIdx = tr->GetAtTick<TrPlayerData>(atTick);
+		auto traceStateIdx = tr.GetAtTick<TrTraceState>(atTick);
+		auto plDataIdx = tr.GetAtTick<TrPlayerData>(atTick);
 		if (plDataIdx.IsValid() && plDataIdx->qPosIdx->IsValid() && traceStateIdx.IsValid())
 		{
 			mr.DrawMesh(spt_meshBuilder.CreateDynamicMesh(
@@ -897,9 +906,10 @@ const Vector& TrRenderingCache::GetLandmarkOffsetToFirstMap(const char* fromMap)
 	if (!fromMap)
 		return vec3_origin;
 
+	auto& tr = TrReadContextScope::Current();
 	CacheLandmarkOffsetsToFirstMapFromTraceData();
 
-	if (tr->Get<TrMap>().empty())
+	if (tr.Get<TrMap>().empty())
 		return vec3_origin;
 
 	auto [it, new_elem] = mapToFirstMapLandmarkOffset.try_emplace(fromMap);
@@ -926,8 +936,8 @@ const Vector& TrRenderingCache::GetLandmarkOffsetToFirstMap(const char* fromMap)
 		if (!transitionIdx.IsValid())
 			break;
 
-		offFromFirst -= tr->GetAdjacentLandmarkDelta(*transitionIdx->fromMapIdx->landmarkSp,
-		                                             *transitionIdx->toMapIdx->landmarkSp);
+		offFromFirst -= tr.GetAdjacentLandmarkDelta(*transitionIdx->fromMapIdx->landmarkSp,
+		                                            *transitionIdx->toMapIdx->landmarkSp);
 		mapIdx = transitionIdx->toMapIdx;
 	}
 	return it->second = vec3_origin;
@@ -938,7 +948,8 @@ void TrRenderingCache::CacheLandmarkOffsetsToFirstMapFromTraceData()
 	if (!mapToFirstMapLandmarkOffset.empty())
 		return;
 
-	if (tr->Get<TrMap>().empty())
+	auto& tr = TrReadContextScope::Current();
+	if (tr.Get<TrMap>().empty())
 		return;
 
 	TrIdx<TrMap> mapIdx = 0;
@@ -948,25 +959,26 @@ void TrRenderingCache::CacheLandmarkOffsetsToFirstMapFromTraceData()
 		mapToFirstMapLandmarkOffset[*mapIdx->nameIdx] = offToFirstMap;
 		if (!transitionIdx.IsValid())
 			break;
-		offToFirstMap -= tr->GetAdjacentLandmarkDelta(*transitionIdx->fromMapIdx->landmarkSp,
-		                                              *transitionIdx->toMapIdx->landmarkSp);
+		offToFirstMap -= tr.GetAdjacentLandmarkDelta(*transitionIdx->fromMapIdx->landmarkSp,
+		                                             *transitionIdx->toMapIdx->landmarkSp);
 		mapIdx = transitionIdx->toMapIdx;
 	}
 }
 
 void TrRenderingCache::RenderAll(MeshRendererDelegate& mr, tr_tick atTick)
 {
+	auto& tr = TrReadContextScope::Current();
+
 	if (renderedLastTimeOnMap != utils::GetLoadedMap())
 	{
 		mapToFirstMapLandmarkOffset.clear();
 		renderedLastTimeOnMap = utils::GetLoadedMap();
 	}
 
-	TrReadContextScope scope{*tr};
-	atTick = tr->numRecordedTicks == 0 ? 0 : clamp(atTick, 0, tr->numRecordedTicks - 1);
+	atTick = tr.numRecordedTicks == 0 ? 0 : clamp(atTick, 0, tr.numRecordedTicks - 1);
 	Vector landmarkdelta = GetLandmarkOffsetToFirstMap(utils::GetLoadedMap());
 	RenderPlayerPath(mr, landmarkdelta);
-	TrIdx<TrMap> atMap = tr->GetMapAtTick(atTick);
+	TrIdx<TrMap> atMap = tr.GetMapAtTick(atTick);
 	if (!atMap.IsValid())
 		return;
 	landmarkdelta -= GetLandmarkOffsetToFirstMap(*atMap->nameIdx);

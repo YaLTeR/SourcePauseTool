@@ -34,11 +34,8 @@
 
 namespace player_trace
 {
-
-// for caching purposes I'm using memcmp so there better not be any implicit padding
-#pragma warning(push)
-#pragma warning(error : 4820)
-
+	class TrRecordingCache;
+	class TrRenderingCache;
 	struct TrPlayerTrace;
 
 	// a scope within which we can deref TrIdx & TrSpan
@@ -46,12 +43,6 @@ namespace player_trace
 	{
 		inline static const TrPlayerTrace* trCtx = nullptr;
 		const TrPlayerTrace* oldCtx;
-
-		template<typename T>
-		friend struct TrIdx;
-
-		template<typename T>
-		friend struct TrSpan;
 
 	public:
 		TrReadContextScope(const TrPlayerTrace& newCtx) : oldCtx{trCtx}
@@ -62,6 +53,21 @@ namespace player_trace
 		~TrReadContextScope()
 		{
 			trCtx = oldCtx;
+		}
+
+		inline static const TrPlayerTrace& Current()
+		{
+			AssertMsg(trCtx, "Setup a TrReadContextScope");
+			return *trCtx;
+		}
+
+	private:
+		friend TrRecordingCache;
+
+		// yes this is stupid, no I don't care
+		inline static TrPlayerTrace& CurrentModifiable()
+		{
+			return const_cast<TrPlayerTrace&>(Current());
 		}
 	};
 
@@ -105,6 +111,10 @@ namespace player_trace
 
 #define TR_LUMP_NAME(type) (TrLumpInfo<type>::name)
 #define TR_LUMP_VERSION(type) (TrLumpInfo<type>::version)
+
+	// for caching purposes I'm using memcmp so there better not be any implicit padding
+#pragma warning(push)
+#pragma warning(error : 4820)
 
 	// an index into one of the trace's vectors, dereference within a TrReadContextScope
 	template<typename T>
@@ -537,9 +547,6 @@ namespace player_trace
 
 #pragma warning(pop) // all trace objects should be above this pragma
 
-	class TrRecordingCache;
-	class TrRenderingCache;
-
 	/*
 	* Behold all the data in the player trace. Everything that is stored inside the struct is all
 	* that is needed for serialization & deserialization. Most of that stuff is going to be in one
@@ -770,15 +777,14 @@ namespace player_trace
 	template<typename T>
 	inline bool TrIdx<T>::IsValid() const
 	{
-		AssertMsg(!!TrReadContextScope::trCtx, "SPT: set up a TrReadContextScope");
-		return _val < TrReadContextScope::trCtx->Get<T>().size();
+		return _val < TrReadContextScope::Current().Get<T>().size();
 	}
 
 	template<typename T>
 	inline const T* TrIdx<T>::operator*() const
 	{
 		Assert(IsValid());
-		return TrReadContextScope::trCtx->Get<T>().data() + _val;
+		return TrReadContextScope::Current().Get<T>().data() + _val;
 	}
 
 	template<typename T>
@@ -786,7 +792,7 @@ namespace player_trace
 	{
 		if (n == 0 || !IsValid())
 			return {};
-		return std::span<const T>{TrReadContextScope::trCtx->Get<T>()}.subspan(start, n);
+		return std::span<const T>{TrReadContextScope::Current().Get<T>()}.subspan(start, n);
 	}
 } // namespace player_trace
 

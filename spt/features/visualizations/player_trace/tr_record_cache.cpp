@@ -8,9 +8,11 @@ using namespace player_trace;
 
 void TrRecordingCache::CollectEntityDelta(std::vector<EntSnapshotEntry>& newSnapshot)
 {
-	auto& creates = tr->Get<TrEntCreateDelta>();
-	auto& deltas = tr->Get<TrEntTransformDelta>();
-	auto& deletes = tr->Get<TrEntDeleteDelta>();
+	auto& tr = TrReadContextScope::CurrentModifiable();
+
+	auto& creates = tr.Get<TrEntCreateDelta>();
+	auto& deltas = tr.Get<TrEntTransformDelta>();
+	auto& deletes = tr.Get<TrEntDeleteDelta>();
 
 	size_t nCreates = 0, nDeltas = 0, nDeletes = 0;
 
@@ -45,25 +47,27 @@ void TrRecordingCache::CollectEntityDelta(std::vector<EntSnapshotEntry>& newSnap
 		}
 	}
 
-	tr->Get<TrEntSnapshotDelta>().emplace_back(tr->numRecordedTicks,
-	                                           TrSpan<TrEntCreateDelta>{creates.size() - nCreates, nCreates},
-	                                           TrSpan<TrEntTransformDelta>{deltas.size() - nDeltas, nDeltas},
-	                                           TrSpan<TrEntDeleteDelta>{deletes.size() - nDeletes, nDeletes});
+	tr.Get<TrEntSnapshotDelta>().emplace_back(tr.numRecordedTicks,
+	                                          TrSpan<TrEntCreateDelta>{creates.size() - nCreates, nCreates},
+	                                          TrSpan<TrEntTransformDelta>{deltas.size() - nDeltas, nDeltas},
+	                                          TrSpan<TrEntDeleteDelta>{deletes.size() - nDeletes, nDeletes});
 
 	++nEntDeltasWithoutSnapshot;
 }
 
 void TrRecordingCache::CollectEntitySnapshot()
 {
-	auto& snaps = tr->Get<TrEntSnapshot>();
-	auto& snapDeltas = tr->Get<TrEntSnapshotDelta>();
+	auto& tr = TrReadContextScope::CurrentModifiable();
+
+	auto& snaps = tr.Get<TrEntSnapshot>();
+	auto& snapDeltas = tr.Get<TrEntSnapshotDelta>();
 	Assert(!snapDeltas.empty());
 	if (!snaps.empty() && snaps.back().tick >= snapDeltas.back().tick)
 		return;
 
 	// only log additional creates that weren't logged in the snapshot delta
 
-	auto& creates = tr->Get<TrEntCreateDelta>();
+	auto& creates = tr.Get<TrEntCreateDelta>();
 	for (auto& entry : entSnapshot)
 		if (!entry.loggedAsCreateInLastDelta)
 			creates.emplace_back(entry.entIdx, entry.entTransIdx);

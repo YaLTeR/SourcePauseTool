@@ -24,15 +24,13 @@ void TrPlayerTrace::Clear()
 TrRecordingCache& TrPlayerTrace::GetRecordingCache()
 {
 	Assert(recordingCache.get());
-	recordingCache->tr = this; // std::move hack
 	return *recordingCache;
 }
 
 TrRenderingCache& TrPlayerTrace::GetRenderingCache() const
 {
 	if (!renderingCache)
-		renderingCache = std::make_unique<TrRenderingCache>(*this);
-	renderingCache->tr = this; // std::move hack
+		renderingCache = std::make_unique<TrRenderingCache>();
 	return *renderingCache;
 }
 

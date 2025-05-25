@@ -11,12 +11,7 @@ namespace player_trace
 {
 	class TrRenderingCache
 	{
-	public:
-		TrRenderingCache(const TrPlayerTrace& tr);
-
 	private:
-		friend struct TrPlayerTrace;
-		const TrPlayerTrace* tr;
 		std::unordered_map<std::string, Vector> mapToFirstMapLandmarkOffset;
 
 		void RebuildPlayerHullMeshes();
@@ -105,6 +100,8 @@ namespace player_trace
 		std::string renderedLastTimeOnMap;
 
 	public:
+		TrRenderingCache() = default;
+		TrRenderingCache(const TrRenderingCache&) = delete;
 		void RenderAll(MeshRendererDelegate& mr, tr_tick atTick);
 	};
 

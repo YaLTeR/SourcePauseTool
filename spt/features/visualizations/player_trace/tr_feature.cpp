@@ -339,6 +339,7 @@ void PlayerTraceFeature::OnMeshRenderSignal(MeshRendererDelegate& mr)
 	if (!spt_draw_trace.GetBool())
 		return;
 	activeDrawTick = clamp(activeDrawTick, 0, tr.numRecordedTicks - 1);
+	TrReadContextScope scope{tr};
 	tr.GetRenderingCache().RenderAll(mr, activeDrawTick);
 }
 
