@@ -246,6 +246,10 @@ void TrPlayerTrace::CollectPlayerData()
 		data.m_lifeState = fLifeState.GetValueOrDefault(serverPlayer);
 		data.m_CollisionGroup = fColGroup.GetValueOrDefault(serverPlayer);
 		data.m_MoveType = fMoveType.GetValueOrDefault(serverPlayer);
+
+		auto envPortal = utils::spt_serverEntList.GetEnvironmentPortal();
+		if (envPortal)
+			data.envPortalHandle = envPortal->handle;
 	}
 
 	auto& vec = Get<TrPlayerData>();

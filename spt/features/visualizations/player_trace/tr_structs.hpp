@@ -489,12 +489,13 @@ namespace player_trace
 		TrPlayerData_v2() = default;
 		TrPlayerData_v2(tr_tick tick) : TrPlayerData_v1{tick} {};
 
-		TrPlayerData_v2(const TrPlayerData_v1& v1) : vVelIdx{}
+		TrPlayerData_v2(const TrPlayerData_v1& v1)
 		{
 			memcpy(this, &v1, sizeof v1);
 		}
 
 		TrIdx<Vector> vVelIdx;
+		CBaseHandle envPortalHandle{};
 	};
 	TR_DEFINE_LUMP(TrPlayerData_v2, "player_data", 2);
 
