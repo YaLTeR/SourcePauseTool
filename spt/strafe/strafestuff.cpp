@@ -595,6 +595,8 @@ namespace Strafe
 
 		Vector2D avec(std::cos(theta), std::sin(theta));
 		PlayerData vel;
+		if (tas_strafe_version.GetInt() >= 9)
+			vel.Init();
 		vel.Velocity.x = player.Velocity.Length2D();
 		VectorFME(vel, vars, onground, wishspeed, avec);
 
