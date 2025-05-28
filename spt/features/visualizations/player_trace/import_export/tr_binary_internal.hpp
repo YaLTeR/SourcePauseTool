@@ -4,6 +4,8 @@
 
 #ifdef SPT_PLAYER_TRACE_ENABLED
 
+#include "spt/utils/game_detection.hpp"
+
 namespace player_trace
 {
 	constexpr char TR_FILE_ID[8] = "sausage";
@@ -18,14 +20,39 @@ namespace player_trace
 
 	struct TrHeader_v1
 	{
-		char sptVersion[TR_MAX_SPT_VERSION_LEN];
+		char lastExportSptVersion[TR_MAX_SPT_VERSION_LEN];
 		uint32_t lumpsOff;
 		uint32_t nLumps;
 		uint32_t numRecordedTicks;
 		TrIdx<TrAbsBox> playerStandBboxIdx, playerDuckBboxIdx;
 	};
 
-	using TrHeader = TrHeader_v1;
+	struct TrHeader_v2 : TrHeader_v1
+	{
+		TrHeader_v2() {}
+		TrHeader_v2(const TrHeader_v1& v1)
+		{
+			memcpy(this, &v1, sizeof v1);
+
+			strncpy(gameInfo.gameName, "<NOT_RECORDED>", sizeof gameInfo.gameName);
+			strncpy(gameInfo.modName, "<NOT_RECORDED>", sizeof gameInfo.modName);
+			gameInfo.gameVersion = -666;
+			strncpy(playerName, "<NOT_RECORDED>", sizeof playerName);
+		}
+
+		// a bunch of info from when the trace was first recorded
+
+		struct
+		{
+			char gameName[16]; // max length returned by utils::GetGameName()
+			char modName[260]; // MAX_OSPATH
+			int32_t gameVersion;
+		} gameInfo;
+
+		char playerName[32]; // MAX_PLAYER_NAME_LENGTH
+	};
+
+	using TrHeader = TrHeader_v2;
 
 	struct TrLump_v1
 	{

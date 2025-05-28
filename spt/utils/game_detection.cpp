@@ -128,6 +128,25 @@ namespace utils
 		return result;
 	}
 
+	const char* GetGameName()
+	{
+		if (DoesGameLookLikePortal())
+			return "Portal 1";
+		if (DoesGameLookLikeBMSMod())
+			return "BMS Mod";
+		if (DoesGameLookLikeBMSRetail())
+			return "BMS Retail";
+		if (DoesGameLookLikeBMSLatest())
+			return "BMS Latest";
+		if (DoesGameLookLikeHLS())
+			return "HLS";
+		if (DoesGameLookLikeEstranged())
+			return "Estranged";
+		if (DoesGameLookLikeDMoMM())
+			return "DMoMM";
+		return "HL2";
+	}
+
 	static std::future<int> BuildResult;
 
 	int GetBuildNumber()

@@ -6,6 +6,7 @@
 #include "spt/utils/interfaces.hpp"
 #include "spt/utils/map_utils.hpp"
 #include "spt/utils/ent_list.hpp"
+#include "spt/utils/game_detection.hpp"
 #include "spt/features/playerio.hpp"
 #include "spt/features/ent_props.hpp"
 #include "spt/utils/portal_utils.hpp"
@@ -14,6 +15,7 @@
 
 #include "tr_structs.hpp"
 
+#include "PlayerState.h"
 #include "vphysics/friction.h"
 
 #ifdef SPT_PLAYER_TRACE_ENABLED
@@ -29,11 +31,44 @@ void TrPlayerTrace::Clear()
 
 	playerStandBboxIdx.Invalidate();
 	playerDuckBboxIdx.Invalidate();
+
+	firstRecordedInfo.Clear();
+	hasStartRecordingBeenCalled = false;
+}
+
+static void TrTryFillPlayerName(TrPlayerTrace& tr)
+{
+	if (tr.firstRecordedInfo.playerNameInitialized || !interfaces::engine_server)
+		return;
+	auto playerEd = interfaces::engine_server->PEntityOfEntIndex(1);
+	if (!playerEd || !interfaces::serverGameClients)
+		return;
+	CPlayerState* playerState = interfaces::serverGameClients->GetPlayerState(playerEd);
+	if (!playerState || !playerState->netname.ToCStr()[0])
+		return;
+	tr.firstRecordedInfo.playerName = playerState->netname.ToCStr();
+	tr.firstRecordedInfo.playerNameInitialized = true;
 }
 
 void TrPlayerTrace::StartRecording()
 {
 	Clear();
+
+	firstRecordedInfo.gameName = utils::GetGameName();
+	if (interfaces::engine)
+	{
+		try
+		{
+			firstRecordedInfo.gameModName =
+			    std::filesystem::path{interfaces::engine->GetGameDirectory()}.filename().string();
+		}
+		catch (...)
+		{
+		}
+	}
+	TrTryFillPlayerName(*this);
+	firstRecordedInfo.gameVersion = utils::GetBuildNumber();
+
 	hasStartRecordingBeenCalled = true;
 
 	// set all import version to most up-to-date version
@@ -85,11 +120,13 @@ void TrPlayerTrace::HostTickCollect(bool simulated, TrSegmentReason segmentReaso
 	if (!utils::spt_serverEntList.Valid())
 		return;
 
+	TrTryFillPlayerName(*this);
 	TrReadContextScope scope{*this};
 
 	const char* curLoadedMap = utils::GetLoadedMap();
 	if (!curLoadedMap || !curLoadedMap[0])
 		return;
+
 	if (Get<TrMapTransition>().empty() || strcmp(*Get<TrMapTransition>().back().toMapIdx->nameIdx, curLoadedMap))
 	{
 		segmentReason = TR_SR_MAP_TRANSITION;

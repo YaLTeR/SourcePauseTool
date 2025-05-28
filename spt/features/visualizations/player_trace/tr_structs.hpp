@@ -587,6 +587,24 @@ namespace player_trace
 		tr_tick numRecordedTicks = 0;
 		TrIdx<TrAbsBox_v1> playerStandBboxIdx{}, playerDuckBboxIdx{};
 
+		struct
+		{
+			std::string gameName;
+			std::string gameModName;
+			std::string playerName;
+			bool playerNameInitialized = false;
+			int32_t gameVersion = -666;
+
+			void Clear()
+			{
+				gameName.clear();
+				gameModName.clear();
+				playerName.clear();
+				playerNameInitialized = false;
+				gameVersion = -666;
+			}
+		} firstRecordedInfo;
+
 		bool hasStartRecordingBeenCalled = false;
 
 	private:
