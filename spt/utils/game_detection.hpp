@@ -10,6 +10,7 @@ namespace utils
 	bool DoesGameLookLikeBMSMod();
 	bool DoesGameLookLikeSteampipe();
 	bool DoesGameLookLikeEstranged();
+	const char* GetGameName();
 	int DateToBuildNumber(const char* date_str);
 	int GetBuildNumber();
 	void StartBuildNumberSearch();

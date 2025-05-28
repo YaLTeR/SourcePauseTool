@@ -52,14 +52,18 @@ bool TrWrite::Write(const TrPlayerTrace& tr, ITrWriter& wr)
 
 	constexpr uint32_t nLumps = std::tuple_size_v<decltype(tr._storage)>;
 
-	TrHeader header{
-	    .lumpsOff = fileOff + sizeof header,
-	    .nLumps = nLumps,
-	    .numRecordedTicks = tr.numRecordedTicks,
-	    .playerStandBboxIdx = tr.playerStandBboxIdx,
-	    .playerDuckBboxIdx = tr.playerDuckBboxIdx,
-	};
-	strncpy(header.sptVersion, SPT_VERSION, sizeof header.sptVersion);
+	TrHeader header{};
+	header.lumpsOff = fileOff + sizeof header;
+	header.nLumps = nLumps;
+	header.numRecordedTicks = tr.numRecordedTicks;
+	header.playerStandBboxIdx = tr.playerStandBboxIdx;
+	header.playerDuckBboxIdx = tr.playerDuckBboxIdx;
+	strncpy(header.lastExportSptVersion, SPT_VERSION, sizeof header.lastExportSptVersion);
+	strncpy(header.gameInfo.gameName, tr.firstRecordedInfo.gameName.c_str(), sizeof header.gameInfo.gameName);
+	strncpy(header.gameInfo.modName, tr.firstRecordedInfo.gameModName.c_str(), sizeof header.gameInfo.modName);
+	header.gameInfo.gameVersion = tr.firstRecordedInfo.gameVersion;
+	strncpy(header.playerName, tr.firstRecordedInfo.playerName.c_str(), sizeof header.playerName);
+
 	if (!wr.Write(header))
 		return false;
 	fileOff += sizeof header;

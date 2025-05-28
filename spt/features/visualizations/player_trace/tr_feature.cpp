@@ -173,9 +173,17 @@ CON_COMMAND_AUTOCOMPLETEFILE(spt_trace_import,
 	{
 		TrReadContextScope scope{newTr};
 		auto& maps = newTr.Get<TrMap>();
-		Msg("Loaded trace from '%s' with %d ticks starting from map '%s'\n",
+		Msg("Loaded trace from '%s' with %d ticks\n"
+		    " - game: '%s' v%d\n"
+		    " - mod name: '%s'\n"
+		    " - player name: '%s'\n"
+		    " - start map: '%s'\n",
 		    filePath.string().c_str(),
 		    newTr.numRecordedTicks,
+		    newTr.firstRecordedInfo.gameName.c_str(),
+		    newTr.firstRecordedInfo.gameVersion,
+		    newTr.firstRecordedInfo.gameModName.c_str(),
+		    newTr.firstRecordedInfo.playerName.c_str(),
 		    maps.empty() || !maps[0].nameIdx.IsValid() ? "INVALID" : *maps[0].nameIdx);
 	}
 

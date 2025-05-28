@@ -44,4 +44,5 @@ namespace interfaces
 	extern IStaticPropMgrServer* staticpropmgr;
 	extern IShaderDevice* shaderDevice;
 	extern ISpatialPartition* spatialPartition;
+	extern IServerGameClients* serverGameClients;
 } // namespace interfaces

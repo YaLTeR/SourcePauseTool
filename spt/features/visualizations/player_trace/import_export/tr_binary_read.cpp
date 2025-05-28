@@ -218,22 +218,48 @@ bool TrRestore::Restore(TrPlayerTrace& tr, ITrReader& rd)
 	}
 
 	TrHeader header;
-	if (!rd.ReadTo(header, sizeof preamble))
+
+	switch (preamble.fileVersion)
 	{
-		errMsg = "failed to read header";
-		return false;
+	case 1:
+	{
+		TrHeader_v1 v1Header;
+		if (!rd.ReadTo(v1Header, sizeof preamble))
+		{
+			errMsg = "failed to read header";
+			return false;
+		}
+		header = v1Header;
+		break;
 	}
-	if (strncmp(header.sptVersion, SPT_VERSION, TR_MAX_SPT_VERSION_LEN))
+	default:
+		if (!rd.ReadTo(header, sizeof preamble))
+		{
+			errMsg = "failed to read header";
+			return false;
+		}
+		break;
+	}
+
+	if (strncmp(header.lastExportSptVersion, SPT_VERSION, TR_MAX_SPT_VERSION_LEN))
 	{
 		warnings.push_back(
 		    std::format("trace was exported with different SPT version '{}' (current version is '{}')",
-		                header.sptVersion,
+		                header.lastExportSptVersion,
 		                SPT_VERSION));
 	}
+
+	auto cArrToStdStr = [](const auto& cArr)
+	{ return std::string(std::begin(cArr), std::find(std::begin(cArr), std::end(cArr), '\0')); };
 
 	tr.numRecordedTicks = header.numRecordedTicks;
 	tr.playerStandBboxIdx = header.playerStandBboxIdx;
 	tr.playerDuckBboxIdx = header.playerDuckBboxIdx;
+	tr.firstRecordedInfo.gameName = cArrToStdStr(header.gameInfo.gameName);
+	tr.firstRecordedInfo.gameModName = cArrToStdStr(header.gameInfo.modName);
+	tr.firstRecordedInfo.playerName = cArrToStdStr(header.playerName);
+	tr.firstRecordedInfo.playerNameInitialized = true;
+	tr.firstRecordedInfo.gameVersion = header.gameInfo.gameVersion;
 
 	std::vector<TrLump> lumps(header.nLumps);
 
