@@ -364,6 +364,8 @@ Strafe::PlayerData PlayerIOFeature::GetPlayerData()
 		return Strafe::PlayerData();
 
 	Strafe::PlayerData data;
+	if (tas_strafe_version.GetInt() >= 9)
+		data.Init();
 	const int IN_DUCK = 1 << 2;
 
 	data.Ducking = GetFlagsDucking();

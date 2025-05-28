@@ -60,6 +60,15 @@ namespace Strafe
 		Vector Basevelocity;
 		bool Ducking;
 		bool DuckPressed;
+
+		void Init()
+		{
+			UnduckedOrigin = vec3_origin;
+			Velocity = vec3_origin;
+			Basevelocity = vec3_origin;
+			Ducking = false;
+			DuckPressed = false;
+		}
 	};
 
 	enum class Button : unsigned char
