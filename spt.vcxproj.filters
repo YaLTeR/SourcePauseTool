@@ -942,6 +942,9 @@
     <ClInclude Include="thirdparty\json_spt_include.hpp">
       <Filter>thirdparty</Filter>
     </ClInclude>
+	<ClInclude Include="spt\features\portalled_pause.hpp">
+      <Filter>spt\features</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SDK includes &amp; libs">

@@ -1,8 +1,6 @@
 #include "stdafx.hpp"
 
-#if defined(SSDK2007) || defined(SSDK2013)
-
-#include "..\feature.hpp"
+#include "portalled_pause.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "afterticks.hpp"
 #include "ent_utils.hpp"
@@ -13,25 +11,6 @@ ConVar spt_on_portalled_pause_for("spt_on_portalled_pause_for",
                                   "0",
                                   0,
                                   "Whenever player portalled, pause for this many ticks.");
-
-// Pause on player portalled
-class PortalledPause : public FeatureWrapper<PortalledPause>
-{
-public:
-protected:
-	virtual bool ShouldLoadFeature() override;
-
-	virtual void InitHooks() override;
-
-	virtual void LoadFeature() override;
-
-	virtual void UnloadFeature() override;
-
-private:
-	DECL_HOOK_THISCALL(void, TeleportTouchingEntity, void*, void* pOther);
-};
-
-static PortalledPause spt_portalled_pause_feat;
 
 namespace patterns
 {
@@ -52,19 +31,24 @@ void PortalledPause::InitHooks()
 	HOOK_FUNCTION(server, TeleportTouchingEntity);
 }
 
+void PortalledPause::PreHook()
+{
+	if (ORIG_TeleportTouchingEntity)
+		portalTeleportedEntitySignal.Works = true;
+}
+
 void PortalledPause::LoadFeature()
 {
 	if (ORIG_TeleportTouchingEntity)
-	{
 		InitConcommandBase(spt_on_portalled_pause_for);
-	}
 }
 
-void PortalledPause::UnloadFeature() {}
-
-IMPL_HOOK_THISCALL(PortalledPause, void, TeleportTouchingEntity, void*, void* pOther)
+IMPL_HOOK_THISCALL(PortalledPause, void, TeleportTouchingEntity, IServerEntity*, IServerEntity* pOther)
 {
-	spt_portalled_pause_feat.ORIG_TeleportTouchingEntity(thisptr, pOther);
+	ORIG_TeleportTouchingEntity(thisptr, pOther);
+
+	Assert(spt_portalled_pause_feat.portalTeleportedEntitySignal.Works);
+	spt_portalled_pause_feat.portalTeleportedEntitySignal(thisptr, pOther);
 
 	if (pOther != utils::spt_serverEntList.GetPlayer())
 		return;
@@ -80,5 +64,3 @@ IMPL_HOOK_THISCALL(PortalledPause, void, TeleportTouchingEntity, void*, void* pO
 		spt_afterticks.AddAfterticksEntry(entry);
 	}
 }
-
-#endif
