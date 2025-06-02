@@ -7,6 +7,7 @@
 #include "spt/spt-serverplugin.hpp"
 #include "spt/utils/spt_vprof.hpp"
 #include "spt/utils/signals.hpp"
+#include "spt/utils/game_detection.hpp"
 #include "spt/features/hud.hpp"
 
 #include "thirdparty/imgui/imgui.h"
@@ -606,12 +607,6 @@ protected:
 		return interfaces::shaderDevice && interfaces::vgui_input && TickSignal.Works;
 	}
 
-	bool PtrInModule(void* ptr, size_t nBytes, void* modBase, size_t modSize) const
-	{
-		return ptr >= modBase && (char*)ptr + nBytes <= (char*)modBase + modSize
-		       && (char*)ptr + nBytes >= modBase;
-	}
-
 	virtual void InitHooks()
 	{
 		/*
@@ -631,7 +626,7 @@ protected:
 		const int maxInstrSearch = 64;
 		const int maxVtableSearch = 16;
 		IShaderDevice* deviceWrapper = interfaces::shaderDevice;
-		if (!PtrInModule(deviceWrapper, maxVtableSearch * sizeof(void*), moduleBase, moduleSize))
+		if (!utils::DataInModule(deviceWrapper, maxVtableSearch * sizeof(void*), moduleBase, moduleSize))
 			return;
 
 		dx9Device = nullptr;
@@ -639,7 +634,7 @@ protected:
 		while (!dx9Device && ++vOff < maxVtableSearch)
 		{
 			void** pPresentFunc = ((void***)deviceWrapper)[0] + vOff;
-			if (!PtrInModule(pPresentFunc, maxInstrSearch, moduleBase, moduleSize))
+			if (!utils::DataInModule(pPresentFunc, maxInstrSearch, moduleBase, moduleSize))
 				continue;
 
 			/*
@@ -667,7 +662,7 @@ protected:
 				{
 					// MOV REG ADDR | MOV REG [ADDR]
 					IDirect3DDevice9** ppDevice = *(IDirect3DDevice9***)(addr + 1);
-					if (!PtrInModule(ppDevice, sizeof *ppDevice, moduleBase, moduleSize))
+					if (!utils::DataInModule(ppDevice, sizeof *ppDevice, moduleBase, moduleSize))
 						continue;
 					dx9Device = *ppDevice;
 					break;

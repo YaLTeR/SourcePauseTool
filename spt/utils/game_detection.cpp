@@ -12,6 +12,8 @@
 #include "convar.hpp"
 #endif
 
+#include "game_detection.hpp"
+
 namespace utils
 {
 
@@ -326,5 +328,11 @@ namespace utils
 		                         });
 	}
 #endif
+
+	bool DataInModule(void* ptr, size_t nBytes, void* modBase, size_t modSize)
+	{
+		return ptr >= modBase && (char*)ptr + nBytes <= (char*)modBase + modSize
+		       && (char*)ptr + nBytes >= modBase;
+	}
 
 } // namespace utils
