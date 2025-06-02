@@ -1543,6 +1543,7 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="spt\features\hud.hpp" />
     <ClInclude Include="spt\features\overlay.hpp" />
     <ClInclude Include="spt\features\playerio.hpp" />
+    <ClInclude Include="spt\features\portalled_pause.hpp" />
     <ClInclude Include="spt\features\property_getter.hpp" />
     <ClInclude Include="spt\features\shadow.hpp" />
     <ClInclude Include="spt\features\tas.hpp" />
