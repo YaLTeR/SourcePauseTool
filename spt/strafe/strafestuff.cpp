@@ -50,7 +50,7 @@ namespace Strafe
 
 		if (tas_strafe_version.GetInt() == 1)
 		{
-			return spt_tracing.ORIG_UTIL_TraceRay != nullptr;
+			return spt_tracing.ORIG_UTIL_TraceRay_client != nullptr;
 		}
 		else
 		{
@@ -116,11 +116,11 @@ namespace Strafe
 			else
 				ray.Init(start, end, mins, maxs);
 
-			spt_tracing.ORIG_UTIL_TraceRay(ray,
-			                               MASK_PLAYERSOLID_BRUSHONLY,
-			                               utils::spt_clientEntList.GetPlayer(),
-			                               COLLISION_GROUP_PLAYER_MOVEMENT,
-			                               &trace);
+			spt_tracing.ORIG_UTIL_TraceRay_client(ray,
+			                                      MASK_PLAYERSOLID_BRUSHONLY,
+			                                      utils::spt_clientEntList.GetPlayer(),
+			                                      COLLISION_GROUP_PLAYER_MOVEMENT,
+			                                      &trace);
 		}
 		else
 		{
@@ -149,16 +149,16 @@ namespace Strafe
 	void Trace(trace_t& trace, const Vector& start, const Vector& end)
 	{
 #ifndef OE
-		if (!spt_tracing.ORIG_UTIL_TraceRay)
+		if (!spt_tracing.ORIG_UTIL_TraceRay_client)
 			return;
 
 		Ray_t ray;
 		ray.Init(start, end);
-		spt_tracing.ORIG_UTIL_TraceRay(ray,
-		                               MASK_PLAYERSOLID_BRUSHONLY,
-		                               utils::spt_clientEntList.GetPlayer(),
-		                               COLLISION_GROUP_PLAYER_MOVEMENT,
-		                               &trace);
+		spt_tracing.ORIG_UTIL_TraceRay_client(ray,
+		                                      MASK_PLAYERSOLID_BRUSHONLY,
+		                                      utils::spt_clientEntList.GetPlayer(),
+		                                      COLLISION_GROUP_PLAYER_MOVEMENT,
+		                                      &trace);
 #endif
 	}
 
