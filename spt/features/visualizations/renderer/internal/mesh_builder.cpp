@@ -16,7 +16,7 @@
 // TODO use this to implement auto-spilling?
 void GetMaxMeshSize(size_t& maxVerts, size_t& maxIndices, bool dynamic)
 {
-	maxVerts = 32768;
+	maxVerts = MIN(32768, std::numeric_limits<VertIndex>::max());
 	maxIndices = 32768;
 	if (dynamic)
 		return;
@@ -105,7 +105,8 @@ IMeshWrapper MeshBuilderInternal::Fuser::CreateIMeshFromSpan(std::span<const Mes
 	Assert(totalVerts <= maxVerts);
 	Assert(totalIndices <= maxIndices);
 	Assert(span.front().vertData);
-	Assert(totalVerts <= totalIndices);
+	// may not be true anymore because of AddMbCompactMesh()
+	// Assert(totalVerts <= totalIndices);
 	for (auto& mc : span.subspan(1))
 	{
 		Assert(mc.vertData);
@@ -226,7 +227,9 @@ IMeshWrapper MeshBuilderInternal::Fuser::GetNextIMeshWrapper()
 	{
 		size_t curNumVerts = curSpan[numComponents].vertData->verts.size();
 		size_t curNumIndices = curSpan[numComponents].vertData->indices.size();
-		Assert(curNumIndices >= curNumVerts);
+
+		// this used to be true, but may not be because AddMbCompactMesh() blindly copies the entire vertex buffer
+		// Assert(curNumIndices >= curNumVerts);
 
 		if (totalNumIndices + curNumIndices > maxIndices || totalNumVerts + curNumVerts > maxVerts)
 		{
@@ -286,6 +289,65 @@ void MeshBuilderInternal::TmpMesh::Create(const MeshCreateFunc& createFunc, bool
 	createFunc(builderDelegate);
 }
 
+void MeshBuilderInternal::TmpMesh::PackVertices()
+{
+	utils::MbCompactMesh compactMesh;
+
+	for (size_t primType = 0; primType < (size_t)MeshPrimitiveType::Count; primType++)
+	{
+		for (size_t materialType = 0; materialType < (size_t)MeshMaterialSimple::Count; materialType++)
+		{
+			compactMesh.Clear();
+
+			MeshVertData& mvd =
+			    g_meshBuilderInternal.GetSimpleMeshComponent((MeshPrimitiveType)primType,
+			                                                 (MeshMaterialSimple)materialType);
+			// assert on AddXXX return since we should never end up with more vertices
+			switch ((MeshPrimitiveType)primType)
+			{
+			case MeshPrimitiveType::Triangles:
+				for (size_t i = 0; i < mvd.indices.size(); i += 3)
+				{
+					[[maybe_unused]] bool ret =
+					    compactMesh.AddTriangle(mvd.verts[mvd.indices[i]],
+					                            mvd.verts[mvd.indices[i + 1]],
+					                            mvd.verts[mvd.indices[i + 2]]);
+					Assert(ret);
+				}
+				break;
+			case MeshPrimitiveType::Lines:
+				for (size_t i = 0; i < mvd.indices.size(); i += 2)
+				{
+					[[maybe_unused]] bool ret = compactMesh.AddLine(mvd.verts[mvd.indices[i]],
+					                                                mvd.verts[mvd.indices[i + 1]]);
+					Assert(ret);
+				}
+				break;
+			default:
+				Assert(0);
+				break;
+			}
+			mvd.verts.resize(0);
+			mvd.indices.resize(0);
+
+			auto& points = compactMesh.GetPoints();
+			auto& colors = compactMesh.GetColors();
+			auto& faceIndices = compactMesh.GetFaceIndices();
+			auto& lineIndices = compactMesh.GetLineIndices();
+
+			Assert(points.size() == colors.size());
+			for (size_t i = 0; i < points.size(); i++)
+				mvd.verts.emplace_back(points[i], colors[i]);
+			if (primType == (size_t)MeshPrimitiveType::Triangles)
+				mvd.indices.add_range(faceIndices.cbegin(), faceIndices.cend());
+			else
+				mvd.indices.add_range(lineIndices.cbegin(), lineIndices.cend());
+
+			Assert(mvd.indices.size() >= mvd.verts.size());
+		}
+	}
+}
+
 MeshPositionInfo MeshBuilderInternal::TmpMesh::CalcPosInfo()
 {
 	MeshPositionInfo pi{Vector{INFINITY}, Vector{-INFINITY}};
@@ -306,11 +368,13 @@ MeshPositionInfo MeshBuilderInternal::TmpMesh::CalcPosInfo()
 
 /**************************************** MESH BUILDER PRO ****************************************/
 
-StaticMesh MeshBuilderPro::CreateStaticMesh(const MeshCreateFunc& createFunc)
+StaticMesh MeshBuilderPro::CreateStaticMesh(const MeshCreateFunc& createFunc, bool packVerts)
 {
 	SPT_VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	auto& tmpMesh = g_meshBuilderInternal.tmpMesh;
 	tmpMesh.Create(createFunc, false);
+	if (packVerts)
+		tmpMesh.PackVertices();
 
 	size_t numPopulated = std::count_if(tmpMesh.components.cbegin(),
 	                                    tmpMesh.components.cend(),
@@ -348,6 +412,18 @@ DynamicMesh MeshBuilderPro::CreateDynamicMesh(const MeshCreateFunc& createFunc)
 	}
 	g_meshBuilderInternal.dynamicMeshUnits.emplace(dynamicSlice, posInfo);
 	return {g_meshBuilderInternal.dynamicMeshUnits.size() - 1, g_meshRendererInternal.frameNum};
+}
+
+void MeshBuilderPro::CreateMeshContext(const MeshCreateFunc& createFunc)
+{
+	auto& tmpMesh = g_meshBuilderInternal.tmpMesh;
+	tmpMesh.Create(createFunc, true);
+	for (size_t i = tmpMesh.components.size(); i-- > 0;)
+	{
+		tmpMesh.components.back().verts.resize(0);
+		tmpMesh.components.back().indices.resize(0);
+		tmpMesh.components.pop_back();
+	}
 }
 
 #endif

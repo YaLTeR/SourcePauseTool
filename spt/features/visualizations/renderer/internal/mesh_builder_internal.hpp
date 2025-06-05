@@ -54,15 +54,7 @@
 * done iterating over that interval.
 */
 
-// a single vertex - may have position, color, uv coordinates, normal, etc
-struct VertexData
-{
-	Vector pos;
-	color32 col;
-
-	VertexData() : pos(), col() {};
-	VertexData(const Vector& pos, color32 color) : pos(pos), col(color) {}
-};
+using VertexData = utils::MbColoredVert;
 
 enum class MeshPrimitiveType : unsigned char
 {
@@ -197,6 +189,7 @@ struct MeshBuilderInternal
 		size_t maxVerts, maxIndices;
 
 		void Create(const MeshCreateFunc& createFunc, bool dynamic);
+		void PackVertices();
 		MeshPositionInfo CalcPosInfo();
 	} tmpMesh;
 

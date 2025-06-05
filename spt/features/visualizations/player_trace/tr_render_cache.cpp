@@ -449,15 +449,12 @@ void TrRenderingCache::RebuildPhysMeshes(const TrEntityCache::EntMap& entMap)
 			}
 			else
 			{
-				// TODO optimize?
 				it->second.mesh = spt_meshBuilder.CreateStaticMesh(
 				    [&](MeshBuilderDelegate& mb)
 				    {
-					    static std::vector<Vector> pts;
-					    pts.clear();
-					    for (auto vertIdx : *physMesh.vertIdxSp)
-						    pts.push_back(**vertIdx);
-					    mb.AddTris(pts.data(), physMesh.vertIdxSp.n / 3, shapeCol);
+					    auto sp = *physMesh.vertIdxSp;
+					    for (size_t i = 0; i < sp.size(); i += 3)
+						    mb.AddTri(**sp[i], **sp[i + 1], **sp[i + 2], shapeCol);
 				    });
 			}
 		}
