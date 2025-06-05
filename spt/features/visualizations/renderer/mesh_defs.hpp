@@ -27,7 +27,9 @@ enum WindingDir : unsigned char
 {
 	WD_CW = 1,       // clockwise
 	WD_CCW = 1 << 1, // counter clockwise
-	WD_BOTH = WD_CW | WD_CCW
+	WD_BOTH = WD_CW | WD_CCW,
+
+	WD_DEFAULT = WD_CW,
 };
 
 struct StaticMeshUnit;

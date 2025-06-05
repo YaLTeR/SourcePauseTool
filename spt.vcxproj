@@ -1380,6 +1380,7 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClCompile Include="spt\utils\game_detection.cpp" />
     <ClCompile Include="spt\utils\map_utils.cpp" />
     <ClCompile Include="spt\utils\math.cpp" />
+    <ClCompile Include="spt\utils\mesh_utils.cpp" />
     <ClCompile Include="spt\utils\portal_utils.cpp" />
     <ClCompile Include="spt\utils\serialize.cpp" />
     <ClCompile Include="spt\utils\signals.cpp" />
@@ -1554,6 +1555,7 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="spt\features\visualizations\imgui\imgui_interface.hpp" />
     <ClInclude Include="spt\features\visualizations\imgui\imgui_styles.hpp" />
     <ClInclude Include="spt\features\visualizations\imgui\jetbrains_mono_bold.hpp" />
+    <ClInclude Include="spt\features\visualizations\mesh_test_data.hpp" />
     <ClInclude Include="spt\features\visualizations\player_trace\import_export\tr_binary.hpp" />
     <ClInclude Include="spt\features\visualizations\player_trace\tr_config.hpp" />
     <ClInclude Include="spt\features\visualizations\player_trace\tr_entity_cache.hpp" />
@@ -1570,6 +1572,10 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="spt\features\visualizations\renderer\mesh_builder.hpp" />
     <ClInclude Include="spt\features\visualizations\renderer\mesh_defs.hpp" />
     <ClInclude Include="spt\features\visualizations\renderer\mesh_renderer.hpp" />
+    <ClInclude Include="spt\flatbuffers_schemas\fb_forward_declare.hpp" />
+    <ClInclude Include="spt\flatbuffers_schemas\fb_pack_defs.hpp" />
+    <ClInclude Include="spt\flatbuffers_schemas\gen\math_generated.h" />
+    <ClInclude Include="spt\flatbuffers_schemas\gen\mesh_generated.h" />
     <ClInclude Include="spt\ipc\ipc.hpp" />
     <ClInclude Include="spt\scripts2\condition2.hpp" />
     <ClInclude Include="spt\scripts2\framebulk_handler2.hpp" />
@@ -1606,6 +1612,7 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="spt\utils\interfaces.hpp" />
     <ClInclude Include="spt\utils\map_utils.hpp" />
     <ClInclude Include="spt\utils\math.hpp" />
+    <ClInclude Include="spt\utils\mesh_utils.hpp" />
     <ClInclude Include="spt\utils\portal_utils.hpp" />
     <ClInclude Include="spt\utils\serialize.hpp" />
     <ClInclude Include="spt\utils\signals.hpp" />
@@ -1695,10 +1702,13 @@ del "$(OutDir)spt-version.obj"</Command>
   </ItemGroup>
   <ItemGroup>
     <Text Include="spt\features\template.cpp.txt" />
+    <Text Include="spt\flatbuffers_schemas\gen\README.txt" />
     <Text Include="thirdparty\example.txt" />
     <Text Include="thirdparty\xz\readme.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="spt\flatbuffers_schemas\gen\math.fbs" />
+    <None Include="spt\flatbuffers_schemas\gen\mesh.fbs" />
     <None Include="thirdparty\imgui\README" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

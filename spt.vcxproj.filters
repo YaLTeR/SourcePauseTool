@@ -445,6 +445,9 @@
     <ClCompile Include="spt\features\visualizations\player_trace\tr_imgui.cpp">
       <Filter>spt\features\visualizations\player_trace</Filter>
     </ClCompile>
+    <ClCompile Include="spt\utils\mesh_utils.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -1041,6 +1044,33 @@
     <ClInclude Include="thirdparty\flatbuffers\vector_downward.h">
       <Filter>thirdparty\flatbuffers</Filter>
     </ClInclude>
+    <ClInclude Include="spt\utils\mesh_utils.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\mesh_test_data.hpp">
+      <Filter>spt\features\visualizations</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\fcps\fcps_animate.hpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\fcps\fcps_event.hpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\fcps\fcps_event_queue.hpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\flatbuffers_schemas\gen\math_generated.h">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\flatbuffers_schemas\gen\mesh_generated.h">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\flatbuffers_schemas\fb_forward_declare.hpp">
+      <Filter>spt\flatbuffers_schemas</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\flatbuffers_schemas\fb_pack_defs.hpp">
+      <Filter>spt\flatbuffers_schemas</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SDK includes &amp; libs">
@@ -1136,6 +1166,12 @@
     <Filter Include="thirdparty\flatbuffers">
       <UniqueIdentifier>{d9390b67-8e1b-4b03-982a-1e3a7d33837e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="spt\flatbuffers_schemas">
+      <UniqueIdentifier>{6cfa1451-9f27-402f-9fe1-1dcc0b3d9895}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\flatbuffers_schemas\gen">
+      <UniqueIdentifier>{3bb77c97-164a-46cd-b566-60d3038a6da7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="thirdparty\example.txt">
@@ -1147,10 +1183,19 @@
     <Text Include="thirdparty\xz\readme.txt">
       <Filter>thirdparty\xz</Filter>
     </Text>
+    <Text Include="spt\flatbuffers_schemas\gen\README.txt">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <None Include="thirdparty\imgui\README">
       <Filter>thirdparty\imgui</Filter>
+    </None>
+    <None Include="spt\flatbuffers_schemas\gen\math.fbs">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
+    </None>
+    <None Include="spt\flatbuffers_schemas\gen\mesh.fbs">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
     </None>
   </ItemGroup>
 </Project>

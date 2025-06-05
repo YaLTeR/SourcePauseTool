@@ -6,6 +6,7 @@
 #ifdef SPT_MESH_RENDERING_ENABLED
 
 #include <memory>
+#include <ranges>
 
 #include "..\mesh_builder.hpp"
 #include "spt\utils\math.hpp"
@@ -38,10 +39,10 @@
 // winding direction macros
 
 // WD_BOTH -> 2, WD_CW,WD_CCW -> 1
-#define WD_INDEX_MULTIPLIER(wd) (((wd)&1) + (((wd)&2) >> 1))
+#define WD_INDEX_MULTIPLIER(wd) (((wd) & 1) + (((wd) & 2) >> 1))
 
 // swaps lowest 2 bits; WD_BOTH -> WD_BOTH, WD_CW -> WD_CCW, WD_CCW -> WD_CW
-#define WD_INVERT(wd) ((WindingDir)((((wd)&1) << 1) | (((wd)&2) >> 1)))
+#define WD_INVERT(wd) ((WindingDir)((((wd) & 1) << 1) | (((wd) & 2) >> 1)))
 
 /*
 * Each function that edits any mesh vert data buffers returns true on success and false on failure. A failure
@@ -1401,6 +1402,168 @@ bool MeshBuilderDelegate::AddCPolyhedron(const CPolyhedron* polyhedron, ShapeCol
 
 	MVD_SIZE_VERIFY2(vdf, vdl);
 	return true;
+}
+
+bool MeshBuilderDelegate::AddMbCompactMesh(const utils::MbCompactMesh& mesh,
+                                           bool opaqueFaces,
+                                           bool opaqueLines,
+                                           bool zTestFaces,
+                                           bool zTestLines,
+                                           WindingDir wd)
+{
+	if (mesh.IsEmpty())
+		return true;
+
+	ShapeColor dummyColor{
+	    color32{0, 0, 0, (unsigned char)(opaqueFaces * 255)},
+	    color32{0, 0, 0, (unsigned char)(opaqueLines * 255)},
+	    zTestFaces,
+	    zTestLines,
+	};
+
+	auto& vdf = GET_MVD_FACES(dummyColor);
+	auto& vdl = GET_MVD_LINES(dummyColor);
+	MVD_CHECKPOINT2(vdf, vdl);
+
+	auto& points = mesh.GetPoints();
+	auto& colors = mesh.GetColors();
+	auto& faceIndices = mesh.GetFaceIndices();
+	auto& lineIndices = mesh.GetLineIndices();
+	Assert(points.size() == colors.size());
+
+	if (MVD_WILL_OVERFLOW(vdf,
+	                      faceIndices.empty() ? 0 : points.size(),
+	                      faceIndices.size() * WD_INDEX_MULTIPLIER(wd)))
+	{
+		return false;
+	}
+	if (MVD_WILL_OVERFLOW(vdl, lineIndices.empty() ? 0 : points.size(), lineIndices.size()))
+		return false;
+
+	if (!faceIndices.empty())
+	{
+		for (size_t i = 0; i < points.size(); i++)
+			vdf.verts.emplace_back(points[i], colors[i]);
+		if (wd & WD_CW)
+		{
+			std::ranges::transform(faceIndices,
+			                       std::back_inserter(vdf.indices),
+			                       [=](unsigned short idx) { return idx + vdf_origNumVerts; });
+		}
+		if (wd & WD_CCW)
+		{
+			std::ranges::transform(std::ranges::reverse_view{faceIndices},
+			                       std::back_inserter(vdf.indices),
+			                       [=](unsigned short idx) { return idx + vdf_origNumVerts; });
+		}
+	}
+
+	if (!lineIndices.empty())
+	{
+		for (size_t i = 0; i < points.size(); i++)
+			vdl.verts.emplace_back(points[i], colors[i]);
+		std::ranges::transform(lineIndices,
+		                       std::back_inserter(vdl.indices),
+		                       [=](unsigned short idx) { return idx + vdl_origNumVerts; });
+	}
+
+	MVD_SIZE_VERIFY2(vdf, vdl);
+	return true;
+}
+
+bool MeshBuilderDelegate::AddMbCompactMesh(const utils::MbCompactMesh& mesh, ShapeColor c)
+{
+	const bool doFaces = c.faceColor.a != 0;
+	const bool doLines = c.lineColor.a != 0;
+
+	if (!(c.wd & WD_BOTH) || (!doFaces && !doLines))
+		return true;
+
+	auto& vdf = GET_MVD_FACES(c);
+	auto& vdl = GET_MVD_LINES(c);
+	MVD_CHECKPOINT2(vdf, vdl);
+
+	auto& points = mesh.GetPoints();
+	auto& faceIndices = mesh.GetFaceIndices();
+	auto& lineIndices = mesh.GetLineIndices();
+
+	if (MVD_WILL_OVERFLOW(vdf,
+	                      faceIndices.empty() ? 0 : points.size(),
+	                      faceIndices.size() * WD_INDEX_MULTIPLIER(c.wd)))
+	{
+		return false;
+	}
+	if (MVD_WILL_OVERFLOW(vdl, lineIndices.empty() ? 0 : points.size(), lineIndices.size()))
+		return false;
+
+	if (doFaces)
+	{
+		for (auto& v : points)
+			vdf.verts.emplace_back(v, c.faceColor);
+		if (c.wd & WD_CW)
+		{
+			std::ranges::transform(faceIndices,
+			                       std::back_inserter(vdf.indices),
+			                       [=](unsigned short idx) { return idx + vdf_origNumVerts; });
+		}
+		if (c.wd & WD_CCW)
+		{
+			std::ranges::transform(std::ranges::reverse_view{faceIndices},
+			                       std::back_inserter(vdf.indices),
+			                       [=](unsigned short idx) { return idx + vdf_origNumVerts; });
+		}
+	}
+
+	if (doLines)
+	{
+		for (auto& v : points)
+			vdl.verts.emplace_back(v, c.lineColor);
+		std::ranges::transform(lineIndices,
+		                       std::back_inserter(vdl.indices),
+		                       [=](unsigned short idx) { return idx + vdl_origNumVerts; });
+	}
+
+	MVD_SIZE_VERIFY2(vdf, vdl);
+	return true;
+}
+
+bool MeshBuilderDelegate::DumpMbCompactMesh(utils::MbCompactMesh& outMesh)
+{
+	bool ret = true;
+
+	for (size_t primType = 0; primType < (size_t)MeshPrimitiveType::Count && ret; primType++)
+	{
+		for (size_t materialType = 0; materialType < (size_t)MeshMaterialSimple::Count && ret; materialType++)
+		{
+			MeshVertData& mvd =
+			    g_meshBuilderInternal.GetSimpleMeshComponent((MeshPrimitiveType)primType,
+			                                                 (MeshMaterialSimple)materialType);
+			switch ((MeshPrimitiveType)primType)
+			{
+			case MeshPrimitiveType::Triangles:
+				for (size_t i = 0; i < mvd.indices.size(); i += 3)
+				{
+					ret &= outMesh.AddTriangle(mvd.verts[mvd.indices[i]],
+					                           mvd.verts[mvd.indices[i + 1]],
+					                           mvd.verts[mvd.indices[i + 2]]);
+					Assert(ret);
+				}
+				break;
+			case MeshPrimitiveType::Lines:
+				for (size_t i = 0; i < mvd.indices.size(); i += 2)
+				{
+					ret &=
+					    outMesh.AddLine(mvd.verts[mvd.indices[i]], mvd.verts[mvd.indices[i + 1]]);
+					Assert(ret);
+				}
+				break;
+			default:
+				Assert(0);
+				break;
+			}
+		}
+	}
+	return ret;
 }
 
 #endif

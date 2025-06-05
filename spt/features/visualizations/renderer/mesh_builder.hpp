@@ -8,6 +8,7 @@
 #include "mathlib\polyhedron.h"
 
 #include "internal\ref_mgr.hpp"
+#include "spt\utils\mesh_utils.hpp"
 
 struct LineColor
 {
@@ -130,11 +131,11 @@ inline color32 color32RgbLerp(color32 a, color32 b, float f)
 * be created in the MeshRenderer signal (doing so anywhere else is undefined behavior), and their cleanup is
 * handle automatically.
 * 
-* Static meshes are for stuff that rarely changes and/or stuff that's expensive to recreate every frame. These
-* guys are more efficient and can be created at any time (in LoadFeature() or after). To render them you simply
-* give your static mesh to the meshrenderer on whatever frames you want it to be drawn. Before rendering, you must
-* call their Valid() method to check if they're alive, and recreate them if not. Internally they are shared
-* pointers, so they'll get deleted once you get rid of the last copy.
+* Static meshes are for stuff that rarely changes and/or stuff that's expensive to recreate every frame. Static
+* meshes have a high creation cost, but they're more efficient afterwards. You can create static meshes pretty
+* much whenever (in or after LoadFeature()), then pass them to the renderer on whatever frames you want them to
+* be drawn. Before rendering, you must call their Valid() method to check if they're alive, and recreate them if
+* not. Internally they are shared pointers, so they'll get deleted once you get rid of the last copy.
 * 
 * Each of these functions returns true on success and false on failure. A failure likely means that the internal
 * buffers have reached the maximum size and cannot fit the primitive, in which case the mesh is unchanged. It is
@@ -214,6 +215,34 @@ public:
 
 	bool AddCPolyhedron(const CPolyhedron* polyhedron, ShapeColor c);
 
+	/*
+	* To determine which material is used internally, you must tell the builder if the faces/lines
+	* contain any translucent colors and set opaqueFaces/opaqueLines to false respectively.
+	*/
+	bool AddMbCompactMesh(const utils::MbCompactMesh& mesh,
+	                      bool opaqueFaces,
+	                      bool opaqueLines,
+	                      bool zTestFaces = true,
+	                      bool zTestLines = true,
+	                      WindingDir wd = WD_DEFAULT);
+
+	// overrides colors in compact mesh
+	bool AddMbCompactMesh(const utils::MbCompactMesh& mesh, ShapeColor c);
+
+	/*
+	* Internally, there are 3 materials and 2 primitive types. These are all fused into one compact
+	* mesh; this is to create the small compact mesh for serialization. For example, if you add a
+	* bunch of lines, then add a bunch of unconnected faces, then do something else with a
+	* different material (no-ztesting), the vertex array will be shared for all of those types, but
+	* the indices may refer to separate chunks of the buffer. This is fine for serialization, but
+	* suboptimal for feeding back into the mesh builder since it'll blindly copy all vertices in
+	* the compact mesh.
+	* 
+	* This function does not clear the compact mesh before adding more data. Returns true if all
+	* the AddXXX() functions in the compact mesh returned true.
+	*/
+	bool DumpMbCompactMesh(utils::MbCompactMesh& outMesh);
+
 private:
 	MeshBuilderDelegate() = default;
 	MeshBuilderDelegate(MeshBuilderDelegate&) = delete;
@@ -229,7 +258,20 @@ class MeshBuilderPro
 {
 public:
 	DynamicMesh CreateDynamicMesh(const MeshCreateFunc& createFunc);
-	StaticMesh CreateStaticMesh(const MeshCreateFunc& createFunc);
+	/*
+	* If packVerts is true, a pass is done over all the buffers using utils::MbCompactMesh which
+	* drops duplicate vertices before creating the StaticMesh object. This is (relatively) slow,
+	* but static meshes already have very significant overhead creation and are meant to be rarely
+	* (re)created anyways. A possible side effect is that render order within a mesh may get
+	* modified (which may matter for translucent meshes), so I provide the option to disable it.
+	*/
+	StaticMesh CreateStaticMesh(const MeshCreateFunc& createFunc, bool packVerts = true);
+
+	/*
+	* A bit of a hack for creating meshes using the normal AddXXX() functions and exporting them
+	* using DumpMbCompactMesh without creating dynamic or static mesh objects.
+	*/
+	void CreateMeshContext(const MeshCreateFunc& createFunc);
 
 	/*
 	* For large meshes that might fill up, the only solution to gracefully keep going is to have

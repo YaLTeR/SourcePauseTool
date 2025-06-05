@@ -11,6 +11,9 @@
 #include "spt\feature.hpp"
 #include "spt\utils\signals.hpp"
 #include "spt\utils\interfaces.hpp"
+#include "mesh_test_data.hpp"
+#include "spt\flatbuffers_schemas\fb_forward_declare.hpp"
+#include "spt\flatbuffers_schemas\gen\mesh_generated.h"
 
 // purpose: serves as way to visually test the mesh builder as well as show how to use some of its features
 
@@ -539,7 +542,7 @@ TEST_CASE("Reusing static/dynamic meshes", Vector(400, -300, 0))
 	auto coloredCreateFunc = [](const ShapeColor& c) {
 		return [&](MeshBuilderDelegate& mb) {
 			mb.AddBox(vec3_origin, {-10, -10, 0}, {10, 10, 50}, vec3_angle, c);
-		};
+	};
 	};
 
 	// create once
@@ -779,6 +782,195 @@ TEST_CASE("Testing winding direction", Vector(1200, -300, 0))
 			    mb.AddSweptBox(pos, pos + Vector{15, 15, 15}, mins, maxs, sbColor);
 		    }
 	    }));
+}
+
+TEST_CASE("AddMbCompactMesh", Vector(1600, -500, 0))
+{
+	static StaticMesh starMesh, planetMesh, commetMesh;
+
+	constexpr size_t nTwinkleMeshes = 10;
+	static std::array<utils::MbCompactMesh, nTwinkleMeshes> twinkleMeshes;
+	static std::array<color32, nTwinkleMeshes> twinkleColors;
+	static bool twinkleInitialized = false;
+
+	if (!starMesh.Valid())
+	{
+		utils::MbCompactMesh compactMesh;
+		auto& faces = test_data::star_faces;
+		for (size_t i = 0; i < ARRAYSIZE(faces); i += 3)
+			compactMesh.AddTriangle(faces[i], faces[i + 1], faces[i + 2]);
+		// add this one directly, should be visible from the inside
+		starMesh = spt_meshBuilder.CreateStaticMesh(
+		    [&](MeshBuilderDelegate& mb)
+		    { mb.AddMbCompactMesh(compactMesh, true, true, true, true, WD_BOTH); });
+	}
+
+	if (!planetMesh.Valid())
+	{
+		utils::MbCompactMesh compactMesh;
+		auto& faces = test_data::planet_faces;
+		auto& lines = test_data::planet_lines;
+		for (size_t i = 0; i < ARRAYSIZE(faces); i += 3)
+			compactMesh.AddTriangle(faces[i + 2], faces[i + 1], faces[i]); // invert .obj winding
+		for (size_t i = 0; i < ARRAYSIZE(lines); i += 2)
+			compactMesh.AddLine(lines[i], lines[i + 1]);
+
+		// for this mesh, we're gonna add the compact mesh to a dummy dynamic mesh, dump the data, and add it again
+		[[maybe_unused]] bool dumpRet = false;
+		spt_meshBuilder.CreateDynamicMesh(
+		    [&](MeshBuilderDelegate& mb)
+		    {
+			    mb.AddMbCompactMesh(compactMesh, true, true);
+			    compactMesh.Clear();
+			    dumpRet = mb.DumpMbCompactMesh(compactMesh);
+		    });
+		Assert(dumpRet);
+		planetMesh = spt_meshBuilder.CreateStaticMesh([&](MeshBuilderDelegate& mb)
+		                                              { mb.AddMbCompactMesh(compactMesh, true, true); });
+	}
+
+	if (!commetMesh.Valid())
+	{
+		// for this one we'll use CreateMeshContext and let the builder create the compact mesh for us
+
+		utils::MbCompactMesh compactMesh;
+		[[maybe_unused]] bool dumpRet = false;
+		auto& faces = test_data::commet_faces;
+		auto& lines = test_data::commet_lines;
+
+		spt_meshBuilder.CreateMeshContext(
+		    [&](MeshBuilderDelegate& mb)
+		    {
+			    for (size_t i = 0; i < ARRAYSIZE(faces); i += 3)
+			    {
+				    color32 color = faces[i + 2].col;
+				    color.a *= 0.1f;
+				    mb.AddTri(faces[i + 2].pos,
+				              faces[i + 1].pos,
+				              faces[i].pos,
+				              ShapeColor{C_OUTLINE(color)});
+			    }
+			    for (size_t i = 0; i < ARRAYSIZE(lines); i += 2)
+			    {
+				    mb.AddLine(lines[i].pos, lines[i + 1].pos, LineColor{lines[i].col});
+			    }
+			    dumpRet = mb.DumpMbCompactMesh(compactMesh);
+		    });
+
+		Assert(dumpRet);
+		// now recreate the static mesh using the exported data
+		commetMesh = spt_meshBuilder.CreateStaticMesh([&](MeshBuilderDelegate& mb)
+		                                              { mb.AddMbCompactMesh(compactMesh, false, true); });
+	}
+
+	/*
+	* For the twinkle stars, we'll generate the meshes once and use dynamic meshes to set the
+	* color. This is also a way to test the serialization/deserialization.
+	*/
+	for (size_t i = 0; i < nTwinkleMeshes && !twinkleInitialized; i++)
+	{
+		// pts are the corners of a cube centered at the origin
+		// https://en.wikipedia.org/wiki/Tetrahedron#Cartesian_coordinates
+		std::array<Vector, 8> pts;
+		for (size_t j = 0; j < pts.size(); j++)
+			pts[j] = Vector{(j & 1) ? 1.f : -1.f, (j & 2) ? 1.f : -1.f, (j & 4) ? 1.f : -1.f};
+
+		utils::MbCompactMesh& compactMesh = twinkleMeshes[i];
+		utils::MbCompactMesh tmpMesh;
+
+		flatbuffers::FlatBufferBuilder fbb{};
+		std::vector<uint8_t> writeVec;
+
+		auto randomMat = [this]()
+		{
+			matrix3x4_t angMat, finalMat;
+			SetScaleMatrix(.5f, finalMat);
+			Vector offsetFromCenter = vec3_origin;
+			while (offsetFromCenter.Length() < 150 || offsetFromCenter.Length() > 300)
+				offsetFromCenter = RandomVector(-300, 300);
+			AngleMatrix(RandomAngle(-360, 360), testPos + offsetFromCenter, angMat);
+			MatrixMultiply(angMat, finalMat, finalMat);
+			return finalMat;
+		};
+
+		for (size_t j = 0; j < 10; j++)
+		{
+			tmpMesh.Clear();
+			tmpMesh.AddTriangle(pts[4], pts[7], pts[1]);
+			tmpMesh.AddTriangle(pts[4], pts[1], pts[2]);
+			tmpMesh.AddTriangle(pts[4], pts[2], pts[7]);
+			tmpMesh.AddTriangle(pts[1], pts[7], pts[2]);
+			tmpMesh.AddLine(pts[5], pts[5] * 2);
+			tmpMesh.AddLine(pts[0], pts[0] * 2);
+			tmpMesh.AddLine(pts[6], pts[6] * 2);
+			tmpMesh.AddLine(pts[3], pts[3] * 2);
+
+			// transform stars in place so that they're elligible for fusing
+			matrix3x4_t angMat, finalMat;
+			SetScaleMatrix(.5f, finalMat);
+			Vector offsetFromCenter = vec3_origin;
+			while (offsetFromCenter.Length() < 150 || offsetFromCenter.Length() > 300)
+				offsetFromCenter = RandomVector(-300, 300);
+			AngleMatrix(RandomAngle(-360, 360), testPos + offsetFromCenter, angMat);
+			MatrixMultiply(angMat, finalMat, finalMat);
+
+			if ((i ^ j) & 1)
+			{
+				// add to the full mesh directly
+				[[maybe_unused]] bool ret = compactMesh.AddMbCompactMesh(tmpMesh, randomMat());
+				Assert(ret);
+			}
+			else
+			{
+				// add by serializing
+				flatbuffers::Offset<fb::mesh::MbCompactMesh> fbMesh = tmpMesh.Serialize(fbb, (i ^ j) & 2);
+				fbb.FinishSizePrefixed(fbMesh, "MESH");
+				auto detached = fbb.Release();
+				writeVec.insert(writeVec.end(), detached.begin(), detached.end());
+			}
+		}
+
+		// deserialize
+		ser::StatusTracker stat;
+		auto sp = std::span{writeVec};
+		while (!sp.empty())
+		{
+			auto fbMesh = flatbuffers::GetSizePrefixedRoot<fb::mesh::MbCompactMesh>(sp.data());
+			compactMesh.Deserialize(*fbMesh, stat, randomMat());
+			Assert(stat.Ok());
+			size_t len = flatbuffers::GetSizePrefixedBufferLength(sp.data());
+			sp = sp.subspan(len);
+		}
+	}
+	for (size_t i = 0; i < nTwinkleMeshes && !twinkleInitialized; i++)
+	{
+		float t = rand() / (float)RAND_MAX;
+		// interpolate between warm (red-orange) and cool (blue-white)
+		twinkleColors[i] = {(byte)(255 - t * 105), (byte)(150 + t * 105), (byte)(150 + t * 105), (byte)50};
+	}
+	twinkleInitialized = true;
+
+	static float remainderTime = 0;
+	remainderTime += testFeature.timeSinceLast;
+
+	for (; remainderTime >= 0.01f; remainderTime -= 0.01f)
+	{
+		for (size_t i = 0; i < nTwinkleMeshes; i++)
+		{
+			int delta = rand() % 15 - 7;
+			twinkleColors[i].a = clamp(twinkleColors[i].a + delta, 20, 90);
+		}
+	}
+
+	RenderCallback staticCb = [=](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+	{ PositionMatrix(testPos, infoOut.mat); };
+
+	mr.DrawMesh(starMesh, staticCb);
+	mr.DrawMesh(planetMesh, staticCb);
+	mr.DrawMesh(commetMesh, staticCb);
+
+	for (size_t i = 0; i < nTwinkleMeshes; i++)
+		mr.DrawMesh(MB_DYNAMIC(mb.AddMbCompactMesh(twinkleMeshes[i], {twinkleColors[i], twinkleColors[i]});));
 }
 
 #endif

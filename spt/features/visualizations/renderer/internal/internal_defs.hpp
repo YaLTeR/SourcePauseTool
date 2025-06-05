@@ -13,12 +13,13 @@
 #pragma warning(pop)
 
 #include "spt\utils\spt_vprof.hpp"
+#include "spt\utils\mesh_utils.hpp"
 
 #define VPROF_BUDGETGROUP_MESH_RENDERER _T("Mesh_Renderer")
 
 #include <stack>
 
-using VertIndex = unsigned short;
+using VertIndex = utils::MbCompactMesh::idx_type;
 using DynamicMeshToken = DynamicMesh;
 
 template<class T>

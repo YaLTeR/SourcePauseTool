@@ -61,12 +61,10 @@ namespace utils
 		return a;
 	}
 
-#ifndef OE
 	void VectorTransform(const matrix3x4_t& mat, Vector& v)
 	{
 		Vector tmp = v;
 		VectorTransform(tmp, mat, v);
 	}
-#endif
 
 } // namespace utils

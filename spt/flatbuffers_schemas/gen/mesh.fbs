@@ -1,0 +1,10 @@
+include "math.fbs";
+
+namespace fb.mesh;
+
+table MbCompactMesh {
+  points:[fb.math.Vector3] (id: 0);
+  colors:[fb.math.Color32] (id: 1);
+  face_indices:[uint16] (id: 2);
+  line_indices:[uint16] (id: 3);
+}

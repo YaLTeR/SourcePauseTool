@@ -13,6 +13,8 @@
 template<typename T>
 struct VectorSlice
 {
+	using value_type = std::vector<T>::value_type;
+
 	std::vector<T>* vec;
 	size_t off;
 	size_t len;

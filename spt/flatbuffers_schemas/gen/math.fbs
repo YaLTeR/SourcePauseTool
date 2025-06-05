@@ -1,0 +1,35 @@
+namespace fb.math;
+
+struct Vector3 {
+  x:float32;
+  y:float32;
+  z:float32;
+}
+
+struct QAngle {
+  x:float32;
+  y:float32;
+  z:float32;
+}
+
+struct Transform {
+  pos:fb.math.Vector3;
+  ang:fb.math.QAngle;
+}
+
+struct Aabb {
+  mins:fb.math.Vector3;
+  maxs:fb.math.Vector3;
+}
+
+struct VPlane {
+  normal:fb.math.Vector3;
+  dist:float32;
+}
+
+struct Color32 {
+  r:uint8;
+  g:uint8;
+  b:uint8;
+  a:uint8;
+}
