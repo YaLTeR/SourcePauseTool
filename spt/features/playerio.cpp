@@ -139,8 +139,7 @@ void PlayerIOFeature::PreHook()
 		CreateMoveSignal.Works = true;
 
 		// 20th Anniversary update
-		if (!utils::DoesGameLookLikeHLS() && !utils::DoesGameLookLikePortal()
-		    && utils::GetBuildNumber() >= 9350000)
+		if (utils::GetBuildNumber() >= 9350000)
 		{
 			offM_pCommands = 228;
 		}
