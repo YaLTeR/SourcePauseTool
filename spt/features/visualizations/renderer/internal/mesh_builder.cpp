@@ -16,20 +16,28 @@
 // TODO use this to implement auto-spilling?
 void GetMaxMeshSize(size_t& maxVerts, size_t& maxIndices, bool dynamic)
 {
-	maxVerts = MIN(32768, std::numeric_limits<VertIndex>::max());
+	maxVerts = 32768;
 	maxIndices = 32768;
-	if (dynamic)
-		return;
 
-	if (utils::DoesGameLookLikePortal())
+	if (!dynamic)
 	{
-		if (utils::GetBuildNumber() >= 5135)
+		if (utils::DoesGameLookLikePortal())
 		{
-			maxVerts = 65536;
-			maxIndices = 999'999; // unknown upper limit
+			if (utils::GetBuildNumber() >= 5135)
+			{
+				maxVerts = 65536;
+				maxIndices = 999'999; // unknown upper limit
+			}
 		}
+		// else unkown, assume a safe lower limit
 	}
-	// else unkown, assume a safe lower limit
+
+	// make sure value is clapped to the compact mesh limit so we can pack meshes
+	maxVerts = std::min({
+	    maxVerts,
+	    (size_t)std::numeric_limits<VertIndex>::max(),
+	    utils::MbCompactMesh::MB_CM_MAX_NUM_VERTS,
+	});
 }
 
 /**************************************** MESH VERT DATA ****************************************/
@@ -368,13 +376,12 @@ MeshPositionInfo MeshBuilderInternal::TmpMesh::CalcPosInfo()
 
 /**************************************** MESH BUILDER PRO ****************************************/
 
-StaticMesh MeshBuilderPro::CreateStaticMesh(const MeshCreateFunc& createFunc, bool packVerts)
+StaticMesh MeshBuilderPro::CreateStaticMesh(const MeshCreateFunc& createFunc)
 {
 	SPT_VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_MESH_RENDERER);
 	auto& tmpMesh = g_meshBuilderInternal.tmpMesh;
 	tmpMesh.Create(createFunc, false);
-	if (packVerts)
-		tmpMesh.PackVertices();
+	tmpMesh.PackVertices(); // compactify with MbCompactMesh
 
 	size_t numPopulated = std::count_if(tmpMesh.components.cbegin(),
 	                                    tmpMesh.components.cend(),
