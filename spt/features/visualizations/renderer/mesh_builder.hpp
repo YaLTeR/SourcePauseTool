@@ -258,18 +258,11 @@ class MeshBuilderPro
 {
 public:
 	DynamicMesh CreateDynamicMesh(const MeshCreateFunc& createFunc);
-	/*
-	* If packVerts is true, a pass is done over all the buffers using utils::MbCompactMesh which
-	* drops duplicate vertices before creating the StaticMesh object. This is (relatively) slow,
-	* but static meshes already have very significant overhead creation and are meant to be rarely
-	* (re)created anyways. A possible side effect is that render order within a mesh may get
-	* modified (which may matter for translucent meshes), so I provide the option to disable it.
-	*/
-	StaticMesh CreateStaticMesh(const MeshCreateFunc& createFunc, bool packVerts = true);
+	StaticMesh CreateStaticMesh(const MeshCreateFunc& createFunc);
 
 	/*
-	* A bit of a hack for creating meshes using the normal AddXXX() functions and exporting them
-	* using DumpMbCompactMesh without creating dynamic or static mesh objects.
+	* A bit of a hack to allow creating meshes using the normal AddXXX() functions and exporting
+	* them using DumpMbCompactMesh without creating dynamic or static mesh objects.
 	*/
 	void CreateMeshContext(const MeshCreateFunc& createFunc);
 
