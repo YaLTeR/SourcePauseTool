@@ -30,6 +30,7 @@
 #ifdef SPT_MESH_RENDERING_ENABLED
 
 #include <algorithm>
+#include <numeric>
 
 #include "internal_defs.hpp"
 #include "interfaces.hpp"
@@ -166,6 +167,25 @@ void MeshRendererFeature::ImGuiCallback()
 	    "Draw AABB for meshes & fused meshes",
 	};
 	SptImGui::CvarCombo(y_spt_draw_mesh_debug, "##draw_mesh_debug", opts, ARRAYSIZE(opts));
+
+	const auto& allVerts = g_meshBuilderInternal.sharedLists.simple.verts;
+	const auto& allIndices = g_meshBuilderInternal.sharedLists.simple.indices;
+
+	size_t totalVerts = std::accumulate(allVerts.cbegin(),
+	                                    allVerts.cend(),
+	                                    0,
+	                                    [](auto a, auto& vData) { return a + vData.size(); });
+
+	size_t totalIndices = std::accumulate(allIndices.cbegin(),
+	                                      allIndices.cend(),
+	                                      0,
+	                                      [](auto a, auto& vData) { return a + vData.size(); });
+
+	ImGui::Text("%3u dynamic wrappers this frame: %6u verts %6u indices",
+	            g_meshRendererInternal.nDynamicsThisFrame,
+	            totalVerts,
+	            totalIndices);
+	ImGui::Text("%3u static mesh wrappers this frame", g_meshRendererInternal.nStaticsThisFrame);
 }
 
 int MeshRendererFeature::CurrentPortalRenderDepth() const
@@ -325,6 +345,8 @@ void MeshRendererInternal::FrameCleanup()
 	queuedUnitWrappers.clear();
 	g_meshBuilderInternal.FrameCleanup();
 	Assert(debugMeshInfo.descriptionSlices.empty());
+	nDynamicsThisFrame = 0;
+	nStaticsThisFrame = 0;
 }
 
 void MeshRendererInternal::OnRenderViewPre_Signal(void* thisptr, CViewSetup* cameraView)
@@ -692,7 +714,10 @@ void MeshRendererDelegate::DrawMesh(const DynamicMesh& dynamicMesh, const Render
 	}
 	const DynamicMeshUnit& meshUnit = g_meshBuilderInternal.GetDynamicMeshFromToken(dynamicMesh);
 	if (!meshUnit.vDataSlice.empty())
+	{
 		g_meshRendererInternal.queuedUnitWrappers.emplace_back(dynamicMesh, callback);
+		g_meshRendererInternal.nDynamicsThisFrame++;
+	}
 }
 
 void MeshRendererDelegate::DrawMesh(const StaticMesh& staticMesh, const RenderCallback& callback)
@@ -709,7 +734,10 @@ void MeshRendererDelegate::DrawMesh(const StaticMesh& staticMesh, const RenderCa
 		return;
 	}
 	if (staticMesh.meshPtr->nMeshes > 0)
+	{
 		g_meshRendererInternal.queuedUnitWrappers.emplace_back(staticMesh.meshPtr, callback);
+		g_meshRendererInternal.nStaticsThisFrame++;
+	}
 }
 
 #endif

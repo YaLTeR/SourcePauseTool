@@ -39,6 +39,10 @@ struct MeshRendererInternal
 {
 	std::vector<MeshUnitWrapper> queuedUnitWrappers;
 
+	// for debugging
+	size_t nDynamicsThisFrame = 0;
+	size_t nStaticsThisFrame = 0;
+
 	struct
 	{
 		const CRendering3dView* rendering3dView;
