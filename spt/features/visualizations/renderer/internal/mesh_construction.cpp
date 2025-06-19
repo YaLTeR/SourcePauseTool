@@ -839,7 +839,7 @@ bool MeshBuilderDelegate::AddSweptBox(const Vector& start,
 	MVD_CHECKPOINT2(vdf, vdl);
 
 	// scale the boxes a bit to prevent z fighting
-	const Vector startEndNudge(0.04f);
+	const Vector startEndNudge(MIN(VectorMaximum(maxs - mins) * .002f, .04f));
 
 	if (!AddBox(end, mins - startEndNudge * 1.5, maxs - startEndNudge * 1.5, vec3_angle, c.cEnd))
 		return false;
