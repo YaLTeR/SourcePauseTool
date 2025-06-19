@@ -21,6 +21,8 @@
 #include "spt/features/hud.hpp"
 #include "spt/features/visualizations/imgui/imgui_interface.hpp"
 #include "spt/features/portalled_pause.hpp"
+#include "spt/features/visualizations/fcps/fcps_config.hpp"
+#include "spt/features/visualizations/fcps/fcps_event.hpp"
 
 using namespace player_trace;
 
@@ -42,12 +44,12 @@ protected:
 	virtual void UnloadFeature() override;
 
 private:
-	// TODO log FCPS & teleports reasons
 	TrSegmentReason deferredSegmentReason = TR_SR_NONE;
 
 	void ClampActiveTick();
 	void OnTickSignal(bool simulating);
 	void OnFinishRestoreSignal(void*);
+	void OnFcpsSignal(const FcpsEvent& event);
 	void OnMeshRenderSignal(MeshRendererDelegate& mr);
 #ifdef SPT_HUD_ENABLED
 	void OnHudCallback();
@@ -238,6 +240,8 @@ void PlayerTraceFeature::LoadFeature()
 	spt_meshRenderer.signal.Connect(this, &PlayerTraceFeature::OnMeshRenderSignal);
 	spt_portalled_pause_feat.portalTeleportedEntitySignal.Connect(this,
 	                                                              &PlayerTraceFeature::OnPortalTeleportSignal);
+	if (FcpsFinishedSignalWorks())
+		fcpsFinishedSignal.Connect(this, &PlayerTraceFeature::OnFcpsSignal);
 
 	InitCommand(spt_trace_start);
 	InitCommand(spt_trace_stop);
@@ -398,6 +402,13 @@ void PlayerTraceFeature::OnPortalTeleportSignal(IServerEntity* portal, IServerEn
 	if (ent != utils::spt_serverEntList.GetPlayer())
 		return;
 	deferredSegmentReason = MAX(deferredSegmentReason, TR_SR_PLAYER_PORTALLED);
+}
+
+void PlayerTraceFeature::OnFcpsSignal(const FcpsEvent& event)
+{
+	if (event.params.entHandle.GetEntryIndex() != 1 || event.outcome.result != FCPS_SUCESS)
+		return;
+	deferredSegmentReason = MAX(deferredSegmentReason, TR_SR_FCPS);
 }
 
 bool player_trace::GetActiveTracePos(Vector& pos, QAngle& ang, float& fov)
