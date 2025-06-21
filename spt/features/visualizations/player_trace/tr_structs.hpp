@@ -624,7 +624,6 @@ namespace player_trace
 			std::string gameName;
 			std::string gameModName;
 			std::string playerName;
-			bool playerNameInitialized = false;
 			int32_t gameVersion = -666;
 
 			void Clear()
@@ -632,7 +631,6 @@ namespace player_trace
 				gameName.clear();
 				gameModName.clear();
 				playerName.clear();
-				playerNameInitialized = false;
 				gameVersion = -666;
 			}
 		} firstRecordedInfo;
