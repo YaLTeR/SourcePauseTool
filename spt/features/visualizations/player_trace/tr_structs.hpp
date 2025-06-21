@@ -8,6 +8,7 @@
 #include "tr_config.hpp"
 #include "spt/features/ent_props.hpp"
 #include "spt/utils/interfaces.hpp"
+#include "spt/utils/serialize.hpp"
 
 #undef min
 #undef max
@@ -568,6 +569,7 @@ namespace player_trace
 	*/
 	struct TrPlayerTrace
 	{
+	private:
 		// I might be going to hell for this
 		std::tuple<
 		    // :)
@@ -611,8 +613,9 @@ namespace player_trace
 
 		    // :)
 		    >
-		    _storage;
+		    storage;
 
+	public:
 		tr_tick numRecordedTicks = 0;
 		TrIdx<TrAbsBox_v1> playerStandBboxIdx{}, playerDuckBboxIdx{};
 
@@ -658,7 +661,7 @@ namespace player_trace
 			using type = std::tuple<VersionHolder<typename Ts::value_type>...>;
 		};
 
-		StorageToVersionHolder<decltype(_storage)>::type versions;
+		StorageToVersionHolder<decltype(storage)>::type versions;
 
 		std::unique_ptr<TrRecordingCache> recordingCache;
 		mutable std::unique_ptr<TrRenderingCache> renderingCache;
@@ -708,19 +711,19 @@ namespace player_trace
 		{
 			auto capacityFunc = [](auto&... vecs)
 			{ return (0u + ... + (vecs.capacity() * sizeof(std::decay_t<decltype(vecs)>::value_type))); };
-			return sizeof(*this) + std::apply(capacityFunc, _storage);
+			return sizeof(*this) + std::apply(capacityFunc, storage);
 		}
 
 		template<typename T>
 		constexpr std::vector<T>& Get()
 		{
-			return std::get<std::vector<T>>(_storage);
+			return std::get<std::vector<T>>(storage);
 		}
 
 		template<typename T>
 		constexpr const std::vector<T>& Get() const
 		{
-			return std::get<std::vector<T>>(_storage);
+			return std::get<std::vector<T>>(storage);
 		}
 
 		/*
@@ -789,6 +792,9 @@ namespace player_trace
 		                                std::span<const TrLandmark> toLandmarkSp) const;
 
 		void HostTickCollect(bool simulated, TrSegmentReason segmentReason, float entCollectRadius);
+
+		void Serialize(ser::IWriter& wr) const;
+		void Deserialize(ser::IReader& rd);
 	};
 
 	template<typename T>

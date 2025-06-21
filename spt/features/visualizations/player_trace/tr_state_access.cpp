@@ -16,7 +16,7 @@ void TrPlayerTrace::Clear()
 	playerStandBboxIdx.Invalidate();
 	playerDuckBboxIdx.Invalidate();
 
-	std::apply([](auto&... vecs) { ((vecs.clear(), vecs.shrink_to_fit()), ...); }, _storage);
+	std::apply([](auto&... vecs) { ((vecs.clear(), vecs.shrink_to_fit()), ...); }, storage);
 	std::apply([](auto&... holder) { ((holder.firstExportVersion = TR_INVALID_STRUCT_VERSION), ...); }, versions);
 	numRecordedTicks = 0;
 	hasStartRecordingBeenCalled = false;
