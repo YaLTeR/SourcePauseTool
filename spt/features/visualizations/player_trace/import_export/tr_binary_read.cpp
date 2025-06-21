@@ -2,9 +2,11 @@
 
 #include <inttypes.h>
 
-#include "tr_binary_internal.hpp"
+#include "tr_binary.hpp"
 
 #ifdef SPT_PLAYER_TRACE_ENABLED
+
+#include "spt/spt-serverplugin.hpp"
 
 using namespace player_trace;
 
@@ -15,21 +17,21 @@ using namespace player_trace;
 *    the required handlers one at a time.
 */
 template<typename T>
-static bool TrReadLumpData(TrRestoreInternal& internal, TrTopologicalNode& node)
+static bool TrReadLumpData(TrRestore& restore, TrTopologicalNode& node)
 {
-	auto& tr = internal.trace;
-	auto& rd = internal.reader;
-	auto& restore = internal.restore;
+	auto& tr = restore.trace;
+	auto& rd = restore.reader;
 	auto& lump = node.lump;
 
 	DevMsg("SPT [%s]: reading lump '%s' with %d handlers\n", __FUNCTION__, lump.name, node.handlers.size());
 
+	rd.SetPos(lump.dataOff);
 	std::vector<std::byte> upgradeBuf;
 	bool anyHandlers = !node.handlers.empty();
 
 	if (anyHandlers)
 	{
-		restore.warnings.push_back(
+		restore.reader.Warn(
 		    std::format("applying {} compatibility handler(s) to lump '{}' (upgrading from version {} to {})",
 		                node.handlers.size(),
 		                lump.name,
@@ -37,21 +39,19 @@ static bool TrReadLumpData(TrRestoreInternal& internal, TrTopologicalNode& node)
 		                TR_LUMP_VERSION(T)));
 
 		upgradeBuf.resize(lump.dataLenBytes);
-		if (!rd.ReadTo(std::span{upgradeBuf}, lump.dataOff))
+		if (!rd.ReadSpan(std::span{upgradeBuf}))
 			return false;
 
 		for (auto handler : node.handlers)
 		{
 			if (handler->lumpVersion != lump.structVersion)
 				continue;
-			if (!handler->HandleCompat(internal, lump, upgradeBuf))
+			if (!handler->HandleCompat(restore, lump, upgradeBuf))
 			{
-				if (restore.errMsg.empty())
-				{
-					restore.errMsg = std::format("failed to upgrade lump '{}' to version {}",
-					                             lump.name,
-					                             TR_LUMP_VERSION(T));
-				}
+				restore.reader.Err(std::format("failed to upgrade lump '{}' to version {}",
+				                               lump.name,
+				                               TR_LUMP_VERSION(T)));
+				return false;
 			}
 		}
 	}
@@ -61,10 +61,10 @@ static bool TrReadLumpData(TrRestoreInternal& internal, TrTopologicalNode& node)
 
 	if (lump.firstExportVersion > lump.structVersion)
 	{
-		restore.warnings.push_back(std::format("clamping export version of lump '{}' to {} (was {})",
-		                                       lump.name,
-		                                       lump.structVersion,
-		                                       lump.firstExportVersion));
+		restore.reader.Warn(std::format("clamping export version of lump '{}' to {} (was {})",
+		                                lump.name,
+		                                lump.structVersion,
+		                                lump.firstExportVersion));
 		lump.firstExportVersion = lump.structVersion;
 	}
 
@@ -81,11 +81,11 @@ static bool TrReadLumpData(TrRestoreInternal& internal, TrTopologicalNode& node)
 
 	if (lump.structVersion != TR_LUMP_VERSION(T))
 	{
-		restore.errMsg = std::format("bad lump version for lump '{}'{} (expected {}, got {})",
-		                             lump.name,
-		                             node.handlers.empty() ? "" : " after upgrading",
-		                             TR_LUMP_VERSION(T),
-		                             lump.structVersion);
+		restore.reader.Err(std::format("bad lump version for lump '{}'{} (expected {}, got {})",
+		                               lump.name,
+		                               node.handlers.empty() ? "" : " after upgrading",
+		                               TR_LUMP_VERSION(T),
+		                               lump.structVersion));
 		return false;
 	}
 
@@ -95,7 +95,7 @@ static bool TrReadLumpData(TrRestoreInternal& internal, TrTopologicalNode& node)
 
 	if (!numBytesSeemsReasonable)
 	{
-		restore.errMsg = std::format("unexpected number of bytes for lump '{}'", lump.name);
+		restore.reader.Err(std::format("unexpected number of bytes for lump '{}'", lump.name));
 		return false;
 	}
 
@@ -107,19 +107,19 @@ static bool TrReadLumpData(TrRestoreInternal& internal, TrTopologicalNode& node)
 	else
 	{
 		vec.resize(lump.nElems);
-		if (!rd.ReadTo(std::as_writable_bytes(std::span{vec}), lump.dataOff))
+		if (!rd.ReadSpan(std::span{vec}))
 			return false;
 	}
 	return true;
 }
 
-static bool TrTopologicalSortVisit(TrRestoreInternal& internal, TrTopologicalNode& node)
+static bool TrTopologicalSortVisit(TrRestore& restore, TrTopologicalNode& node)
 {
 	if (node.dfsVisited)
 		return true;
 	if (node.dfsVisiting)
 	{
-		internal.restore.errMsg = "cycle found while doing topological sort on lumps";
+		restore.reader.Err("cycle found while doing topological sort on lumps");
 		return false;
 	}
 	node.dfsVisiting = true;
@@ -138,8 +138,8 @@ static bool TrTopologicalSortVisit(TrRestoreInternal& internal, TrTopologicalNod
 	{
 		for (auto& depName : handler->lumpDependencies)
 		{
-			auto it = internal.nameToNode.find(depName);
-			if (it == internal.nameToNode.cend())
+			auto it = restore.nameToNode.find(depName);
+			if (it == restore.nameToNode.cend())
 			{
 				/*
 				* This may fail for a sufficiently old file which is missing some lump that an
@@ -150,71 +150,65 @@ static bool TrTopologicalSortVisit(TrRestoreInternal& internal, TrTopologicalNod
 				* 
 				* That will require additional logic.
 				*/
-				internal.restore.errMsg = std::format(
+				restore.reader.Err(std::format(
 				    "lump '{}' has an upgrade handler that depends on lump '{}' which does not exist in the file",
 				    node.lump.name,
-				    depName);
+				    depName));
 				return false;
 			}
-			if (!TrTopologicalSortVisit(internal, it->second))
+			if (!TrTopologicalSortVisit(restore, it->second))
 				return false;
 		}
 	}
 
-	internal.orderedNodes.push_back(&node);
+	restore.orderedNodes.push_back(&node);
 	node.dfsVisited = true;
 	return true;
 }
 
 // https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
-static bool TrTopologicalSort(TrRestoreInternal& internal)
+static bool TrTopologicalSort(TrRestore& restore)
 {
-	for (auto& [_, node] : internal.nameToNode)
-		if (!TrTopologicalSortVisit(internal, node))
+	for (auto& [_, node] : restore.nameToNode)
+		if (!TrTopologicalSortVisit(restore, node))
 			return false;
 	return true;
 }
 
 template<typename T>
-static void TrSetupReadFunc(TrRestoreInternal& internal)
+static void TrSetupReadFunc(TrRestore& restore)
 {
 	const char* lumpName = TR_LUMP_NAME(T);
-	auto it = internal.nameToNode.find(lumpName);
-	if (it == internal.nameToNode.cend())
-	{
-		internal.restore.warnings.push_back(
-		    std::format("lump '{}' declared in TrPlayerTrace but not found in file", lumpName));
-	}
+	auto it = restore.nameToNode.find(lumpName);
+	if (it == restore.nameToNode.cend())
+		restore.reader.Warn(std::format("lump '{}' declared in TrPlayerTrace but not found in file", lumpName));
 	else
-	{
 		it->second.readFunc = TrReadLumpData<T>;
-	}
 }
 
-bool TrRestore::Restore(TrPlayerTrace& tr, ITrReader& rd)
+void TrPlayerTrace::Deserialize(ser::IReader& rd)
 {
-	tr.Clear();
-	errMsg.clear();
-	warnings.clear();
+	Clear();
+
+	rd.Rebase();
 
 	TrPreamble preamble;
-	if (!rd.ReadTo(preamble, 0))
-	{
-		errMsg = "failed to read preamble";
-		return false;
-	}
+	if (!rd.ReadPod(preamble))
+		return;
 
 	if (sizeof(preamble.fileId) != sizeof(TR_FILE_ID)
 	    || memcmp(preamble.fileId, TR_FILE_ID, sizeof(preamble.fileId)))
 	{
-		errMsg = "bad file ID";
-		return false;
+		rd.Err("bad file ID in trace preamble");
+		return;
 	}
 
 	if (preamble.fileVersion == 0 || preamble.fileVersion > TR_SERIALIZE_VERSION)
 	{
-		errMsg = std::format("expected file version {}, got {}", TR_SERIALIZE_VERSION, preamble.fileVersion);
-		return false;
+		rd.Err(std::format("expected file version {}, got {} in trace preamble",
+		                   TR_SERIALIZE_VERSION,
+		                   preamble.fileVersion));
+		return;
 	}
 
 	TrHeader header;
@@ -224,43 +218,42 @@ bool TrRestore::Restore(TrPlayerTrace& tr, ITrReader& rd)
 	case 1:
 	{
 		TrHeader_v1 v1Header;
-		if (!rd.ReadTo(v1Header, sizeof preamble))
-		{
-			errMsg = "failed to read header";
-			return false;
-		}
+		if (!rd.ReadPod(v1Header))
+			return;
 		header = v1Header;
 		break;
 	}
 	default:
-		if (!rd.ReadTo(header, sizeof preamble))
-		{
-			errMsg = "failed to read header";
-			return false;
-		}
+		if (!rd.ReadPod(header))
+			return;
 		break;
 	}
 
+	TrRestore restore{
+	    .trace = *this,
+	    .reader = rd,
+	};
+
 	if (strncmp(header.lastExportSptVersion, SPT_VERSION, TR_MAX_SPT_VERSION_LEN))
 	{
-		warnings.push_back(
-		    std::format("trace was exported with different SPT version '{}' (current version is '{}')",
-		                header.lastExportSptVersion,
-		                SPT_VERSION));
+		rd.Warn(std::format("trace was exported with different SPT version '{}' (current version is '{}')",
+		                    header.lastExportSptVersion,
+		                    SPT_VERSION));
 	}
 
 	auto cArrToStdStr = [](const auto& cArr)
 	{ return std::string(std::begin(cArr), std::find(std::begin(cArr), std::end(cArr), '\0')); };
 
-	tr.numRecordedTicks = header.numRecordedTicks;
-	tr.playerStandBboxIdx = header.playerStandBboxIdx;
-	tr.playerDuckBboxIdx = header.playerDuckBboxIdx;
-	tr.firstRecordedInfo.gameName = cArrToStdStr(header.gameInfo.gameName);
-	tr.firstRecordedInfo.gameModName = cArrToStdStr(header.gameInfo.modName);
-	tr.firstRecordedInfo.playerName = cArrToStdStr(header.playerName);
-	tr.firstRecordedInfo.playerNameInitialized = true;
-	tr.firstRecordedInfo.gameVersion = header.gameInfo.gameVersion;
+	numRecordedTicks = header.numRecordedTicks;
+	playerStandBboxIdx = header.playerStandBboxIdx;
+	playerDuckBboxIdx = header.playerDuckBboxIdx;
+	firstRecordedInfo.gameName = cArrToStdStr(header.gameInfo.gameName);
+	firstRecordedInfo.gameModName = cArrToStdStr(header.gameInfo.modName);
+	firstRecordedInfo.playerName = cArrToStdStr(header.playerName);
+	firstRecordedInfo.playerNameInitialized = true;
+	firstRecordedInfo.gameVersion = header.gameInfo.gameVersion;
 
+	rd.SetPos(header.lumpsOff);
 	std::vector<TrLump> lumps(header.nLumps);
 
 	switch (preamble.fileVersion)
@@ -268,70 +261,46 @@ bool TrRestore::Restore(TrPlayerTrace& tr, ITrReader& rd)
 	case 1:
 	{
 		std::vector<TrLump_v1> v1Lumps(header.nLumps);
-		if (!rd.ReadTo(std::as_writable_bytes(std::span{v1Lumps}), header.lumpsOff))
-		{
-			errMsg = "failed to read lump headers";
-			return false;
-		}
+		if (!rd.ReadSpan(std::span{v1Lumps}))
+			return;
 		lumps.assign(v1Lumps.cbegin(), v1Lumps.cend());
 		break;
 	}
 	default:
-		if (!rd.ReadTo(std::as_writable_bytes(std::span{lumps}), header.lumpsOff))
-		{
-			errMsg = "failed to read lump headers";
-			return false;
-		}
+		if (!rd.ReadSpan(std::span{lumps}))
+			return;
 		break;
 	}
-
-	TrRestoreInternal internal{
-	    .restore = *this,
-	    .trace = tr,
-	    .reader = rd,
-	};
 
 	// step 0: create a map name->lump for quick lookup
 	for (auto& lump : lumps)
 	{
 		lump.name[sizeof(lump.name) - 1] = '\0'; // explicitly null terminate so we can use it in errors
-		auto [_, isNew] = internal.nameToNode.try_emplace(lump.name, lump);
+		auto [_, isNew] = restore.nameToNode.try_emplace(lump.name, lump);
 		if (!isNew)
-			warnings.push_back(std::format("duplicate lump '{}', ignoring the second one", lump.name));
+			rd.Warn(std::format("duplicate lump '{}', ignoring the second one", lump.name));
 	}
 
 	// step 1: sort based on recursive handler dependencies
-	if (!TrTopologicalSort(internal))
-	{
-		if (errMsg.empty())
-			errMsg = "topological sort failed";
-		return false;
-	}
+	if (!TrTopologicalSort(restore))
+		return;
 
 	// step 2: populate all node.readFuncs for all types in TrPlayerTrace
 	std::apply([&](auto&... vecs)
-	           { (TrSetupReadFunc<typename std::decay_t<decltype(vecs)>::value_type>(internal), ...); },
-	           tr._storage);
+	           { (TrSetupReadFunc<typename std::decay_t<decltype(vecs)>::value_type>(restore), ...); },
+	           storage);
 
 	// step 3: execute node.readFuncs in order
-	TrReadContextScope scope{tr};
-	for (auto node : internal.orderedNodes)
+	TrReadContextScope scope{*this};
+	for (auto node : restore.orderedNodes)
 	{
 		if (!node->readFunc)
-		{
-			warnings.push_back(std::format("ignored lump '{}'", node->lump.name));
-		}
-		else if (!node->readFunc(internal, *node))
-		{
-			if (errMsg.empty())
-				errMsg = std::format("readFunc faied for lump '{}'", node->lump.name);
-			return false;
-		}
+			rd.Warn(std::format("ignored lump '{}'", node->lump.name));
+		else if (!node->readFunc(restore, *node))
+			return;
 	}
 
-	tr.hasStartRecordingBeenCalled = true;
-
-	return true;
+	hasStartRecordingBeenCalled = true;
 }
 
 #endif

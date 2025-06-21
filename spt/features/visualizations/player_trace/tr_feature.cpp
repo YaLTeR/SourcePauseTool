@@ -10,7 +10,6 @@
 #include "tr_record_cache.hpp"
 #include "tr_render_cache.hpp"
 #include "tr_imgui.hpp"
-#include "import_export/tr_binary_compress.hpp"
 
 #include "spt/feature.hpp"
 #include "signals.hpp"
@@ -18,6 +17,7 @@
 #include "spt/utils/interfaces.hpp"
 #include "spt/utils/file.hpp"
 #include "spt/utils/game_detection.hpp"
+#include "spt/utils/serialize.hpp"
 #include "spt/features/hud.hpp"
 #include "spt/features/visualizations/imgui/imgui_interface.hpp"
 #include "spt/features/portalled_pause.hpp"
@@ -91,6 +91,8 @@ CON_COMMAND_F(spt_trace_set_tick, "Sets the trace draw tick", FCVAR_DONTRECORD)
 	spt_player_trace_feat.SetDisplayTick(strtoul(args[1], nullptr, 10));
 }
 
+#define TR_COMPRESSED_FILE_EXT ".sptr.xz"
+
 CON_COMMAND_F(spt_trace_export, "Export trace to binary file", FCVAR_DONTRECORD)
 {
 	if (spt_player_trace_feat.tr.IsRecording())
@@ -134,13 +136,17 @@ CON_COMMAND_F(spt_trace_export, "Export trace to binary file", FCVAR_DONTRECORD)
 		return;
 	}
 
-	TrWrite trWrite{};
-	TrXzFileWriter wr{ofs};
+	ser::StreamWriter sWr{ofs};
+	ser::XzWriter xzWr{sWr};
+	spt_player_trace_feat.tr.Serialize(xzWr);
+	xzWr.Finish();
+	sWr.Finish(); // usually not necessary, but do it in case the xz finish fails
+	auto& status = xzWr.GetStatus();
 
-	if (trWrite.Write(spt_player_trace_feat.tr, wr))
+	if (status.ok)
 		Msg("Wrote trace to '%s'\n", filePath.string().c_str());
 	else
-		Warning("Failed to write trace to file\n");
+		Warning("Failed to write trace to file: %s\n", status.errMsg.c_str());
 }
 
 CON_COMMAND_AUTOCOMPLETEFILE(spt_trace_import,
@@ -166,14 +172,15 @@ CON_COMMAND_AUTOCOMPLETEFILE(spt_trace_import,
 		return;
 	}
 
-	TrRestore restore{};
-	TrXzFileReader rd{ifs};
-
 	TrPlayerTrace newTr;
-	if (!restore.Restore(newTr, rd))
+	ser::StreamReader sRd{ifs};
+	ser::XzReader xzRd{sRd};
+	newTr.Deserialize(xzRd);
+	auto& status = xzRd.GetStatus();
+
+	if (!status.ok)
 	{
-		Warning("Failed to load trace from file: %s\n",
-		        rd.errMsg.empty() ? restore.errMsg.c_str() : rd.errMsg.c_str());
+		Warning("Failed to load trace from file: %s\n", status.errMsg.c_str());
 		return;
 	}
 
@@ -194,10 +201,10 @@ CON_COMMAND_AUTOCOMPLETEFILE(spt_trace_import,
 		    maps.empty() || !maps[0].nameIdx.IsValid() ? "INVALID" : *maps[0].nameIdx);
 	}
 
-	if (!restore.warnings.empty())
+	if (!status.warnings.empty())
 	{
 		Warning("Warning(s):\n");
-		for (const std::string& s : restore.warnings)
+		for (const std::string& s : status.warnings)
 			Warning("  - %s\n", s.c_str());
 	}
 	spt_player_trace_feat.tr = std::move(newTr);

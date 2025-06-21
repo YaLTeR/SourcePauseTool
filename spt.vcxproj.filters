@@ -433,8 +433,8 @@
     <ClCompile Include="spt\features\visualizations\player_trace\import_export\tr_binary_read_upgrade.cpp">
       <Filter>spt\features\visualizations\player_trace\import_export</Filter>
     </ClCompile>
-    <ClCompile Include="spt\features\visualizations\player_trace\import_export\tr_binary_compress.cpp">
-      <Filter>spt\features\visualizations\player_trace\import_export</Filter>
+    <ClCompile Include="spt\utils\serialize.cpp">
+      <Filter>spt\utils</Filter>
     </ClCompile>
     <ClCompile Include="spt\features\visualizations\player_trace\tr_state_access.cpp">
       <Filter>spt\features\visualizations\player_trace</Filter>
@@ -924,13 +924,10 @@
     <ClInclude Include="thirdparty\xz\include\lzma\vli.h">
       <Filter>thirdparty\xz\include\lzma</Filter>
     </ClInclude>
-    <ClInclude Include="spt\features\visualizations\player_trace\import_export\tr_binary_internal.hpp">
-      <Filter>spt\features\visualizations\player_trace\import_export</Filter>
+    <ClInclude Include="spt\utils\serialize.hpp">
+      <Filter>spt\utils</Filter>
     </ClInclude>
     <ClInclude Include="spt\features\visualizations\player_trace\import_export\tr_binary.hpp">
-      <Filter>spt\features\visualizations\player_trace\import_export</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\features\visualizations\player_trace\import_export\tr_binary_compress.hpp">
       <Filter>spt\features\visualizations\player_trace\import_export</Filter>
     </ClInclude>
     <ClInclude Include="spt\utils\custom_interfaces\engine_client.hpp">

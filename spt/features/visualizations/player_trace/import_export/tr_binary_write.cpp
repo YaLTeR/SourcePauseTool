@@ -1,17 +1,15 @@
 #include "stdafx.hpp"
 
-#include "tr_binary_internal.hpp"
+#include "tr_binary.hpp"
 
 #ifdef SPT_PLAYER_TRACE_ENABLED
+
+#include "spt/spt-serverplugin.hpp"
 
 using namespace player_trace;
 
 template<typename T>
-bool WriteLumpHeader(ITrWriter& wr,
-                     const TrPlayerTrace& trace,
-                     const std::vector<T>& vec,
-                     uint32_t& fileOff,
-                     uint32_t& lumpDataFileOff)
+void WriteLumpHeader(ser::IWriter& wr, const TrPlayerTrace& trace, const std::vector<T>& vec, uint32_t& lumpDataFileOff)
 {
 	TrLump lump{};
 	strncpy(lump.name, TR_LUMP_NAME(T), sizeof lump.name);
@@ -21,64 +19,45 @@ bool WriteLumpHeader(ITrWriter& wr,
 	lump.nElems = vec.size();
 	lump.firstExportVersion = trace.GetFirstExportVersion<T>();
 
-	if (!wr.Write(lump))
-		return false;
-	fileOff += sizeof lump;
+	wr.WritePod(lump);
 	lumpDataFileOff += lump.dataLenBytes;
-	return true;
 }
 
-template<typename T>
-bool WriteLumpData(ITrWriter& wr, const std::vector<T>& vec, uint32_t& fileOff)
+void TrPlayerTrace::Serialize(ser::IWriter& wr) const
 {
-	if (!wr.Write(std::as_bytes(std::span{vec})))
-		return false;
-	fileOff += vec.size() * sizeof(T);
-	return true;
-}
+	if (!hasStartRecordingBeenCalled)
+	{
+		wr.Err("trace has not been initialized");
+		return;
+	}
 
-bool TrWrite::Write(const TrPlayerTrace& tr, ITrWriter& wr)
-{
-	if (!tr.hasStartRecordingBeenCalled)
-		return false;
-
-	size_t fileOff = 0;
+	wr.Rebase();
 
 	TrPreamble preamble{.fileVersion = TR_SERIALIZE_VERSION};
 	memcpy(preamble.fileId, TR_FILE_ID, sizeof preamble.fileId);
-	if (!wr.Write(preamble))
-		return false;
-	fileOff += sizeof preamble;
+	if (!wr.WritePod(preamble))
+		return;
 
-	constexpr uint32_t nLumps = std::tuple_size_v<decltype(tr._storage)>;
+	constexpr uint32_t nLumps = std::tuple_size_v<decltype(storage)>;
 
 	TrHeader header{};
-	header.lumpsOff = fileOff + sizeof header;
+	header.lumpsOff = wr.GetRelPos() + sizeof header;
 	header.nLumps = nLumps;
-	header.numRecordedTicks = tr.numRecordedTicks;
-	header.playerStandBboxIdx = tr.playerStandBboxIdx;
-	header.playerDuckBboxIdx = tr.playerDuckBboxIdx;
+	header.numRecordedTicks = numRecordedTicks;
+	header.playerStandBboxIdx = playerStandBboxIdx;
+	header.playerDuckBboxIdx = playerDuckBboxIdx;
 	strncpy(header.lastExportSptVersion, SPT_VERSION, sizeof header.lastExportSptVersion);
-	strncpy(header.gameInfo.gameName, tr.firstRecordedInfo.gameName.c_str(), sizeof header.gameInfo.gameName);
-	strncpy(header.gameInfo.modName, tr.firstRecordedInfo.gameModName.c_str(), sizeof header.gameInfo.modName);
-	header.gameInfo.gameVersion = tr.firstRecordedInfo.gameVersion;
-	strncpy(header.playerName, tr.firstRecordedInfo.playerName.c_str(), sizeof header.playerName);
+	strncpy(header.gameInfo.gameName, firstRecordedInfo.gameName.c_str(), sizeof header.gameInfo.gameName);
+	strncpy(header.gameInfo.modName, firstRecordedInfo.gameModName.c_str(), sizeof header.gameInfo.modName);
+	header.gameInfo.gameVersion = firstRecordedInfo.gameVersion;
+	strncpy(header.playerName, firstRecordedInfo.playerName.c_str(), sizeof header.playerName);
 
-	if (!wr.Write(header))
-		return false;
-	fileOff += sizeof header;
+	if (!wr.WritePod(header))
+		return;
 
-	uint32_t lumpDataFileOff = fileOff + sizeof(TrLump) * nLumps;
-	if (!std::apply([&](auto&... vecs) { return (WriteLumpHeader(wr, tr, vecs, fileOff, lumpDataFileOff) && ...); },
-	                tr._storage))
-	{
-		return false;
-	}
-
-	if (!std::apply([&](auto&... vecs) { return (WriteLumpData(wr, vecs, fileOff) && ...); }, tr._storage))
-		return false;
-
-	return wr.DoneWritingTrace();
+	uint32_t lumpOff = wr.GetRelPos() + sizeof(TrLump) * nLumps;
+	std::apply([&](auto&... vecs) { return ((WriteLumpHeader(wr, *this, vecs, lumpOff), wr.Ok()), ...); }, storage);
+	std::apply([&](auto&... vecs) { return (wr.WriteSpan(std::span{vecs}) && ...); }, storage);
 }
 
 #endif

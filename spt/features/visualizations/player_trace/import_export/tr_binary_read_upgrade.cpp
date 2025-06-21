@@ -1,6 +1,6 @@
 #include <stdafx.hpp>
 
-#include "tr_binary_internal.hpp"
+#include "tr_binary.hpp"
 
 #ifdef SPT_PLAYER_TRACE_ENABLED
 
@@ -27,7 +27,7 @@ struct TrLumpUpgradeFromV0ToV1 : TrLumpUpgradeHandlerT<T, 0>
 {
 	static_assert(TR_INVALID_STRUCT_VERSION == 0);
 
-	virtual bool HandleCompat(TrRestoreInternal& internal, TrLump& lump, std::vector<std::byte>& dataInOut) const
+	virtual bool HandleCompat(TrRestore& restore, TrLump& lump, std::vector<std::byte>& dataInOut) const
 	{
 		// pretend that version 0 never even existed
 		lump.structVersion = lump.firstExportVersion = 1;
@@ -48,7 +48,7 @@ static TrLumpUpgradeFromV0ToV1<TrIdx<TrPlayerContactPoint_v1>> contact_pt_idx_0_
 // upgrade player data to v2
 struct : public TrLumpUpgradeHandlerT<TrPlayerData_v1>
 {
-	virtual bool HandleCompat(TrRestoreInternal& internal, TrLump& lump, std::vector<std::byte>& dataInOut) const
+	virtual bool HandleCompat(TrRestore& restore, TrLump& lump, std::vector<std::byte>& dataInOut) const
 	{
 		if (dataInOut.size() % sizeof(TrPlayerData_v1) != 0)
 			return false;
@@ -68,7 +68,7 @@ struct : public TrLumpUpgradeHandlerT<TrPlayerData_v1>
 // remove instances of vec3_invalid since that uses FLT_MAX instead of NAN
 struct : public TrLumpUpgradeHandlerT<Vector, 1>
 {
-	virtual bool HandleCompat(TrRestoreInternal& internal, TrLump& lump, std::vector<std::byte>& dataInOut) const
+	virtual bool HandleCompat(TrRestore& restore, TrLump& lump, std::vector<std::byte>& dataInOut) const
 	{
 		if (dataInOut.size() % sizeof(Vector) != 0)
 			return false;
@@ -84,7 +84,7 @@ struct : public TrLumpUpgradeHandlerT<Vector, 1>
 // fixup old TrSegmentReason order
 struct : public TrLumpUpgradeHandlerT<TrSegmentStart, 1>
 {
-	virtual bool HandleCompat(TrRestoreInternal& internal, TrLump& lump, std::vector<std::byte>& dataInOut) const
+	virtual bool HandleCompat(TrRestore& restore, TrLump& lump, std::vector<std::byte>& dataInOut) const
 	{
 		if (dataInOut.size() % sizeof(TrSegmentStart_v1) != 0)
 			return false;
