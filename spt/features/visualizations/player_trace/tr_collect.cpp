@@ -19,20 +19,6 @@
 
 using namespace player_trace;
 
-static void TrTryFillPlayerName(TrPlayerTrace& tr)
-{
-	if (tr.firstRecordedInfo.playerNameInitialized || !interfaces::engine_server)
-		return;
-	auto playerEd = interfaces::engine_server->PEntityOfEntIndex(1);
-	if (!playerEd || !interfaces::serverGameClients)
-		return;
-	CPlayerState* playerState = interfaces::serverGameClients->GetPlayerState(playerEd);
-	if (!playerState || !playerState->netname.ToCStr()[0])
-		return;
-	tr.firstRecordedInfo.playerName = playerState->netname.ToCStr();
-	tr.firstRecordedInfo.playerNameInitialized = true;
-}
-
 void TrPlayerTrace::StartRecording()
 {
 	Clear();
@@ -49,7 +35,7 @@ void TrPlayerTrace::StartRecording()
 		{
 		}
 	}
-	TrTryFillPlayerName(*this);
+	firstRecordedInfo.playerName = interfaces::engine_server->GetClientConVarValue(1, "name");
 	firstRecordedInfo.gameVersion = utils::GetBuildNumber();
 
 	hasStartRecordingBeenCalled = true;
@@ -92,7 +78,6 @@ void TrPlayerTrace::HostTickCollect(bool simulated, TrSegmentReason segmentReaso
 	if (!utils::spt_serverEntList.Valid())
 		return;
 
-	TrTryFillPlayerName(*this);
 	TrReadContextScope scope{*this};
 
 	const char* curLoadedMap = utils::GetLoadedMap();

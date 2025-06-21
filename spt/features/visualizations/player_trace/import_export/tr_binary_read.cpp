@@ -250,7 +250,6 @@ void TrPlayerTrace::Deserialize(ser::IReader& rd)
 	firstRecordedInfo.gameName = cArrToStdStr(header.gameInfo.gameName);
 	firstRecordedInfo.gameModName = cArrToStdStr(header.gameInfo.modName);
 	firstRecordedInfo.playerName = cArrToStdStr(header.playerName);
-	firstRecordedInfo.playerNameInitialized = true;
 	firstRecordedInfo.gameVersion = header.gameInfo.gameVersion;
 
 	rd.SetPos(header.lumpsOff);
