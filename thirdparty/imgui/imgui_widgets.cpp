@@ -1,5 +1,3 @@
-#include <stdafx.hpp>
-
 // dear imgui, v1.91.0
 // (widgets code)
 
