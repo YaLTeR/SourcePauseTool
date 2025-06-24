@@ -14,7 +14,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "stdafx.hpp"
 #include "x86.h"
 
 static int mrm(unsigned char b, int addrlen) {

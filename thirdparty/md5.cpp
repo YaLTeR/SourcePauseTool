@@ -30,8 +30,6 @@ documentation and/or software.
 
 */
 
-#include "stdafx.hpp"
-
 /* interface header */
 #include "md5.hpp"
 

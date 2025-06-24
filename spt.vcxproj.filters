@@ -1042,6 +1042,9 @@
     <Text Include="spt\features\template.cpp.txt">
       <Filter>spt\features</Filter>
     </Text>
+    <Text Include="thirdparty\xz\readme.txt">
+      <Filter>thirdparty\xz</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <None Include="thirdparty\imgui\README">
