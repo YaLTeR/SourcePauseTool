@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "custom_interfaces.hpp"
+#include "custom_interfaces\engine_client.hpp"
 #include "eiface.h"
 #include "tier3\tier3.h"
 #include "engine\ivdebugoverlay.h"

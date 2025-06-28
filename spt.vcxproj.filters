@@ -591,9 +591,6 @@
     <ClInclude Include="spt\utils\convar.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
-    <ClInclude Include="spt\utils\custom_interfaces.hpp">
-      <Filter>spt\utils</Filter>
-    </ClInclude>
     <ClInclude Include="spt\utils\ent_utils.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
@@ -936,6 +933,9 @@
     <ClInclude Include="spt\features\visualizations\player_trace\import_export\tr_binary_compress.hpp">
       <Filter>spt\features\visualizations\player_trace\import_export</Filter>
     </ClInclude>
+    <ClInclude Include="spt\utils\custom_interfaces\engine_client.hpp">
+      <Filter>spt\utils\custom_interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SDK includes &amp; libs">
@@ -1024,6 +1024,9 @@
     </Filter>
     <Filter Include="spt\features\visualizations\player_trace\import_export">
       <UniqueIdentifier>{3f0921d7-b608-4ebf-b3a6-766225b29da7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\utils\custom_interfaces">
+      <UniqueIdentifier>{81ebb0c3-4b40-4039-8426-d1b355782bba}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
