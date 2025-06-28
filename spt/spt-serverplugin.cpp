@@ -5,7 +5,7 @@
 #include <sstream>
 #include <time.h>
 
-#include "vstdlib/IKeyValuesSystem.h"
+#include "vstdlib\IKeyValuesSystem.h"
 #include <SPTLib\Hooks.hpp>
 #include "spt-serverplugin.hpp"
 #include "..\sptlib-wrapper.hpp"
@@ -16,7 +16,7 @@
 #include "..\features\generic.hpp"
 #include "..\features\playerio.hpp"
 #include "..\features\tas.hpp"
-#include "custom_interfaces.hpp"
+#include "custom_interfaces\engine_client.hpp"
 #include "cvars.hpp"
 #include "scripts\srctas_reader.hpp"
 #include "..\feature.hpp"

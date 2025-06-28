@@ -6,7 +6,7 @@ extern const char* SPT_VERSION;
 #include "cdll_int.h"
 #endif
 
-#include "custom_interfaces.hpp"
+#include "custom_interfaces/engine_client.hpp"
 #include "eiface.h"
 #include "engine\iserverplugin.h"
 #include "engine\ivdebugoverlay.h"
