@@ -117,15 +117,26 @@ void SetViewAngles(const float viewangles[3])
 }
 
 CSourcePauseTool g_SourcePauseTool;
+int plugin_interface_version = 0;
 
 extern "C" __declspec(dllexport) const void* CreateInterface(const char* pName, int* pReturnCode)
 {
-	if (pReturnCode)
+	if (strncmp(pName, "ISERVERPLUGINCALLBACKS00", 24) == 0)
 	{
-		*pReturnCode = 2007;
+		if (pName[24] >= '1' && pName[24] <= '3' && pName[25] == '\0')
+		{
+			if (pReturnCode)
+				*pReturnCode = 0;
+
+			plugin_interface_version = pName[24] - '0';
+	return &g_SourcePauseTool;
+}
 	}
 
-	return &g_SourcePauseTool;
+	if (pReturnCode)
+		*pReturnCode = 0;
+
+	return nullptr;
 }
 
 class SDKVersion
