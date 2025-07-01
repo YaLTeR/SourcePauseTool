@@ -2,6 +2,8 @@
 
 extern const char* SPT_VERSION;
 
+extern int plugin_interface_version;
+
 #if defined(OE)
 #include "cdll_int.h"
 #endif
