@@ -9,6 +9,9 @@
 #include "spt/features/ent_props.hpp"
 #include "spt/utils/interfaces.hpp"
 
+#undef min
+#undef max
+
 #ifdef SPT_PLAYER_TRACE_ENABLED
 
 /*

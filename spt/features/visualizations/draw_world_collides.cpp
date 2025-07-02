@@ -141,8 +141,10 @@ private:
 		static utils::CachedField<QAngle, "CBasePlayer", "pl.v_angle", true> vangle;
 		QAngle eyeAng = tas_pause.GetBool() ? utils::GetPlayerEyeAngles() : *vangle.GetPtrPlayer();
 
+#ifdef SPT_PORTAL_UTILS
 		auto env = utils::GetEnvironmentPortal();
 		transformThroughPortal(env, eyePos, eyeAng, eyePos, eyeAng);
+#endif
 		Vector dir;
 		AngleVectors(eyeAng, &dir);
 
@@ -166,7 +168,12 @@ private:
 		    spt_meshBuilder.CreateDynamicMesh(
 		        [&tr](MeshBuilderDelegate& mb)
 		        { mb.AddLine(tr.startpos, tr.endpos, {_COLOR(0, 255, 0, 255)}); }),
-		    [this, env](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
+		    [this
+#ifdef SPT_PORTAL_UTILS
+		     ,
+		     env
+#endif
+		](const CallbackInfoIn& infoIn, CallbackInfoOut& infoOut)
 		    {
 			    // always show this through portals
 			    if (infoIn.portalRenderDepth > 0)
@@ -185,7 +192,9 @@ private:
 			    {
 				    Vector clientEyes = *v1.GetPtrPlayer() + *v2.GetPtrPlayer();
 				    QAngle qa;
+#ifdef SPT_PORTAL_UTILS
 				    transformThroughPortal(env, clientEyes, qa, clientEyes, qa);
+#endif
 				    Vector diff = clientEyes - infoIn.cvs.origin;
 				    if (fabsf(diff.x) < 0.01 && fabsf(diff.y) < 0.01 && fabsf(diff.z) < 32)
 					    infoOut.skipRender = true;

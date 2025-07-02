@@ -216,9 +216,9 @@ void TrPlayerTrace::CollectPlayerData()
 			    rc.GetCachedIdx(eyePos),
 			    rc.GetCachedIdx(eyeAng),
 			});
-
+#ifdef SPT_PORTAL_UTILS
 			transformThroughPortal(utils::GetEnvironmentPortal(), eyePos, eyeAng, eyePos, eyeAng);
-
+#endif
 			data.transSgEyesIdx = rc.GetCachedIdx(TrTransform{
 			    rc.GetCachedIdx(eyePos),
 			    rc.GetCachedIdx(eyeAng),
