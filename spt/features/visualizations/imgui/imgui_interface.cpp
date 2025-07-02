@@ -440,6 +440,7 @@ private:
 		ImGui::AddSettingsHandler(&handler);
 	}
 
+#ifdef SPT_HUD_ENABLED
 	static void TextHudTabCallback()
 	{
 		// Maybe this callback should be in the HUD feature file? Something to think about..
@@ -485,6 +486,7 @@ private:
 
 		ImGui::EndDisabled();
 	}
+#endif
 
 	static void ReloadFontSize()
 	{
@@ -1057,7 +1059,8 @@ bool SptImGui::RegisterWindowCallback(const SptImGuiWindowCallback& cb)
 
 void SptImGui::RegisterHudCvarCheckbox(ConVar& var)
 {
-	RegisterHudCvarCallback(var, [](ConVar& cv) { SptImGui::CvarCheckbox(cv, "##checkbox"); }, false);
+	RegisterHudCvarCallback(
+	    var, [](ConVar& cv) { SptImGui::CvarCheckbox(cv, "##checkbox"); }, false);
 }
 
 void SptImGui::RegisterHudCvarCallback(ConVar& var, const SptImGuiHudTextCallback& cb, bool putInCollapsible)

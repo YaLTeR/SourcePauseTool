@@ -43,7 +43,10 @@ private:
 
 public:
 	void PrintEntsCon();
+#ifdef SPT_HUD_ENABLED
 	void PrintEntsHud();
+#endif
+
 #ifdef SPT_MESH_RENDERING_ENABLED
 	void DrawEntsPos(MeshRendererDelegate& mr);
 #endif
@@ -51,8 +54,11 @@ public:
 
 static HudOobEntsFeature spt_hud_oob_ents_feat;
 
+#ifdef SPT_HUD_ENABLED
 ConVar spt_hud_oob_ents("spt_hud_oob_ents", "0", FCVAR_CHEAT, "Shows entities that are oob.");
+#endif
 
+#ifdef SPT_MESH_RENDERING_ENABLED
 ConVar spt_draw_oob_ents("spt_draw_oob_ents",
                          "0",
                          FCVAR_CHEAT,
@@ -60,6 +66,7 @@ ConVar spt_draw_oob_ents("spt_draw_oob_ents",
                          "    1 - draw for oob ents only\n"
                          "    2 - no z-test\n"
                          "    3 - draw for all ents & no-ztest\n");
+#endif
 
 CON_COMMAND_F(spt_print_oob_ents, "Prints entities that are oob", FCVAR_DONTRECORD | FCVAR_CHEAT)
 {
@@ -71,10 +78,14 @@ void HudOobEntsFeature::LoadFeature()
 	if (!TickSignal.Works)
 		return;
 	TickSignal.Connect(this, &HudOobEntsFeature::OnTickSignal);
+
+#ifdef SPT_HUD_ENABLED
 	bool hudEnabled = AddHudCallback(
 	    "hud oob ents", [this](std::string) { PrintEntsHud(); }, spt_hud_oob_ents);
 	if (hudEnabled)
 		SptImGui::RegisterHudCvarCheckbox(spt_hud_oob_ents);
+#endif
+
 	InitCommand(spt_print_oob_ents);
 #ifdef SPT_MESH_RENDERING_ENABLED
 	if (spt_meshRenderer.signal.Works)
@@ -92,7 +103,9 @@ void HudOobEntsFeature::LoadFeature()
 			        "All entities + no z-test",
 			    };
 			    SptImGui::CvarCombo(spt_draw_oob_ents, "entity position indicator", opts, ARRAYSIZE(opts));
+#ifdef SPT_HUD_ENABLED
 			    SptImGui::CvarCheckbox(spt_hud_oob_ents, "##checkbox");
+#endif
 		    });
 	}
 #endif
@@ -207,6 +220,7 @@ void HudOobEntsFeature::PrintEntsCon()
 	}
 }
 
+#ifdef SPT_HUD_ENABLED
 void HudOobEntsFeature::PrintEntsHud()
 {
 	if (!interfaces::engine_server->PEntityOfEntIndex(0))
@@ -229,6 +243,7 @@ void HudOobEntsFeature::PrintEntsHud()
 	if (oobEnts.size() > MAX_HUD_OOB_ENTS)
 		spt_hud_feat.DrawTopHudElement(L"%lu remaining...", oobEnts.size() - MAX_HUD_OOB_ENTS);
 }
+#endif
 
 #ifdef SPT_MESH_RENDERING_ENABLED
 void HudOobEntsFeature::DrawEntsPos(MeshRendererDelegate& mr)
