@@ -2,7 +2,7 @@
 #include "..\feature.hpp"
 #include "hud.hpp"
 
-#ifdef SPT_HUD_ENABLED
+#if defined(SPT_HUD_ENABLED) && !defined(SPT_HUD_TEXTONLY)
 
 #include <immintrin.h>
 
@@ -357,9 +357,9 @@ void StrafeHUD::DrawHUD()
 	int y = spt_strafehud_y.GetInt();
 
 	if (x < 0)
-		x += spt_hud_feat.renderView->width - size;
+		x += spt_hud_feat.screen.width - size;
 	if (y < 0)
-		y += spt_hud_feat.renderView->height - size;
+		y += spt_hud_feat.screen.height - size;
 
 	const Color bgColor(0, 0, 0, 192);
 	const Color lineColor(64, 64, 64, 255);

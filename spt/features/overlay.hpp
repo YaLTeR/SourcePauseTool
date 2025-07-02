@@ -4,6 +4,8 @@
 #define SPT_OVERLAY_ENABLED
 #endif
 
+#ifdef SPT_OVERLAY_ENABLED
+
 #include "..\feature.hpp"
 
 class C_BasePlayer;
@@ -63,3 +65,5 @@ private:
 };
 
 extern Overlay spt_overlay;
+
+#endif

@@ -2,7 +2,7 @@
 
 #include "hud.hpp"
 
-#ifdef SPT_HUD_ENABLED
+#if defined(SPT_HUD_ENABLED) && !defined(SPT_HUD_TEXTONLY)
 
 #include "..\feature.hpp"
 #include "convar.hpp"
@@ -68,8 +68,7 @@ void BoogFeature::BoogTick(bool simulating)
 
 bool BoogFeature::ShouldDrawBoog()
 {
-	bool rval =
-	    ticksLeftToDrawBoog > 0 && y_spt_hud_edgebug.GetBool() && interfaces::surface && spt_hud_feat.renderView;
+	bool rval = ticksLeftToDrawBoog > 0 && y_spt_hud_edgebug.GetBool();
 
 	if (rval)
 	{
@@ -84,7 +83,8 @@ bool BoogFeature::ShouldDrawBoog()
 void BoogFeature::DrawBoog()
 {
 	auto surface = interfaces::surface;
-	auto renderView = spt_hud_feat.renderView;
+	auto surface = interfaces::mat_system_surface;
+	const auto& screen = spt_hud_feat.screen;
 
 	if (boogFont == 0)
 	{
@@ -131,12 +131,12 @@ void BoogFeature::DrawBoog()
 	int tall = 0, len = 0;
 	surface->GetTextSize(boogFont, L"boog", len, tall);
 
-	int x = renderView->width / 2 - len / 2;
-	int y = renderView->height / 2 + 100;
+	int x = screen.width / 2 - len / 2;
+	int y = screen.height / 2 + 100;
 
-	if (tall + y > renderView->height)
+	if (tall + y > screen.height)
 	{
-		y = renderView->height - tall;
+		y = screen.height - tall;
 	}
 
 	surface->DrawSetTextPos(x, y);
