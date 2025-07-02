@@ -11,6 +11,7 @@
 #include "signals.hpp"
 #include "game_detection.hpp"
 #include "visualizations\imgui\imgui_interface.hpp"
+#include "vcall.hpp"
 
 ConVar y_spt_hud_edgebug("y_spt_hud_edgebug",
                          "0",
@@ -101,23 +102,7 @@ void BoogFeature::DrawBoog()
 		}
 		if (utils::GetBuildNumber() <= 3420)
 		{
-			typedef bool(__thiscall * SetFontGlyphSetOld_func)(void* thisptr,
-			                                                   vgui::HFont font,
-			                                                   const char* windowsFontName,
-			                                                   int tall,
-			                                                   int weight,
-			                                                   int blur,
-			                                                   int scanlines,
-			                                                   int flags);
-			const int vtidx_SetFontGlyphSet = 65;
-			((*(SetFontGlyphSetOld_func**)(surface))[vtidx_SetFontGlyphSet])(surface,
-			                                                                 boogFont,
-			                                                                 "Trebuchet MS",
-			                                                                 96,
-			                                                                 0,
-			                                                                 0,
-			                                                                 0,
-			                                                                 0x010);
+			utils::vcall<65, bool>(surface, boogFont, "Trebuchet MS", 96, 0, 0, 0, 0x010);
 		}
 		else
 		{

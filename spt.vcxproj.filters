@@ -939,6 +939,9 @@
     <ClInclude Include="spt\utils\custom_interfaces\surface.hpp">
       <Filter>spt\utils\custom_interfaces</Filter>
     </ClInclude>
+    <ClInclude Include="spt\utils\vcall.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SDK includes &amp; libs">
