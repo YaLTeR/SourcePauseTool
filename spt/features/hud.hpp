@@ -2,6 +2,8 @@
 
 #define SPT_HUD_ENABLED
 
+#ifdef SPT_HUD_ENABLED
+
 #include <functional>
 #include <vector>
 #include <unordered_map>
@@ -158,3 +160,5 @@ Color StringToColor(const std::string& color);
 std::string ColorToString(Color color);
 
 extern HUDFeature spt_hud_feat;
+
+#endif

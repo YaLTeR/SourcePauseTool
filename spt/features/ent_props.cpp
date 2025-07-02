@@ -19,12 +19,14 @@
 #include <inttypes.h>
 #include <regex>
 
+#ifdef SPT_HUD_ENABLED
 ConVar y_spt_hud_portal_bubble("y_spt_hud_portal_bubble", "0", FCVAR_CHEAT, "Turns on portal bubble index hud.\n");
 ConVar y_spt_hud_ent_info(
     "y_spt_hud_ent_info",
     "",
     FCVAR_CHEAT,
     "Display entity info on HUD. Format is \"[ent index],[prop regex],[prop regex],...,[prop regex];[ent index],...,[prop regex]\".\n");
+#endif
 
 static const int MAX_ENTRIES = 128;
 static const int INFO_BUFFER_SIZE = 256;
@@ -486,6 +488,7 @@ void EntProps::LoadFeature()
 	}
 #endif
 
+#ifdef SPT_HUD_ENABLED
 	bool result = spt_hud_feat.AddHudCallback("ent_info",
 	                                          HudCallback(
 	                                              [](std::string args)
@@ -519,6 +522,7 @@ void EntProps::LoadFeature()
 		InitConcommandBase(y_spt_hud_ent_info);
 		SptImGui::RegisterHudCvarCallback(y_spt_hud_ent_info, ImGuiEntInfoCvarCallback, true);
 	}
+#endif
 }
 
 void EntProps::ImGuiEntInfoCvarCallback(ConVar& var)

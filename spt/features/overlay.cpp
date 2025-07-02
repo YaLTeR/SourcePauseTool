@@ -69,6 +69,8 @@ ConVar _y_spt_overlay_fov("_y_spt_overlay_fov",
                           true,
                           175.f);
 ConVar _y_spt_overlay_swap("_y_spt_overlay_swap", "0", FCVAR_CHEAT, "Swap alternate view and main screen?\n");
+
+#if defined(SPT_HUD_ENABLED) && !defined(SPT_HUD_TEXTONLY)
 ConVar _y_spt_overlay_crosshair_size("_y_spt_overlay_crosshair_size",
                                      "10",
                                      FCVAR_CHEAT,
@@ -89,6 +91,8 @@ ConVar _y_spt_overlay_crosshair_color("_y_spt_overlay_crosshair_color",
                                       "0 255 0 255",
                                       FCVAR_CHEAT,
                                       "Overlay crosshair RGBA color.");
+#endif
+
 ConVar _y_spt_overlay_no_roll("_y_spt_overlay_no_roll", "1", FCVAR_CHEAT, "Set the roll of overlay camera roll to 0.");
 
 Overlay spt_overlay;
@@ -150,7 +154,7 @@ void Overlay::LoadFeature()
 	InitConcommandBase(_y_spt_overlay_swap);
 	InitConcommandBase(_y_spt_overlay_no_roll);
 
-#ifdef SPT_HUD_ENABLED
+#if defined(SPT_HUD_ENABLED) && !defined(SPT_HUD_TEXTONLY)
 	bool result = spt_hud_feat.AddHudDefaultGroup(HudCallback(
 	    std::bind(&Overlay::DrawCrosshair, this), []() { return true; }, true));
 
@@ -235,6 +239,7 @@ void Overlay::CViewRender__QueueOverlayRenderView(void* thisptr,
 	                                                                       whatToDraw);
 }
 
+#if defined(SPT_HUD_ENABLED) && !defined(SPT_HUD_TEXTONLY)
 void Overlay::DrawCrosshair()
 {
 	static std::string color = "";
@@ -262,6 +267,7 @@ void Overlay::DrawCrosshair()
 	                                    x + width / 2 + 1,
 	                                    y + thickness / 2 + 1);
 }
+#endif
 
 void Overlay::ModifyView(CViewSetup* renderView)
 {
@@ -342,8 +348,8 @@ void Overlay::ImGuiCallback()
 	SptImGui::CvarCheckbox(_y_spt_overlay_swap, "Swap overlay and main View");
 	SptImGui::CvarCheckbox(_y_spt_overlay_no_roll, "No roll");
 
+#if defined(SPT_HUD_ENABLED) && !defined(SPT_HUD_TEXTONLY)
 	ImGui::SeparatorText("Crosshair");
-
 	SptImGui::CvarDraggableInt(_y_spt_overlay_crosshair_size, "Size", nullptr, true);
 	SptImGui::CvarDraggableInt(_y_spt_overlay_crosshair_thickness, "Thickness", nullptr, true);
 
@@ -369,6 +375,7 @@ void Overlay::ImGuiCallback()
 		_y_spt_overlay_crosshair_color.SetValue(buf);
 	}
 	// clang-format on
+#endif
 
 	ImGui::SeparatorText("Overlay type");
 

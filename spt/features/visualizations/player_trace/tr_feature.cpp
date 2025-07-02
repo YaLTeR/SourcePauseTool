@@ -45,7 +45,9 @@ private:
 	void OnTickSignal(bool simulating);
 	void OnFinishRestoreSignal(void*);
 	void OnMeshRenderSignal(MeshRendererDelegate& mr);
+#ifdef SPT_HUD_ENABLED
 	void OnHudCallback();
+#endif
 };
 
 static PlayerTraceFeature spt_player_trace_feat;
@@ -198,7 +200,11 @@ CON_COMMAND_AUTOCOMPLETEFILE(spt_trace_import,
 }
 
 ConVar spt_draw_trace{"spt_draw_trace", "0", FCVAR_DONTRECORD, "Draw last recorded player trace."};
+
+#ifdef SPT_HUD_ENABLED
 ConVar spt_hud_trace{"spt_hud_trace", "0", FCVAR_DONTRECORD, "Show info about the player trace."};
+#endif
+
 ConVar spt_trace_autoplay("spt_trace_autoplay", "0", FCVAR_DONTRECORD, "Play the trace recording in real time.");
 ConVar spt_trace_ent_collect_radius("spt_trace_ent_collect_radius",
                                     "250",
@@ -246,8 +252,11 @@ void PlayerTraceFeature::LoadFeature()
 	InitCommand(spt_trace_export);
 	InitCommand(spt_trace_import);
 
-	if (AddHudCallback("trace", [](auto) { spt_player_trace_feat.OnHudCallback(); }, spt_hud_trace))
+#ifdef SPT_HUD_ENABLED
+	if (AddHudCallback(
+	        "trace", [](auto) { spt_player_trace_feat.OnHudCallback(); }, spt_hud_trace))
 		SptImGui::RegisterHudCvarCheckbox(spt_hud_trace);
+#endif
 
 	InitConcommandBase(spt_trace_autoplay);
 	InitConcommandBase(spt_trace_ent_collect_radius);
@@ -328,6 +337,7 @@ void PlayerTraceFeature::OnMeshRenderSignal(MeshRendererDelegate& mr)
 	tr.GetRenderingCache().RenderAll(mr, activeDrawTick);
 }
 
+#ifdef SPT_HUD_ENABLED
 void PlayerTraceFeature::OnHudCallback()
 {
 	bool drawing = spt_draw_trace.GetBool();
@@ -355,6 +365,7 @@ void PlayerTraceFeature::OnHudCallback()
 
 	spt_hud_feat.DrawTopHudElement(L"Trace memory usage: %.*f%s", i > 0 ? 2 : 0, displayUsage, suffixes[i]);
 }
+#endif
 
 bool player_trace::GetActiveTracePos(Vector& pos, QAngle& ang, float& fov)
 {
