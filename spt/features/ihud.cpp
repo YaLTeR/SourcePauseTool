@@ -85,8 +85,6 @@ private:
 	void DrawButton(Button button);
 	void GetCurrentSize(int& x, int& y);
 
-	IMatSystemSurface* surface = nullptr;
-
 	int xOffset = 0;
 	int yOffset = 0;
 	int gridSize = 0;
@@ -120,7 +118,7 @@ static const Color background = {0, 0, 0, 233};
 static const Color highlight = {255, 255, 255, 66};
 static const Color textcolor = {255, 255, 255, 66};
 static const Color texthighlight = {0, 0, 0, 233};
-static const std::string font = FONT_Trebuchet20;
+static const std::string default_font = FONT_Trebuchet20;
 
 #ifdef SSDK2013
 CON_COMMAND(y_spt_ihud_modify,
@@ -270,7 +268,7 @@ CON_COMMAND_F_COMPLETION(y_spt_ihud_modify,
 
 			if (argc == 3)
 			{
-				Msg("%s: font = \"%s\"", name.c_str(), font.c_str());
+				Msg("%s: font = \"%s\"", name.c_str(), default_font.c_str());
 			}
 			else if (argc == 4)
 			{
@@ -625,24 +623,25 @@ void InputHud::LoadFeature()
 	const int IN_ATTACK2 = (1 << 11);
 
 	buttonSettings["forward"] =
-	    {true, true, L"W", font, 2, 0, 1, 1, background, highlight, textcolor, texthighlight, IN_FORWARD};
+	    {true, true, L"W", default_font, 2, 0, 1, 1, background, highlight, textcolor, texthighlight, IN_FORWARD};
 	buttonSettings["use"] =
-	    {true, true, L"E", font, 3, 0, 1, 1, background, highlight, textcolor, texthighlight, IN_USE};
+	    {true, true, L"E", default_font, 3, 0, 1, 1, background, highlight, textcolor, texthighlight, IN_USE};
 	buttonSettings["moveleft"] =
-	    {true, true, L"A", font, 1, 1, 1, 1, background, highlight, textcolor, texthighlight, IN_MOVELEFT};
+	    {true, true, L"A", default_font, 1, 1, 1, 1, background, highlight, textcolor, texthighlight, IN_MOVELEFT};
 	buttonSettings["back"] =
-	    {true, true, L"S", font, 2, 1, 1, 1, background, highlight, textcolor, texthighlight, IN_BACK};
+	    {true, true, L"S", default_font, 2, 1, 1, 1, background, highlight, textcolor, texthighlight, IN_BACK};
 	buttonSettings["moveright"] =
-	    {true, true, L"D", font, 3, 1, 1, 1, background, highlight, textcolor, texthighlight, IN_MOVERIGHT};
+	    {true, true, L"D", default_font, 3, 1, 1, 1, background, highlight, textcolor, texthighlight, IN_MOVERIGHT};
 	buttonSettings["duck"] =
-	    {true, true, L"Duck", font, 0, 2, 1, 1, background, highlight, textcolor, texthighlight, IN_DUCK};
+	    {true, true, L"Duck", default_font, 0, 2, 1, 1, background, highlight, textcolor, texthighlight, IN_DUCK};
 	buttonSettings["jump"] =
-	    {true, true, L"Jump", font, 1, 2, 3, 1, background, highlight, textcolor, texthighlight, IN_JUMP};
+	    {true, true, L"Jump", default_font, 1, 2, 3, 1, background, highlight, textcolor, texthighlight, IN_JUMP};
 	buttonSettings["attack"] =
-	    {true, true, L"L", font, 4, 2, 1, 1, background, highlight, textcolor, texthighlight, IN_ATTACK};
+	    {true, true, L"L", default_font, 4, 2, 1, 1, background, highlight, textcolor, texthighlight, IN_ATTACK};
 	buttonSettings["attack2"] =
-	    {true, true, L"R", font, 5, 2, 1, 1, background, highlight, textcolor, texthighlight, IN_ATTACK2};
-	anglesSetting = {true, false, L"", font, 4, 1, 0, 0, background, highlight, textcolor, texthighlight, 0};
+	    {true, true, L"R", default_font, 5, 2, 1, 1, background, highlight, textcolor, texthighlight, IN_ATTACK2};
+	anglesSetting =
+	    {true, false, L"", default_font, 4, 1, 0, 0, background, highlight, textcolor, texthighlight, 0};
 }
 
 void InputHud::UnloadFeature() {}
@@ -754,7 +753,7 @@ void InputHud::AddCustomKey(const char* key)
 	std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
 	std::wstring wstr(str.begin(), str.end());
 	buttonSettings[str] =
-	    {false, true, wstr, font, 0, 0, 1, 1, background, highlight, textcolor, texthighlight, code};
+	    {false, true, wstr, default_font, 0, 0, 1, 1, background, highlight, textcolor, texthighlight, code};
 }
 #endif
 
@@ -808,8 +807,6 @@ void InputHud::DrawInputHud()
 		awaitingFrameDraw = false;
 	}
 
-	surface = interfaces::surface;
-
 	// get offset from percentage
 	int ihudSizeX, ihudSizeY;
 	GetCurrentSize(ihudSizeX, ihudSizeY);
@@ -859,41 +856,44 @@ void InputHud::DrawInputHud()
 			int movY = cY1 - r * movement.y;
 			int angX = cX2 + r * ang.x;
 			int angY = cY2 + r * ang.y;
-			surface->DrawSetColor(anglesSetting.background);
-			surface->DrawFilledRect(xOffset,
-			                        yOffset,
-			                        xOffset + 5 * (gridSize + padding) - padding,
-			                        yOffset + 5 * (gridSize + padding) - padding);
-			surface->DrawFilledRect(xOffset + 5 * (gridSize + padding),
-			                        yOffset,
-			                        xOffset + 10 * (gridSize + padding) - padding,
-			                        yOffset + 5 * (gridSize + padding) - padding);
+			interfaces::surface->DrawSetColor(anglesSetting.background);
+			interfaces::surface->DrawFilledRect(xOffset,
+			                                    yOffset,
+			                                    xOffset + 5 * (gridSize + padding) - padding,
+			                                    yOffset + 5 * (gridSize + padding) - padding);
+			interfaces::surface->DrawFilledRect(xOffset + 5 * (gridSize + padding),
+			                                    yOffset,
+			                                    xOffset + 10 * (gridSize + padding) - padding,
+			                                    yOffset + 5 * (gridSize + padding) - padding);
 
-			int th = surface->GetFontTall(anglesSettingFont);
-			surface->DrawSetTextFont(anglesSettingFont);
-			surface->DrawSetTextColor(anglesSetting.textcolor);
+			int th = interfaces::surface->GetFontTall(anglesSettingFont);
+			interfaces::surface->DrawSetTextFont(anglesSettingFont);
+			interfaces::surface->DrawSetTextColor(anglesSetting.textcolor);
 			const wchar_t* text = L"move analog";
-			surface->DrawSetTextPos(cX1 - r, cY1 - r - th);
-			surface->DrawPrintText(text, wcslen(text));
+			interfaces::surface->DrawSetTextPos(cX1 - r, cY1 - r - th);
+			interfaces::surface->DrawPrintText(text);
 			text = L"view analog";
-			surface->DrawSetTextPos(cX2 - r, cY2 - r - th);
-			surface->DrawPrintText(text, wcslen(text));
+			interfaces::surface->DrawSetTextPos(cX2 - r, cY2 - r - th);
+			interfaces::surface->DrawPrintText(text);
+
+			const auto orange = Color(255, 200, 100, 100);
+			const auto blue = Color(100, 200, 255, 100);
 
 			int joyStickSize = gridSize / 5;
-			surface->DrawSetColor(255, 200, 100, 100); // oragne
-			surface->DrawOutlinedCircle(cX1, cY1, r, 64);
-			surface->DrawOutlinedRect(cX1 - r, cY1 - r, cX1 + r, cY1 + r);
-			surface->DrawOutlinedCircle(movX, movY, joyStickSize, 16);
-			surface->DrawLine(cX1 - r, cY1, cX1 + r, cY1);
-			surface->DrawLine(cX1, cY1 - r, cX1, cY1 + r);
-			surface->DrawLine(cX1, cY1, movX, movY);
-			surface->DrawSetColor(100, 200, 255, 100); // blue
-			surface->DrawOutlinedCircle(cX2, cY2, r, 64);
-			surface->DrawOutlinedRect(cX2 - r, cY2 - r, cX2 + r, cY2 + r);
-			surface->DrawOutlinedCircle(angX, angY, joyStickSize, 16);
-			surface->DrawLine(cX2 - r, cY2, cX2 + r, cY2);
-			surface->DrawLine(cX2, cY2 - r, cX2, cY2 + r);
-			surface->DrawLine(cX2, cY2, angX, angY);
+			interfaces::surface->DrawSetColor(orange);
+			interfaces::surface->DrawOutlinedCircle(cX1, cY1, r, 64);
+			interfaces::surface->DrawOutlinedRect(cX1 - r, cY1 - r, cX1 + r, cY1 + r);
+			interfaces::surface->DrawOutlinedCircle(movX, movY, joyStickSize, 16);
+			interfaces::surface->DrawLine(cX1 - r, cY1, cX1 + r, cY1);
+			interfaces::surface->DrawLine(cX1, cY1 - r, cX1, cY1 + r);
+			interfaces::surface->DrawLine(cX1, cY1, movX, movY);
+			interfaces::surface->DrawSetColor(blue);
+			interfaces::surface->DrawOutlinedCircle(cX2, cY2, r, 64);
+			interfaces::surface->DrawOutlinedRect(cX2 - r, cY2 - r, cX2 + r, cY2 + r);
+			interfaces::surface->DrawOutlinedCircle(angX, angY, joyStickSize, 16);
+			interfaces::surface->DrawLine(cX2 - r, cY2, cX2 + r, cY2);
+			interfaces::surface->DrawLine(cX2, cY2 - r, cX2, cY2 + r);
+			interfaces::surface->DrawLine(cX2, cY2, angX, angY);
 
 			Button button = buttonSettings["duck"];
 			button.enabled = true;
@@ -951,21 +951,20 @@ void InputHud::DrawInputHud()
 				int cY = yOffset + (anglesSetting.y + 1) * (gridSize + padding) - padding / 2;
 				int angX = cX + r * ang.x;
 				int angY = cY + r * ang.y;
-				surface->DrawSetColor(anglesSetting.background);
-				surface->DrawFilledRect(xOffset + anglesSetting.x * (gridSize + padding),
-				                        yOffset + anglesSetting.y * (gridSize + padding),
-				                        xOffset + (anglesSetting.x + 2) * (gridSize + padding)
-				                            - padding,
-				                        yOffset + (anglesSetting.y + 2) * (gridSize + padding)
-				                            - padding);
+				interfaces::surface->DrawSetColor(anglesSetting.background);
+				interfaces::surface
+				    ->DrawFilledRect(xOffset + anglesSetting.x * (gridSize + padding),
+				                     yOffset + anglesSetting.y * (gridSize + padding),
+				                     xOffset + (anglesSetting.x + 2) * (gridSize + padding) - padding,
+				                     yOffset + (anglesSetting.y + 2) * (gridSize + padding) - padding);
 
 				int joyStickSize = gridSize / 10;
-				surface->DrawSetColor(anglesSetting.highlight);
-				surface->DrawOutlinedCircle(cX, cY, r, 64);
-				surface->DrawOutlinedCircle(angX, angY, joyStickSize, 16);
-				surface->DrawLine(cX - r, cY, cX + r, cY);
-				surface->DrawLine(cX, cY - r, cX, cY + r);
-				surface->DrawLine(cX, cY, angX, angY);
+				interfaces::surface->DrawSetColor(anglesSetting.highlight);
+				interfaces::surface->DrawOutlinedCircle(cX, cY, r, 64);
+				interfaces::surface->DrawOutlinedCircle(angX, angY, joyStickSize, 16);
+				interfaces::surface->DrawLine(cX - r, cY, cX + r, cY);
+				interfaces::surface->DrawLine(cX, cY - r, cX, cY + r);
+				interfaces::surface->DrawLine(cX, cY, angX, angY);
 			}
 		}
 	}
@@ -987,17 +986,17 @@ void InputHud::DrawRectAndCenterTxt(Color buttonColor,
 		return;
 	}
 
-	surface->DrawSetColor(buttonColor);
-	surface->DrawFilledRect(x0, y0, x1, y1);
+	interfaces::surface->DrawSetColor(buttonColor);
+	interfaces::surface->DrawFilledRect(x0, y0, x1, y1);
 
 	int tw, th;
-	surface->GetTextSize(rectFont, text, tw, th);
+	interfaces::surface->GetTextSize(rectFont, text, tw, th);
 	int xc = x0 + ((x1 - x0) / 2);
 	int yc = y0 + ((y1 - y0) / 2);
-	surface->DrawSetTextFont(rectFont);
-	surface->DrawSetTextColor(textColor);
-	surface->DrawSetTextPos(xc - (tw / 2), yc - (th / 2));
-	surface->DrawPrintText(text, wcslen(text));
+	interfaces::surface->DrawSetTextFont(rectFont);
+	interfaces::surface->DrawSetTextColor(textColor);
+	interfaces::surface->DrawSetTextPos(xc - (tw / 2), yc - (th / 2));
+	interfaces::surface->DrawPrintText(text);
 }
 
 void InputHud::DrawButton(Button button)

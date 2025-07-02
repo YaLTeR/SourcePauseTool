@@ -479,11 +479,10 @@ void HopsHud::PrintStrafeCol(std::function<void(const ljstats::SegmentStats&, wc
 	const int BUFFER_SIZE = 256;
 	wchar_t buffer[BUFFER_SIZE];
 
-	auto surface = interfaces::surface;
-	auto fontTall = surface->GetFontTall(hopsFont);
+	auto fontTall = interfaces::surface->GetFontTall(hopsFont);
 
-	surface->DrawSetTextPos(x, y);
-	surface->DrawPrintText(fieldName, wcslen(fieldName));
+	interfaces::surface->DrawSetTextPos(x, y);
+	interfaces::surface->DrawPrintText(fieldName);
 	y += (fontTall + MARGIN);
 
 	for (auto& segment : ljstats::lastJump.segments)
@@ -500,8 +499,8 @@ void HopsHud::PrintStrafeCol(std::function<void(const ljstats::SegmentStats&, wc
 		}
 
 		func(segment, buffer, x, y);
-		surface->DrawSetTextPos(x, y);
-		surface->DrawPrintText(buffer, wcslen(buffer));
+		interfaces::surface->DrawSetTextPos(x, y);
+		interfaces::surface->DrawPrintText(buffer);
 		y += (fontTall + MARGIN);
 	}
 }
@@ -584,9 +583,9 @@ void HopsHud::DrawHopHud()
 	do \
 	{ \
 		int tw, th; \
-		surface->GetTextSize(hopsFont, buffer, tw, th); \
-		surface->DrawSetTextPos(x - tw / 2, y); \
-		surface->DrawPrintText(buffer, wcslen(buffer)); \
+		interfaces::surface->GetTextSize(hopsFont, buffer, tw, th); \
+		interfaces::surface->DrawSetTextPos(x - tw / 2, y); \
+		interfaces::surface->DrawPrintText(buffer); \
 		y += (th + MARGIN); \
 	} while (0)
 
@@ -608,9 +607,8 @@ void HopsHud::DrawHopHud()
 
 	const auto& screen = spt_hud_feat.screen;
 
-	surface->DrawSetTextFont(hopsFont);
-	surface->DrawSetTextColor(white);
-	surface->DrawSetTexture(0);
+	interfaces::surface->DrawSetTextFont(hopsFont);
+	interfaces::surface->DrawSetTextColor(white);
 
 	const int MARGIN = 2;
 	const int BUFFER_SIZE = 256;
@@ -636,21 +634,27 @@ void HopsHud::DrawHopHud()
 		DrawBuffer();
 
 		int tw, th;
-		surface->GetTextSize(hopsFont, L"####################", tw, th);
-		surface->DrawSetColor(barEmptyColor);
+		interfaces::surface->GetTextSize(hopsFont, L"####################", tw, th);
+		interfaces::surface->DrawSetColor(barEmptyColor);
 
 		const int x1 = x - tw / 2;
 		const int y1 = y;
 		const int x2 = x + tw / 2;
 		const int y2 = y + th;
-		surface->DrawFilledRect(x1, y1, x2, y2);
+		interfaces::surface->DrawFilledRect(x1, y1, x2, y2);
 
 		const int barWidth = tw * strafeAccuracy;
-		surface->DrawSetColor(barFillColor);
+		interfaces::surface->DrawSetColor(barFillColor);
 		if (strafeLeft)
-			surface->DrawFilledRect(x2 + MARGIN - barWidth, y1 + MARGIN, x2 - MARGIN, y2 - MARGIN);
+			interfaces::surface->DrawFilledRect(x2 + MARGIN - barWidth,
+			                                    y1 + MARGIN,
+			                                    x2 - MARGIN,
+			                                    y2 - MARGIN);
 		else
-			surface->DrawFilledRect(x1 + MARGIN, y1 + MARGIN, x1 - MARGIN + barWidth, y2 - MARGIN);
+			interfaces::surface->DrawFilledRect(x1 + MARGIN,
+			                                    y1 + MARGIN,
+			                                    x1 - MARGIN + barWidth,
+			                                    y2 - MARGIN);
 
 		y += (th + MARGIN);
 	}
@@ -658,16 +662,16 @@ void HopsHud::DrawHopHud()
 	if (y_spt_jhud_velocity.GetBool())
 	{
 		if (fabs(currVel - prevVel) < 0.01)
-			surface->DrawSetTextColor(white);
+			interfaces::surface->DrawSetTextColor(white);
 		else if (currVel > prevVel)
-			surface->DrawSetTextColor(blue);
+			interfaces::surface->DrawSetTextColor(blue);
 		else
-			surface->DrawSetTextColor(orange);
+			interfaces::surface->DrawSetTextColor(orange);
 
 		swprintf_s(buffer, BUFFER_SIZE, L"%d", (int)currVel);
 		DrawBuffer();
 
-		surface->DrawSetTextColor(white);
+		interfaces::surface->DrawSetTextColor(white);
 		swprintf_s(buffer, BUFFER_SIZE, L"%d(%+d)", (int)hopVel, (int)(hopVel - prevHopVel));
 		DrawBuffer();
 	}
@@ -684,9 +688,8 @@ void HopsHud::DrawHopHud()
 		DrawValue(L"Curve loss: %.3f", ljstats::lastJump.CurveLoss());
 
 		// Individual strafes
-		surface->DrawSetTextFont(hopsFont);
-		surface->DrawSetTextColor(white);
-		surface->DrawSetTexture(0);
+		interfaces::surface->DrawSetTextFont(hopsFont);
+		interfaces::surface->DrawSetTextColor(white);
 		int ticks = ljstats::lastJump.TotalTicks();
 		const int COL_WIDTH = 75;
 

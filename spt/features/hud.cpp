@@ -415,55 +415,14 @@ namespace patterns
 	         "4044",
 	         "6A FF 68 B8 CA 2C 20");
 
-#ifdef BMS
-	PATTERNS(ISurface__DrawPrintText,
-	         "BMS-Retail-0.9",
-	         "55 8B EC 83 EC ?? A1 ?? ?? ?? ?? 33 C5 89 45 ?? 83 7D ?? 00");
-	PATTERNS(ISurface__DrawSetTextPos,
-	         "BMS-Retail-0.9",
-	         "55 8b ec 8b 45 08 89 41 28 8b 45 0c 89 41 2c 5d c2 08 00");
-	PATTERNS(ISurface__DrawSetTextFont, "BMS-Retail-0.9", "55 8b ec 8b 45 08 89 81 ?? ?? 00 00 5d c2 04 00");
-	PATTERNS(ISurface__DrawSetTextColor, "BMS-Retail-0.9", "55 8B EC F3 0F 2A 45 ?? 53");
-	PATTERNS(ISurface__DrawSetTexture, "BMS-Retail-0.9", "55 8B EC 56 8B F1 57 8B 7D ?? 3B BE ?? ?? ?? ??");
-	PATTERNS(ISurface__AddCustomFontFile,
-	         "BMS-Retail-0.9",
-	         "55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 81 EC 48 01 00 00");
-	PATTERNS(ISurface__GetFontTall,
-	         "BMS-Retail-0.9",
-	         "55 8B EC FF 75 08 E8 ?? ?? ?? ?? 8B C8 E8 ?? ?? ?? ?? 5D C2 04 00");
-
-#endif
-
 } // namespace patterns
 
 void HUDFeature::InitHooks()
 {
-#ifndef OE
 	FIND_PATTERN(vguimatsurface, CMatSystemSurface__StartDrawing);
 	FIND_PATTERN(vguimatsurface, CMatSystemSurface__FinishDrawing);
-#endif
-
-#ifdef BMS
-	isLatest = utils::DoesGameLookLikeBMSLatest();
-
-	FIND_PATTERN_ALL(vguimatsurface, ISurface__DrawSetTextFont);
-	FIND_PATTERN_ALL(vguimatsurface, ISurface__GetFontTall);
-
-	FIND_PATTERN(vguimatsurface, ISurface__DrawPrintText);
-	FIND_PATTERN(vguimatsurface, ISurface__DrawSetTextPos);
-	FIND_PATTERN(vguimatsurface, ISurface__DrawSetTextColor);
-	FIND_PATTERN(vguimatsurface, ISurface__DrawSetTexture);
-	FIND_PATTERN(vguimatsurface, ISurface__AddCustomFontFile);
-#endif
-
 	HOOK_FUNCTION(engine, CEngineVGui__Paint);
 }
-
-#ifdef BMS
-#define CALL(func_name, ...) ORIG_ISurface__##func_name(interfaces::surface, __VA_ARGS__);
-#else
-#define CALL(func_name, ...) interfaces::surface->##func_name(__VA_ARGS__);
-#endif
 
 bool HUDFeature::AddHudCallback(std::string key, HudCallback callback)
 {
@@ -489,32 +448,18 @@ void HUDFeature::vDrawTopHudElement(Color color, const wchar* format, va_list ar
 
 	if (!drawText)
 	{
-#ifndef BMS
 		int tw, th;
 		interfaces::surface->GetTextSize(font, text, tw, th);
 		if (tw > textWidth)
 			textWidth = tw;
 		textHeight += th + 2;
-#endif
 		return;
 	}
 
-	CALL(DrawSetTextFont, font);
-	CALL(DrawSetTextColor, color.r(), color.g(), color.b(), color.a());
-	CALL(DrawSetTexture, 0);
-	CALL(DrawSetTextPos, topX, 2 + topY + (topFontTall + 2) * topVertIndex);
-
-#ifdef BMS
-	if (isLatest)
-	{
-		CALL(DrawPrintText_BMSLatest, text, wcslen(text), vgui::FONT_DRAW_DEFAULT, 0x0);
-	}
-	else
-#endif
-	{
-		CALL(DrawPrintText, text, wcslen(text), vgui::FONT_DRAW_DEFAULT);
-	}
-
+	interfaces::surface->DrawSetTextFont(font);
+	interfaces::surface->DrawSetTextColor(color);
+	interfaces::surface->DrawSetTextPos(topX, 2 + topY + (topFontTall + 2) * topVertIndex);
+	interfaces::surface->DrawPrintText(text);
 	++topVertIndex;
 }
 
@@ -536,7 +481,7 @@ void HUDFeature::DrawColorTopHudElement(Color color, const wchar* format, ...)
 
 bool HUDFeature::ShouldLoadFeature()
 {
-	return !utils::DoesGameLookLikeBMSMod() && !utils::DoesGameLookLikeDMoMM();
+	return !utils::DoesGameLookLikeBMSMod();
 }
 
 bool HUDFeature::GetFont(const std::string& fontName, vgui::HFont& fontOut)
@@ -570,52 +515,8 @@ bool HUDFeature::GetFont(const std::string& fontName, vgui::HFont& fontOut)
 
 void HUDFeature::PreHook()
 {
-	if (!ORIG_CEngineVGui__Paint)
-		return;
-
-#ifdef BMS
-
-	if (!ORIG_ISurface__DrawPrintText || !ORIG_ISurface__DrawSetTextColor || !ORIG_ISurface__DrawSetTextPos
-	    || !ORIG_ISurface__DrawSetTexture || !ORIG_ISurface__AddCustomFontFile
-	    || MATCHES_ISurface__DrawSetTextFont.empty() || MATCHES_ISurface__GetFontTall.empty())
-	{
-		loadingSuccessful = false;
-		return;
-	}
-
-	// soem functions are nearly indistiguishable from others in its class, so we'll make some assumptions about
-	// their positions in the vftable:
-	//		GetFontTall() below AddCustomFontFile()
-	//		DrawSetTextFont() above DrawSetTextColor()
-	auto vftableStart = *(uintptr_t*)interfaces::surface;
-	for (int i = 0; i < 0x100; i++)
-	{
-		auto prevPtr = *(uintptr_t*)(vftableStart + (i - 1) * 4);
-		auto curPtr = *(uintptr_t*)(vftableStart + i * 4);
-		auto nextPtr = *(uintptr_t*)(vftableStart + (i + 1) * 4);
-
-		if (curPtr == (uintptr_t)ORIG_ISurface__AddCustomFontFile)
-		{
-			for (auto candidate : MATCHES_ISurface__GetFontTall)
-				if (candidate.ptr == nextPtr)
-					ORIG_ISurface__GetFontTall = (_ISurface__GetFontTall)(candidate.ptr);
-		}
-
-		if (nextPtr == (uintptr_t)ORIG_ISurface__DrawSetTextColor)
-		{
-			for (auto candidate : MATCHES_ISurface__DrawSetTextFont)
-				// overloaded function, observation shows declaration order doesn't match actual order...
-				if (candidate.ptr == curPtr || candidate.ptr == prevPtr)
-					ORIG_ISurface__DrawSetTextFont = (_ISurface__DrawSetTextFont)(candidate.ptr);
-		}
-	}
-
-	if (isLatest)
-		ORIG_ISurface__DrawPrintText_BMSLatest =
-		    (_ISurface__DrawPrintText_BMSLatest)ORIG_ISurface__DrawPrintText;
-
-	loadingSuccessful = ORIG_ISurface__GetFontTall && ORIG_ISurface__DrawSetTextFont;
-#endif
+	loadingSuccessful =
+	    ORIG_CEngineVGui__Paint && ORIG_CMatSystemSurface__FinishDrawing && ORIG_CMatSystemSurface__StartDrawing;
 }
 
 void HUDFeature::LoadFeature()
@@ -640,11 +541,6 @@ void HUDFeature::LoadFeature()
 void HUDFeature::UnloadFeature()
 {
 	cl_showpos = cl_showfps = nullptr;
-
-#ifdef BMS
-	MATCHES_ISurface__DrawSetTextFont.clear();
-	MATCHES_ISurface__GetFontTall.clear();
-#endif
 }
 
 void HUDFeature::DrawDefaultHUD()
@@ -658,7 +554,7 @@ void HUDFeature::DrawDefaultHUD()
 		drawText = true;
 		hudTextColor = Color(255, 255, 255, 255);
 		topVertIndex = 0;
-		topFontTall = CALL(GetFontTall, font);
+		topFontTall = interfaces::surface->GetFontTall(font);
 		if (y_spt_hud_left.GetBool())
 		{
 			topX = 6;
@@ -692,9 +588,7 @@ void HUDFeature::DrawHUD(bool overlay)
 	if (!interfaces::surface)
 		return;
 
-#ifndef OE
-	ORIG_CMatSystemSurface__StartDrawing(interfaces::surface);
-#endif
+	ORIG_CMatSystemSurface__StartDrawing(interfaces::mat_system_surface);
 
 	try
 	{
@@ -725,10 +619,9 @@ void HUDFeature::DrawHUD(bool overlay)
 				topX = screen.width * group.x * 0.01f;
 				topY = screen.height * group.y * 0.01f;
 				topVertIndex = 0;
-				topFontTall = CALL(GetFontTall, group.font);
+				topFontTall = interfaces::surface->GetFontTall(group.font);
 				font = group.font;
 
-#ifndef BMS
 				// Getting the text width
 				if (group.background.a())
 				{
@@ -740,16 +633,12 @@ void HUDFeature::DrawHUD(bool overlay)
 						hudCallbacks[callback.name].draw(callback.args);
 					}
 
-					interfaces::surface->DrawSetColor(group.background.r(),
-					                                  group.background.g(),
-					                                  group.background.b(),
-					                                  group.background.a());
+					interfaces::surface->DrawSetColor(group.background);
 					interfaces::surface->DrawFilledRect(topX - 2,
 					                                    topY,
 					                                    topX + textWidth + 2,
 					                                    topY + textHeight);
 				}
-#endif
 
 				// Draw HUD
 				drawText = true;
@@ -766,9 +655,7 @@ void HUDFeature::DrawHUD(bool overlay)
 		Msg("Error drawing HUD: %s\n", e.what());
 	}
 
-#ifndef OE
-	ORIG_CMatSystemSurface__FinishDrawing(interfaces::surface);
-#endif
+	ORIG_CMatSystemSurface__FinishDrawing(interfaces::mat_system_surface);
 }
 
 IMPL_HOOK_THISCALL(HUDFeature, void, CEngineVGui__Paint, void*, PaintMode_t mode)

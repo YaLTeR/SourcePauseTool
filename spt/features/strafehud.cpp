@@ -365,11 +365,9 @@ void StrafeHUD::DrawHUD()
 	const Color lineColor(64, 64, 64, 255);
 	const Color wishDirColor(0, 0, 255, 255);
 
-	auto surface = interfaces::surface;
-
 	// Draw background
-	surface->DrawSetColor(bgColor);
-	surface->DrawFilledRect(x, y, x + size, y + size);
+	interfaces::surface->DrawSetColor(bgColor);
+	interfaces::surface->DrawFilledRect(x, y, x + size, y + size);
 	x += pad;
 	y += pad;
 	size -= pad * 2;
@@ -381,17 +379,17 @@ void StrafeHUD::DrawHUD()
 	const float dy = size * 0.5f;
 
 	// Containing rect
-	surface->DrawOutlinedRect(x, y, x + size, y + size);
+	interfaces::surface->DrawOutlinedRect(x, y, x + size, y + size);
 
 	// Circles
-	surface->DrawOutlinedCircle(mid_x, mid_y, size / 2, 32);
-	surface->DrawOutlinedCircle(mid_x, mid_y, size / 4, 32);
+	interfaces::surface->DrawOutlinedCircle(mid_x, mid_y, size / 2, 32);
+	interfaces::surface->DrawOutlinedCircle(mid_x, mid_y, size / 4, 32);
 
 	// Half-lines and diagonals
-	surface->DrawLine(mid_x, y, mid_x, y + size);
-	surface->DrawLine(x, mid_y, x + size, mid_y);
-	surface->DrawLine(x, y, x + size, y + size);
-	surface->DrawLine(x, y + size, x + size, y);
+	interfaces::surface->DrawLine(mid_x, y, mid_x, y + size);
+	interfaces::surface->DrawLine(x, mid_y, x + size, mid_y);
+	interfaces::surface->DrawLine(x, y, x + size, y + size);
+	interfaces::surface->DrawLine(x, y + size, x + size, y);
 
 	// Acceleration line
 	if (shouldUpdateLines)
@@ -466,18 +464,18 @@ void StrafeHUD::DrawHUD()
 	{
 		assert(line.end > line.start);
 
-		surface->DrawSetColor(line.color);
+		interfaces::surface->DrawSetColor(line.color);
 
 		for (int i = line.start; i < line.end; i++)
 		{
 			const auto& point1 = points[i];
 			const auto& point2 = points[i + 1];
-			surface->DrawLine(point1.x, point1.y, point2.x, point2.y);
+			interfaces::surface->DrawLine(point1.x, point1.y, point2.x, point2.y);
 		}
 	}
 
 	// Wish dir
-	surface->DrawSetColor(wishDirColor);
+	interfaces::surface->DrawSetColor(wishDirColor);
 	const int x0 = mid_x;
 	const int y0 = mid_y;
 	const int x1 = mid_x + wishDir.x * dx;
@@ -490,14 +488,14 @@ void StrafeHUD::DrawHUD()
 	{
 		for (int i = -halfThickness; i <= halfThickness; i++)
 		{
-			surface->DrawLine(x0, y0 + i, x1, y1 + i);
+			interfaces::surface->DrawLine(x0, y0 + i, x1, y1 + i);
 		}
 	}
 	else
 	{
 		for (int i = -halfThickness; i <= halfThickness; i++)
 		{
-			surface->DrawLine(x0 + i, y0, x1 + i, y1);
+			interfaces::surface->DrawLine(x0 + i, y0, x1 + i, y1);
 		}
 	}
 }
