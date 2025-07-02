@@ -10,19 +10,9 @@
 #include "..\feature.hpp"
 #include "vgui\VGUI.h"
 #include "vgui\IScheme.h"
-#include "VGuiMatSurface\IMatSystemSurface.h"
+#include "custom_interfaces\surface.hpp"
 #include "ienginevgui.h"
 #include "Color.h"
-
-class C_BasePlayer;
-enum SkyboxVisibility_t;
-
-#include "networkvar.h"
-#ifndef OE
-#include "viewrender.h"
-#else
-#include "view_shared.h"
-#endif
 
 extern const std::string FONT_DefaultFixedOutline;
 extern const std::string FONT_Trebuchet20;
@@ -121,35 +111,6 @@ private:
 	DECL_HOOK_THISCALL(void, CEngineVGui__Paint, void*, PaintMode_t mode);
 	DECL_MEMBER_THISCALL(void, CMatSystemSurface__StartDrawing, void*);
 	DECL_MEMBER_THISCALL(void, CMatSystemSurface__FinishDrawing, void*);
-
-#ifdef BMS
-	DECL_MEMBER_THISCALL(void,
-	                     ISurface__DrawPrintText,
-	                     void*,
-	                     const wchar_t* text,
-	                     int textLen,
-	                     vgui::FontDrawType_t drawType);
-
-	DECL_MEMBER_THISCALL(void,
-	                     ISurface__DrawPrintText_BMSLatest,
-	                     void*,
-	                     const wchar_t* text,
-	                     int textLen,
-	                     vgui::FontDrawType_t drawType,
-	                     char unkBoolVal);
-
-	DECL_MEMBER_THISCALL(void, ISurface__DrawSetTextPos, void*, int x, int y);
-	DECL_MEMBER_THISCALL(void, ISurface__DrawSetTextFont, void*, vgui::HFont font);
-	DECL_MEMBER_THISCALL(void, ISurface__DrawSetTextColor, void*, int r, int g, int b, int a);
-	DECL_MEMBER_THISCALL(void, ISurface__DrawSetTexture, void*, int id);
-	DECL_MEMBER_THISCALL(int, ISurface__GetFontTall, void*, vgui::HFont font);
-	DECL_MEMBER_THISCALL(void, ISurface__AddCustomFontFile, void*, const char* fontName, const char* fontFileName);
-
-	std::vector<patterns::MatchedPattern> MATCHES_ISurface__DrawSetTextFont;
-	std::vector<patterns::MatchedPattern> MATCHES_ISurface__GetFontTall;
-
-	bool isLatest = false;
-#endif
 
 	void DrawHUD(bool overlay);
 	void DrawDefaultHUD();

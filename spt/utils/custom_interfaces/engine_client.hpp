@@ -15,7 +15,7 @@ public:
 	virtual void Unk6() = 0;
 	virtual void Unk7() = 0;
 	virtual void Unk8() = 0;
-	virtual void Unk9() = 0;
+	virtual void GetScreenSize(int& width, int& height) = 0;
 	virtual void ClientCmd(const char* szCmdString) = 0;
 	virtual void Unk10() = 0;
 	virtual void Unk11() = 0;
@@ -52,6 +52,7 @@ class EngineClientWrapper
 {
 public:
 	virtual ~EngineClientWrapper(){};
+	virtual void GetScreenSize(int& width, int& height) = 0;
 	virtual void ClientCmd(const char* command) = 0;
 	virtual void GetViewAngles(QAngle& viewangles) = 0;
 	virtual void SetViewAngles(QAngle& viewangles) = 0;
@@ -71,6 +72,10 @@ class IVEngineClientWrapper : public EngineClientWrapper
 {
 public:
 	IVEngineClientWrapper(EngineClient* engine) : engine(engine) {}
+
+	virtual void GetScreenSize(int& width, int& height) {
+		engine->GetScreenSize(width, height);
+	}
 
 	void ClientCmd(const char* command) override
 	{

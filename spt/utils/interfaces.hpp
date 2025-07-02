@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "custom_interfaces\engine_client.hpp"
+#include "custom_interfaces\surface.hpp"
 #include "eiface.h"
 #include "tier3\tier3.h"
 #include "engine\ivdebugoverlay.h"
@@ -25,7 +26,8 @@ namespace interfaces
 	extern std::unique_ptr<EngineClientWrapper> engine;
 	extern IVEngineServer* engine_server;
 	extern IVEngineClient* engine_client;
-	extern IMatSystemSurface* surface;
+	extern std::unique_ptr<SurfaceWrapper> surface;
+	extern IMatSystemSurface* mat_system_surface;
 	extern vgui::ISchemeManager* scheme;
 	extern vgui::IInput* vgui_input;
 	extern IEngineVGui* engine_vgui;

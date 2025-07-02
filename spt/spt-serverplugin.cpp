@@ -52,7 +52,8 @@ namespace interfaces
 	std::unique_ptr<EngineClientWrapper> engine;
 	IVEngineServer* engine_server = nullptr;
 	IVEngineClient* engine_client = nullptr;
-	IMatSystemSurface* surface = nullptr;
+	std::unique_ptr<SurfaceWrapper> surface;
+	IMatSystemSurface* mat_system_surface = nullptr;
 	vgui::ISchemeManager* scheme = nullptr;
 	vgui::IInput* vgui_input = nullptr;
 	IEngineVGui* engine_vgui = nullptr;
@@ -129,8 +130,8 @@ extern "C" __declspec(dllexport) const void* CreateInterface(const char* pName, 
 				*pReturnCode = 0;
 
 			plugin_interface_version = pName[24] - '0';
-	return &g_SourcePauseTool;
-}
+			return &g_SourcePauseTool;
+		}
 	}
 
 	if (pReturnCode)
@@ -315,7 +316,25 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	interfaces::engine_vgui = (IEngineVGui*)interfaceFactory(VENGINE_VGUI_VERSION, NULL);
 	interfaces::engine_tool = (IEngineTool*)interfaceFactory(VENGINETOOL_INTERFACE_VERSION, NULL);
 	interfaces::vgui_input = (vgui::IInput*)interfaceFactory(VGUI_INPUT_INTERFACE_VERSION, NULL);
-	interfaces::surface = (IMatSystemSurface*)interfaceFactory(MAT_SYSTEM_SURFACE_INTERFACE_VERSION, NULL);
+
+#ifdef OE
+	int mat_system_surface_version = 0;
+	interfaces::mat_system_surface =
+	    (IMatSystemSurface*)interfaceFactory(MAT_SYSTEM_SURFACE_INTERFACE_VERSION, NULL);
+	if (!interfaces::mat_system_surface)
+	{
+		interfaces::mat_system_surface =
+		    (IMatSystemSurface*)interfaceFactory(MAT_SYSTEM_SURFACE_INTERFACE_VERSION_4, NULL);
+		if (interfaces::mat_system_surface)
+			mat_system_surface_version = 4;
+	}
+	else
+		mat_system_surface_version = 5;
+#else
+	interfaces::mat_system_surface =
+	    (IMatSystemSurface*)interfaceFactory(MAT_SYSTEM_SURFACE_INTERFACE_VERSION, NULL);
+#endif
+
 	interfaces::scheme = (vgui::ISchemeManager*)interfaceFactory(VGUI_SCHEME_INTERFACE_VERSION, NULL);
 
 	interfaces::inputSystem = (IInputSystem*)interfaceFactory(INPUTSYSTEM_INTERFACE_VERSION, NULL);
@@ -333,7 +352,8 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	    (IStaticPropMgrServer*)interfaceFactory(INTERFACEVERSION_STATICPROPMGR_SERVER, NULL);
 	interfaces::shaderDevice = (IShaderDevice*)interfaceFactory(SHADER_DEVICE_INTERFACE_VERSION, NULL);
 	interfaces::spatialPartition = (ISpatialPartition*)interfaceFactory(INTERFACEVERSION_SPATIALPARTITION, NULL);
-	interfaces::serverGameClients = (IServerGameClients*)gameServerFactory(INTERFACEVERSION_SERVERGAMECLIENTS, NULL);
+	interfaces::serverGameClients =
+	    (IServerGameClients*)gameServerFactory(INTERFACEVERSION_SERVERGAMECLIENTS, NULL);
 
 	if (interfaces::gm)
 	{
@@ -373,24 +393,17 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	ReplaceAutoCompleteSuggest();
 #endif
 
-#if !defined(BMS)
-	auto ptr = interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION, NULL);
-#else
-	auto ptr = interfaceFactory("VEngineClient015", NULL);
-#endif
-
-	if (ptr)
+	if (interfaces::engine_client)
 	{
 #ifdef OE
 		if (utils::DoesGameLookLikeDMoMM())
 			interfaces::engine = std::make_unique<IVEngineClientWrapper<IVEngineClientDMoMM>>(
-			    reinterpret_cast<IVEngineClientDMoMM*>(ptr));
+			    reinterpret_cast<IVEngineClientDMoMM*>(interfaces::engine_client));
 #endif
-
 		// Check if we assigned it in the ifdef above.
 		if (!interfaces::engine)
-			interfaces::engine = std::make_unique<IVEngineClientWrapper<IVEngineClient>>(
-			    reinterpret_cast<IVEngineClient*>(ptr));
+			interfaces::engine =
+			    std::make_unique<IVEngineClientWrapper<IVEngineClient>>(interfaces::engine_client);
 	}
 
 	if (!interfaces::engine)
@@ -419,6 +432,27 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	if (!interfaces::engine_client)
 	{
 		DevWarning("SPT: Failed to get the IVEngineClient interface.\n");
+	}
+
+	if (interfaces::mat_system_surface)
+	{
+#ifdef OE
+		if (mat_system_surface_version == 4)
+		{
+			DevMsg("Using IMatSystemSurface004\n");
+			interfaces::surface = std::make_unique<ISurfaceWrapperV4>(
+			    reinterpret_cast<IMatSystemSurfaceV4*>(interfaces::mat_system_surface));
+		}
+#endif
+		// Check if we assigned it in the ifdef above.
+		if (!interfaces::surface)
+			interfaces::surface =
+			    std::make_unique<ISurfaceWrapper<IMatSystemSurface>>(interfaces::mat_system_surface);
+	}
+
+	if (!interfaces::mat_system_surface)
+	{
+		DevWarning("SPT: Failed to get the IMatSystemSurface interface.\n");
 	}
 
 	if (!interfaces::debugOverlay)

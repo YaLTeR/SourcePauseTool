@@ -82,7 +82,7 @@ bool BoogFeature::ShouldDrawBoog()
 
 void BoogFeature::DrawBoog()
 {
-	auto surface = interfaces::surface;
+	// TODO: Use SurfaceWrapper
 	auto surface = interfaces::mat_system_surface;
 	const auto& screen = spt_hud_feat.screen;
 
@@ -188,8 +188,8 @@ void BoogFeature::LoadFeature()
 			    {
 				    SptImGui::CvarCheckbox(y_spt_hud_edgebug, "##checkbox");
 				    SptImGui::CvarDouble(y_spt_hud_edgebug_sec,
-				                        "edgebug display time",
-				                        "enter time in seconds");
+				                         "edgebug display time",
+				                         "enter time in seconds");
 			    },
 			    true);
 		}

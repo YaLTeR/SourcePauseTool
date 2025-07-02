@@ -136,7 +136,7 @@ void Overlay::PreHook()
 		QueueOverlayRenderView_Offset = 24;
 #endif
 
-		RenderViewPre_Signal.Works = true; // we use this as a "loading successful" flag
+	RenderViewPre_Signal.Works = true; // we use this as a "loading successful" flag
 }
 
 void Overlay::LoadFeature()
@@ -251,7 +251,7 @@ void Overlay::DrawCrosshair()
 		sscanf(color.c_str(), "%d %d %d %d", &r, &g, &b, &a);
 	}
 
-	interfaces::surface->DrawSetColor(r, g, b, a);
+	interfaces::surface->DrawSetColor(Color(r, g, b, a));
 	int x = overlayView->x + overlayView->width / 2;
 	int y = overlayView->y + overlayView->height / 2;
 	int width = _y_spt_overlay_crosshair_size.GetInt();
