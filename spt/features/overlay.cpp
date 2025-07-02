@@ -1,8 +1,10 @@
 #include "stdafx.hpp"
 
-#include <inttypes.h>
-
 #include "overlay.hpp"
+
+#ifdef SPT_OVERLAY_ENABLED
+
+#include <cinttypes> // SCNu8
 
 #include "vguimatsurface\imatsystemsurface.h"
 #include "convar.hpp"
@@ -18,8 +20,6 @@
 #include "playerio.hpp"
 #include "hud.hpp"
 #include "shadow.hpp"
-
-#ifndef SPT_HUD_TEXTONLY
 
 ConVar _y_spt_overlay("_y_spt_overlay",
                       "0",
@@ -91,8 +91,6 @@ ConVar _y_spt_overlay_crosshair_color("_y_spt_overlay_crosshair_color",
                                       "Overlay crosshair RGBA color.");
 ConVar _y_spt_overlay_no_roll("_y_spt_overlay_no_roll", "1", FCVAR_CHEAT, "Set the roll of overlay camera roll to 0.");
 
-#endif
-
 Overlay spt_overlay;
 
 namespace patterns
@@ -106,7 +104,6 @@ namespace patterns
 	         "55 8B EC 81 EC FC 01 00 00 53 56 57",
 	         "BMS-Retail-Xen",
 	         "55 8B EC 81 EC DC 02 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 FC 53 8B 5D 08 56 8B F1");
-	PATTERNS(CViewRender__RenderView_4044, "4044", "81 EC 98 00 00 00 53 55 56 57 6A 00 6A 00");
 } // namespace patterns
 
 #ifdef SPT_PORTAL_UTILS
@@ -118,11 +115,7 @@ const utils::PortalInfo* Overlay::GetOverlayPortal()
 
 void Overlay::InitHooks()
 {
-#ifndef OE
 	HOOK_FUNCTION(client, CViewRender__RenderView);
-#else
-	HOOK_FUNCTION(client, CViewRender__RenderView_4044);
-#endif
 }
 
 void Overlay::PreHook()
@@ -132,8 +125,6 @@ void Overlay::PreHook()
 
 #ifdef BMS
 	QueueOverlayRenderView_Offset = 26;
-#elif OE
-	QueueOverlayRenderView_Offset = -1;
 #else
 	if (utils::GetBuildNumber() >= 5135)
 		QueueOverlayRenderView_Offset = 26;
@@ -141,7 +132,6 @@ void Overlay::PreHook()
 		QueueOverlayRenderView_Offset = 24;
 #endif
 
-	if (QueueOverlayRenderView_Offset != -1)
 		RenderViewPre_Signal.Works = true; // we use this as a "loading successful" flag
 }
 
@@ -149,8 +139,6 @@ void Overlay::LoadFeature()
 {
 	if (!RenderViewPre_Signal.Works)
 		return;
-
-#ifndef SPT_HUD_TEXTONLY
 
 	InitConcommandBase(_y_spt_overlay);
 	InitConcommandBase(_y_spt_overlay_type);
@@ -163,8 +151,8 @@ void Overlay::LoadFeature()
 	InitConcommandBase(_y_spt_overlay_no_roll);
 
 #ifdef SPT_HUD_ENABLED
-	bool result = spt_hud_feat.AddHudDefaultGroup(
-	    HudCallback(std::bind(&Overlay::DrawCrosshair, this), []() { return true; }, true));
+	bool result = spt_hud_feat.AddHudDefaultGroup(HudCallback(
+	    std::bind(&Overlay::DrawCrosshair, this), []() { return true; }, true));
 
 	if (result)
 	{
@@ -175,7 +163,6 @@ void Overlay::LoadFeature()
 #endif
 
 	SptImGuiGroup::Overlay.RegisterUserCallback(ImGuiCallback);
-#endif
 }
 
 IMPL_HOOK_THISCALL(Overlay,
@@ -186,13 +173,6 @@ IMPL_HOOK_THISCALL(Overlay,
                    int nClearFlags,
                    int whatToDraw)
 {
-#ifdef SPT_HUD_TEXTONLY
-
-	spt_hud_feat.renderView = cameraView;
-	spt_overlay.ORIG_CViewRender__RenderView(thisptr, cameraView, nClearFlags, whatToDraw);
-
-#else
-
 	/*
 	* If the overlay is enabled, we'll trigger a recursive call to RenderView() via QueueOverlayRenderView(). You
 	* could in theory use this to have several overlays, in which case you'd need to keep track of the overlay
@@ -240,17 +220,7 @@ IMPL_HOOK_THISCALL(Overlay,
 	callDepth--;
 	if (callDepth == 1)
 		ovr.renderingOverlay = false;
-
-#endif
 }
-
-IMPL_HOOK_THISCALL(Overlay, void, CViewRender__RenderView_4044, void*, CViewSetup* cameraView, bool drawViewmodel)
-{
-	spt_hud_feat.renderView = cameraView;
-	spt_overlay.ORIG_CViewRender__RenderView_4044(thisptr, cameraView, drawViewmodel);
-}
-
-#ifndef SPT_HUD_TEXTONLY
 
 void Overlay::CViewRender__QueueOverlayRenderView(void* thisptr,
                                                   const CViewSetup& renderView,
@@ -277,8 +247,8 @@ void Overlay::DrawCrosshair()
 	}
 
 	interfaces::surface->DrawSetColor(r, g, b, a);
-	int x = spt_hud_feat.renderView->x + spt_hud_feat.renderView->width / 2;
-	int y = spt_hud_feat.renderView->y + spt_hud_feat.renderView->height / 2;
+	int x = overlayView->x + overlayView->width / 2;
+	int y = overlayView->y + overlayView->height / 2;
 	int width = _y_spt_overlay_crosshair_size.GetInt();
 	int thickness = _y_spt_overlay_crosshair_thickness.GetInt();
 

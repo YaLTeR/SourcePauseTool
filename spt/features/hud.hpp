@@ -59,7 +59,18 @@ struct HudUserGroup
 class HUDFeature : public FeatureWrapper<HUDFeature>
 {
 public:
-	const CViewSetup* renderView = nullptr;
+	struct Screen
+	{
+		Screen() {}
+		Screen(int x, int y, int w, int h) : x(x), y(y), width(w), height(h) {}
+
+		int x = 0;
+		int y = 0;
+		int width = 0;
+		int height = 0;
+	};
+	Screen screen;
+
 	std::unordered_map<std::string, vgui::HFont> fonts;
 
 	std::unordered_map<std::string, HudUserGroup> hudUserGroups;

@@ -570,15 +570,7 @@ bool HUDFeature::GetFont(const std::string& fontName, vgui::HFont& fontOut)
 
 void HUDFeature::PreHook()
 {
-	loadingSuccessful =
-#ifdef OE
-	    ORIG_CEngineVGui__Paint && spt_overlay.ORIG_CViewRender__RenderView_4044;
-#else
-	    ORIG_CMatSystemSurface__FinishDrawing && ORIG_CMatSystemSurface__StartDrawing && ORIG_CEngineVGui__Paint
-	    && spt_overlay.ORIG_CViewRender__RenderView;
-#endif
-
-	if (!loadingSuccessful)
+	if (!ORIG_CEngineVGui__Paint)
 		return;
 
 #ifdef BMS
@@ -673,7 +665,7 @@ void HUDFeature::DrawDefaultHUD()
 		}
 		else
 		{
-			topX = renderView->width - 300 + 2;
+			topX = screen.width - 300 + 2;
 			if (cl_showpos && cl_showpos->GetBool())
 				topVertIndex += 3;
 			if (cl_showfps && cl_showfps->GetBool())
@@ -697,7 +689,7 @@ void HUDFeature::DrawDefaultHUD()
 
 void HUDFeature::DrawHUD(bool overlay)
 {
-	if (!interfaces::surface || !renderView)
+	if (!interfaces::surface)
 		return;
 
 #ifndef OE
@@ -718,6 +710,7 @@ void HUDFeature::DrawHUD(bool overlay)
 #endif
 		}
 
+#ifndef SPT_HUD_TEXTONLY
 		if (!overlay)
 		{
 			// Draw user groups
@@ -729,8 +722,8 @@ void HUDFeature::DrawHUD(bool overlay)
 
 				// Reset top HUD stuff
 				hudTextColor = group.textcolor;
-				topX = renderView->width * group.x * 0.01f;
-				topY = renderView->height * group.y * 0.01f;
+				topX = screen.width * group.x * 0.01f;
+				topY = screen.height * group.y * 0.01f;
 				topVertIndex = 0;
 				topFontTall = CALL(GetFontTall, group.font);
 				font = group.font;
@@ -766,6 +759,7 @@ void HUDFeature::DrawHUD(bool overlay)
 				}
 			}
 		}
+#endif
 	}
 	catch (const std::exception& e)
 	{
@@ -791,16 +785,23 @@ IMPL_HOOK_THISCALL(HUDFeature, void, CEngineVGui__Paint, void*, PaintMode_t mode
 		* both views.
 		*/
 		Assert(spt_overlay.mainView);
-		spt_hud_feat.renderView = spt_overlay.mainView;
+		spt_hud_feat.screen = Screen(spt_overlay.mainView->x,
+		                             spt_overlay.mainView->y,
+		                             spt_overlay.mainView->width,
+		                             spt_overlay.mainView->height);
 		spt_hud_feat.DrawHUD(false);
 		if (_y_spt_overlay.GetBool())
 		{
-			Assert(spt_overlay.overlayView);
-			spt_hud_feat.renderView = spt_overlay.overlayView;
+			spt_hud_feat.screen = Screen(spt_overlay.overlayView->x,
+			                             spt_overlay.overlayView->y,
+			                             spt_overlay.overlayView->width,
+			                             spt_overlay.overlayView->height);
 			spt_hud_feat.DrawHUD(true);
 		}
 #else
-		Assert(spt_hud_feat.renderView);
+		int width, height;
+		interfaces::engine->GetScreenSize(width, height);
+		spt_hud_feat.screen = Screen(0, 0, width, height);
 		spt_hud_feat.DrawHUD(false);
 #endif
 	}

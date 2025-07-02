@@ -2,7 +2,7 @@
 
 #include "hud.hpp"
 
-#if !defined(BMS) && defined(SPT_HUD_ENABLED)
+#if defined(SPT_HUD_ENABLED) && !defined(SPT_HUD_TEXTONLY)
 
 #include "spt\feature.hpp"
 #include "spt\features\playerio.hpp"
@@ -813,8 +813,8 @@ void InputHud::DrawInputHud()
 	// get offset from percentage
 	int ihudSizeX, ihudSizeY;
 	GetCurrentSize(ihudSizeX, ihudSizeY);
-	xOffset = (spt_hud_feat.renderView->width - ihudSizeX) * y_spt_ihud_x.GetFloat() * 0.01f;
-	yOffset = (spt_hud_feat.renderView->height - ihudSizeY) * y_spt_ihud_y.GetFloat() * 0.01f;
+	xOffset = (spt_hud_feat.screen.width - ihudSizeX) * y_spt_ihud_x.GetFloat() * 0.01f;
+	yOffset = (spt_hud_feat.screen.height - ihudSizeY) * y_spt_ihud_y.GetFloat() * 0.01f;
 
 	gridSize = y_spt_ihud_grid_size.GetInt();
 	padding = y_spt_ihud_grid_padding.GetInt();

@@ -2,7 +2,7 @@
 
 #include "hud.hpp"
 
-#ifdef SPT_HUD_ENABLED
+#if defined(SPT_HUD_ENABLED) && !defined(SPT_HUD_TEXTONLY)
 
 #include "..\feature.hpp"
 #include <algorithm>
@@ -494,7 +494,7 @@ void HopsHud::PrintStrafeCol(std::function<void(const ljstats::SegmentStats&, wc
 		}
 
 		// Leave space left for last line
-		if (y + fontTall * 2 > spt_hud_feat.renderView->height)
+		if (y + fontTall * 2 > spt_hud_feat.screen.height)
 		{
 			break;
 		}
@@ -606,8 +606,7 @@ void HopsHud::DrawHopHud()
 	const Color barEmptyColor(60, 60, 60, 255);
 	const Color barFillColor(white);
 
-	auto surface = interfaces::surface;
-	auto renderView = spt_hud_feat.renderView;
+	const auto& screen = spt_hud_feat.screen;
 
 	surface->DrawSetTextFont(hopsFont);
 	surface->DrawSetTextColor(white);
@@ -616,8 +615,8 @@ void HopsHud::DrawHopHud()
 	const int MARGIN = 2;
 	const int BUFFER_SIZE = 256;
 	wchar_t buffer[BUFFER_SIZE];
-	int x = renderView->width / 2 + y_spt_jhud_x.GetFloat();
-	int y = renderView->height / 2 + y_spt_jhud_y.GetFloat();
+	int x = screen.width / 2 + y_spt_jhud_x.GetFloat();
+	int y = screen.height / 2 + y_spt_jhud_y.GetFloat();
 
 	if (y_spt_jhud_hops.GetBool())
 	{
@@ -692,7 +691,7 @@ void HopsHud::DrawHopHud()
 		const int COL_WIDTH = 75;
 
 		x = 6;
-		y = renderView->height / 3;
+		y = screen.height / 3;
 
 		PrintStrafeCol([](const ljstats::SegmentStats& segment, wchar_t* buffer, int x, int y)
 		               { swprintf(buffer, L"%.3f", segment.positiveAccel); },
