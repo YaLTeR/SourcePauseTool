@@ -318,7 +318,7 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	interfaces::vgui_input = (vgui::IInput*)interfaceFactory(VGUI_INPUT_INTERFACE_VERSION, NULL);
 
 #ifdef OE
-	int mat_system_surface_version = 0;
+	bool using_mat_system_surface_v4 = false;
 	interfaces::mat_system_surface =
 	    (IMatSystemSurface*)interfaceFactory(MAT_SYSTEM_SURFACE_INTERFACE_VERSION, NULL);
 	if (!interfaces::mat_system_surface)
@@ -326,10 +326,8 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 		interfaces::mat_system_surface =
 		    (IMatSystemSurface*)interfaceFactory(MAT_SYSTEM_SURFACE_INTERFACE_VERSION_4, NULL);
 		if (interfaces::mat_system_surface)
-			mat_system_surface_version = 4;
+			using_mat_system_surface_v4 = true;
 	}
-	else
-		mat_system_surface_version = 5;
 #else
 	interfaces::mat_system_surface =
 	    (IMatSystemSurface*)interfaceFactory(MAT_SYSTEM_SURFACE_INTERFACE_VERSION, NULL);
@@ -437,7 +435,7 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	if (interfaces::mat_system_surface)
 	{
 #ifdef OE
-		if (mat_system_surface_version == 4)
+		if (using_mat_system_surface_v4)
 		{
 			DevMsg("Using IMatSystemSurface004\n");
 			interfaces::surface = std::make_unique<ISurfaceWrapperV4>(

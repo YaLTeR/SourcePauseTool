@@ -1,57 +1,11 @@
 #pragma once
+#include "vcall.hpp"
 #include "cdll_int.h"
-
-extern const char* GetGameDirectoryOE();
-
-#ifdef OE
-class IVEngineClientDMoMM
-{
-public:
-	virtual void Unk1() = 0;
-	virtual void Unk2() = 0;
-	virtual void Unk3() = 0;
-	virtual void Unk4() = 0;
-	virtual void Unk5() = 0;
-	virtual void Unk6() = 0;
-	virtual void Unk7() = 0;
-	virtual void Unk8() = 0;
-	virtual void GetScreenSize(int& width, int& height) = 0;
-	virtual void ClientCmd(const char* szCmdString) = 0;
-	virtual void Unk10() = 0;
-	virtual void Unk11() = 0;
-	virtual void Unk12() = 0;
-	virtual void Unk13() = 0;
-	virtual void Unk14() = 0;
-	virtual void Unk15() = 0;
-	virtual void Unk16() = 0;
-	virtual void Unk17() = 0;
-	virtual void Unk18() = 0;
-	virtual void Unk19() = 0;
-	virtual void Unk20() = 0;
-	virtual void GetViewAngles(QAngle& va) = 0;
-	virtual void SetViewAngles(QAngle& va) = 0;
-	virtual void Unk21() = 0;
-	virtual void Unk22() = 0;
-	virtual void Unk23() = 0;
-	virtual void Unk24() = 0;
-	virtual void Unk25() = 0;
-	virtual void Unk26() = 0;
-	virtual void Unk27() = 0;
-	virtual void Unk28() = 0;
-	virtual void Unk29() = 0;
-	virtual void Unk30() = 0;
-	virtual void Unk31() = 0;
-	virtual int Cmd_Argc() = 0;
-	virtual const char* Cmd_Argv(int arg) = 0;
-
-	// Others ommitted.
-};
-#endif
 
 class EngineClientWrapper
 {
 public:
-	virtual ~EngineClientWrapper(){};
+	virtual ~EngineClientWrapper() {};
 	virtual void GetScreenSize(int& width, int& height) = 0;
 	virtual void ClientCmd(const char* command) = 0;
 	virtual void GetViewAngles(QAngle& viewangles) = 0;
@@ -64,6 +18,42 @@ public:
 	virtual const char* GetGameDirectory() = 0;
 };
 
+#ifdef OE
+class IVEngineClientDMoMM
+{
+public:
+	void GetScreenSize(int& width, int& height)
+	{
+		utils::vcall<8, void>(this, &width, &height);
+	}
+
+	void ClientCmd(const char* command)
+	{
+		utils::vcall<9, void>(this, command);
+	}
+
+	void GetViewAngles(QAngle& viewangles)
+	{
+		utils::vcall<21, void>(this, &viewangles);
+	}
+
+	void SetViewAngles(QAngle& viewangles)
+	{
+		utils::vcall<22, void>(this, &viewangles);
+	}
+
+	int Cmd_Argc()
+	{
+		return utils::vcall<34, int>(this);
+	}
+
+	const char* Cmd_Argv(int arg)
+	{
+		return utils::vcall<35, const char*>(this, arg);
+	}
+};
+#endif
+
 /**
  * Wrapper for an interface similar to IVEngineClient.
  */
@@ -73,42 +63,44 @@ class IVEngineClientWrapper : public EngineClientWrapper
 public:
 	IVEngineClientWrapper(EngineClient* engine) : engine(engine) {}
 
-	virtual void GetScreenSize(int& width, int& height) {
+	virtual void GetScreenSize(int& width, int& height) override
+	{
 		engine->GetScreenSize(width, height);
 	}
 
-	void ClientCmd(const char* command) override
+	virtual void ClientCmd(const char* command) override
 	{
-		return engine->ClientCmd(command);
+		engine->ClientCmd(command);
 	}
 
-	void GetViewAngles(QAngle& viewangles) override
+	virtual void GetViewAngles(QAngle& viewangles) override
 	{
-		return engine->GetViewAngles(viewangles);
+		engine->GetViewAngles(viewangles);
 	}
 
-	void SetViewAngles(QAngle& viewangles) override
+	virtual void SetViewAngles(QAngle& viewangles) override
 	{
-		return engine->SetViewAngles(viewangles);
+		engine->SetViewAngles(viewangles);
 	}
 
 #ifdef OE
-	int Cmd_Argc() override
+	virtual int Cmd_Argc() override
 	{
 		return engine->Cmd_Argc();
 	}
 
-	const char* Cmd_Argv(int arg) override
+	virtual const char* Cmd_Argv(int arg) override
 	{
 		return engine->Cmd_Argv(arg);
 	}
 
-	const char* GetGameDirectory() override
+	virtual const char* GetGameDirectory() override
 	{
+		extern const char* GetGameDirectoryOE();
 		return GetGameDirectoryOE();
 	}
 #else
-	const char* GetGameDirectory() override
+	virtual const char* GetGameDirectory() override
 	{
 		return engine->GetGameDirectory();
 	}
