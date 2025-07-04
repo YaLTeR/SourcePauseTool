@@ -434,12 +434,23 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 
 	if (interfaces::mat_system_surface)
 	{
-#ifdef OE
+#if defined(OE)
 		if (using_mat_system_surface_v4)
 		{
 			DevMsg("Using IMatSystemSurface004\n");
 			interfaces::surface = std::make_unique<ISurfaceWrapperV4>(
 			    reinterpret_cast<IMatSystemSurfaceV4*>(interfaces::mat_system_surface));
+		}
+#elif defined(BMS)
+		if (utils::DoesGameLookLikeBMSLatest())
+		{
+			interfaces::surface = std::make_unique<ISurfaceWrapper<IMatSystemSurfaceBMSLatest>>(
+			    reinterpret_cast<IMatSystemSurfaceBMSLatest*>(interfaces::mat_system_surface));
+		}
+		else
+		{
+			interfaces::surface = std::make_unique<ISurfaceWrapper<IMatSystemSurfaceBMS>>(
+			    reinterpret_cast<IMatSystemSurfaceBMS*>(interfaces::mat_system_surface));
 		}
 #endif
 		// Check if we assigned it in the ifdef above.

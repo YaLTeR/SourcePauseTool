@@ -373,7 +373,7 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>spt\utils;thirdparty\curl\include;.;SDK\bms_new\include\common;SDK\bms_new\include\public;SDK\bms_new\include\public\tier0;SDK\bms_new\include\public\tier1;SDK\bms_new\include\game\server;SDK\bms_new\include\game\client;SDK\bms_new\include\game\shared;SPTLib\Windows\minhook\include;SPTLib\Windows\Minhook\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>BMS;WIN32;_WIN32;_DEBUG;DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;sptONLY;_MBCS;SPT_HUD_TEXTONLY;%(PreprocessorDefinitions);TARGET_NAME="$(TargetName).dll"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BMS;WIN32;_WIN32;_DEBUG;DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;sptONLY;_MBCS;%(PreprocessorDefinitions);TARGET_NAME="$(TargetName).dll"</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -693,7 +693,7 @@ del "$(OutDir)spt-version.obj"</Command>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>spt\utils;thirdparty\curl\include;.;SDK\bms_new\include\common;SDK\bms_new\include\public;SDK\bms_new\include\public\tier0;SDK\bms_new\include\public\tier1;SDK\bms_new\include\game\server;SDK\bms_new\include\game\client;SDK\bms_new\include\game\shared;SPTLib\Windows\minhook\include;SPTLib\Windows\Minhook\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>BMS;WIN32;_WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;sptONLY;_MBCS;SPT_HUD_TEXTONLY;%(PreprocessorDefinitions);TARGET_NAME="$(TargetName).dll"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BMS;WIN32;_WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;sptONLY;_MBCS;%(PreprocessorDefinitions);TARGET_NAME="$(TargetName).dll"</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
