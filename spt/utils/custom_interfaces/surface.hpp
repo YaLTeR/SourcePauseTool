@@ -18,13 +18,13 @@ public:
 	virtual void DrawLine(int x0, int y0, int x1, int y1) = 0;
 	virtual void DrawOutlinedCircle(int x, int y, int radius, int segments) = 0;
 
+	virtual void DrawSetTextFont(vgui::HFont font) = 0;
 	virtual void DrawSetTextColor(Color col) = 0;
 	virtual void DrawSetTextPos(int x, int y) = 0;
-	virtual void DrawSetTextFont(vgui::HFont font) = 0;
 	virtual void DrawPrintText(const wchar_t* text,
 	                           vgui::FontDrawType_t drawType = vgui::FontDrawType_t::FONT_DRAW_DEFAULT) = 0;
-	virtual void GetTextSize(vgui::HFont font, const wchar_t* text, int& wide, int& tall) = 0;
 	virtual int GetFontTall(vgui::HFont font) = 0;
+	virtual void GetTextSize(vgui::HFont font, const wchar_t* text, int& wide, int& tall) = 0;
 };
 
 #ifdef BMS
@@ -33,66 +33,81 @@ class IMatSystemSurfaceBMS
 public:
 	void DrawSetColor(Color col)
 	{
-		utils::vcall<0, void>(this, col);
+		utils::vcall<13, void>(this, col);
 	}
 
 	void DrawFilledRect(int x0, int y0, int x1, int y1)
 	{
-		utils::vcall<0, void>(this, x0, y0, x1, y1);
+		utils::vcall<15, void>(this, x0, y0, x1, y1);
 	}
 
 	void DrawOutlinedRect(int x0, int y0, int x1, int y1)
 	{
-		utils::vcall<0, void>(this, x0, y0, x1, y1);
+		utils::vcall<17, void>(this, x0, y0, x1, y1);
 	}
 
 	void DrawLine(int x0, int y0, int x1, int y1)
 	{
-		utils::vcall<0, void>(this, x0, y0, x1, y1);
+		utils::vcall<18, void>(this, x0, y0, x1, y1);
 	}
 
 	void DrawOutlinedCircle(int x, int y, int radius, int segments)
 	{
-		utils::vcall<0, void>(this, x, y, radius, segments);
-	}
-
-	void DrawSetTextColor(Color col)
-	{
-		utils::vcall<0, void>(this, col);
-	}
-
-	void DrawSetTextPos(int x, int y)
-	{
-		utils::vcall<0, void>(this, x, y);
+		utils::vcall<102, void>(this, x, y, radius, segments);
 	}
 
 	void DrawSetTextFont(vgui::HFont font)
 	{
-		utils::vcall<0, void>(this, font);
+		utils::vcall<20, void>(this, font);
 	}
 
-	void DrawPrintText(const wchar_t* text, vgui::FontDrawType_t drawType)
+	void DrawSetTextColor(Color col)
 	{
-		utils::vcall<0, void>(this, text, (int)wcslen(text), drawType);
+		utils::vcall<21, void>(this, col);
 	}
 
-	void GetTextSize(vgui::HFont font, const wchar_t* text, int& wide, int& tall)
+	void DrawSetTextPos(int x, int y)
 	{
-		utils::vcall<0, void>(this, font, text, wide, tall);
+		utils::vcall<23, void>(this, x, y);
+	}
+
+	void DrawPrintText(const wchar_t* text, int textLen, vgui::FontDrawType_t drawType)
+	{
+		utils::vcall<25, void>(this, text, textLen, drawType);
 	}
 
 	int GetFontTall(vgui::HFont font)
 	{
-		return utils::vcall<0, int>(this, font);
+		return utils::vcall<73, int>(this, font);
+	}
+	
+	void GetTextSize(vgui::HFont font, const wchar_t* text, int& wide, int& tall)
+	{
+		utils::vcall<79, void>(this, font, text, &wide, &tall);
 	}
 };
 
 class IMatSystemSurfaceBMSLatest : public IMatSystemSurfaceBMS
 {
 public:
-	void DrawPrintText(const wchar_t* text, vgui::FontDrawType_t drawType)
+	void DrawPrintText(const wchar_t* text, int textLen, vgui::FontDrawType_t drawType)
 	{
-		utils::vcall<0, void>(this, text, (int)wcslen(text), drawType, 0);
+		utils::vcall<25, void>(this, text, textLen, drawType, 0);
+	}
+
+	int GetFontTall(vgui::HFont font)
+	{
+		return utils::vcall<75, int>(this, font);
+	}
+
+	void GetTextSize(vgui::HFont font, const wchar_t* text, int& wide, int& tall)
+	{
+		utils::vcall<81, void>(this, font, text, &wide, &tall);
+	}
+
+	void DrawOutlinedCircle(int x, int y, int radius, int segments)
+	{
+		utils::vcall<104, void>(this, x, y, radius, segments);
 	}
 };
 #endif
@@ -126,24 +141,24 @@ public:
 		surface->DrawOutlinedCircle(x, y, radius, segments);
 	}
 
-	virtual void DrawSetTextPos(int x, int y) override
-	{
-		surface->DrawSetTextPos(x, y);
-	}
-
 	virtual void DrawSetTextFont(vgui::HFont font) override
 	{
 		surface->DrawSetTextFont(font);
 	}
 
-	virtual void GetTextSize(vgui::HFont font, const wchar_t* text, int& wide, int& tall) override
+	virtual void DrawSetTextPos(int x, int y) override
 	{
-		surface->GetTextSize(font, text, wide, tall);
+		surface->DrawSetTextPos(x, y);
 	}
 
 	virtual int GetFontTall(vgui::HFont font) override
 	{
 		return surface->GetFontTall(font);
+	}
+
+	virtual void GetTextSize(vgui::HFont font, const wchar_t* text, int& wide, int& tall) override
+	{
+		surface->GetTextSize(font, text, wide, tall);
 	}
 
 protected:
