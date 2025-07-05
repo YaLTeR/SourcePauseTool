@@ -463,6 +463,13 @@ bool CSourcePauseTool::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 			    reinterpret_cast<IMatSystemSurfaceBMS*>(interfaces::mat_system_surface));
 		}
 #endif
+
+#ifdef SSDK2007
+		if (plugin_interface_version == 2)
+		{
+			interfaces::surface = std::make_unique<SurfaceWrapper2007>(interfaces::mat_system_surface);
+		}
+#endif
 		// Check if we assigned it in the ifdef above.
 		if (!interfaces::surface)
 			interfaces::surface =
