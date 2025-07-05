@@ -104,7 +104,9 @@ namespace patterns
 	         "hl1movement",
 	         "55 8B EC 81 EC 5C 05 00 00 56 8B F1 89 75 E8",
 	         "dmomm",
-	         "83 EC 0C 56 8B F1 80 BE ?? ?? ?? ?? 00 57 8B 7C 24 1C 75 ?? 80 7E ?? 00");
+	         "83 EC 0C 56 8B F1 80 BE ?? ?? ?? ?? 00 57 8B 7C 24 1C 75 ?? 80 7E ?? 00",
+	         "2707",
+	         "83 EC 18 56 8B F1 8A 46 ?? 84 C0 57");
 	PATTERNS(
 	    CHudDamageIndicator__GetDamagePosition,
 	    "5135",
