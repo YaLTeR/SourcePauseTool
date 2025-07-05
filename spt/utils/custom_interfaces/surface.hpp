@@ -22,6 +22,14 @@ public:
 	virtual void DrawSetTextPos(int x, int y) = 0;
 	virtual void DrawPrintText(const wchar_t* text,
 	                           vgui::FontDrawType_t drawType = vgui::FontDrawType_t::FONT_DRAW_DEFAULT) = 0;
+	virtual vgui::HFont CreateFont() = 0;
+	virtual bool SetFontGlyphSet(vgui::HFont font,
+	                             const char* windowsFontName,
+	                             int tall,
+	                             int weight,
+	                             int blur,
+	                             int scanlines,
+	                             int flags) = 0;
 	virtual int GetFontTall(vgui::HFont font) = 0;
 	virtual void GetTextSize(vgui::HFont font, const wchar_t* text, int& wide, int& tall) = 0;
 
@@ -77,6 +85,22 @@ public:
 		utils::vcall<25, void>(this, text, textLen, drawType);
 	}
 
+	vgui::HFont CreateFont()
+	{
+		return utils::vcall<70, vgui::HFont>(this);
+	}
+
+	bool SetFontGlyphSet(vgui::HFont font,
+	                     const char* windowsFontName,
+	                     int tall,
+	                     int weight,
+	                     int blur,
+	                     int scanlines,
+	                     int flags)
+	{
+		return utils::vcall<71, bool>(this, font, windowsFontName, tall, weight, blur, scanlines, flags, 0, 0);
+	}
+
 	int GetFontTall(vgui::HFont font)
 	{
 		return utils::vcall<73, int>(this, font);
@@ -89,16 +113,37 @@ public:
 
 	void GetScreenSize(int& wide, int& tall)
 	{
-		utils::vcall<40, void>(this, &wide, &tall);
+		utils::vcall<42, void>(this, &wide, &tall);
 	}
 };
 
 class IMatSystemSurfaceBMSLatest : public IMatSystemSurfaceBMS
 {
 public:
+	void DrawOutlinedCircle(int x, int y, int radius, int segments)
+	{
+		utils::vcall<104, void>(this, x, y, radius, segments);
+	}
+
 	void DrawPrintText(const wchar_t* text, int textLen, vgui::FontDrawType_t drawType)
 	{
 		utils::vcall<25, void>(this, text, textLen, drawType, 0);
+	}
+
+	vgui::HFont CreateFont()
+	{
+		return utils::vcall<72, vgui::HFont>(this);
+	}
+
+	bool SetFontGlyphSet(vgui::HFont font,
+	                     const char* windowsFontName,
+	                     int tall,
+	                     int weight,
+	                     int blur,
+	                     int scanlines,
+	                     int flags)
+	{
+		return utils::vcall<73, bool>(this, font, windowsFontName, tall, weight, blur, scanlines, flags, 0, 0);
 	}
 
 	int GetFontTall(vgui::HFont font)
@@ -111,9 +156,9 @@ public:
 		utils::vcall<81, void>(this, font, text, &wide, &tall);
 	}
 
-	void DrawOutlinedCircle(int x, int y, int radius, int segments)
+	void GetScreenSize(int& wide, int& tall)
 	{
-		utils::vcall<104, void>(this, x, y, radius, segments);
+		utils::vcall<44, void>(this, &wide, &tall);
 	}
 };
 #endif
@@ -165,6 +210,22 @@ public:
 	void DrawPrintText(const wchar_t* text, int textLen, vgui::FontDrawType_t drawType)
 	{
 		utils::vcall<22, void>(this, text, textLen, drawType);
+	}
+
+	vgui::HFont CreateFont()
+	{
+		return utils::vcall<64, vgui::HFont>(this);
+	}
+
+	bool SetFontGlyphSet(vgui::HFont font,
+	                     const char* windowsFontName,
+	                     int tall,
+	                     int weight,
+	                     int blur,
+	                     int scanlines,
+	                     int flags)
+	{
+		return utils::vcall<65, bool>(this, font, windowsFontName, tall, weight, blur, scanlines, flags);
 	}
 
 	int GetFontTall(vgui::HFont font)
@@ -221,6 +282,22 @@ public:
 		utils::vcall<23, void>(this, 0, text, textLen, drawType, 0, 0);
 	}
 
+	vgui::HFont CreateFont()
+	{
+		return utils::vcall<65, vgui::HFont>(this);
+	}
+
+	bool SetFontGlyphSet(vgui::HFont font,
+	                     const char* windowsFontName,
+	                     int tall,
+	                     int weight,
+	                     int blur,
+	                     int scanlines,
+	                     int flags)
+	{
+		return utils::vcall<66, bool>(this, font, windowsFontName, tall, weight, blur, scanlines, flags);
+	}
+
 	int GetFontTall(vgui::HFont font)
 	{
 		return utils::vcall<68, int>(this, font);
@@ -242,10 +319,15 @@ public:
  * Wrapper for an interface similar to IMatSystemSurface.
  */
 template<class Surface>
-class ISurfaceWrapperBase : public SurfaceWrapper
+class ISurfaceWrapper : public SurfaceWrapper
 {
 public:
-	ISurfaceWrapperBase(Surface* surface) : surface(surface) {}
+	ISurfaceWrapper(Surface* surface) : surface(surface) {}
+
+	virtual void DrawSetColor(Color col) override
+	{
+		this->surface->DrawSetColor(col);
+	}
 
 	virtual void DrawFilledRect(int x0, int y0, int x1, int y1) override
 	{
@@ -267,6 +349,11 @@ public:
 		surface->DrawOutlinedCircle(x, y, radius, segments);
 	}
 
+	virtual void DrawSetTextColor(Color col) override
+	{
+		this->surface->DrawSetTextColor(col);
+	}
+
 	virtual void DrawSetTextFont(vgui::HFont font) override
 	{
 		surface->DrawSetTextFont(font);
@@ -275,6 +362,27 @@ public:
 	virtual void DrawSetTextPos(int x, int y) override
 	{
 		surface->DrawSetTextPos(x, y);
+	}
+
+	virtual void DrawPrintText(const wchar_t* text, vgui::FontDrawType_t drawType) override
+	{
+		surface->DrawPrintText(text, wcslen(text), drawType);
+	}
+
+	virtual vgui::HFont CreateFont()
+	{
+		return surface->CreateFont();
+	}
+
+	virtual bool SetFontGlyphSet(vgui::HFont font,
+	                             const char* windowsFontName,
+	                             int tall,
+	                             int weight,
+	                             int blur,
+	                             int scanlines,
+	                             int flags)
+	{
+		return surface->SetFontGlyphSet(font, windowsFontName, tall, weight, blur, scanlines, flags);
 	}
 
 	virtual int GetFontTall(vgui::HFont font) override
@@ -296,24 +404,21 @@ protected:
 	Surface* surface;
 };
 
-template<class Surface>
-class ISurfaceWrapper : public ISurfaceWrapperBase<Surface>
+#ifdef SSDK2007
+class SurfaceWrapper2007 : public ISurfaceWrapper<IMatSystemSurface>
 {
 public:
-	using ISurfaceWrapperBase<Surface>::ISurfaceWrapperBase;
+	using ISurfaceWrapper<IMatSystemSurface>::ISurfaceWrapper;
 
-	virtual void DrawSetColor(Color col) override
+	virtual bool SetFontGlyphSet(vgui::HFont font,
+	                             const char* windowsFontName,
+	                             int tall,
+	                             int weight,
+	                             int blur,
+	                             int scanlines,
+	                             int flags) override
 	{
-		this->surface->DrawSetColor(col);
-	}
-
-	virtual void DrawSetTextColor(Color col) override
-	{
-		this->surface->DrawSetTextColor(col);
-	}
-
-	virtual void DrawPrintText(const wchar_t* text, vgui::FontDrawType_t drawType) override
-	{
-		this->surface->DrawPrintText(text, wcslen(text), drawType);
+		return utils::vcall<65, bool>(surface, font, windowsFontName, tall, weight, blur, scanlines, flags);
 	}
 };
+#endif

@@ -83,38 +83,27 @@ bool BoogFeature::ShouldDrawBoog()
 
 void BoogFeature::DrawBoog()
 {
-	// TODO: Use SurfaceWrapper
-	auto surface = interfaces::mat_system_surface;
 	const auto& screen = spt_hud_feat.screen;
 
 	if (boogFont == 0)
 	{
-		if (!surface)
-		{
-			return;
-		}
-
-		boogFont = surface->CreateFont();
-
+		boogFont = interfaces::surface->CreateFont();
 		if (boogFont == 0)
-		{
 			return;
-		}
-		if (utils::GetBuildNumber() <= 3420)
-		{
-			utils::vcall<65, bool>(surface, boogFont, "Trebuchet MS", 96, 0, 0, 0, 0x010);
-		}
-		else
-		{
-			surface->SetFontGlyphSet(boogFont, "Trebuchet MS", 96, 0, 0, 0, 0x010);
-		}
+		interfaces::surface->SetFontGlyphSet(boogFont,
+		                                     "Trebuchet MS",
+		                                     96,
+		                                     0,
+		                                     0,
+		                                     0,
+		                                     vgui::ISurface::EFontFlags::FONTFLAG_ANTIALIAS);
 	}
 
-	surface->DrawSetTextFont(boogFont);
-	surface->DrawSetTextColor(255, 255, 255, 255);
-	surface->DrawSetTexture(0);
+	interfaces::surface->DrawSetTextFont(boogFont);
+	interfaces::surface->DrawSetTextColor(Color(255, 255, 255, 255));
+
 	int tall = 0, len = 0;
-	surface->GetTextSize(boogFont, L"boog", len, tall);
+	interfaces::surface->GetTextSize(boogFont, L"boog", len, tall);
 
 	int x = screen.width / 2 - len / 2;
 	int y = screen.height / 2 + 100;
@@ -124,13 +113,13 @@ void BoogFeature::DrawBoog()
 		y = screen.height - tall;
 	}
 
-	surface->DrawSetTextPos(x, y);
-	surface->DrawPrintText(L"boog", wcslen(L"boog"));
+	interfaces::surface->DrawSetTextPos(x, y);
+	interfaces::surface->DrawPrintText(L"boog");
 }
 
 bool BoogFeature::ShouldLoadFeature()
 {
-	return spt_hud_feat.ShouldLoadFeature() && spt_playerio.ShouldLoadFeature();
+	return interfaces::surface && spt_hud_feat.ShouldLoadFeature() && spt_playerio.ShouldLoadFeature();
 }
 
 void BoogFeature::InitHooks() {}
