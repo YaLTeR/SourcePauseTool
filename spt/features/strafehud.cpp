@@ -8,6 +8,7 @@
 
 #include "interfaces.hpp"
 #include "playerio.hpp"
+#include "generic.hpp"
 #include "game_detection.hpp"
 #include "math.hpp"
 #include "signals.hpp"
@@ -511,12 +512,16 @@ void StrafeHUD::LoadFeature()
 {
 	if (!(CreateMoveSignal.Works && DecodeUserCmdFromBufferSignal.Works))
 		return;
+	if (!spt_playerio.PlayerIOAddressesFound())
+		return;
+	if (!spt_generic.ORIG_ControllerMove)
+		return;
 
 	CreateMoveSignal.Connect(this, &StrafeHUD::SetData);
 	DecodeUserCmdFromBufferSignal.Connect(this, &StrafeHUD::SetData);
 
-	bool result = spt_hud_feat.AddHudDefaultGroup(HudCallback(
-	    std::bind(&StrafeHUD::DrawHUD, this), []() { return spt_strafehud.GetBool(); }, false));
+	bool result = spt_hud_feat.AddHudDefaultGroup(
+	    HudCallback(std::bind(&StrafeHUD::DrawHUD, this), []() { return spt_strafehud.GetBool(); }, false));
 	if (result)
 	{
 		InitConcommandBase(spt_strafehud);
