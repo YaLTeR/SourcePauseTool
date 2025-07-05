@@ -36,12 +36,6 @@ public:
 	                   int nClearFlags,
 	                   int whatToDraw);
 
-	DECL_HOOK_THISCALL(void,
-	                   CViewRender__RenderView_4044,
-	                   void*,
-	                   CViewSetup* cameraView,
-	                   bool drawViewmodel);
-
 	const utils::PortalInfo* GetOverlayPortal();
 
 protected:

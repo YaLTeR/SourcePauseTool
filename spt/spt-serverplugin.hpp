@@ -8,7 +8,7 @@ extern int plugin_interface_version;
 #include "cdll_int.h"
 #endif
 
-#include "custom_interfaces/engine_client.hpp"
+#include "custom_interfaces\engine_client.hpp"
 #include "eiface.h"
 #include "engine\iserverplugin.h"
 #include "engine\ivdebugoverlay.h"

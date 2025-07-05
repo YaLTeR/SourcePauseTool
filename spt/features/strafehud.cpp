@@ -502,7 +502,7 @@ void StrafeHUD::DrawHUD()
 
 bool StrafeHUD::ShouldLoadFeature()
 {
-	return spt_hud_feat.ShouldLoadFeature();
+	return spt_hud_feat.ShouldLoadFeature() && spt_playerio.ShouldLoadFeature();
 }
 
 void StrafeHUD::InitHooks() {}
