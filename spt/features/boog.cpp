@@ -11,7 +11,6 @@
 #include "signals.hpp"
 #include "game_detection.hpp"
 #include "visualizations\imgui\imgui_interface.hpp"
-#include "vcall.hpp"
 
 ConVar y_spt_hud_edgebug("y_spt_hud_edgebug",
                          "0",

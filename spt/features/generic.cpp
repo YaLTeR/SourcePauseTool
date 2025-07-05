@@ -8,6 +8,7 @@
 #include "interfaces.hpp"
 #include "tas.hpp"
 #include "signals.hpp"
+#include "vcall.hpp"
 #include "..\cvars.hpp"
 #include "..\sptlib-wrapper.hpp"
 
@@ -167,7 +168,7 @@ bool GenericFeature::IsActiveApp()
 	if (!pGame)
 		return true; // Assume is active
 	auto game = *pGame;
-	return (*reinterpret_cast<bool(__fastcall***)(void*)>(game))[IsActiveApp_Offset](game);
+	return utils::vcall<bool>(IsActiveApp_Offset, game);
 }
 
 Vector GenericFeature::GetCameraOrigin()

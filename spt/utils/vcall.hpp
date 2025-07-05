@@ -2,8 +2,8 @@
 
 namespace utils
 {
-	template<size_t index, typename T, typename... Args>
-	__forceinline T vcall(void* thisptr, Args... args)
+	template<typename T, typename... Args>
+	__forceinline T vcall(size_t index, void* thisptr, Args... args)
 	{
 		using fn_t = T(__fastcall*)(void*, int, Args...);
 

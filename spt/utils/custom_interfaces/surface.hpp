@@ -42,52 +42,52 @@ class IMatSystemSurfaceBMS
 public:
 	void DrawSetColor(Color col)
 	{
-		utils::vcall<13, void>(this, col);
+		utils::vcall<void>(13, this, col);
 	}
 
 	void DrawFilledRect(int x0, int y0, int x1, int y1)
 	{
-		utils::vcall<15, void>(this, x0, y0, x1, y1);
+		utils::vcall<void>(15, this, x0, y0, x1, y1);
 	}
 
 	void DrawOutlinedRect(int x0, int y0, int x1, int y1)
 	{
-		utils::vcall<17, void>(this, x0, y0, x1, y1);
+		utils::vcall<void>(17, this, x0, y0, x1, y1);
 	}
 
 	void DrawLine(int x0, int y0, int x1, int y1)
 	{
-		utils::vcall<18, void>(this, x0, y0, x1, y1);
+		utils::vcall<void>(18, this, x0, y0, x1, y1);
 	}
 
 	void DrawOutlinedCircle(int x, int y, int radius, int segments)
 	{
-		utils::vcall<102, void>(this, x, y, radius, segments);
+		utils::vcall<void>(102, this, x, y, radius, segments);
 	}
 
 	void DrawSetTextFont(vgui::HFont font)
 	{
-		utils::vcall<20, void>(this, font);
+		utils::vcall<void>(20, this, font);
 	}
 
 	void DrawSetTextColor(Color col)
 	{
-		utils::vcall<21, void>(this, col);
+		utils::vcall<void>(21, this, col);
 	}
 
 	void DrawSetTextPos(int x, int y)
 	{
-		utils::vcall<23, void>(this, x, y);
+		utils::vcall<void>(23, this, x, y);
 	}
 
 	void DrawPrintText(const wchar_t* text, int textLen, vgui::FontDrawType_t drawType)
 	{
-		utils::vcall<25, void>(this, text, textLen, drawType);
+		utils::vcall<void>(25, this, text, textLen, drawType);
 	}
 
 	vgui::HFont CreateFont()
 	{
-		return utils::vcall<70, vgui::HFont>(this);
+		return utils::vcall<vgui::HFont>(70, this);
 	}
 
 	bool SetFontGlyphSet(vgui::HFont font,
@@ -98,22 +98,22 @@ public:
 	                     int scanlines,
 	                     int flags)
 	{
-		return utils::vcall<71, bool>(this, font, windowsFontName, tall, weight, blur, scanlines, flags, 0, 0);
+		return utils::vcall<bool>(71, this, font, windowsFontName, tall, weight, blur, scanlines, flags, 0, 0);
 	}
 
 	int GetFontTall(vgui::HFont font)
 	{
-		return utils::vcall<73, int>(this, font);
+		return utils::vcall<int>(73, this, font);
 	}
 
 	void GetTextSize(vgui::HFont font, const wchar_t* text, int& wide, int& tall)
 	{
-		utils::vcall<79, void>(this, font, text, &wide, &tall);
+		utils::vcall<void>(79, this, font, text, &wide, &tall);
 	}
 
 	void GetScreenSize(int& wide, int& tall)
 	{
-		utils::vcall<42, void>(this, &wide, &tall);
+		utils::vcall<void>(42, this, &wide, &tall);
 	}
 };
 
@@ -122,17 +122,17 @@ class IMatSystemSurfaceBMSLatest : public IMatSystemSurfaceBMS
 public:
 	void DrawOutlinedCircle(int x, int y, int radius, int segments)
 	{
-		utils::vcall<104, void>(this, x, y, radius, segments);
+		utils::vcall<void>(104, this, x, y, radius, segments);
 	}
 
 	void DrawPrintText(const wchar_t* text, int textLen, vgui::FontDrawType_t drawType)
 	{
-		utils::vcall<25, void>(this, text, textLen, drawType, 0);
+		utils::vcall<void>(25, this, text, textLen, drawType, 0);
 	}
 
 	vgui::HFont CreateFont()
 	{
-		return utils::vcall<72, vgui::HFont>(this);
+		return utils::vcall<vgui::HFont>(72, this);
 	}
 
 	bool SetFontGlyphSet(vgui::HFont font,
@@ -143,22 +143,22 @@ public:
 	                     int scanlines,
 	                     int flags)
 	{
-		return utils::vcall<73, bool>(this, font, windowsFontName, tall, weight, blur, scanlines, flags, 0, 0);
+		return utils::vcall<bool>(73, this, font, windowsFontName, tall, weight, blur, scanlines, flags, 0, 0);
 	}
 
 	int GetFontTall(vgui::HFont font)
 	{
-		return utils::vcall<75, int>(this, font);
+		return utils::vcall<int>(75, this, font);
 	}
 
 	void GetTextSize(vgui::HFont font, const wchar_t* text, int& wide, int& tall)
 	{
-		utils::vcall<81, void>(this, font, text, &wide, &tall);
+		utils::vcall<void>(81, this, font, text, &wide, &tall);
 	}
 
 	void GetScreenSize(int& wide, int& tall)
 	{
-		utils::vcall<44, void>(this, &wide, &tall);
+		utils::vcall<void>(44, this, &wide, &tall);
 	}
 };
 #endif
@@ -169,52 +169,52 @@ class IMatSystemSurfaceV4
 public:
 	void DrawSetColor(Color col)
 	{
-		utils::vcall<10, void>(this, col);
+		utils::vcall<void>(10, this, col);
 	}
 
 	void DrawFilledRect(int x0, int y0, int x1, int y1)
 	{
-		utils::vcall<12, void>(this, x0, y0, x1, y1);
+		utils::vcall<void>(12, this, x0, y0, x1, y1);
 	}
 
 	void DrawOutlinedRect(int x0, int y0, int x1, int y1)
 	{
-		utils::vcall<14, void>(this, x0, y0, x1, y1);
+		utils::vcall<void>(14, this, x0, y0, x1, y1);
 	}
 
 	void DrawLine(int x0, int y0, int x1, int y1)
 	{
-		utils::vcall<15, void>(this, x0, y0, x1, y1);
+		utils::vcall<void>(15, this, x0, y0, x1, y1);
 	}
 
 	void DrawOutlinedCircle(int x, int y, int radius, int segments)
 	{
-		utils::vcall<96, void>(this, x, y, radius, segments);
+		utils::vcall<void>(96, this, x, y, radius, segments);
 	}
 
 	void DrawSetTextFont(vgui::HFont font)
 	{
-		utils::vcall<17, void>(this, font);
+		utils::vcall<void>(17, this, font);
 	}
 
 	void DrawSetTextColor(Color col)
 	{
-		utils::vcall<18, void>(this, col);
+		utils::vcall<void>(18, this, col);
 	}
 
 	void DrawSetTextPos(int x, int y)
 	{
-		utils::vcall<20, void>(this, x, y);
+		utils::vcall<void>(20, this, x, y);
 	}
 
 	void DrawPrintText(const wchar_t* text, int textLen, vgui::FontDrawType_t drawType)
 	{
-		utils::vcall<22, void>(this, text, textLen, drawType);
+		utils::vcall<void>(22, this, text, textLen, drawType);
 	}
 
 	vgui::HFont CreateFont()
 	{
-		return utils::vcall<64, vgui::HFont>(this);
+		return utils::vcall<vgui::HFont>(64, this);
 	}
 
 	bool SetFontGlyphSet(vgui::HFont font,
@@ -225,22 +225,22 @@ public:
 	                     int scanlines,
 	                     int flags)
 	{
-		return utils::vcall<65, bool>(this, font, windowsFontName, tall, weight, blur, scanlines, flags);
+		return utils::vcall<bool>(65, this, font, windowsFontName, tall, weight, blur, scanlines, flags);
 	}
 
 	int GetFontTall(vgui::HFont font)
 	{
-		return utils::vcall<67, int>(this, font);
+		return utils::vcall<int>(67, this, font);
 	}
 
 	void GetTextSize(vgui::HFont font, const wchar_t* text, int& wide, int& tall)
 	{
-		utils::vcall<72, void>(this, font, text, &wide, &tall);
+		utils::vcall<void>(72, this, font, text, &wide, &tall);
 	}
 
 	void GetScreenSize(int& wide, int& tall)
 	{
-		utils::vcall<37, void>(this, &wide, &tall);
+		utils::vcall<void>(37, this, &wide, &tall);
 	}
 };
 
@@ -249,42 +249,42 @@ class IMatSystemSurfaceDMoMM : public IMatSystemSurfaceV4
 public:
 	void DrawOutlinedRect(int x0, int y0, int x1, int y1)
 	{
-		utils::vcall<15, void>(this, x0, y0, x1, y1);
+		utils::vcall<void>(15, this, x0, y0, x1, y1);
 	}
 
 	void DrawLine(int x0, int y0, int x1, int y1)
 	{
-		utils::vcall<16, void>(this, x0, y0, x1, y1);
+		utils::vcall<void>(16, this, x0, y0, x1, y1);
 	}
 
 	void DrawOutlinedCircle(int x, int y, int radius, int segments)
 	{
-		utils::vcall<98, void>(this, x, y, radius, segments);
+		utils::vcall<void>(98, this, x, y, radius, segments);
 	}
 
 	void DrawSetTextFont(vgui::HFont font)
 	{
-		utils::vcall<18, void>(this, font);
+		utils::vcall<void>(18, this, font);
 	}
 
 	void DrawSetTextColor(Color col)
 	{
-		utils::vcall<19, void>(this, col);
+		utils::vcall<void>(19, this, col);
 	}
 
 	void DrawSetTextPos(int x, int y)
 	{
-		utils::vcall<21, void>(this, x, y);
+		utils::vcall<void>(21, this, x, y);
 	}
 
 	void DrawPrintText(const wchar_t* text, int textLen, vgui::FontDrawType_t drawType)
 	{
-		utils::vcall<23, void>(this, 0, text, textLen, drawType, 0, 0);
+		utils::vcall<void>(23, this, 0, text, textLen, drawType, 0, 0);
 	}
 
 	vgui::HFont CreateFont()
 	{
-		return utils::vcall<65, vgui::HFont>(this);
+		return utils::vcall<vgui::HFont>(65, this);
 	}
 
 	bool SetFontGlyphSet(vgui::HFont font,
@@ -295,22 +295,22 @@ public:
 	                     int scanlines,
 	                     int flags)
 	{
-		return utils::vcall<66, bool>(this, font, windowsFontName, tall, weight, blur, scanlines, flags);
+		return utils::vcall<bool>(66, this, font, windowsFontName, tall, weight, blur, scanlines, flags);
 	}
 
 	int GetFontTall(vgui::HFont font)
 	{
-		return utils::vcall<68, int>(this, font);
+		return utils::vcall<int>(68, this, font);
 	}
 
 	void GetTextSize(vgui::HFont font, const wchar_t* text, int& wide, int& tall)
 	{
-		utils::vcall<73, void>(this, font, text, &wide, &tall);
+		utils::vcall<void>(73, this, font, text, &wide, &tall);
 	}
 
 	void GetScreenSize(int& wide, int& tall)
 	{
-		utils::vcall<38, void>(this, &wide, &tall);
+		utils::vcall<void>(38, this, &wide, &tall);
 	}
 };
 #endif
@@ -326,7 +326,7 @@ public:
 
 	virtual void DrawSetColor(Color col) override
 	{
-		this->surface->DrawSetColor(col);
+		surface->DrawSetColor(col);
 	}
 
 	virtual void DrawFilledRect(int x0, int y0, int x1, int y1) override
@@ -351,7 +351,7 @@ public:
 
 	virtual void DrawSetTextColor(Color col) override
 	{
-		this->surface->DrawSetTextColor(col);
+		surface->DrawSetTextColor(col);
 	}
 
 	virtual void DrawSetTextFont(vgui::HFont font) override
@@ -418,7 +418,7 @@ public:
 	                             int scanlines,
 	                             int flags) override
 	{
-		return utils::vcall<65, bool>(surface, font, windowsFontName, tall, weight, blur, scanlines, flags);
+		return utils::vcall<bool>(65, surface, font, windowsFontName, tall, weight, blur, scanlines, flags);
 	}
 };
 #endif

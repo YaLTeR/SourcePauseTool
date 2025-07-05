@@ -15,6 +15,7 @@
 #include "spt\utils\signals.hpp"
 #include "spt\utils\math.hpp"
 #include "spt\utils\game_detection.hpp"
+#include "spt\utils\vcall.hpp"
 #include "visualizations\imgui\imgui_interface.hpp"
 
 #include "playerio.hpp"
@@ -128,7 +129,7 @@ void Overlay::PreHook()
 		return;
 
 #ifdef BMS
-	QueueOverlayRenderView_Offset = 26;
+	vtidx_QueueOverlayRenderView = 26;
 #else
 	if (utils::GetBuildNumber() >= 5135)
 		QueueOverlayRenderView_Offset = 26;
@@ -232,11 +233,7 @@ void Overlay::CViewRender__QueueOverlayRenderView(void* thisptr,
                                                   int whatToDraw)
 {
 	Assert(QueueOverlayRenderView_Offset != -1);
-	typedef void(__thiscall * _QueueOverlayRenderView)(void* thisptr, const CViewSetup&, int, int);
-	((_QueueOverlayRenderView**)thisptr)[0][QueueOverlayRenderView_Offset](thisptr,
-	                                                                       renderView,
-	                                                                       nClearFlags,
-	                                                                       whatToDraw);
+	utils::vcall<void>(QueueOverlayRenderView_Offset, thisptr, &renderView, nClearFlags, whatToDraw);
 }
 
 #if defined(SPT_HUD_ENABLED) && !defined(SPT_HUD_TEXTONLY)

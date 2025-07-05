@@ -23,27 +23,27 @@ class IVEngineClientDMoMM
 public:
 	void ClientCmd(const char* command)
 	{
-		utils::vcall<9, void>(this, command);
+		utils::vcall<void>(9, this, command);
 	}
 
 	void GetViewAngles(QAngle& viewangles)
 	{
-		utils::vcall<21, void>(this, &viewangles);
+		utils::vcall<void>(21, this, &viewangles);
 	}
 
 	void SetViewAngles(QAngle& viewangles)
 	{
-		utils::vcall<22, void>(this, &viewangles);
+		utils::vcall<void>(22, this, &viewangles);
 	}
 
 	int Cmd_Argc()
 	{
-		return utils::vcall<34, int>(this);
+		return utils::vcall<int>(34, this);
 	}
 
 	const char* Cmd_Argv(int arg)
 	{
-		return utils::vcall<35, const char*>(this, arg);
+		return utils::vcall<const char*>(35, this, arg);
 	}
 };
 #endif
