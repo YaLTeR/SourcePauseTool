@@ -108,7 +108,7 @@ void DemoStuff::PreHook()
 		{
 			pDemoplayer = *reinterpret_cast<void***>(ORIG_Record + 0xA2);
 			// vftable offsets
-			if (utils::GetBuildNumber() <= 3420)
+			if (utils::GetBuildNumber() <= 4104)
 			{
 				// 3420 offsets
 				GetPlaybackTick_Offset = 2;

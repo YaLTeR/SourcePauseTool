@@ -67,7 +67,7 @@ void TASPause::LoadFeature()
 		switch (ptnNumber)
 		{
 		case 0: // 5135
-			off_pHost_Frametime = (utils::GetBuildNumber() <= 3420) ? 309 : 227;
+			off_pHost_Frametime = (utils::GetBuildNumber() <= 4104) ? 309 : 227;
 			break;
 		case 1: // dmomm
 			off_pHost_Frametime = 217;
