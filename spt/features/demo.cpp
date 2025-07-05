@@ -7,6 +7,7 @@
 #include "..\scripts\srctas_reader.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "..\utils\game_detection.hpp"
+#include "..\utils\vcall.hpp"
 #include "visualizations\imgui\imgui_interface.hpp"
 
 DemoStuff spt_demostuff;
@@ -108,7 +109,7 @@ void DemoStuff::PreHook()
 		{
 			pDemoplayer = *reinterpret_cast<void***>(ORIG_Record + 0xA2);
 			// vftable offsets
-			if (utils::GetBuildNumber() <= 3420)
+			if (utils::GetBuildNumber() <= 4104)
 			{
 				// 3420 offsets
 				GetPlaybackTick_Offset = 2;
@@ -167,7 +168,7 @@ int DemoStuff::Demo_GetPlaybackTick() const
 	if (!pDemoplayer)
 		return 0;
 	auto demoplayer = *pDemoplayer;
-	return (*reinterpret_cast<int(__fastcall***)(void*)>(demoplayer))[GetPlaybackTick_Offset](demoplayer);
+	return utils::vcall<int>(GetPlaybackTick_Offset, demoplayer);
 }
 
 int DemoStuff::Demo_GetTotalTicks() const
@@ -175,7 +176,7 @@ int DemoStuff::Demo_GetTotalTicks() const
 	if (!pDemoplayer)
 		return 0;
 	auto demoplayer = *pDemoplayer;
-	return (*reinterpret_cast<int(__fastcall***)(void*)>(demoplayer))[GetTotalTicks_Offset](demoplayer);
+	return utils::vcall<int>(GetTotalTicks_Offset, demoplayer);
 }
 
 bool DemoStuff::Demo_IsPlayingBack() const
@@ -183,7 +184,7 @@ bool DemoStuff::Demo_IsPlayingBack() const
 	if (!pDemoplayer)
 		return false;
 	auto demoplayer = *pDemoplayer;
-	return (*reinterpret_cast<bool(__fastcall***)(void*)>(demoplayer))[IsPlayingBack_Offset](demoplayer);
+	return utils::vcall<bool>(IsPlayingBack_Offset, demoplayer);
 }
 
 bool DemoStuff::Demo_IsPlaybackPaused() const
@@ -191,7 +192,7 @@ bool DemoStuff::Demo_IsPlaybackPaused() const
 	if (!pDemoplayer)
 		return false;
 	auto demoplayer = *pDemoplayer;
-	return (*reinterpret_cast<bool(__fastcall***)(void*)>(demoplayer))[IsPlaybackPaused_Offset](demoplayer);
+	return utils::vcall<bool>(IsPlaybackPaused_Offset, demoplayer);
 }
 
 bool DemoStuff::Demo_IsAutoRecordingAvailable() const
