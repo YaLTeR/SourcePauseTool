@@ -1,11 +1,10 @@
 #pragma once
 #include "vcall.hpp"
+#include "Color.h"
 #include "VGuiMatSurface\IMatSystemSurface.h"
 #ifdef OE
-#include "VGuiMatSurface\IMatSystemSurfaceV4.h"
+#define MAT_SYSTEM_SURFACE_INTERFACE_VERSION_4 "MatSystemSurface004"
 #endif
-
-#include "Color.h"
 
 class SurfaceWrapper
 {
@@ -25,6 +24,8 @@ public:
 	                           vgui::FontDrawType_t drawType = vgui::FontDrawType_t::FONT_DRAW_DEFAULT) = 0;
 	virtual int GetFontTall(vgui::HFont font) = 0;
 	virtual void GetTextSize(vgui::HFont font, const wchar_t* text, int& wide, int& tall) = 0;
+
+	virtual void GetScreenSize(int& wide, int& tall) = 0;
 };
 
 #ifdef BMS
@@ -80,10 +81,15 @@ public:
 	{
 		return utils::vcall<73, int>(this, font);
 	}
-	
+
 	void GetTextSize(vgui::HFont font, const wchar_t* text, int& wide, int& tall)
 	{
 		utils::vcall<79, void>(this, font, text, &wide, &tall);
+	}
+
+	void GetScreenSize(int& wide, int& tall)
+	{
+		utils::vcall<40, void>(this, &wide, &tall);
 	}
 };
 
@@ -108,6 +114,126 @@ public:
 	void DrawOutlinedCircle(int x, int y, int radius, int segments)
 	{
 		utils::vcall<104, void>(this, x, y, radius, segments);
+	}
+};
+#endif
+
+#ifdef OE
+class IMatSystemSurfaceV4
+{
+public:
+	void DrawSetColor(Color col)
+	{
+		utils::vcall<10, void>(this, col);
+	}
+
+	void DrawFilledRect(int x0, int y0, int x1, int y1)
+	{
+		utils::vcall<12, void>(this, x0, y0, x1, y1);
+	}
+
+	void DrawOutlinedRect(int x0, int y0, int x1, int y1)
+	{
+		utils::vcall<14, void>(this, x0, y0, x1, y1);
+	}
+
+	void DrawLine(int x0, int y0, int x1, int y1)
+	{
+		utils::vcall<15, void>(this, x0, y0, x1, y1);
+	}
+
+	void DrawOutlinedCircle(int x, int y, int radius, int segments)
+	{
+		utils::vcall<96, void>(this, x, y, radius, segments);
+	}
+
+	void DrawSetTextFont(vgui::HFont font)
+	{
+		utils::vcall<17, void>(this, font);
+	}
+
+	void DrawSetTextColor(Color col)
+	{
+		utils::vcall<18, void>(this, col);
+	}
+
+	void DrawSetTextPos(int x, int y)
+	{
+		utils::vcall<20, void>(this, x, y);
+	}
+
+	void DrawPrintText(const wchar_t* text, int textLen, vgui::FontDrawType_t drawType)
+	{
+		utils::vcall<22, void>(this, text, textLen, drawType);
+	}
+
+	int GetFontTall(vgui::HFont font)
+	{
+		return utils::vcall<67, int>(this, font);
+	}
+
+	void GetTextSize(vgui::HFont font, const wchar_t* text, int& wide, int& tall)
+	{
+		utils::vcall<72, void>(this, font, text, &wide, &tall);
+	}
+
+	void GetScreenSize(int& wide, int& tall)
+	{
+		utils::vcall<37, void>(this, &wide, &tall);
+	}
+};
+
+class IMatSystemSurfaceDMoMM : public IMatSystemSurfaceV4
+{
+public:
+	void DrawOutlinedRect(int x0, int y0, int x1, int y1)
+	{
+		utils::vcall<15, void>(this, x0, y0, x1, y1);
+	}
+
+	void DrawLine(int x0, int y0, int x1, int y1)
+	{
+		utils::vcall<16, void>(this, x0, y0, x1, y1);
+	}
+
+	void DrawOutlinedCircle(int x, int y, int radius, int segments)
+	{
+		utils::vcall<98, void>(this, x, y, radius, segments);
+	}
+
+	void DrawSetTextFont(vgui::HFont font)
+	{
+		utils::vcall<18, void>(this, font);
+	}
+
+	void DrawSetTextColor(Color col)
+	{
+		utils::vcall<19, void>(this, col);
+	}
+
+	void DrawSetTextPos(int x, int y)
+	{
+		utils::vcall<21, void>(this, x, y);
+	}
+
+	void DrawPrintText(const wchar_t* text, int textLen, vgui::FontDrawType_t drawType)
+	{
+		utils::vcall<23, void>(this, 0, text, textLen, drawType, 0, 0);
+	}
+
+	int GetFontTall(vgui::HFont font)
+	{
+		return utils::vcall<68, int>(this, font);
+	}
+
+	void GetTextSize(vgui::HFont font, const wchar_t* text, int& wide, int& tall)
+	{
+		utils::vcall<73, void>(this, font, text, &wide, &tall);
+	}
+
+	void GetScreenSize(int& wide, int& tall)
+	{
+		utils::vcall<38, void>(this, &wide, &tall);
 	}
 };
 #endif
@@ -161,6 +287,11 @@ public:
 		surface->GetTextSize(font, text, wide, tall);
 	}
 
+	virtual void GetScreenSize(int& wide, int& tall) override
+	{
+		surface->GetScreenSize(wide, tall);
+	}
+
 protected:
 	Surface* surface;
 };
@@ -186,26 +317,3 @@ public:
 		this->surface->DrawPrintText(text, wcslen(text), drawType);
 	}
 };
-
-#ifdef OE
-class ISurfaceWrapperV4 : public ISurfaceWrapperBase<IMatSystemSurfaceV4>
-{
-public:
-	using ISurfaceWrapperBase<IMatSystemSurfaceV4>::ISurfaceWrapperBase;
-
-	virtual void DrawSetColor(Color col) override
-	{
-		this->surface->DrawSetColor(col.r(), col.g(), col.b(), col.a());
-	}
-
-	virtual void DrawSetTextColor(Color col) override
-	{
-		this->surface->DrawSetTextColor(col.r(), col.g(), col.b(), col.a());
-	}
-
-	virtual void DrawPrintText(const wchar_t* text, vgui::FontDrawType_t drawType) override
-	{
-		this->surface->DrawPrintText(text, drawType);
-	}
-};
-#endif

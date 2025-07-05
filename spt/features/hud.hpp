@@ -109,8 +109,6 @@ private:
 	ConVar* cl_showfps = nullptr;
 
 	DECL_HOOK_THISCALL(void, CEngineVGui__Paint, void*, PaintMode_t mode);
-	DECL_MEMBER_THISCALL(void, CMatSystemSurface__StartDrawing, void*);
-	DECL_MEMBER_THISCALL(void, CMatSystemSurface__FinishDrawing, void*);
 
 	void DrawHUD(bool overlay);
 	void DrawDefaultHUD();

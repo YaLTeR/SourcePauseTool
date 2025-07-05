@@ -816,7 +816,7 @@ void InputHud::DrawInputHud()
 	gridSize = y_spt_ihud_grid_size.GetInt();
 	padding = y_spt_ihud_grid_padding.GetInt();
 
-	if (y_spt_ihud.GetBool() && !interfaces::engine_vgui->IsGameUIVisible())
+	if (y_spt_ihud.GetBool() && (utils::DoesGameLookLikeDMoMM() || !interfaces::engine_vgui->IsGameUIVisible()))
 	{
 		Vector ang;
 		if (tasPreset || anglesSetting.enabled)

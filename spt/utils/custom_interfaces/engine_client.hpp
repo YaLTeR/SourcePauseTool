@@ -6,7 +6,6 @@ class EngineClientWrapper
 {
 public:
 	virtual ~EngineClientWrapper() {};
-	virtual void GetScreenSize(int& width, int& height) = 0;
 	virtual void ClientCmd(const char* command) = 0;
 	virtual void GetViewAngles(QAngle& viewangles) = 0;
 	virtual void SetViewAngles(QAngle& viewangles) = 0;
@@ -22,11 +21,6 @@ public:
 class IVEngineClientDMoMM
 {
 public:
-	void GetScreenSize(int& width, int& height)
-	{
-		utils::vcall<8, void>(this, &width, &height);
-	}
-
 	void ClientCmd(const char* command)
 	{
 		utils::vcall<9, void>(this, command);
@@ -62,11 +56,6 @@ class IVEngineClientWrapper : public EngineClientWrapper
 {
 public:
 	IVEngineClientWrapper(EngineClient* engine) : engine(engine) {}
-
-	virtual void GetScreenSize(int& width, int& height) override
-	{
-		engine->GetScreenSize(width, height);
-	}
 
 	virtual void ClientCmd(const char* command) override
 	{

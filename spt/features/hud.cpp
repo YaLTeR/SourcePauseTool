@@ -389,22 +389,6 @@ CON_COMMAND_F_COMPLETION(spt_hud_group_remove,
 
 namespace patterns
 {
-	PATTERNS(
-	    CMatSystemSurface__StartDrawing,
-	    "5135",
-	    "55 8B EC 83 E4 C0 83 EC 38 80 ?? ?? ?? ?? ?? ?? 56 57 8B F9 75 57 8B ?? ?? ?? ?? ?? C6 ?? ?? ?? ?? ?? ?? FF ?? 8B 10 6A 00 8B C8 8B 42 20",
-	    "7462488",
-	    "55 8B EC 64 A1 ?? ?? ?? ?? 6A FF 68 ?? ?? ?? ?? 50 64 89 25 ?? ?? ?? ?? 83 EC 14",
-	    "BMS-Retail-0.9",
-	    "55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 83 EC 14 56 57 A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 ?? ?? ?? ?? 8B F9 80 3D ?? ?? ?? ?? 00");
-	PATTERNS(
-	    CMatSystemSurface__FinishDrawing,
-	    "5135",
-	    "56 6A 00 E8 ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? 8B 01 8B ?? ?? ?? ?? ?? 83 C4 04 FF D2 8B F0 85 F6 74 09 8B 06 8B 50 08 8B CE FF D2",
-	    "7462488",
-	    "55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 64 89 25 ?? ?? ?? ?? 51 56 6A 00",
-	    "BMS-Retail-0.9",
-	    "55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 51 56 A1 ?? ?? ?? ?? 33 C5 50 8D 45 ?? 64 A3 ?? ?? ?? ?? 6A 00");
 	PATTERNS(CEngineVGui__Paint,
 	         "5135",
 	         "83 EC 18 56 6A 04 6A 00",
@@ -413,14 +397,12 @@ namespace patterns
 	         "7462488",
 	         "55 8B EC 83 EC 2C 53 8B D9 8B 0D ?? ?? ?? ?? 56",
 	         "4044",
-	         "6A FF 68 B8 CA 2C 20");
+	         "6A FF 68 ?? ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 64 89 25 ?? ?? ?? ?? 83 EC 1C 56 6A 04");
 
 } // namespace patterns
 
 void HUDFeature::InitHooks()
 {
-	FIND_PATTERN(vguimatsurface, CMatSystemSurface__StartDrawing);
-	FIND_PATTERN(vguimatsurface, CMatSystemSurface__FinishDrawing);
 	HOOK_FUNCTION(engine, CEngineVGui__Paint);
 }
 
@@ -481,7 +463,7 @@ void HUDFeature::DrawColorTopHudElement(Color color, const wchar* format, ...)
 
 bool HUDFeature::ShouldLoadFeature()
 {
-	return !utils::DoesGameLookLikeBMSMod();
+	return interfaces::surface && !utils::DoesGameLookLikeBMSMod();
 }
 
 bool HUDFeature::GetFont(const std::string& fontName, vgui::HFont& fontOut)
@@ -515,8 +497,7 @@ bool HUDFeature::GetFont(const std::string& fontName, vgui::HFont& fontOut)
 
 void HUDFeature::PreHook()
 {
-	loadingSuccessful =
-	    ORIG_CEngineVGui__Paint && ORIG_CMatSystemSurface__FinishDrawing && ORIG_CMatSystemSurface__StartDrawing;
+	loadingSuccessful = !!ORIG_CEngineVGui__Paint;
 }
 
 void HUDFeature::LoadFeature()
@@ -526,8 +507,8 @@ void HUDFeature::LoadFeature()
 
 	cl_showpos = g_pCVar->FindVar("cl_showpos");
 	cl_showfps = g_pCVar->FindVar("cl_showfps");
-	bool result = spt_hud_feat.AddHudDefaultGroup(HudCallback(
-	    std::bind(&HUDFeature::DrawDefaultHUD, this), []() { return y_spt_hud.GetBool(); }, false));
+	bool result = spt_hud_feat.AddHudDefaultGroup(
+	    HudCallback(std::bind(&HUDFeature::DrawDefaultHUD, this), []() { return y_spt_hud.GetBool(); }, false));
 	if (result)
 	{
 		InitConcommandBase(y_spt_hud);
@@ -585,11 +566,6 @@ void HUDFeature::DrawDefaultHUD()
 
 void HUDFeature::DrawHUD(bool overlay)
 {
-	if (!interfaces::surface)
-		return;
-
-	ORIG_CMatSystemSurface__StartDrawing(interfaces::mat_system_surface);
-
 	try
 	{
 		// Draw default callbacks
@@ -654,8 +630,6 @@ void HUDFeature::DrawHUD(bool overlay)
 	{
 		Msg("Error drawing HUD: %s\n", e.what());
 	}
-
-	ORIG_CMatSystemSurface__FinishDrawing(interfaces::mat_system_surface);
 }
 
 IMPL_HOOK_THISCALL(HUDFeature, void, CEngineVGui__Paint, void*, PaintMode_t mode)
@@ -671,26 +645,30 @@ IMPL_HOOK_THISCALL(HUDFeature, void, CEngineVGui__Paint, void*, PaintMode_t mode
 		* this is called, we're rendering the main view (after the overlay) so spt_overlay has the pointers for
 		* both views.
 		*/
-		Assert(spt_overlay.mainView);
-		spt_hud_feat.screen = Screen(spt_overlay.mainView->x,
-		                             spt_overlay.mainView->y,
-		                             spt_overlay.mainView->width,
-		                             spt_overlay.mainView->height);
-		spt_hud_feat.DrawHUD(false);
-		if (_y_spt_overlay.GetBool())
+		if (spt_overlay.mainView)
 		{
-			spt_hud_feat.screen = Screen(spt_overlay.overlayView->x,
-			                             spt_overlay.overlayView->y,
-			                             spt_overlay.overlayView->width,
-			                             spt_overlay.overlayView->height);
-			spt_hud_feat.DrawHUD(true);
+			spt_hud_feat.screen = Screen(spt_overlay.mainView->x,
+			                             spt_overlay.mainView->y,
+			                             spt_overlay.mainView->width,
+			                             spt_overlay.mainView->height);
+			spt_hud_feat.DrawHUD(false);
+			if (_y_spt_overlay.GetBool())
+			{
+				spt_hud_feat.screen = Screen(spt_overlay.overlayView->x,
+				                             spt_overlay.overlayView->y,
+				                             spt_overlay.overlayView->width,
+				                             spt_overlay.overlayView->height);
+				spt_hud_feat.DrawHUD(true);
+			}
 		}
-#else
-		int width, height;
-		interfaces::engine->GetScreenSize(width, height);
-		spt_hud_feat.screen = Screen(0, 0, width, height);
-		spt_hud_feat.DrawHUD(false);
+		else
 #endif
+		{
+			int width, height;
+			interfaces::surface->GetScreenSize(width, height);
+			spt_hud_feat.screen = Screen(0, 0, width, height);
+			spt_hud_feat.DrawHUD(false);
+		}
 	}
 	spt_hud_feat.ORIG_CEngineVGui__Paint(thisptr, mode);
 }
