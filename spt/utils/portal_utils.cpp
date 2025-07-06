@@ -125,10 +125,14 @@ void transformThroughPortal(const utils::PortalInfo* portal,
 		return;
 	}
 
+	static void* prevPortal = nullptr;
+	static VMatrix prevMatrix;
+
 	VMatrix matrix;
 	if (portal->linkedHandle.IsValid())
 	{
 		UpdatePortalTransformationMatrix(portal, matrix);
+		prevMatrix = matrix;
 	}
 	else
 	{
@@ -136,8 +140,24 @@ void transformThroughPortal(const utils::PortalInfo* portal,
 		static utils::CachedField<VMatrix, "CProp_Portal", "m_matrixThisToLinked", true> fMatrix;
 		auto serverPortalEnt = utils::spt_serverEntList.GetEnt(portal->handle.GetEntryIndex());
 		if (serverPortalEnt && fMatrix.Exists())
+		{
 			matrix = *fMatrix.GetPtr(serverPortalEnt);
+			prevMatrix = matrix;
+		}
+		else if (prevPortal == portal->pEnt)
+		{
+			// Backup (not sure if you can actually properly figure it out using client portals only)
+			matrix = prevMatrix;
+		}
+		else
+		{
+			transformed_origin = start_pos;
+			transformed_angles = start_angles;
+			return;
+		}
 	}
+
+	prevPortal = portal->pEnt;
 
 	transformed_origin = matrix * start_pos;
 	transformed_angles = TransformAnglesToWorldSpace(start_angles, matrix.As3x4());
