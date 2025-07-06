@@ -335,7 +335,6 @@ void Overlay::ModifyView(CViewSetup* renderView)
 			renderView->angles = utils::GetPlayerEyeAngles();
 			break;
 		default:
-			Assert(0);
 			break;
 		}
 		// normalize yaw
