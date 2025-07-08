@@ -27,9 +27,6 @@
 #endif
 
 
-#ifndef nullptr
-	#define nullptr		( 0 )
-#endif
 #ifndef INT32_MAX
 #define INT32_MAX    (0x7FFFFFFF)
 #endif

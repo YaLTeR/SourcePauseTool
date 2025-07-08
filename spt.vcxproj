@@ -1631,6 +1631,7 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="thirdparty\imgui\imstb_textedit.h" />
     <ClInclude Include="thirdparty\imgui\imstb_truetype.h" />
     <ClInclude Include="thirdparty\json.hpp" />
+    <ClInclude Include="thirdparty\json_spt_include.hpp" />
     <ClInclude Include="thirdparty\kmp-cpp.hpp" />
     <ClInclude Include="thirdparty\md5.hpp" />
     <ClInclude Include="thirdparty\Signal.h" />
