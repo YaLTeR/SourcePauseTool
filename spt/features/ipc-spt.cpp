@@ -2,7 +2,7 @@
 #include "..\feature.hpp"
 #include "convar.hpp"
 #include "file.hpp"
-#include "thirdparty\json.hpp"
+#include "thirdparty\json_spt_include.hpp"
 #include "ent_utils.hpp"
 #include "property_getter.hpp"
 #include "signals.hpp"

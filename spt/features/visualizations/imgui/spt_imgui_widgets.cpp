@@ -1,5 +1,6 @@
 #include <stdafx.hpp>
 #include <inttypes.h>
+#include <array>
 
 #include "imgui_interface.hpp"
 #include "thirdparty/imgui/imgui_internal.h"

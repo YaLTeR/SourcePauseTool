@@ -2,7 +2,7 @@
 
 #ifdef _WIN32
 
-#include "thirdparty\json.hpp"
+#include "thirdparty\json_spt_include.hpp"
 #include "game_detection.hpp"
 #include "interfaces.hpp"
 #include "file.hpp"
