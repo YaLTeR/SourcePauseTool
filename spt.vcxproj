@@ -1609,7 +1609,6 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="spt\utils\spt_vprof.hpp" />
     <ClInclude Include="spt\utils\stdafx.hpp" />
     <ClInclude Include="spt\utils\string_utils.hpp" />
-    <ClInclude Include="spt\utils\typeinfo.h" />
     <ClInclude Include="spt\utils\vcall.hpp" />
     <ClInclude Include="spt\vgui\vgui_utils.hpp" />
     <ClInclude Include="thirdparty\curl\include\curl\curl.h" />
