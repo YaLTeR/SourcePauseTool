@@ -5,14 +5,14 @@
 
 namespace ipc
 {
-	typedef void (*PrintFunc)(const char* msg);
+	typedef void (*IpcPrintFunc)(const char* msg);
 	typedef void (*MsgCallback)(const nlohmann::json& msg);
 
 	void Print(const char* msg, ...);
 	void Shutdown_IPC();
 	bool Winsock_Initialized();
 	void InitWinsock();
-	void AddPrintFunc(PrintFunc func);
+	void AddIpcPrintFunc(IpcPrintFunc func);
 
 	class IPCServer
 	{

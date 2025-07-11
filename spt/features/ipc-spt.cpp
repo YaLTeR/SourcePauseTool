@@ -85,7 +85,7 @@ namespace ipc
 
 	void Init()
 	{
-		ipc::AddPrintFunc(MsgWrapper);
+		ipc::AddIpcPrintFunc(MsgWrapper);
 		if (y_spt_ipc.GetBool())
 		{
 			StartIPC();

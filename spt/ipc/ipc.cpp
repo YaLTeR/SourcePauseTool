@@ -10,7 +10,7 @@
 
 using namespace ipc;
 
-static PrintFunc PRINT_FUNC = nullptr;
+static IpcPrintFunc PRINT_FUNC = nullptr;
 static bool WINSOCK_INITIALIZED = false;
 static u_long BLOCKING = 1;
 const int BUFLEN = 32767;
@@ -59,7 +59,7 @@ void ipc::InitWinsock()
 	WINSOCK_INITIALIZED = true;
 }
 
-void ipc::AddPrintFunc(PrintFunc func)
+void ipc::AddIpcPrintFunc(IpcPrintFunc func)
 {
 	PRINT_FUNC = func;
 }
