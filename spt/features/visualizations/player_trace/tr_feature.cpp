@@ -1,14 +1,17 @@
 #include "stdafx.hpp"
 
+#include "tr_config.hpp"
+
+#ifdef SPT_PLAYER_TRACE_ENABLED
+
 #include <unordered_map>
 #include <algorithm>
-
-#include "spt/feature.hpp"
 
 #include "tr_record_cache.hpp"
 #include "tr_render_cache.hpp"
 #include "import_export/tr_binary_compress.hpp"
 
+#include "spt/feature.hpp"
 #include "signals.hpp"
 #include "spt/utils/ent_list.hpp"
 #include "spt/utils/interfaces.hpp"
@@ -16,8 +19,7 @@
 #include "spt/utils/game_detection.hpp"
 #include "spt/features/hud.hpp"
 #include "spt/features/visualizations/imgui/imgui_interface.hpp"
-
-#ifdef SPT_PLAYER_TRACE_ENABLED
+#include "spt/features/portalled_pause.hpp"
 
 using namespace player_trace;
 
@@ -48,6 +50,7 @@ private:
 #ifdef SPT_HUD_ENABLED
 	void OnHudCallback();
 #endif
+	void OnPortalTeleportSignal(IServerEntity* portal, IServerEntity* ent);
 };
 
 static PlayerTraceFeature spt_player_trace_feat;
@@ -243,6 +246,8 @@ void PlayerTraceFeature::LoadFeature()
 	TickSignal.Connect(this, &PlayerTraceFeature::OnTickSignal);
 	FinishRestoreSignal.Connect(this, &PlayerTraceFeature::OnFinishRestoreSignal);
 	spt_meshRenderer.signal.Connect(this, &PlayerTraceFeature::OnMeshRenderSignal);
+	spt_portalled_pause_feat.portalTeleportedEntitySignal.Connect(this,
+	                                                              &PlayerTraceFeature::OnPortalTeleportSignal);
 
 	InitCommand(spt_trace_start);
 	InitCommand(spt_trace_stop);
@@ -366,6 +371,13 @@ void PlayerTraceFeature::OnHudCallback()
 	spt_hud_feat.DrawTopHudElement(L"Trace memory usage: %.*f%s", i > 0 ? 2 : 0, displayUsage, suffixes[i]);
 }
 #endif
+
+void PlayerTraceFeature::OnPortalTeleportSignal(IServerEntity* portal, IServerEntity* ent)
+{
+	if (ent != utils::spt_serverEntList.GetPlayer())
+		return;
+	deferredSegmentReason = MAX(deferredSegmentReason, TR_SR_PLAYER_PORTALLED);
+}
 
 bool player_trace::GetActiveTracePos(Vector& pos, QAngle& ang, float& fov)
 {
