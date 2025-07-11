@@ -13,6 +13,12 @@ struct TrLumpUpgradeHandlerT : TrLumpUpgradeHandler
 	    : TrLumpUpgradeHandler{TR_LUMP_NAME(T), STRUCT_VERSION, {TR_LUMP_NAME(LUMP_DEPENDENCIES)...}}
 	{
 	}
+
+	template<typename T>
+	static std::span<T> BytesToSpan(std::span<std::byte> sp)
+	{
+		return {(T*)sp.data(), sp.size() / sizeof(T)};
+	}
 };
 
 // since I set TR_INVALID_STRUCT_VERSION to be 0, upgrade all structs from 0 to at least 1
@@ -47,7 +53,7 @@ struct : public TrLumpUpgradeHandlerT<TrPlayerData_v1>
 		if (dataInOut.size() % sizeof(TrPlayerData_v1) != 0)
 			return false;
 
-		auto pd1Sp = std::span{(TrPlayerData_v1*)dataInOut.data(), dataInOut.size() / sizeof(TrPlayerData_v1)};
+		auto pd1Sp = BytesToSpan<TrPlayerData_v1>(dataInOut);
 		std::vector<TrPlayerData_v2> pd2Vec;
 		for (auto& pd1 : pd1Sp)
 			pd2Vec.emplace_back(pd1); // do the upgrade
@@ -66,7 +72,7 @@ struct : public TrLumpUpgradeHandlerT<Vector, 1>
 	{
 		if (dataInOut.size() % sizeof(Vector) != 0)
 			return false;
-		auto vecSpan = std::span{(Vector*)dataInOut.data(), dataInOut.size() / sizeof(Vector)};
+		auto vecSpan = BytesToSpan<Vector>(dataInOut);
 		for (Vector& v : vecSpan)
 			if (v == vec3_invalid)
 				v = Vector{NAN, NAN, NAN};
@@ -74,5 +80,21 @@ struct : public TrLumpUpgradeHandlerT<Vector, 1>
 		return true;
 	}
 } static vec_1_2_handler;
+
+// fixup old TrSegmentReason order
+struct : public TrLumpUpgradeHandlerT<TrSegmentStart, 1>
+{
+	virtual bool HandleCompat(TrRestoreInternal& internal, TrLump& lump, std::vector<std::byte>& dataInOut) const
+	{
+		if (dataInOut.size() % sizeof(TrSegmentStart_v1) != 0)
+			return false;
+		auto segSpan = BytesToSpan<TrSegmentStart_v1>(dataInOut);
+		for (TrSegmentStart_v1& s : segSpan)
+			if (s.reason == 6) // old value for TR_SR_TRACE_START
+				s.reason = TR_SR_TRACE_START;
+		lump.structVersion = 2;
+		return true;
+	}
+} segStart_1_2_handler;
 
 #endif

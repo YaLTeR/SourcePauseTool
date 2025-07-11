@@ -227,9 +227,9 @@ namespace player_trace
 	struct TrSegmentStart_v1
 	{
 		tr_tick tick;
-		TrSegmentReason reason;
+		TrSegmentReason reason = TR_SR_NONE;
 	};
-	TR_DEFINE_LUMP(TrSegmentStart_v1, "segment", 1);
+	TR_DEFINE_LUMP(TrSegmentStart_v1, "segment", 2);
 
 	using TrSegmentStart = TrSegmentStart_v1;
 

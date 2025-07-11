@@ -19,19 +19,20 @@ namespace player_trace
 {
 	bool GetActiveTracePos(Vector& pos, QAngle& ang, float& fov);
 
+	// only one reason per tick atm, so try to under from least to most important
 	enum TrSegmentReason : int
 	{
+
+		TR_SR_NONE = -2,
+		TR_SR_TRACE_START = -1,
+
 		TR_SR_FCPS,
 		TR_SR_PLAYER_PORTALLED,
 		TR_SR_SAVELOAD,
 		TR_SR_MAP_TRANSITION,
-		TR_SR_IMPLICIT, // never recorded, only used for drawing
+		TR_SR_IMPLICIT, // never recorded, only used for drawing (must be last)
 
 		TR_SR_COLORED_COUNT,
-
-		TR_SR_TRACE_START,
-
-		TR_SR_NONE,
 	};
 
 	enum TrPlayerCameraDrawType
