@@ -50,4 +50,18 @@ namespace fb
 		struct MbCompactMesh;
 	}
 
+	namespace ent
+	{
+		struct CBaseHandle;
+		struct CBaseTrace;
+	} // namespace ent
+
+	namespace fcps
+	{
+		struct FcpsEvent;
+		struct FcpsEventBuilder;
+		struct FcpsEventList;
+		struct FcpsEventListBuilder;
+	} // namespace fcps
+
 } // namespace fb

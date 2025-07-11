@@ -1244,6 +1244,11 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClCompile Include="spt\features\visualizations\draw_ent_collides.cpp" />
     <ClCompile Include="spt\features\visualizations\draw_seams.cpp" />
     <ClCompile Include="spt\features\visualizations\draw_world_collides.cpp" />
+    <ClCompile Include="spt\features\visualizations\fcps\fcps_animate.cpp" />
+    <ClCompile Include="spt\features\visualizations\fcps\fcps_feature.cpp" />
+    <ClCompile Include="spt\features\visualizations\fcps\fcps_import_export.cpp" />
+    <ClCompile Include="spt\features\visualizations\fcps\fcps_record.cpp" />
+    <ClCompile Include="spt\features\visualizations\fcps\fcps_event_queue.cpp" />
     <ClCompile Include="spt\features\visualizations\gui_game_detection.cpp" />
     <ClCompile Include="spt\features\visualizations\imgui\imgui_interface.cpp" />
     <ClCompile Include="spt\features\visualizations\imgui\spt_imgui_widgets.cpp" />
@@ -1552,6 +1557,10 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="spt\features\tas.hpp" />
     <ClInclude Include="spt\features\tickrate.hpp" />
     <ClInclude Include="spt\features\tracing.hpp" />
+    <ClInclude Include="spt\features\visualizations\fcps\fcps_animate.hpp" />
+    <ClInclude Include="spt\features\visualizations\fcps\fcps_config.hpp" />
+    <ClInclude Include="spt\features\visualizations\fcps\fcps_event.hpp" />
+    <ClInclude Include="spt\features\visualizations\fcps\fcps_event_queue.hpp" />
     <ClInclude Include="spt\features\visualizations\imgui\imgui_interface.hpp" />
     <ClInclude Include="spt\features\visualizations\imgui\imgui_styles.hpp" />
     <ClInclude Include="spt\features\visualizations\imgui\jetbrains_mono_bold.hpp" />
@@ -1574,6 +1583,8 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="spt\features\visualizations\renderer\mesh_renderer.hpp" />
     <ClInclude Include="spt\flatbuffers_schemas\fb_forward_declare.hpp" />
     <ClInclude Include="spt\flatbuffers_schemas\fb_pack_defs.hpp" />
+    <ClInclude Include="spt\flatbuffers_schemas\gen\ent_generated.h" />
+    <ClInclude Include="spt\flatbuffers_schemas\gen\fcps_generated.h" />
     <ClInclude Include="spt\flatbuffers_schemas\gen\math_generated.h" />
     <ClInclude Include="spt\flatbuffers_schemas\gen\mesh_generated.h" />
     <ClInclude Include="spt\ipc\ipc.hpp" />
@@ -1707,6 +1718,8 @@ del "$(OutDir)spt-version.obj"</Command>
     <Text Include="thirdparty\xz\readme.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="spt\flatbuffers_schemas\gen\ent.fbs" />
+    <None Include="spt\flatbuffers_schemas\gen\fcps.fbs" />
     <None Include="spt\flatbuffers_schemas\gen\math.fbs" />
     <None Include="spt\flatbuffers_schemas\gen\mesh.fbs" />
     <None Include="thirdparty\imgui\README" />
