@@ -448,6 +448,24 @@
     <ClCompile Include="spt\utils\mesh_utils.cpp">
       <Filter>spt\utils</Filter>
     </ClCompile>
+    <ClCompile Include="spt\features\visualizations\fcps\fcps_feature.cpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\fcps\fcps_record.cpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\fcps\fcps_import_export.cpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\utils\mesh_utils.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\fcps\fcps_animate.cpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\fcps\fcps_event_queue.cpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -1044,6 +1062,9 @@
     <ClInclude Include="thirdparty\flatbuffers\vector_downward.h">
       <Filter>thirdparty\flatbuffers</Filter>
     </ClInclude>
+    <ClInclude Include="spt\features\visualizations\fcps\fcps_config.hpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClInclude>
     <ClInclude Include="spt\utils\mesh_utils.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
@@ -1058,6 +1079,12 @@
     </ClInclude>
     <ClInclude Include="spt\features\visualizations\fcps\fcps_event_queue.hpp">
       <Filter>spt\features\visualizations\fcps</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\flatbuffers_schemas\gen\ent_generated.h">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\flatbuffers_schemas\gen\fcps_generated.h">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
     </ClInclude>
     <ClInclude Include="spt\flatbuffers_schemas\gen\math_generated.h">
       <Filter>spt\flatbuffers_schemas\gen</Filter>
@@ -1160,6 +1187,9 @@
     <Filter Include="spt\features\visualizations\player_trace\import_export">
       <UniqueIdentifier>{3f0921d7-b608-4ebf-b3a6-766225b29da7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="spt\features\visualizations\fcps">
+      <UniqueIdentifier>{acde638d-f6d1-4c76-ad6d-45dc77187a35}</UniqueIdentifier>
+    </Filter>
     <Filter Include="spt\utils\custom_interfaces">
       <UniqueIdentifier>{81ebb0c3-4b40-4039-8426-d1b355782bba}</UniqueIdentifier>
     </Filter>
@@ -1190,6 +1220,12 @@
   <ItemGroup>
     <None Include="thirdparty\imgui\README">
       <Filter>thirdparty\imgui</Filter>
+    </None>
+    <None Include="spt\flatbuffers_schemas\gen\ent.fbs">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
+    </None>
+    <None Include="spt\flatbuffers_schemas\gen\fcps.fbs">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
     </None>
     <None Include="spt\flatbuffers_schemas\gen\math.fbs">
       <Filter>spt\flatbuffers_schemas\gen</Filter>

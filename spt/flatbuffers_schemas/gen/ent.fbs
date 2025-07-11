@@ -1,0 +1,18 @@
+include "math.fbs";
+
+namespace fb.ent;
+
+struct CBaseHandle {
+  val:uint32;
+}
+
+struct CBaseTrace {
+  start_pos:fb.math.Vector3;
+  end_pos:fb.math.Vector3;
+  impact_plane:fb.math.VPlane;
+  fraction:float32;
+  contents:int32;
+  displacement_flags:uint16;
+  all_solid:uint8;
+  start_solid:uint8;
+}

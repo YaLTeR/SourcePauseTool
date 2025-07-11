@@ -2,10 +2,15 @@
 
 // SDK/native includes
 #include "spt/utils/math.hpp"
+#include "basehandle.h"
+#include "trace.h"
+#include "spt/features/visualizations/fcps/fcps_event.hpp"
 
 // flatbuffer includes
 #include "fb_forward_declare.hpp"
 #include "gen/math_generated.h"
+#include "gen/ent_generated.h"
+#include "gen/fcps_generated.h"
 
 #include <type_traits>
 
@@ -116,5 +121,95 @@ namespace fb_pack
 	}
 
 	FB_DECLARE_PACK_UNPACK_FN(color32, PackColor32, UnpackColor32);
+
+	inline fb::ent::CBaseHandle PackCBaseHandle(const CBaseHandle& h)
+	{
+		return fb::ent::CBaseHandle{(uint32_t)h.ToInt()};
+	}
+
+	inline CBaseHandle UnpackCBaseHandle(const fb::ent::CBaseHandle& h)
+	{
+		return CBaseHandle{h.val()};
+	}
+
+	FB_DECLARE_PACK_UNPACK_FN(CBaseHandle, PackCBaseHandle, UnpackCBaseHandle);
+
+	inline fb::ent::CBaseTrace PackCBaseTrace(const CBaseTrace& t)
+	{
+		return fb::ent::CBaseTrace{
+		    PackVector(t.startpos),
+		    PackVector(t.endpos),
+		    PackVPlane(VPlane{t.plane.normal, t.plane.dist}),
+		    t.fraction,
+		    t.contents,
+		    t.dispFlags,
+		    !!t.allsolid,
+		    !!t.startsolid,
+		};
+	}
+
+	inline CBaseTrace UnpackCBaseTrace(const fb::ent::CBaseTrace& t)
+	{
+		CBaseTrace out;
+		out.startpos = UnpackVector(t.start_pos());
+		out.endpos = UnpackVector(t.end_pos());
+		auto p = UnpackVPlane(t.impact_plane());
+		out.plane.normal = p.m_Normal;
+		out.plane.dist = p.m_Dist;
+		out.plane.type = 255; // note: type is not serialized, but it *probably* shouldn't matter
+		SignbitsForPlane(&out.plane);
+		out.fraction = t.fraction();
+		out.contents = t.contents();
+		out.dispFlags = t.displacement_flags();
+		out.allsolid = !!t.all_solid();
+		out.startsolid = !!t.start_solid();
+		return out;
+	}
+
+	FB_DECLARE_PACK_UNPACK_FN(CBaseTrace, PackCBaseTrace, UnpackCBaseTrace);
+
+#ifdef SPT_FCPS_ENABLED
+
+	inline fb::fcps::FcpsCompactRay PackFcpsCompactRay(const FcpsCompactRay& r)
+	{
+		return fb::fcps::FcpsCompactRay{
+		    PackVector(r.start),
+		    PackVector(r.delta),
+		    PackVector(r.extents),
+		};
+	}
+
+	inline FcpsCompactRay UnpackFcpsCompactRay(const fb::fcps::FcpsCompactRay& r)
+	{
+		return FcpsCompactRay{
+		    UnpackVector(r.start()),
+		    UnpackVector(r.delta()),
+		    UnpackVector(r.extents()),
+		};
+	}
+
+	FB_DECLARE_PACK_UNPACK_FN(FcpsCompactRay, PackFcpsCompactRay, UnpackFcpsCompactRay);
+
+	inline fb::fcps::FcpsTraceResult PackFcpsTraceResult(const FcpsTraceResult& tr)
+	{
+		return fb::fcps::FcpsTraceResult{
+		    PackFcpsCompactRay(tr.ray),
+		    PackCBaseTrace(tr.trace),
+		    tr.hitEnt,
+		};
+	}
+
+	inline FcpsTraceResult UnpackFcpsTraceResult(const fb::fcps::FcpsTraceResult& tr)
+	{
+		return FcpsTraceResult{
+		    UnpackFcpsCompactRay(tr.ray()),
+		    UnpackCBaseTrace(tr.trace()),
+		    tr.hit_ent_idx(),
+		};
+	}
+
+	FB_DECLARE_PACK_UNPACK_FN(FcpsTraceResult, PackFcpsTraceResult, UnpackFcpsTraceResult);
+
+#endif
 
 } // namespace fb_pack
