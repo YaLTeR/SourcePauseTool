@@ -708,9 +708,6 @@
     <ClInclude Include="spt\scripts2\variable_container2.hpp">
       <Filter>spt\scripts2</Filter>
     </ClInclude>
-    <ClInclude Include="spt\utils\typeinfo.h">
-      <Filter>spt\utils</Filter>
-    </ClInclude>
     <ClInclude Include="spt\utils\portal_utils.hpp">
       <Filter>spt\utils</Filter>
     </ClInclude>
