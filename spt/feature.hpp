@@ -71,6 +71,17 @@
 #define IMPL_HOOK_STDCALL(spt_class, retType, name, ...) \
 	_IMPL_HOOK_FN(__stdcall, spt_class, retType, name, ##__VA_ARGS__)
 
+// naked
+// Note that the return type and params don't actually matter for naked functions, but if this is
+// the start of the function, it's good practice to include them.
+
+#define DECL_MEMBER_NAKED(retType, name, ...) _DECL_MEMBER_FN(, retType, name, ##__VA_ARGS__)
+#define DECL_HOOK_NAKED(retType, name, ...) _DECL_HOOK_FN(, retType, name, ##__VA_ARGS__)
+#define DECL_STATIC_NAKED(retType, name, ...) _DECL_STATIC_FN(, retType, name, ##__VA_ARGS__)
+#define DECL_STATIC_HOOK_NAKED(retType, name, ...) _DECL_STATIC_HOOK_FN(, retType, name, ##__VA_ARGS__)
+#define IMPL_HOOK_NAKED(spt_class, retType, name, ...) \
+	_IMPL_HOOK_FN(, spt_class, __declspec(naked) retType, name, ##__VA_ARGS__)
+
 // thiscall convention - msvc doesn't allow a static function to be thiscall, we make the ORIG function __thiscall
 // & the static __fastcall with a hidden edx param (the callee is allowed to clobber edx)
 
@@ -192,6 +203,17 @@
 	_DECL_STATIC_HOOK_FN(__stdcall, retType, name __VA_OPT__(, ) __VA_ARGS__)
 #define IMPL_HOOK_STDCALL(spt_class, retType, name, ...) \
 	_IMPL_HOOK_FN(__stdcall, spt_class, retType, name __VA_OPT__(, ) __VA_ARGS__)
+
+// naked
+// Note that the return type and params don't actually matter for naked functions, but if this is
+// the start of the function, it's good practice to include them.
+
+#define DECL_MEMBER_NAKED(retType, name, ...) _DECL_MEMBER_FN(, retType, name __VA_OPT__(, ) __VA_ARGS__)
+#define DECL_HOOK_NAKED(retType, name, ...) _DECL_HOOK_FN(, retType, name __VA_OPT__(, ) __VA_ARGS__)
+#define DECL_STATIC_NAKED(retType, name, ...) _DECL_STATIC_FN(, retType, name __VA_OPT__(, ) __VA_ARGS__)
+#define DECL_STATIC_HOOK_NAKED(retType, name, ...) _DECL_STATIC_HOOK_FN(, retType, name __VA_OPT__(, ) __VA_ARGS__)
+#define IMPL_HOOK_NAKED(spt_class, retType, name, ...) \
+	_IMPL_HOOK_FN(, spt_class, __declspec(naked) retType, name __VA_OPT__(, ) __VA_ARGS__)
 
 // thiscall convention - msvc doesn't allow a static function to be thiscall, we make the ORIG function __thiscall
 // & the static __fastcall with a hidden edx param (the callee is allowed to clobber edx)
