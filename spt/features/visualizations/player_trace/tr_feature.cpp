@@ -116,33 +116,19 @@ CON_COMMAND_F(spt_trace_export, "Export trace to binary file", FCVAR_DONTRECORD)
 		Warning("Trace is still being recorded, call '%s' first\n", spt_trace_stop_command.GetName());
 		return;
 	}
+
 	std::filesystem::path filePath{GetGameDir()};
 	filePath /= args[1];
 	filePath += TR_COMPRESSED_FILE_EXT;
 	filePath = std::filesystem::absolute(filePath);
 
-	std::error_code ec;
-	std::filesystem::create_directories(filePath.parent_path(), ec);
-	if (ec)
-	{
-		Warning("Failed to create directories: %s\n", ec.message().c_str());
-		return;
-	}
-
-	std::ofstream ofs{filePath, std::ios::binary};
-	if (!ofs.is_open())
-	{
-		Warning("Failed to create file\n");
-		return;
-	}
-
-	ser::StreamWriter sWr{ofs};
-	ser::XzWriter xzWr{sWr};
+	ser::FileWriter fWr(filePath);
+	ser::XzWriter xzWr{fWr};
 	spt_player_trace_feat.tr.Serialize(xzWr);
 	xzWr.Finish();
-	sWr.Finish(); // usually not necessary, but do it in case the xz finish fails
-	auto& status = xzWr.GetStatus();
+	fWr.Finish(); // usually not necessary, but do it in case the xz finish fails
 
+	auto& status = xzWr.GetStatus();
 	if (status.ok)
 		Msg("Wrote trace to '%s'\n", filePath.string().c_str());
 	else
@@ -165,22 +151,17 @@ CON_COMMAND_AUTOCOMPLETEFILE(spt_trace_import,
 	filePath /= args[1];
 	filePath += TR_COMPRESSED_FILE_EXT;
 	filePath = std::filesystem::absolute(filePath);
-	std::ifstream ifs{filePath, std::ios::binary};
-	if (!ifs.is_open())
-	{
-		Warning("Failed to open file '%s'\n", filePath.string().c_str());
-		return;
-	}
 
+	ser::FileReader fRd{filePath.string().c_str()};
+	ser::XzReader xzRd{fRd};
 	TrPlayerTrace newTr;
-	ser::StreamReader sRd{ifs};
-	ser::XzReader xzRd{sRd};
 	newTr.Deserialize(xzRd);
+
 	auto& status = xzRd.GetStatus();
 
 	if (!status.ok)
 	{
-		Warning("Failed to load trace from file: %s\n", status.errMsg.c_str());
+		Warning("Failed to load trace: %s\n", status.errMsg.c_str());
 		return;
 	}
 
