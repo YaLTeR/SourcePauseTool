@@ -951,6 +951,96 @@
     <ClInclude Include="spt\features\visualizations\player_trace\tr_imgui.hpp">
       <Filter>spt\features\visualizations\player_trace</Filter>
     </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\verifier.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\allocator.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\array.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\base.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\buffer.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\buffer_ref.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\code_generator.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\code_generators.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\default_allocator.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\detached_buffer.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\file_manager.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\flatbuffer_builder.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\flatbuffers.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\flatc.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\flex_flat_util.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\flexbuffers.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\grpc.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\hash.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\idl.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\minireflect.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\reflection.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\reflection_generated.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\registry.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\stl_emulation.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\string.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\struct.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\table.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\util.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\vector.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\vector_downward.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SDK includes &amp; libs">
@@ -1042,6 +1132,9 @@
     </Filter>
     <Filter Include="spt\utils\custom_interfaces">
       <UniqueIdentifier>{81ebb0c3-4b40-4039-8426-d1b355782bba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\flatbuffers">
+      <UniqueIdentifier>{d9390b67-8e1b-4b03-982a-1e3a7d33837e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

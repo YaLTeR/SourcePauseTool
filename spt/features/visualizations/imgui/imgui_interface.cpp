@@ -13,6 +13,7 @@
 #include "thirdparty/imgui/imgui_internal.h"
 #include "thirdparty/imgui/imgui_impl_dx9.h"
 #include "thirdparty/imgui/imgui_impl_win32.h"
+#include "thirdparty/flatbuffers/base.h"
 
 #include "thirdparty/x86.h"
 #include "thirdparty/json_spt_include.hpp"
@@ -267,6 +268,14 @@ private:
 			ImGui::TextUnformatted("libcurl v" LIBCURL_VERSION " (" LIBCURL_TIMESTAMP ")");
 			ImGui::TextLinkOpenURL("Github##libcurl", "https://github.com/curl/curl");
 			ImGui::TextDisabled("Copyright %s", LIBCURL_COPYRIGHT);
+
+			ImGui::Separator();
+			ImGui::Text("flatbuffers v%d.%d.%d",
+			            FLATBUFFERS_VERSION_MAJOR,
+			            FLATBUFFERS_VERSION_MINOR,
+			            FLATBUFFERS_VERSION_REVISION);
+			ImGui::TextLinkOpenURL("Github##flatbuffers", "https://github.com/google/flatbuffers");
+			ImGui::TextDisabled("%s", "Copyright (c) Google");
 
 			ImGui::Separator();
 			ImGui::TextUnformatted("XZ Utils v" LZMA_VERSION_STRING);
@@ -1059,8 +1068,7 @@ bool SptImGui::RegisterWindowCallback(const SptImGuiWindowCallback& cb)
 
 void SptImGui::RegisterHudCvarCheckbox(ConVar& var)
 {
-	RegisterHudCvarCallback(
-	    var, [](ConVar& cv) { SptImGui::CvarCheckbox(cv, "##checkbox"); }, false);
+	RegisterHudCvarCallback(var, [](ConVar& cv) { SptImGui::CvarCheckbox(cv, "##checkbox"); }, false);
 }
 
 void SptImGui::RegisterHudCvarCallback(ConVar& var, const SptImGuiHudTextCallback& cb, bool putInCollapsible)
