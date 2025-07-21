@@ -11,6 +11,7 @@
 #include <iostream>
 #include <optional>
 #include <memory>
+#include <filesystem>
 
 namespace ser
 {
@@ -297,6 +298,35 @@ namespace ser
 		StreamWriter(std::ostream& ostream) : ostream{ostream} {}
 	};
 
+	class FileWriter : public StreamWriter
+	{
+		FileWriter(FileWriter&&) = delete;
+
+	protected:
+		std::ofstream ofStream;
+
+		virtual bool FinishInternal() override
+		{
+			bool ret = StreamWriter::FinishInternal();
+			ofStream.close();
+			return ret;
+		}
+
+	public:
+		FileWriter(const std::filesystem::path& filePath,
+		           std::ios::openmode mode = std::fstream::out | std::fstream::binary)
+		    : StreamWriter{ofStream}
+		{
+			std::error_code ec;
+			std::filesystem::create_directories(filePath.parent_path(), ec);
+			if (ec)
+				Err(std::format("failed to create directories: {}\n", ec.message()));
+			ofStream.open(filePath, mode);
+			if (!ofStream.good())
+				Err(std::format("failed to open file '{}' for writing", filePath.string()));
+		}
+	};
+
 	class StreamReader : public IReader
 	{
 	protected:
@@ -325,6 +355,22 @@ namespace ser
 
 	public:
 		StreamReader(std::istream& istream) : istream{istream} {}
+	};
+
+	class FileReader : public StreamReader
+	{
+		FileReader(FileReader&&) = delete;
+
+	protected:
+		std::ifstream ifStream;
+
+	public:
+		FileReader(const char* filePath, std::ios::openmode mode = std::fstream::in | std::fstream::binary)
+		    : ifStream{filePath, mode}, StreamReader{ifStream}
+		{
+			if (!ifStream.good())
+				Err(std::format("failed to open file '{}' for reading", filePath));
+		}
 	};
 
 	// memory reader/writer :)
