@@ -4,32 +4,36 @@
 #include "..\feature.hpp"
 #include "..\sptlib-wrapper.hpp"
 #include "playerio.hpp"
-#include "shadow.hpp"
 #include "signals.hpp"
+#include "create_collide.hpp"
+
+#include "vphysics_interface.h"
 
 ConVar spt_qc_cmd("spt_qc_cmd",
-	"",
-	FCVAR_CHEAT,
-	"Execute command when quickclip occurs. "
-	"This is detected by the difference between "
-	"the quake position and the shadow position "
-	"rising above some threshold "
-	"and then teleporting to the same position\n");
+                  "",
+                  FCVAR_CHEAT,
+                  "Execute command when quickclip occurs. "
+                  "This is detected by the difference between "
+                  "the quake position and the shadow position "
+                  "rising above some threshold "
+                  "and then teleporting to the same position\n");
 
-ConVar spt_qc_threshold("spt_qc_threshold",
-	"32",
-	FCVAR_CHEAT,
-	"Threshold for quickclip detection, the distance between the quake hitbox and havok hitbox must exceed this before the teleport.\n");
+ConVar spt_qc_threshold(
+    "spt_qc_threshold",
+    "32",
+    FCVAR_CHEAT,
+    "Threshold for quickclip detection, the distance between the quake hitbox and havok hitbox must exceed this before the teleport.\n");
 
-ConVar spt_qc_maxdist_to_prev("spt_qc_maxdist_to_prev",
-	"200",
-	FCVAR_CHEAT | FCVAR_HIDDEN,
-	"Max distance to previous shadow position. This is to prevent loading a save with a havok hitbox differential causing the qc command to trigger.\n");
+ConVar spt_qc_maxdist_to_prev(
+    "spt_qc_maxdist_to_prev",
+    "200",
+    FCVAR_CHEAT | FCVAR_HIDDEN,
+    "Max distance to previous shadow position. This is to prevent loading a save with a havok hitbox differential causing the qc command to trigger.\n");
 
 ConVar spt_qc_teleport_eps("spt_qc_teleport_eps",
-	"1",
-	FCVAR_CHEAT | FCVAR_HIDDEN,
-	"Quake hitbox needs to be within this many units to be considered teleported.\n");
+                           "1",
+                           FCVAR_CHEAT | FCVAR_HIDDEN,
+                           "Quake hitbox needs to be within this many units to be considered teleported.\n");
 
 // Execute command on quickclip
 class QcCmdFeature : public FeatureWrapper<QcCmdFeature>
@@ -37,6 +41,7 @@ class QcCmdFeature : public FeatureWrapper<QcCmdFeature>
 public:
 	Vector previousShadowPosition;
 	float previousShadowDiff;
+
 protected:
 	virtual bool ShouldLoadFeature() override;
 
@@ -45,7 +50,6 @@ protected:
 	virtual void LoadFeature() override;
 
 	virtual void UnloadFeature() override;
-
 };
 
 static QcCmdFeature qc_cmd;
@@ -58,14 +62,17 @@ static void Tick(bool simulating)
 	}
 
 	Vector playerPos = spt_playerio.m_vecAbsOrigin.GetValue();
-	Vector havokPos;
-	spt_player_shadow.GetPlayerHavokPos(&havokPos, nullptr);
+	Vector havokPos = playerPos;
+
+	IPhysicsObject* havokObj = spt_collideToMesh.GetPhysObj(utils::spt_serverEntList.GetPlayer());
+	if (havokObj)
+		havokObj->GetPosition(&havokPos, nullptr);
+
 	float diffToCurrent = playerPos.DistTo(havokPos);
 	float diffToPrev = playerPos.DistTo(qc_cmd.previousShadowPosition);
 
-	if(qc_cmd.previousShadowDiff > spt_qc_threshold.GetFloat() &&
-		diffToCurrent < spt_qc_teleport_eps.GetFloat() &&
-		diffToPrev < spt_qc_maxdist_to_prev.GetFloat())
+	if (qc_cmd.previousShadowDiff > spt_qc_threshold.GetFloat() && diffToCurrent < spt_qc_teleport_eps.GetFloat()
+	    && diffToPrev < spt_qc_maxdist_to_prev.GetFloat())
 	{
 		EngineConCmd(spt_qc_cmd.GetString());
 		spt_qc_cmd.SetValue("");
@@ -82,17 +89,14 @@ bool QcCmdFeature::ShouldLoadFeature()
 
 void QcCmdFeature::InitHooks() {}
 
-void QcCmdFeature::LoadFeature() 
+void QcCmdFeature::LoadFeature()
 {
-	if (spt_player_shadow.ORIG_GetShadowPosition)
-	{
-		previousShadowDiff = 0.0f;
-		previousShadowPosition.Zero();
-		InitConcommandBase(spt_qc_cmd);
-		InitConcommandBase(spt_qc_threshold);
-		InitConcommandBase(spt_qc_maxdist_to_prev);
-		TickSignal.Connect(Tick);
-	}
+	previousShadowDiff = 0.0f;
+	previousShadowPosition.Zero();
+	InitConcommandBase(spt_qc_cmd);
+	InitConcommandBase(spt_qc_threshold);
+	InitConcommandBase(spt_qc_maxdist_to_prev);
+	TickSignal.Connect(Tick);
 }
 
 void QcCmdFeature::UnloadFeature() {}

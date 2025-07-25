@@ -217,6 +217,22 @@ namespace patterns
 	         "7462488",
 	         "55 8B EC 83 EC 18 8B 4D ?? 8D 55 ??");
 
+	PATTERNS(
+	    GetShadowPosition,
+	    "5135",
+	    "81 EC ?? ?? ?? ?? 8B 41 ?? 8B 40 ?? 8B 40 18 8B 90 20 01 00 00 8B 80 24 01 00 00 89 14 24",
+	    "5377866",
+	    "55 8B EC 81 EC ?? ?? ?? ?? 8B 41 08 8B 40 08 8B 50",
+	    "BMS-Retail",
+	    "55 8B EC 81 EC ?? ?? ?? ?? A1 ?? ?? ?? ?? 33 C5 89 45 FC 8B 41 ?? 56 8B 75 ?? 57 8B 40 ?? 8B 7D ?? 8B 50",
+	    "estranged",
+	    "55 8B EC 81 EC ?? ?? ?? ?? 8B 41 08 8B 40 08 8B 40 18 8B 90 20 01 00 00 8B 80 24 01 00 00 89 55 F8");
+	PATTERNS(beam_object_to_new_position,
+	         "5135",
+	         "81 EC D8 00 00 00 53 8B D9 F7 43 78 00 0C 00 00 8B 83 ?? ?? ?? ?? 55",
+	         "BMS-Retail",
+	         "55 8B EC 81 EC E4 00 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 ?? 8B 55 ??");
+
 	/****************************** DATACACHE ******************************/
 
 	PATTERNS(CMDLCache__BeginMapLoad, "BMS-0.9", "55 8B EC 83 EC 08 53 56 8B F1 57 89 75");

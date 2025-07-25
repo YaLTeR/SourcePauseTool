@@ -1545,7 +1545,6 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="spt\features\playerio.hpp" />
     <ClInclude Include="spt\features\portalled_pause.hpp" />
     <ClInclude Include="spt\features\property_getter.hpp" />
-    <ClInclude Include="spt\features\shadow.hpp" />
     <ClInclude Include="spt\features\tas.hpp" />
     <ClInclude Include="spt\features\tickrate.hpp" />
     <ClInclude Include="spt\features\tracing.hpp" />
@@ -1602,7 +1601,6 @@ del "$(OutDir)spt-version.obj"</Command>
     <ClInclude Include="spt\utils\file.hpp" />
     <ClInclude Include="spt\utils\game_detection.hpp" />
     <ClInclude Include="spt\utils\interfaces.hpp" />
-    <ClInclude Include="spt\utils\ivp_maths.hpp" />
     <ClInclude Include="spt\utils\map_utils.hpp" />
     <ClInclude Include="spt\utils\math.hpp" />
     <ClInclude Include="spt\utils\portal_utils.hpp" />

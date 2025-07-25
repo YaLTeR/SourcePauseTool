@@ -20,7 +20,7 @@
 
 #include "playerio.hpp"
 #include "hud.hpp"
-#include "shadow.hpp"
+#include "create_collide.hpp"
 
 ConVar _y_spt_overlay("_y_spt_overlay",
                       "0",
@@ -156,8 +156,8 @@ void Overlay::LoadFeature()
 	InitConcommandBase(_y_spt_overlay_no_roll);
 
 #if defined(SPT_HUD_ENABLED) && !defined(SPT_HUD_TEXTONLY)
-	bool result = spt_hud_feat.AddHudDefaultGroup(HudCallback(
-	    std::bind(&Overlay::DrawCrosshair, this), []() { return true; }, true));
+	bool result = spt_hud_feat.AddHudDefaultGroup(
+	    HudCallback(std::bind(&Overlay::DrawCrosshair, this), []() { return true; }, true));
 
 	if (result)
 	{
@@ -300,9 +300,15 @@ void Overlay::ModifyView(CViewSetup* renderView)
 			renderView->angles.y += 180;
 			break;
 		case 3: // havok pos
-			spt_player_shadow.GetPlayerHavokPos(&renderView->origin, nullptr);
-			renderView->origin += spt_playerio.m_vecViewOffset.GetValue();
+		{
+			IPhysicsObject* physObj = spt_collideToMesh.GetPhysObj(utils::spt_serverEntList.GetPlayer());
+			if (physObj)
+			{
+				physObj->GetPosition(&renderView->origin, nullptr);
+				renderView->origin += spt_playerio.m_vecViewOffset.GetValue();
+			}
 			break;
+		}
 		case 4: // don't transform when behind sg portal
 			renderView->origin = utils::GetPlayerEyePosition();
 			renderView->angles = utils::GetPlayerEyeAngles();

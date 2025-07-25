@@ -561,9 +561,6 @@
     <ClInclude Include="spt\feature.hpp">
       <Filter>spt</Filter>
     </ClInclude>
-    <ClInclude Include="spt\features\shadow.hpp">
-      <Filter>spt\features</Filter>
-    </ClInclude>
     <ClInclude Include="spt\features\playerio.hpp">
       <Filter>spt\features</Filter>
     </ClInclude>
@@ -677,9 +674,6 @@
     </ClInclude>
     <ClInclude Include="thirdparty\kmp-cpp.hpp">
       <Filter>thirdparty</Filter>
-    </ClInclude>
-    <ClInclude Include="spt\utils\ivp_maths.hpp">
-      <Filter>spt\utils</Filter>
     </ClInclude>
     <ClInclude Include="spt\scripts2\condition2.hpp">
       <Filter>spt\scripts2</Filter>
@@ -942,7 +936,7 @@
     <ClInclude Include="thirdparty\json_spt_include.hpp">
       <Filter>thirdparty</Filter>
     </ClInclude>
-	<ClInclude Include="spt\features\portalled_pause.hpp">
+    <ClInclude Include="spt\features\portalled_pause.hpp">
       <Filter>spt\features</Filter>
     </ClInclude>
   </ItemGroup>
