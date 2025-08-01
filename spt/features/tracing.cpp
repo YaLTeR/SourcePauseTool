@@ -101,7 +101,17 @@ namespace patterns
 
 void Tracing::InitHooks()
 {
-	FIND_PATTERN(client, UTIL_TraceRay);
+	// reuse the same pattern for both client and server
+	AddPatternHook(patterns::UTIL_TraceRay,
+	               "client",
+	               "UTIL_TraceRay_client",
+	               reinterpret_cast<void**>(&ORIG_UTIL_TraceRay_client),
+	               nullptr);
+	AddPatternHook(patterns::UTIL_TraceRay,
+	               "server",
+	               "UTIL_TraceRay_server",
+	               reinterpret_cast<void**>(&ORIG_UTIL_TraceRay_server),
+	               nullptr);
 	FIND_PATTERN(server, CGameMovement__TracePlayerBBox);
 	FIND_PATTERN(server, CPortalGameMovement__TracePlayerBBox);
 	FIND_PATTERN(server, TracePlayerBBoxForGround);
@@ -538,7 +548,7 @@ static const char find_seam_shot_help[] =
 
 CON_COMMAND(y_spt_find_seam_shot, find_seam_shot_help)
 {
-	auto player = utils::spt_serverEntList.GetPlayer() ;
+	auto player = utils::spt_serverEntList.GetPlayer();
 	if (!player)
 	{
 		Msg("Cannot find server player.\n");
@@ -634,7 +644,7 @@ CON_COMMAND(y_spt_find_seam_shot, find_seam_shot_help)
 
 void Tracing::LoadFeature()
 {
-	if (!ORIG_UTIL_TraceRay)
+	if (!ORIG_UTIL_TraceRay_client)
 		Warning("spt_tas_strafe_version 1 not available\n");
 
 	if (!CanTracePlayerBBox())

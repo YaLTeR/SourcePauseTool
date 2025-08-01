@@ -60,10 +60,6 @@ public:
 	bool			startsolid;				// if true, the initial point was in a solid area
 
 	CBaseTrace() {}
-
-private:
-	// No copy constructors allowed
-	CBaseTrace(const CBaseTrace& vOther);
 };
 
 #endif // TRACE_H

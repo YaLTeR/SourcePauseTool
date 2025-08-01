@@ -7,12 +7,14 @@
 #include "spt/spt-serverplugin.hpp"
 #include "spt/utils/spt_vprof.hpp"
 #include "spt/utils/signals.hpp"
+#include "spt/utils/game_detection.hpp"
 #include "spt/features/hud.hpp"
 
 #include "thirdparty/imgui/imgui.h"
 #include "thirdparty/imgui/imgui_internal.h"
 #include "thirdparty/imgui/imgui_impl_dx9.h"
 #include "thirdparty/imgui/imgui_impl_win32.h"
+#include "thirdparty/flatbuffers/base.h"
 
 #include "thirdparty/x86.h"
 #include "thirdparty/json_spt_include.hpp"
@@ -267,6 +269,14 @@ private:
 			ImGui::TextUnformatted("libcurl v" LIBCURL_VERSION " (" LIBCURL_TIMESTAMP ")");
 			ImGui::TextLinkOpenURL("Github##libcurl", "https://github.com/curl/curl");
 			ImGui::TextDisabled("Copyright %s", LIBCURL_COPYRIGHT);
+
+			ImGui::Separator();
+			ImGui::Text("flatbuffers v%d.%d.%d",
+			            FLATBUFFERS_VERSION_MAJOR,
+			            FLATBUFFERS_VERSION_MINOR,
+			            FLATBUFFERS_VERSION_REVISION);
+			ImGui::TextLinkOpenURL("Github##flatbuffers", "https://github.com/google/flatbuffers");
+			ImGui::TextDisabled("%s", "Copyright (c) Google");
 
 			ImGui::Separator();
 			ImGui::TextUnformatted("XZ Utils v" LZMA_VERSION_STRING);
@@ -597,12 +607,6 @@ protected:
 		return interfaces::shaderDevice && interfaces::vgui_input && TickSignal.Works;
 	}
 
-	bool PtrInModule(void* ptr, size_t nBytes, void* modBase, size_t modSize) const
-	{
-		return ptr >= modBase && (char*)ptr + nBytes <= (char*)modBase + modSize
-		       && (char*)ptr + nBytes >= modBase;
-	}
-
 	virtual void InitHooks()
 	{
 		/*
@@ -622,7 +626,7 @@ protected:
 		const int maxInstrSearch = 64;
 		const int maxVtableSearch = 16;
 		IShaderDevice* deviceWrapper = interfaces::shaderDevice;
-		if (!PtrInModule(deviceWrapper, maxVtableSearch * sizeof(void*), moduleBase, moduleSize))
+		if (!utils::DataInModule(deviceWrapper, maxVtableSearch * sizeof(void*), moduleBase, moduleSize))
 			return;
 
 		dx9Device = nullptr;
@@ -630,7 +634,7 @@ protected:
 		while (!dx9Device && ++vOff < maxVtableSearch)
 		{
 			void** pPresentFunc = ((void***)deviceWrapper)[0] + vOff;
-			if (!PtrInModule(pPresentFunc, maxInstrSearch, moduleBase, moduleSize))
+			if (!utils::DataInModule(pPresentFunc, maxInstrSearch, moduleBase, moduleSize))
 				continue;
 
 			/*
@@ -658,7 +662,7 @@ protected:
 				{
 					// MOV REG ADDR | MOV REG [ADDR]
 					IDirect3DDevice9** ppDevice = *(IDirect3DDevice9***)(addr + 1);
-					if (!PtrInModule(ppDevice, sizeof *ppDevice, moduleBase, moduleSize))
+					if (!utils::DataInModule(ppDevice, sizeof *ppDevice, moduleBase, moduleSize))
 						continue;
 					dx9Device = *ppDevice;
 					break;
@@ -1059,8 +1063,7 @@ bool SptImGui::RegisterWindowCallback(const SptImGuiWindowCallback& cb)
 
 void SptImGui::RegisterHudCvarCheckbox(ConVar& var)
 {
-	RegisterHudCvarCallback(
-	    var, [](ConVar& cv) { SptImGui::CvarCheckbox(cv, "##checkbox"); }, false);
+	RegisterHudCvarCallback(var, [](ConVar& cv) { SptImGui::CvarCheckbox(cv, "##checkbox"); }, false);
 }
 
 void SptImGui::RegisterHudCvarCallback(ConVar& var, const SptImGuiHudTextCallback& cb, bool putInCollapsible)

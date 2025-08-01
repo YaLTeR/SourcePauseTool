@@ -1,0 +1,122 @@
+include "mesh.fbs";
+include "ent.fbs";
+
+namespace fb.fcps;
+
+table FcpsEntMesh {
+
+  ball_radius:float (id:0);
+
+  /// transform is in world space
+  transform:fb.math.Transform (id:1);
+
+  phys_mesh:fb.mesh.MbCompactMesh (id:2);
+}
+
+table FcpsEntInfo {
+  handle:fb.ent.CBaseHandle (id:0);
+  net_class_name:string (id:1, shared);
+  name:string (id:2, shared);
+
+  /// entity origin in world space
+  transform:fb.math.Transform (id:3);
+
+  /// OBB is relative to entity origin
+  obb:fb.math.Aabb (id:4);
+
+  meshes:[FcpsEntMesh] (id:5);
+}
+
+struct FcpsCompactRay {
+  start:fb.math.Vector3;
+  delta:fb.math.Vector3;
+  extents:fb.math.Vector3;
+}
+
+struct FcpsTraceResult {
+  ray:FcpsCompactRay;
+  trace:fb.ent.CBaseTrace;
+  hit_ent_idx:uint32;
+}
+
+table FcpsNudgeIteration {
+
+  /// one bit for each corner - is it OOB based on PointInsideWorld?
+  corner_oob_bits:uint8 (id:0);
+
+  /// AABB extents on this iteration relative to the entity center
+  test_extents:fb.math.Vector3 (id:1);
+
+  /// test traces from inbounds corners to all other corners
+  test_traces:[FcpsTraceResult] (id:2);
+
+  /// corresponding entires for test_traces, bits 0b00000111 are the source corner, bits 0b00111000 are the desitnation corner
+  test_trace_corner_bits:[uint8] (id:3);
+
+  /// always exactly 8 of these
+  corner_weights:[float32] (id:4);
+
+  /// in what direction the entity what nudged on this iteration
+  nudge_vec:fb.math.Vector3 (id:5);
+}
+
+enum FcpsCaller:uint8 {
+  UNKNOWN,
+  VPhysicsShadowUpdate,
+  RemoveEntityFromPortalHole,
+  CheckStuck,
+  TeleportTouchingEntity,
+  PortalSimulator__MoveTo,
+  Debug_FixMyPosition,
+}
+
+/// you should only ever see SUCCESS/FAIL - the other results should not be serialized or saved to the queue
+enum FcpsCallResult:uint8 {
+  IMPLEMENTAION_INCOMPLETE,
+  SUCCESS,
+  FAIL,
+  NOT_RUN_CVAR_DISABLED,
+  NOT_RUN_HAS_MOVE_PARENT,
+}
+
+table FcpsEvent {
+
+  // params struct
+
+  handle:fb.ent.CBaseHandle (id:0);
+  indecisive_push:fb.math.Vector3 (id:1);
+  f_mask:uint32 (id:2);
+  func_caller:FcpsCaller = UNKNOWN (id:3);
+
+  // outcome struct
+
+  call_result:FcpsCallResult = IMPLEMENTAION_INCOMPLETE (id:4);
+  from_origin:fb.math.Vector3 (id:5);
+  to_origin:fb.math.Vector3 (id:6);
+
+  // gameinfo struct
+
+  game_version:int32 = -1 (id:7);
+  host_tick:int32 = 0 (id:8);
+  server_tick:int32 = 0 (id:9);
+  map_name:string (id:10, shared);
+  player_name:string (id:11, shared);
+
+  // detail struct
+
+  entities:[FcpsEntInfo] (id:12);
+  run_on_ent:uint32 = 0xffffffff (id:13);
+  collision_group:int32 (id:14);
+  /// relative to entity center
+  aabb_extents:fb.math.Vector3 (id:15);
+  ent_center_to_origin_diff:fb.math.Vector3 (id:16);
+  grow_size:fb.math.Vector3 (id:17);
+  ray_start_mins:fb.math.Vector3 (id:18);
+  ray_start_maxs:fb.math.Vector3 (id:19);
+  ent_traces:[FcpsTraceResult] (id:20);
+  nudge_iterations:[FcpsNudgeIteration] (id:21);
+}
+
+table FcpsEventList {
+  events:[FcpsEvent] (id:0);
+}

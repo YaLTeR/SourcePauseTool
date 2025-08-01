@@ -3,9 +3,14 @@
 #ifndef OE
 #include "mathlib\vector.h"
 #include "mathlib\mathlib.h"
+#include "mathlib\vplane.h"
 #else
 #include "vector.h"
+#include "mathlib.h"
+#include "vplane.h"
 #endif
+
+inline const matrix3x4_t matrix3x4_identity{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0};
 
 namespace utils
 {
@@ -21,7 +26,5 @@ namespace utils
 	void NormalizeQAngle(QAngle& angle);
 	void GetMiddlePoint(const QAngle& angle1, const QAngle& angle2, QAngle& out);
 	float ScaleFOVByWidthRatio(float fovDegrees, float ratio);
-#ifndef OE
 	void VectorTransform(const matrix3x4_t& mat, Vector& v); // applies mat directly to v
-#endif
 }; // namespace utils

@@ -445,6 +445,27 @@
     <ClCompile Include="spt\features\visualizations\player_trace\tr_imgui.cpp">
       <Filter>spt\features\visualizations\player_trace</Filter>
     </ClCompile>
+    <ClCompile Include="spt\utils\mesh_utils.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\fcps\fcps_feature.cpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\fcps\fcps_record.cpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\fcps\fcps_import_export.cpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\utils\mesh_utils.cpp">
+      <Filter>spt\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\fcps\fcps_animate.cpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClCompile>
+    <ClCompile Include="spt\features\visualizations\fcps\fcps_event_queue.cpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\tier0\basetypes.h">
@@ -951,6 +972,132 @@
     <ClInclude Include="spt\features\visualizations\player_trace\tr_imgui.hpp">
       <Filter>spt\features\visualizations\player_trace</Filter>
     </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\verifier.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\allocator.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\array.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\base.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\buffer.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\buffer_ref.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\code_generator.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\code_generators.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\default_allocator.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\detached_buffer.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\file_manager.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\flatbuffer_builder.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\flatbuffers.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\flatc.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\flex_flat_util.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\flexbuffers.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\grpc.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\hash.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\idl.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\minireflect.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\reflection.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\reflection_generated.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\registry.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\stl_emulation.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\string.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\struct.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\table.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\util.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\vector.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\flatbuffers\vector_downward.h">
+      <Filter>thirdparty\flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\fcps\fcps_config.hpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\utils\mesh_utils.hpp">
+      <Filter>spt\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\mesh_test_data.hpp">
+      <Filter>spt\features\visualizations</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\fcps\fcps_animate.hpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\fcps\fcps_event.hpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\features\visualizations\fcps\fcps_event_queue.hpp">
+      <Filter>spt\features\visualizations\fcps</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\flatbuffers_schemas\gen\ent_generated.h">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\flatbuffers_schemas\gen\fcps_generated.h">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\flatbuffers_schemas\gen\math_generated.h">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\flatbuffers_schemas\gen\mesh_generated.h">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\flatbuffers_schemas\fb_forward_declare.hpp">
+      <Filter>spt\flatbuffers_schemas</Filter>
+    </ClInclude>
+    <ClInclude Include="spt\flatbuffers_schemas\fb_pack_defs.hpp">
+      <Filter>spt\flatbuffers_schemas</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SDK includes &amp; libs">
@@ -1040,8 +1187,20 @@
     <Filter Include="spt\features\visualizations\player_trace\import_export">
       <UniqueIdentifier>{3f0921d7-b608-4ebf-b3a6-766225b29da7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="spt\features\visualizations\fcps">
+      <UniqueIdentifier>{acde638d-f6d1-4c76-ad6d-45dc77187a35}</UniqueIdentifier>
+    </Filter>
     <Filter Include="spt\utils\custom_interfaces">
       <UniqueIdentifier>{81ebb0c3-4b40-4039-8426-d1b355782bba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\flatbuffers">
+      <UniqueIdentifier>{d9390b67-8e1b-4b03-982a-1e3a7d33837e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\flatbuffers_schemas">
+      <UniqueIdentifier>{6cfa1451-9f27-402f-9fe1-1dcc0b3d9895}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spt\flatbuffers_schemas\gen">
+      <UniqueIdentifier>{3bb77c97-164a-46cd-b566-60d3038a6da7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1054,10 +1213,25 @@
     <Text Include="thirdparty\xz\readme.txt">
       <Filter>thirdparty\xz</Filter>
     </Text>
+    <Text Include="spt\flatbuffers_schemas\gen\README.txt">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <None Include="thirdparty\imgui\README">
       <Filter>thirdparty\imgui</Filter>
+    </None>
+    <None Include="spt\flatbuffers_schemas\gen\ent.fbs">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
+    </None>
+    <None Include="spt\flatbuffers_schemas\gen\fcps.fbs">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
+    </None>
+    <None Include="spt\flatbuffers_schemas\gen\math.fbs">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
+    </None>
+    <None Include="spt\flatbuffers_schemas\gen\mesh.fbs">
+      <Filter>spt\flatbuffers_schemas\gen</Filter>
     </None>
   </ItemGroup>
 </Project>

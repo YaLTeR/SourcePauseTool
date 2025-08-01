@@ -60,7 +60,15 @@ class Tracing : public FeatureWrapper<Tracing>
 {
 public:
 	DECL_MEMBER_CDECL(void,
-	                  UTIL_TraceRay,
+	                  UTIL_TraceRay_client,
+	                  const Ray_t& ray,
+	                  unsigned int mask,
+	                  const IHandleEntity* ignore,
+	                  int collisionGroup,
+	                  trace_t* ptr);
+
+	DECL_MEMBER_CDECL(void,
+	                  UTIL_TraceRay_server,
 	                  const Ray_t& ray,
 	                  unsigned int mask,
 	                  const IHandleEntity* ignore,
