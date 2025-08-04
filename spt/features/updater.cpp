@@ -149,11 +149,12 @@ bool Updater::ShouldLoadFeature()
 
 static std::string GetPluginPath()
 {
-	SymInitialize(GetCurrentProcess(), 0, true);
-	DWORD module = SymGetModuleBase(GetCurrentProcess(), (DWORD)&GetPluginPath);
+	HMODULE hModule = NULL;
+	GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+	                  (LPCTSTR)GetPluginPath,
+	                  &hModule);
 	char filename[MAX_PATH + 1];
-	GetModuleFileNameA((HMODULE)module, filename, MAX_PATH);
-	SymCleanup(GetCurrentProcess());
+	GetModuleFileNameA(hModule, filename, MAX_PATH);
 	return std::string(filename);
 }
 
