@@ -13,6 +13,13 @@
 #include "tracing.hpp"
 #include "signals.hpp"
 #include "visualizations/imgui/imgui_interface.hpp"
+#include "spt/features/game_fixes/rng.hpp"
+#include "spt/utils/serialize.hpp"
+#include "spt/utils/file.hpp"
+#include "spt/utils/game_detection.hpp"
+#include "spt/spt-serverplugin.hpp"
+
+#include <format>
 
 ConVar tas_strafe("tas_strafe", "0", FCVAR_TAS_RESET);
 ConVar tas_strafe_type(
@@ -292,6 +299,28 @@ CON_COMMAND(tas_script_result_stop, "Signals a stop in a variable search.")
 	scripts::g_TASReader.SearchResult(scripts::SearchResult::NoSearch);
 }
 
+CON_COMMAND_F(spt_tas_script_new,
+              "Generates a template .srctas script at the given path which loads the given save",
+              FCVAR_DONTRECORD)
+{
+	if (args.ArgC() < 3)
+	{
+		Msg("Usage: %s <path> <save_name>\n", spt_tas_script_new_command.GetName());
+		return;
+	}
+
+	std::filesystem::path filePath{GetGameDir()};
+	filePath /= args.Arg(1);
+	filePath += ".srctas";
+	filePath = std::filesystem::absolute(filePath);
+
+	std::string errMsg;
+	if (!spt_tas.WriteTemplateScript(filePath.string().c_str(), args.Arg(2), errMsg))
+		Warning("Failed to create template script: %s\n", errMsg.c_str());
+	else
+		Msg("Template script written to %s\n", filePath.string().c_str());
+}
+
 void TASFeature::LoadFeature()
 {
 	if (AfterFramesSignal.Works)
@@ -301,6 +330,7 @@ void TASFeature::LoadFeature()
 		InitCommand(tas_script_result_success);
 		InitCommand(tas_script_result_fail);
 		InitCommand(tas_script_result_stop);
+		InitCommand(spt_tas_script_new);
 
 		InitConcommandBase(tas_script_printvars);
 		InitConcommandBase(tas_script_savestates);
@@ -365,4 +395,65 @@ void TASFeature::LoadFeature()
 			tas_strafe_use_tracing.SetValue(0);
 		}
 	}
+}
+
+bool TASFeature::WriteTemplateScript(const char* filePath, const char* saveName, std::string& errMsg)
+{
+	std::error_code ec;
+	if (std::filesystem::exists(filePath, ec))
+	{
+		errMsg = "file already exists";
+		return false;
+	}
+
+	auto wrangleName = [](const ConVar& cv) { return WrangleLegacyCommandName(cv.GetName(), true, nullptr); };
+
+	std::vector<std::string> settingsList = {
+	    std::format("{} {}", wrangleName(tas_strafe_version), tas_strafe_version.GetDefault()),
+	    std::format("{} 1", wrangleName(tas_strafe_vectorial)),
+	    std::format("{} 3", wrangleName(tas_strafe_dir)),
+	    std::format("{} 1", wrangleName(y_spt_set_ivp_seed_on_load)),
+	    "cl_mouseenable 0",
+	};
+
+	if (utils::DoesGameLookLikePortal())
+		settingsList.push_back("sv_player_funnel_into_portals 0");
+
+	std::ostringstream settingsStream;
+	for (const auto& setting : settingsList)
+		settingsStream << "settings " << setting << '\n';
+
+	constexpr const char* scriptTemplate = R"(save {}
+demo {}
+playspeed 1
+
+{}
+vars
+
+frames
+
+// sXXljdbcgu|flrbud|jdu12rws|yaw|pitch|tick|
+----------|------|--------|-|-|60|
+----------|f-----|--------|-|-|20|
+----------|------|--------|-|-|1| cl_mouseenable 1; stop
+
+// SPT version {}
+)";
+
+	std::string demoName = "tas_" + std::filesystem::path(filePath).filename().stem().string();
+	std::replace(demoName.begin(), demoName.end(), ' ', '_');
+
+	std::string script = std::format(scriptTemplate, saveName, demoName, settingsStream.str(), SPT_VERSION);
+
+	ser::FileWriter fWr(filePath, std::ios::out);
+	fWr.WriteSpan(std::span{script.c_str(), script.size()});
+	fWr.Finish();
+
+	if (!fWr.Ok())
+	{
+		errMsg = fWr.GetStatus().errMsg;
+		return false;
+	}
+
+	return true;
 }
