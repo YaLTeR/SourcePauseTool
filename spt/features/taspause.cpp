@@ -4,7 +4,10 @@
 #include "..\utils\game_detection.hpp"
 
 typedef void(__cdecl* _Host_AccumulateTime)(float dt);
-ConVar tas_pause("tas_pause", "0", 0, "Does a pause where you can look around when the game is paused.\n");
+ConVar tas_pause("tas_pause",
+                 "0",
+                 FCVAR_TAS_RESET | FCVAR_DONTRECORD,
+                 "Does a pause where you can look around when the game is paused.\n");
 
 class TASPause : public FeatureWrapper<TASPause>
 {

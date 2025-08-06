@@ -9,7 +9,7 @@
 
 ConVar spt_on_portalled_pause_for("spt_on_portalled_pause_for",
                                   "0",
-                                  0,
+                                  FCVAR_TAS_RESET | FCVAR_DONTRECORD,
                                   "Whenever player portalled, pause for this many ticks.");
 
 namespace patterns
