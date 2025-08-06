@@ -1,6 +1,8 @@
 #pragma once
 #include "..\feature.hpp"
 
+extern ConVar y_spt_set_ivp_seed_on_load;
+
 // RNG prediction
 class RNGStuff : public FeatureWrapper<RNGStuff>
 {

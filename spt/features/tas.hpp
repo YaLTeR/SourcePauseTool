@@ -44,6 +44,7 @@ class TASFeature : public FeatureWrapper<TASFeature>
 {
 public:
 	void Strafe();
+	bool WriteTemplateScript(const char* filePath, const char* saveName, std::string& errMsg);
 	bool tasAddressesWereFound = false;
 
 protected:
