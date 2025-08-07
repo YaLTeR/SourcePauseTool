@@ -1,5 +1,11 @@
 #pragma once
+
 #include "..\feature.hpp"
+
+#include "utlsymbol.h"
+#include "SoundEmitterSystem\isoundemittersystembase.h"
+
+#include <unordered_set>
 
 extern ConVar y_spt_set_ivp_seed_on_load;
 
@@ -24,10 +30,24 @@ private:
 #ifdef OE
 	DECL_HOOK_THISCALL(void, CBasePlayer__InitVCollision, void*);
 #else
-	DECL_HOOK_THISCALL(void, CBasePlayer__InitVCollision, void*, const Vector& vecAbsOrigin, const Vector& vecAbsVelocity);
+	DECL_HOOK_THISCALL(void,
+	                   CBasePlayer__InitVCollision,
+	                   void*,
+	                   const Vector& vecAbsOrigin,
+	                   const Vector& vecAbsVelocity);
 #endif
+	DECL_HOOK_THISCALL(void,
+	                   CSoundEmitterSystemBase__EnsureAvailableSlotsForGender,
+	                   void*,
+	                   SoundFile* pSoundnames,
+	                   int c,
+	                   gender_t gender);
+	DECL_MEMBER_CDECL(void, PhysFrame, float deltaTime);
 
 	uint32_t* IVP_RAND_SEED = nullptr;
+	float* g_PhysicsHook__m_impactSoundTime = nullptr;
+
+	std::unordered_set<UtlSymId_t> resetSounds;
 };
 
 extern RNGStuff spt_rng;
