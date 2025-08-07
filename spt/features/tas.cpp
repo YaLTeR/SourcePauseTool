@@ -11,6 +11,7 @@
 #include "playerio.hpp"
 #include "interfaces.hpp"
 #include "tracing.hpp"
+#include "tickrate.hpp"
 #include "signals.hpp"
 #include "visualizations/imgui/imgui_interface.hpp"
 #include "spt/features/game_fixes/rng.hpp"
@@ -408,20 +409,27 @@ bool TASFeature::WriteTemplateScript(const char* filePath, const char* saveName,
 
 	auto wrangleName = [](const ConVar& cv) { return WrangleLegacyCommandName(cv.GetName(), true, nullptr); };
 
-	std::vector<std::string> settingsList = {
-	    std::format("{} {}", wrangleName(tas_strafe_version), tas_strafe_version.GetDefault()),
-	    std::format("{} 1", wrangleName(tas_strafe_vectorial)),
-	    std::format("{} 3", wrangleName(tas_strafe_dir)),
-	    std::format("{} 1", wrangleName(y_spt_set_ivp_seed_on_load)),
-	    "cl_mouseenable 0",
+	std::vector<std::pair<bool, std::string>> settingsList = {
+	    {true, std::format("{} {}", wrangleName(tas_strafe_version), tas_strafe_version.GetDefault())},
+	    {true, std::format("{} 1", wrangleName(tas_strafe_vectorial))},
+	    {true, std::format("{} 3", wrangleName(tas_strafe_dir))},
+	    {true, "cl_mouseenable 0"},
 	};
 
 	if (utils::DoesGameLookLikePortal())
-		settingsList.push_back("sv_player_funnel_into_portals 0");
+		settingsList.push_back({true, "sv_player_funnel_into_portals 1"});
+
+	settingsList.push_back(
+	    {y_spt_set_ivp_seed_on_load.IsRegistered(), std::format("{} 1", wrangleName(y_spt_set_ivp_seed_on_load))});
+	settingsList.push_back(
+	    {spt_set_physics_hook_offset_on_load.IsRegistered(),
+	     std::format("{} {}", spt_set_physics_hook_offset_on_load.GetName(), spt_tickrate.GetTickrate())});
+	settingsList.push_back({spt_set_all_sounds_available_after_load.IsRegistered(),
+	                        std::format("{} 1", spt_set_all_sounds_available_after_load.GetName())});
 
 	std::ostringstream settingsStream;
 	for (const auto& setting : settingsList)
-		settingsStream << "settings " << setting << '\n';
+		settingsStream << (setting.first ? "" : "// ") << "settings " << setting.second << '\n';
 
 	constexpr const char* scriptTemplate = R"(save {}
 demo {}
