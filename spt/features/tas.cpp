@@ -412,12 +412,18 @@ bool TASFeature::WriteTemplateScript(const char* filePath, const char* saveName,
 	    std::format("{} {}", wrangleName(tas_strafe_version), tas_strafe_version.GetDefault()),
 	    std::format("{} 1", wrangleName(tas_strafe_vectorial)),
 	    std::format("{} 3", wrangleName(tas_strafe_dir)),
-	    std::format("{} 1", wrangleName(y_spt_set_ivp_seed_on_load)),
 	    "cl_mouseenable 0",
 	};
 
+	if (y_spt_set_ivp_seed_on_load.IsRegistered())
+		settingsList.push_back(std::format("{} 1", wrangleName(y_spt_set_ivp_seed_on_load)));
+	if (spt_set_physics_hook_offset_on_load.IsRegistered())
+		settingsList.push_back(std::format("{} 0.015", spt_set_physics_hook_offset_on_load.GetName()));
+	if (spt_set_all_sounds_available_after_load.IsRegistered())
+		settingsList.push_back(std::format("{} 1", spt_set_all_sounds_available_after_load.GetName()));
+
 	if (utils::DoesGameLookLikePortal())
-		settingsList.push_back("sv_player_funnel_into_portals 0");
+		settingsList.push_back("sv_player_funnel_into_portals 1");
 
 	std::ostringstream settingsStream;
 	for (const auto& setting : settingsList)
