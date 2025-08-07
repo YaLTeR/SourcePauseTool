@@ -8,6 +8,8 @@
 #include <unordered_set>
 
 extern ConVar y_spt_set_ivp_seed_on_load;
+extern ConVar spt_set_physics_hook_offset_on_load;
+extern ConVar spt_set_all_sounds_available_after_load;
 
 // RNG prediction
 class RNGStuff : public FeatureWrapper<RNGStuff>
