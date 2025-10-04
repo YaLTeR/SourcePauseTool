@@ -113,7 +113,6 @@ void Tracing::InitHooks()
 	               reinterpret_cast<void**>(&ORIG_UTIL_TraceRay_server),
 	               nullptr);
 	FIND_PATTERN(server, CGameMovement__TracePlayerBBox);
-	FIND_PATTERN(server, CPortalGameMovement__TracePlayerBBox);
 	FIND_PATTERN(server, TracePlayerBBoxForGround);
 	FIND_PATTERN(server, TracePlayerBBoxForGround2);
 	HOOK_FUNCTION(server, CGameMovement__GetPlayerMaxs);
@@ -123,6 +122,7 @@ void Tracing::InitHooks()
 #ifdef SPT_TRACE_PORTAL_ENABLED
 	if (utils::DoesGameLookLikePortal())
 	{
+		FIND_PATTERN(server, CPortalGameMovement__TracePlayerBBox);
 		FIND_PATTERN(server, GetActiveWeapon);
 		FIND_PATTERN(server, TraceFirePortal);
 	}

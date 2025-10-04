@@ -15,7 +15,9 @@ namespace patterns
 	         "5135-portal1",
 	         "B8 00 10 00 00 E8 ?? ?? ?? ?? 8B 01",
 	         "7197370-portal1",
-	         "55 8B EC B8 00 10 00 00 E8 ?? ?? ?? ?? 8B 01");
+	         "55 8B EC B8 00 10 00 00 E8 ?? ?? ?? ?? 8B 01",
+	         "ep3-mod",
+	         "55 8B EC B8 04 10 00 00 E8 ?? ?? ?? ?? A1 ?? ?? ?? ?? 33 C5 89 45 ?? 8B 01");
 } // namespace patterns
 
 void CreateCollideFeature::InitHooks()
