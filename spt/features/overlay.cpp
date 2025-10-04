@@ -108,7 +108,9 @@ namespace patterns
 	         "7462488",
 	         "55 8B EC 81 EC FC 01 00 00 53 56 57",
 	         "BMS-Retail-Xen",
-	         "55 8B EC 81 EC DC 02 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 FC 53 8B 5D 08 56 8B F1");
+	         "55 8B EC 81 EC DC 02 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 FC 53 8B 5D 08 56 8B F1",
+	         "ep3-mod",
+	         "55 8B EC 81 EC D8 01 00 00 A1 ?? ?? ?? ?? 33 C5");
 } // namespace patterns
 
 #ifdef SPT_PORTAL_UTILS
@@ -128,8 +130,8 @@ void Overlay::PreHook()
 	if (!ORIG_CViewRender__RenderView)
 		return;
 
-#ifdef BMS
-	vtidx_QueueOverlayRenderView = 26;
+#if defined(BMS) || defined(SSDK2013)
+	QueueOverlayRenderView_Offset = 26;
 #else
 	if (utils::GetBuildNumber() >= 5135)
 		QueueOverlayRenderView_Offset = 26;

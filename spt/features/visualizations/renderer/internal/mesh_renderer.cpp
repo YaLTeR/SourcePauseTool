@@ -73,7 +73,9 @@ namespace patterns
 	         "5135-portal1",
 	         "55 8D 6C 24 8C 81 EC 94 00 00 00",
 	         "7462488-portal1",
-	         "55 8B EC 81 EC 80 00 00 00 8B 15 ?? ?? ?? ??");
+	         "55 8B EC 81 EC 80 00 00 00 8B 15 ?? ?? ?? ??",
+	         "ep3-mod",
+	         "55 8B EC 83 EC 70 A1 ?? ?? ?? ?? 33 C5 89 45 ?? 53 56");
 	PATTERNS(CRendering3dView__DrawTranslucentRenderables,
 	         "5135-portal1",
 	         "55 8B EC 83 EC 34 53 8B D9 8B 83 94 00 00 00 8B 13 56 8D B3 94 00 00 00",
@@ -84,7 +86,9 @@ namespace patterns
 	         "7462488-portal1",
 	         "55 8B EC 81 EC A0 00 00 00 53 8B D9",
 	         "7467727-hl2",
-	         "55 8B EC 81 EC A0 00 00 00 83 3D ?? ?? ?? ?? 00");
+	         "55 8B EC 81 EC A0 00 00 00 83 3D ?? ?? ?? ?? 00",
+	         "ep3-mod",
+	         "55 8B EC 83 EC 3C A1 ?? ?? ?? ?? 33 C5 89 45 ?? 83 3D ?? ?? ?? ?? 00");
 	PATTERNS(CSkyBoxView__DrawInternal,
 	         "EZ2-1.0.0+original",
 	         "55 8B EC 81 EC 28 01 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 ?? 8B 45 ??",

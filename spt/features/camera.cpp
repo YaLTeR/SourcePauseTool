@@ -376,12 +376,16 @@ namespace patterns
 	         "5135",
 	         "8B D1 0F B6 42 ??",
 	         "7197370",
-	         "55 8B EC 83 EC 18 53 8B 5D ?? BA 01 00 00 00");
+	         "55 8B EC 83 EC 18 53 8B 5D ?? BA 01 00 00 00",
+	         "sdk-base-2013",
+	         "55 8B EC 83 EC 14 BA 01 00 00 00 53 56 8B F1 57 8B 7D ?? 8B CF 83 E1 1F 0F B6 46 ?? 69 D8 D8 05 00 00 8B C7 C1 F8 05 D3 E2 03 DE 85 54 ?? ?? 75 ??");
 	PATTERNS(CInputSystem__PostButtonReleasedEvent,
 	         "5135",
 	         "8B 54 24 ?? 56 8B F1 0F B6 46 ??",
 	         "7197370",
-	         "55 8B EC 83 EC 14 BA 01 00 00 00");
+	         "55 8B EC 83 EC 14 BA 01 00 00 00 53 56 8B F1 57 8B 7D ?? 8B CF 83 E1 1F 0F B6 86 ?? ?? ?? ??",
+	         "sdk-base-2013",
+	         "55 8B EC 83 EC 14 BA 01 00 00 00 53 56 8B F1 57 8B 7D ?? 8B CF 83 E1 1F 0F B6 46 ?? 69 D8 D8 05 00 00 8B C7 C1 F8 05 D3 E2 03 DE 85 54 ?? ?? 74 ??");
 	PATTERNS(
 	    C_BasePlayer__ShouldDrawLocalPlayer,
 	    "5135",
